@@ -13,6 +13,6 @@
    (localStorage) ohne Cloud-Sync.
 */
 window.KS_CONFIG = {
-  SUPABASE_URL: "https://DEIN-PROJEKT-REF.supabase.co",
-  SUPABASE_ANON_KEY: "DEIN-ANON-PUBLIC-KEY"
+  SUPABASE_URL: "https://zxpwuxymdsoikoyfgjqw.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4cHd1eHltZHNvaWtveWZnanF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNDk1NjUsImV4cCI6MjA5NTgyNTU2NX0.s7m4AOfWWlQ3j0xNxyRHAP7b-jhE-FDoaMvLkD3ikgk"
 };
