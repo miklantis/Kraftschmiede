@@ -601,11 +601,12 @@
     s.entries.forEach(function (en, ei) {
       var exo = exById(en.exerciseId); var bar = entryBar(en);
       var sug = en.suggestion || {};
+      var showPlate = !UI.plateHide[ei];
       html += '<div class="card exercise-live" data-ei="' + ei + '">';
       var barOpts = exo.category === "barbell" ? DB.inventory.bars.map(function (bb) { return '<option value="' + bb.id + '"' + (bb.id === (en.barId || exo.barId) ? " selected" : "") + '>' + esc(bb.name) + ' ' + fmtW(bb.weight) + '</option>'; }).join("") : "";
-      html += '<div class="ex-live-head"><div class="ehl"><span class="slot-tag">' + en.slot.toUpperCase() + '</span><span class="ex-name">' + esc(exo.name) + '</span>'
-        + (sug.decision ? '<span class="dec dec-' + sug.decision + '" title="Vorschlag ' + fmtW(sug.weight) + (sug.note ? ' · ' + esc(sug.note) : '') + '">' + decLabel(sug.decision) + '</span>' : '') + '</div>'
-        + (exo.category === "barbell" ? '<div class="ehr"><label class="barpick">Stange <select data-barpick data-ei="' + ei + '">' + barOpts + '</select></label></div>' : '') + '</div>';
+      html += '<div class="ex-live-head"><div class="ehl"><span class="slot-tag">' + en.slot.toUpperCase() + '</span><span class="ex-name">' + esc(exo.name) + '</span></div>'
+        + (exo.category === "barbell" ? '<div class="ehr"><label class="barpick">Stange <select data-barpick data-ei="' + ei + '">' + barOpts + '</select></label><button class="btn tiny ghost plate-toggle" data-action="toggle-plate" data-ei="' + ei + '">' + (showPlate ? 'Scheiben aus' : 'Scheiben ein') + '</button></div>' : '') + '</div>';
+      html += '<div class="suggest-line">Vorschlag <strong>' + fmtW(sug.weight) + '</strong> <span class="dec dec-' + (sug.decision || 'hold') + '">' + decLabel(sug.decision) + '</span> <span class="ex-rep-inl">· Ziel ' + en.plannedSets.length + '×' + sug.targetReps + ' · Score ' + exo.targetScore + '</span> <span class="note">' + esc(sug.note || "") + '</span></div>';
 
       // Aufwärmsätze
       if (en.warmupSets.length) {
@@ -621,10 +622,9 @@
 
       // Arbeitssätze
       html += '<div class="sets-block"><div class="sets-title">Arbeitssätze</div>';
-      var nextSi = en.sets.findIndex(function (x) { return !x.done; });
-      html += '<div class="wset-head"><span>Satz</span><span>Wdh</span><span>kg</span><span>RIR</span><span class="wh-chk">✓</span></div>';
+      html += '<div class="set-row head"><span class="set-i">#</span><span>Wdh</span><span>Gewicht</span><span>Score</span><span>Versagen</span><span>Status</span></div>';
       en.sets.forEach(function (st, si) {
-        html += workSetRow(ei, si, st, bar, exo.category === "barbell", si === nextSi);
+        html += workSetRow(ei, si, st, bar, showPlate && exo.category === "barbell");
       });
       html += '<div class="set-actions"><button class="btn tiny ghost" data-action="add-set" data-ei="' + ei + '">+ Satz</button>'
         + (en.sets.length > 1 ? '<button class="btn tiny ghost" data-action="del-set" data-ei="' + ei + '">– Satz</button>' : '') + '</div>';
@@ -645,18 +645,20 @@
     return 'Beine ' + (t.legs || 0) + ' · OK ' + (t.upper_body || 0) + ' · Gesamt ' + (t.overall || 0) + ' · Readiness ' + (t.readiness || 3) + (t.pain && t.pain.flag ? ' · Schmerz' : '') + ' — ' + lvl;
   }
 
-  function workSetRow(ei, si, st, bar, isBar, isNext) {
-    var fail = st.score === 5;
-    var rirOpts = [1, 2, 3, 4, 5].map(function (v) { var inf = E.scoreInfo(v) || {}; return '<option value="' + v + '"' + (st.score === v ? " selected" : "") + '>RIR ' + inf.rir + (v === 5 ? ' · Vers.' : '') + '</option>'; }).join("");
-    var plate = (isBar && bar) ? '<div class="wset-plate">' + plateHint(st.weight, bar) + '</div>' : '';
-    return '<div class="wset' + (st.done ? ' done' : '') + (fail ? ' fail' : '') + (isNext ? ' is-next' : '') + '" data-ei="' + ei + '" data-si="' + si + '">'
-      + '<div class="wset-grid">'
-      + '<span class="wset-i">' + (si + 1) + '</span>'
-      + '<input type="number" inputmode="numeric" class="num wset-cell" data-set="reps" data-ei="' + ei + '" data-si="' + si + '" value="' + st.reps + '">'
-      + '<input type="number" inputmode="decimal" step="0.25" class="num wset-cell" data-set="weight" data-ei="' + ei + '" data-si="' + si + '" value="' + st.weight + '">'
-      + '<select class="wset-rir" data-set="score" data-ei="' + ei + '" data-si="' + si + '">' + rirOpts + '</select>'
-      + '<label class="wset-done"><input type="checkbox" data-set="done" data-ei="' + ei + '" data-si="' + si + '"' + (st.done ? " checked" : "") + '><span class="wset-done-box">✓</span></label>'
-      + '</div>' + plate + '</div>';
+  function workSetRow(ei, si, st, bar, showChips) {
+    var mt = E.metTarget(st);
+    var status = !st.done ? '<span class="st pending">offen</span>'
+      : (mt === true ? '<span class="st good">Ziel ✓</span>'
+        : (st.failed ? '<span class="st bad">Versagen</span>' : (st.adjusted ? '<span class="st warn">angepasst</span>' : '<span class="st warn">verfehlt</span>')));
+    return '<div class="set-row work' + (st.done ? ' done' : '') + '" data-ei="' + ei + '" data-si="' + si + '">'
+      + '<span class="set-i">' + (si + 1) + '</span>'
+      + '<div class="field f-reps"><span class="cap">Wdh</span><input type="number" class="num" data-set="reps" data-ei="' + ei + '" data-si="' + si + '" value="' + st.reps + '"></div>'
+      + '<div class="field f-weight"><span class="cap">Gewicht</span><div class="wcell"><input type="number" step="0.25" class="num" data-set="weight" data-ei="' + ei + '" data-si="' + si + '" value="' + st.weight + '">' + (showChips ? '<span class="wchips" data-wchips-ei="' + ei + '" data-wchips-si="' + si + '">' + plateChips(st.weight, bar) + '</span>' : '') + '</div></div>'
+      + '<div class="field f-score"><span class="cap">Score</span><select class="scoresel" data-set="score" data-ei="' + ei + '" data-si="' + si + '">' + [1, 2, 3, 4, 5].map(function (v) { var inf = E.scoreInfo(v); return '<option value="' + v + '"' + (st.score === v ? " selected" : "") + '>' + v + ' · RIR ' + inf.rir + '</option>'; }).join("") + '</select></div>'
+      + '<label class="chk c"><input type="checkbox" data-set="failed" data-ei="' + ei + '" data-si="' + si + '"' + (st.failed ? " checked" : "") + '><span class="ctxt">Versagen</span></label>'
+      + '<span class="status-cell">' + status + (st.adjusted ? '<span class="adj-dot" title="angepasst: ' + esc(st.adjustNote || "") + '">●</span>' : '') + '</span>'
+      + '<label class="chk done-chk"><input type="checkbox" data-set="done" data-ei="' + ei + '" data-si="' + si + '"' + (st.done ? " checked" : "") + '><span class="ctxt">Erledigt</span> \u2713</label>'
+      + '</div>';
   }
   function sorePicker(key, label, val) {
     return '<div class="bfield"><span>' + label + ' (Kater)</span><select data-body="' + key + '">'
@@ -672,7 +674,7 @@
     root.querySelectorAll("[data-live]").forEach(function (el) {
       el.addEventListener("change", function () { setLivePath(el.getAttribute("data-live"), el.type === "checkbox" ? el.checked : (el.type === "number" ? parseFloat(el.value) : el.value)); });
     });
-    root.querySelectorAll(".set-row [data-set], .wset [data-set]").forEach(function (el) {
+    root.querySelectorAll(".set-row [data-set]").forEach(function (el) {
       var ev = (el.type === "checkbox" || el.tagName === "SELECT") ? "change" : "input";
       el.addEventListener(ev, function () { onSetChange(el); });
     });
@@ -688,29 +690,26 @@
     var st = UI.live.entries[ei].sets[si];
     if (kind === "reps") st.reps = parseInt(el.value, 10) || 0;
     else if (kind === "weight") { var nw = parseFloat(el.value); if (nw !== st.targetWeight) markAdjust(st, "Gewicht angepasst"); st.weight = isNaN(nw) ? 0 : nw; }
-    else if (kind === "score") { st.score = +el.value; st.failed = (st.score === 5); }
+    else if (kind === "score") { st.score = +el.value; if (st.score === 5) { st.failed = true; var fc = el.closest(".set-row").querySelector('[data-set="failed"]'); if (fc) fc.checked = true; } }
+    else if (kind === "failed") st.failed = el.checked;
     else if (kind === "done") st.done = el.checked;
+    if (kind === "reps" && st.reps < st.targetReps && st.done) { /* verfehlt – kein Auto-Fail, Nutzer entscheidet */ }
     refreshSetStatus(ei, si);
-    if (kind === "done") updateActiveSet(ei);
   }
   function markAdjust(st, note) { st.adjusted = true; st.adjustNote = note; }
   function refreshSetStatus(ei, si) {
-    var row = document.querySelector('.wset[data-ei="' + ei + '"][data-si="' + si + '"]');
+    var row = document.querySelector('.set-row.work[data-ei="' + ei + '"][data-si="' + si + '"]');
     if (!row) return;
-    var enX = UI.live.entries[ei];
-    var st = enX.sets[si];
+    var st = UI.live.entries[ei].sets[si];
+    var mt = E.metTarget(st);
+    var cell = row.querySelector(".status-cell");
+    var status = !st.done ? '<span class="st pending">offen</span>'
+      : (mt === true ? '<span class="st good">Ziel ✓</span>'
+        : (st.failed ? '<span class="st bad">Versagen</span>' : (st.adjusted ? '<span class="st warn">angepasst</span>' : '<span class="st warn">verfehlt</span>')));
+    cell.innerHTML = status + (st.adjusted ? '<span class="adj-dot" title="angepasst: ' + esc(st.adjustNote || "") + '">●</span>' : '');
     row.classList.toggle("done", !!st.done);
-    row.classList.toggle("fail", st.score === 5);
-    var pl = row.querySelector(".wset-plate");
-    if (pl && (exById(enX.exerciseId) || {}).category === "barbell") pl.innerHTML = plateHint(st.weight, entryBar(enX));
-  }
-  function updateActiveSet(ei) {
-    var en = UI.live.entries[ei]; if (!en) return;
-    var nextSi = en.sets.findIndex(function (x) { return !x.done; });
-    en.sets.forEach(function (x, si) {
-      var row = document.querySelector('.wset[data-ei="' + ei + '"][data-si="' + si + '"]');
-      if (row) row.classList.toggle("is-next", si === nextSi);
-    });
+    var wc = document.querySelector('.wchips[data-wchips-ei="' + ei + '"][data-wchips-si="' + si + '"]');
+    if (wc) { var enX = UI.live.entries[ei]; if ((exById(enX.exerciseId) || {}).category === "barbell") wc.innerHTML = plateChips(st.weight, entryBar(enX)); }
   }
 
   function finishSession() {
@@ -1229,6 +1228,7 @@
       case "cal-prev": calShift(-1); break;
       case "cal-next": calShift(1); break;
       case "cal-today": calToday(); break;
+      case "toggle-plate": { var pe = el.getAttribute("data-ei"); UI.plateHide[pe] = !UI.plateHide[pe]; render(); break; }
       case "add-yoga": addYoga(); break;
       case "pin-chart": dashToggle(el.getAttribute("data-ex"), el.getAttribute("data-metric")); render(); break;
       case "dash-up": dashMove(+el.getAttribute("data-i"), -1); render(); break;

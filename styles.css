@@ -116,29 +116,24 @@ textarea{width:100%;min-height:90px;resize:vertical;font-family:var(--mono);font
 .set-row{display:grid;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
 .set-row.warm{grid-template-columns:32px 1fr auto;color:var(--muted)}
 .set-row.warm .ro{font-family:var(--mono)}
+.set-row.head{grid-template-columns:30px 72px 84px 1fr 64px 1.4fr;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--faint);border-bottom:1px solid var(--line2)}
+.set-row.work{grid-template-columns:30px 72px 84px 1fr 64px 1.4fr auto}
+.set-row.work.done{background:rgba(94,194,106,.05)}
 .set-i{font-family:var(--mono);color:var(--faint);text-align:center;font-size:13px}
+.scoresel{font-size:12px;padding:6px 6px}
+.chk.c{justify-content:center}
+.chk.c input{accent-color:var(--bad)}
 .chk.r{justify-content:flex-end}
+.done-chk{justify-content:center;font-weight:600}
+.done-chk input{accent-color:var(--good)}
+.status-cell{display:flex;align-items:center;gap:5px;font-size:12px}
+.st{padding:2px 7px;border-radius:4px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+.st.pending{color:var(--faint);border:1px solid var(--line2)}
+.st.good{background:rgba(94,194,106,.15);color:var(--good)}
+.st.warn{background:rgba(243,177,58,.15);color:var(--warn)}
+.st.bad{background:rgba(239,91,91,.15);color:var(--bad)}
+.adj-dot{color:var(--warn)}
 .set-actions{display:flex;gap:8px;margin-top:8px}
-
-/* ---- v0.11: Arbeitssatz = eine Zeile (mobile-first) ---- */
-.wset-head{display:grid;grid-template-columns:26px minmax(0,1fr) minmax(0,1fr) 78px 38px;gap:8px;align-items:center;padding:2px 0 7px;font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.6px;font-size:11px;color:var(--faint);border-bottom:1px solid var(--line2)}
-.wset-head span{text-align:center}
-.wset-head span:first-child{text-align:left}
-.wset{border-bottom:1px solid var(--line)}
-.wset-grid{display:grid;grid-template-columns:26px minmax(0,1fr) minmax(0,1fr) 78px 38px;gap:8px;align-items:center;padding:7px 0}
-.wset.done{background:rgba(94,194,106,.05)}
-.wset-i{font-family:var(--display);font-weight:700;color:var(--faint);text-align:center;font-size:14px}
-.wset.is-next .wset-i{color:var(--accent)}
-.wset-cell{width:100%;text-align:center;font-weight:600}
-.wset.is-next .wset-cell[data-set="weight"]{border-color:var(--accent)}
-.wset-rir{width:100%;font-family:var(--mono);font-size:13px;padding:8px 4px;color:var(--accent-2);text-align:center;text-align-last:center}
-.wset.fail .wset-rir{color:var(--bad);border-color:var(--bad);background:rgba(239,91,91,.1)}
-.wset-done{display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
-.wset-done input{position:absolute;opacity:0;width:0;height:0}
-.wset-done-box{width:30px;height:30px;border-radius:8px;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;color:var(--faint);font-weight:700;font-size:16px;transition:background .12s,border-color .12s}
-.wset.done .wset-done-box{background:var(--accent-2);border-color:var(--accent-2);color:#04222a}
-.wset-plate{display:none;padding:0 0 8px 34px}
-.wset.is-next .wset-plate{display:flex}
 
 /* Body state */
 .body-grid{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px}
@@ -244,6 +239,10 @@ label.chk.bfield{flex-direction:row;align-items:center}
   body{font-size:14px}
   #app{padding:0 10px}
   h2{font-size:24px}
+  .set-row.work{grid-template-columns:24px 56px 70px 1fr 44px;grid-row-gap:2px}
+  .set-row.work .status-cell{grid-column:2 / -1}
+  .set-row.work .done-chk{grid-column:1 / -1;justify-content:flex-start}
+  .set-row.head{display:none}
   .num{width:60px}
   .score-table{grid-template-columns:repeat(3,1fr)}
   .phasechip{display:none}
@@ -353,6 +352,7 @@ label.chk.bfield{flex-direction:row;align-items:center}
 .pchip{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;padding:0 6px;border-radius:7px;font-family:var(--mono);font-size:11px;font-weight:700;color:#1a120a;border:1px solid rgba(0,0,0,.28);box-shadow:inset 0 -2px 0 rgba(0,0,0,.14)}
 .pchip.bar{background:var(--panel2);color:var(--faint);border-color:var(--line);box-shadow:none;font-weight:400}
 .pchip.rest{background:var(--bad);color:#fff;border-color:transparent;box-shadow:none}
+.plate-toggle{margin-left:auto;flex:none}
 .ex-plate{align-items:center}
 .set-row.warm .pchips{margin-left:2px}
 .set-row.warm .chk.r{margin-left:auto}
@@ -377,13 +377,35 @@ input[type=date]{background:var(--panel2);border:1px solid var(--line2);color:va
 .cal-title{font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:1px;font-size:16px}
 .cal-dot.yoga{background:var(--accent-2);color:#04222a}
 
-/* ---- v0.6: Journey-Blocks volle Breite ---- */
+/* ---- v0.6: Chips neben dem Gewicht, Stange oben, Journey-Blocks volle Breite ---- */
 .tpl-grid{max-width:none}
+
+/* Steuerzeile (Stange + Toggle) oben, ohne Chips */
+.ex-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:2px 0 6px}
+.ex-controls .plate-toggle{margin-left:auto}
+
+/* Arbeitssatz-Zeile: Gewichtsspalte breiter, Chips direkt daneben */
+.set-row.head{grid-template-columns:28px 58px minmax(150px,1.8fr) 92px 46px minmax(86px,1.1fr)}
+.set-row.work{grid-template-columns:28px 58px minmax(150px,1.8fr) 92px 46px minmax(86px,1.1fr) auto}
+.wcell{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+.wcell .num{width:62px;flex:none}
+/* beschriftete Satz-Felder: auf Desktop neutral (Wrapper verschwindet), Labels aus */
+.field{display:contents}
+.cap{display:none;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
+.set-row .ctxt{display:none}
+.wchips{display:inline-flex}
+@media(max-width:560px){
+  .set-row.work{grid-template-columns:22px 46px minmax(108px,1fr) 60px 38px;grid-row-gap:3px}
+  .set-row.work .status-cell{grid-column:3 / -1}
+  .set-row.work .done-chk{grid-column:1 / 3}
+}
 
 /* ---- v0.7: Controls im Kopf, Settings gestapelt, größere Notiz ---- */
 .ex-live-head{justify-content:space-between}
 .ehl{display:flex;align-items:center;gap:10px;min-width:0}
 .ehr{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ehr .plate-toggle{margin-left:0}
+.ex-rep-inl{color:var(--faint);font-family:var(--mono);font-size:11px}
 
 /* Engine-Einstellungen untereinander statt nebeneinander */
 .settings-grid{grid-template-columns:1fr;max-width:440px;align-items:stretch}
@@ -437,10 +459,25 @@ input[type=date]{background:var(--panel2);border:1px solid var(--line2);color:va
   .card{padding:12px 13px}
   .sets-block{padding:8px 12px 12px}
 
-  /* Arbeitssatz-Zeile auf dem Handy: enger, gleiches Raster, eine Zeile */
-  .wset-head{grid-template-columns:22px minmax(0,1fr) minmax(0,1fr) 72px 34px;gap:6px}
-  .wset-grid{grid-template-columns:22px minmax(0,1fr) minmax(0,1fr) 72px 34px;gap:6px}
-  .wset-plate{padding-left:28px}
+  /* jeder Arbeitssatz wird auf dem Handy ein aufgeräumter, beschrifteter Block */
+  .set-row.head{display:none}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .set-row.work .cap{display:block}
+  .set-row.work .ctxt{display:inline}
+  .set-row.work{grid-template-columns:1fr 1fr;column-gap:14px;row-gap:12px;align-items:start;padding:14px 2px}
+  .set-row.work>.set-i{grid-column:1;grid-row:1;align-self:center;font-family:var(--display);font-weight:700;font-size:14px;color:var(--text);letter-spacing:.5px;width:auto}
+  .set-row.work>.set-i::before{content:"Satz "}
+  .set-row.work>.status-cell{grid-column:2;grid-row:1;justify-self:end;align-self:center}
+  .set-row.work>.f-reps{grid-column:1;grid-row:2}
+  .set-row.work>.f-weight{grid-column:2;grid-row:2}
+  .set-row.work>.f-score{grid-column:1 / -1;grid-row:3}
+  .set-row.work>.chk.c{grid-column:1;grid-row:4;justify-self:start}
+  .set-row.work>.done-chk{grid-column:2;grid-row:4;justify-self:start}
+  .set-row.work .num{width:100%;min-width:0}
+  .set-row.work .wcell{flex-wrap:wrap}
+  .set-row.work .wcell .num{width:86px;flex:none}
+  .set-row.work .scoresel{width:100%}
+  .set-row.work .chk{padding:7px 0;gap:8px}
 
   /* Aufwärmzeile bleibt flex, Chips dürfen umbrechen */
   .set-row.warm{align-items:flex-start}
