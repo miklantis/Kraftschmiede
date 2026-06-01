@@ -107,7 +107,7 @@ textarea{width:100%;min-height:90px;resize:vertical;font-family:var(--mono);font
 /* Live session */
 .live-head{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:10px 0;background:var(--bg);border-bottom:1px solid var(--line);box-shadow:0 6px 16px -12px #000}
 .live-head .section-title{margin:0}
-.gw-row{border-bottom:none}
+.set-row.gw-row{border-bottom:none}
 .gw-row .gw-mid{grid-column:2 / 5;display:flex;align-items:center;gap:6px;min-width:0;color:var(--muted);font-size:13px}
 .gw-row .f-done{grid-column:5}
 .gw-row.done,.gw-row:has(.done-chk input:checked){background:rgba(94,194,106,.12)}
