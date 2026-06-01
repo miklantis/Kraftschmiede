@@ -152,7 +152,7 @@ textarea{width:100%;min-height:90px;resize:vertical;font-family:var(--mono);font
 .set-sub{padding:2px 0 8px 52px;border-bottom:1px solid var(--line)}
 .set-row:not(.done):has(+ .set-sub){border-bottom:none}
 .set-row.done+.set-sub{display:none}
-.set-row.done{background:rgba(94,194,106,.12)}
+.set-row.done{background:rgba(94,194,106,.12);border-bottom-color:var(--bg)}
 .set-i{font-family:var(--mono);color:var(--faint);text-align:center;font-size:13px}
 .scoresel{font-size:12px;padding:6px 6px}
 .chk.c{justify-content:center}
