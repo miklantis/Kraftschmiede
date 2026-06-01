@@ -765,3 +765,15 @@ body{overflow-x:clip}
   .seg{display:flex;width:100%}
   .seg-btn{flex:1}
 }
+
+/* ============================================================
+   v0.22 – Koerperzustand: aktiver Eintrag per Button
+   Werte werden im Formular eingestellt und erst per "Eintragen"
+   gespeichert. Ohne Klick bleibt der Tag ohne Angabe.
+   ============================================================ */
+.body-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.body-actions .btn{flex:0 0 auto}
+@media (max-width:560px){
+  .body-actions{flex-direction:column}
+  .body-actions .btn{width:100%}
+}

@@ -226,7 +226,7 @@
   function dashReorder(from, to) { if (from === to || from < 0 || to < 0 || from >= DASH.length || to >= DASH.length) return; var item = DASH.splice(from, 1)[0]; DASH.splice(to, 0, item); dashSave(); }
 
   migrate(DB);
-  var UI = { tab: "training", detail: null, live: null, importPreview: null, journeyPicker: false, calMonth: null, plateShow: {}, menuOpen: false, woView: "calendar" };
+  var UI = { tab: "training", detail: null, live: null, importPreview: null, journeyPicker: false, calMonth: null, plateShow: {}, menuOpen: false, woView: "calendar", bodyDraft: null };
   // Laufende Session nach Browser-/App-Neustart wiederherstellen. Die Uhr
   // laeuft ueber den gespeicherten startedAt-Zeitstempel korrekt weiter.
   if (DB.live && DB.live.status === "live") { UI.live = DB.live; UI.tab = "training"; }
@@ -1409,14 +1409,17 @@
      View: Körper (eigener Bereich, 1×/Tag)
      ========================================================= */
   function viewBody() {
-    var t = todayBody() || blankBody();
     var hasToday = !!todayBody();
+    // Entwurf: was im Formular steht. Geladen aus heutigem Eintrag (falls
+    // vorhanden), sonst leer. Wird erst per "Eintragen" gespeichert.
+    if (!UI.bodyDraft) UI.bodyDraft = todayBody() ? cloneBody(todayBody()) : blankBody();
+    var t = UI.bodyDraft;
     var adv = restAdvice();
     var lvlTitle = { rest: "Rest-Tag empfohlen", caution: "Vorsicht – reduziert trainieren", ok: "Bereit fürs Training", unknown: "Heute noch nicht erfasst" }[adv.level];
     var html = '<div class="section-title">Körperzustand</div>';
-    html += '<p class="hint body-lead">Einmal pro Tag erfassen, unabhängig vom Training. Diese Angaben fließen in die Workout-Empfehlung und den Rest-Tag-Hinweis ein.</p>';
+    html += '<p class="hint body-lead">Werte einstellen und mit „Eintragen" speichern. Ohne Eintrag bleibt der Tag ohne Angabe. Die Angaben fließen in die Workout-Empfehlung und den Rest-Tag-Hinweis ein.</p>';
     html += '<div class="rest-card ' + adv.level + '"><div class="rc-main"><strong>' + lvlTitle + '</strong>' + (adv.reasons.length ? '<span>' + esc(adv.reasons.join(" · ")) + '</span>' : '<span>Körperzustand grün.</span>') + '</div></div>';
-    html += '<div class="card body-form"><div class="sets-title">' + (hasToday ? 'Heute (' + today() + ') – bearbeiten' : 'Heute (' + today() + ')') + '</div>'
+    html += '<div class="card body-form"><div class="sets-title">Heute (' + today() + ')' + (hasToday ? ' – erfasst, bearbeiten' : ' – noch nicht erfasst') + '</div>'
       + '<div class="body-grid">'
       + sorePicker("legs", "Beine", t.legs) + sorePicker("upper_body", "Oberkörper", t.upper_body) + sorePicker("overall", "Gesamt", t.overall)
       + '<div class="bfield"><span>Readiness</span><select data-body="readiness">' + [1, 2, 3, 4, 5].map(function (v) { return '<option value="' + v + '"' + (t.readiness === v ? " selected" : "") + '>' + v + '</option>'; }).join("") + '</select></div>'
@@ -1424,6 +1427,8 @@
       + '</div>'
       + '<textarea class="notes body-notes" data-body="notes" rows="4" placeholder="Notiz (optional, mehrzeilig)">' + esc(t.notes || "") + '</textarea>'
       + '<div class="hint scale-hint">Kater 0 keine · 1 leicht · 2 deutlich · 3 stark (Region wird im Vorschlag ausgeschlossen). Readiness 1 mies … 5 top.</div>'
+      + '<div class="body-actions"><button class="btn primary" data-action="body-save">' + (hasToday ? 'Aktualisieren' : 'Eintragen') + '</button>'
+      + (hasToday ? '<button class="btn ghost" data-action="body-del-today">Heutigen Eintrag löschen</button>' : '') + '</div>'
       + '</div>';
     var log = sortedBodyLog().slice().reverse().filter(function (e) { return e.date !== today(); });
     html += '<div class="section-title">Verlauf</div>';
@@ -1436,14 +1441,30 @@
     }).join("") + '</div>';
     return html;
   }
-  function ensureTodayBody() { var e = todayBody(); if (!e) { e = blankBody(); e.date = today(); DB.bodyLog.push(e); } return e; }
+  function cloneBody(e) { return { date: e.date, legs: e.legs || 0, upper_body: e.upper_body || 0, overall: e.overall || 0, pain: { flag: !!(e.pain && e.pain.flag), note: (e.pain && e.pain.note) || "" }, readiness: e.readiness || 3, notes: e.notes || "" }; }
+  // Formular-Aenderung wirkt nur auf den Entwurf, ohne Re-Render (Fokus halten),
+  // und wird erst per body-save als heutiger Eintrag gespeichert.
   function onBodyChange(el) {
-    var e = ensureTodayBody(); var k = el.getAttribute("data-body");
+    var e = UI.bodyDraft || (UI.bodyDraft = blankBody()); var k = el.getAttribute("data-body");
     if (k === "pain.flag") { e.pain = e.pain || {}; e.pain.flag = el.checked; }
     else if (k === "notes") e.notes = el.value;
     else if (k === "readiness") e.readiness = +el.value;
     else e[k] = +el.value;
-    persist(); render();
+  }
+  // Entwurf aktiv als heutigen Eintrag speichern (anlegen oder ueberschreiben).
+  function saveBodyToday() {
+    var d = UI.bodyDraft || blankBody();
+    var e = todayBody();
+    if (!e) { e = blankBody(); e.date = today(); DB.bodyLog.push(e); }
+    e.legs = d.legs || 0; e.upper_body = d.upper_body || 0; e.overall = d.overall || 0;
+    e.readiness = d.readiness || 3; e.pain = { flag: !!(d.pain && d.pain.flag), note: (d.pain && d.pain.note) || "" }; e.notes = d.notes || "";
+    UI.bodyDraft = cloneBody(e);
+    persist(); render(); toast("Körperzustand eingetragen (" + today() + ").");
+  }
+  function delBodyToday() {
+    DB.bodyLog = DB.bodyLog.filter(function (e) { return e.date !== today(); });
+    UI.bodyDraft = blankBody();
+    persist(); render(); toast("Heutiger Eintrag gelöscht.");
   }
   function onBarPick(el) {
     var ei = +el.getAttribute("data-ei"); var barId = el.value;
@@ -1670,7 +1691,7 @@
     var el = ev.target.closest("[data-action]"); if (!el) return;
     var a = el.getAttribute("data-action");
     switch (a) {
-      case "tab": UI.tab = el.getAttribute("data-tab"); UI.detail = null; UI.journeyPicker = false; UI.menuOpen = false; render(); break;
+      case "tab": UI.tab = el.getAttribute("data-tab"); UI.detail = null; UI.journeyPicker = false; UI.menuOpen = false; UI.bodyDraft = null; render(); break;
       case "menu-toggle": UI.menuOpen = !UI.menuOpen; render(); break;
       case "auth-open": openAuthModal(); break;
       case "auth-close": closeAuthModal(); break;
@@ -1693,6 +1714,8 @@
       case "del-session": if (confirm("Session löschen?")) { DB.sessions = DB.sessions.filter(function (s) { return s.id !== el.getAttribute("data-id"); }); persist(); render(); } break;
       case "wk": adjustWeek(+el.getAttribute("data-d")); break;
       case "phase-next": nextPhase(); break;
+      case "body-save": saveBodyToday(); break;
+      case "body-del-today": delBodyToday(); break;
       case "body-del": DB.bodyLog = DB.bodyLog.filter(function (e) { return e.date !== el.getAttribute("data-d"); }); persist(); render(); break;
       case "wo-view": UI.woView = el.getAttribute("data-v"); render(); break;
       case "cal-prev": calShift(-1); break;
