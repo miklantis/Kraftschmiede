@@ -91,25 +91,44 @@
   }
 
   // ---------- Aufwärm-Generator (6.3) ----------
-  // workWeight W, Stange B. lift1 => mehr Sätze; isDeadlift => weniger Wdh.
+  // Adaptive Rampe: Stufenzahl folgt der Spanne Stange->Arbeit (Zielsprung ~18-22 %),
+  // Endstufe ~85 % mit Puffer (mind. 1 Ladeschritt unter Arbeit), Reps sinken mit der Last
+  // (Priming, keine Vorermüdung). isLift1 => kleinerer Sprung/mehr Stufen; isDeadlift => weniger Volumen.
   function generateWarmup(workWeight, barWeight, plates, opts) {
     opts = opts || {};
     var isLift1 = !!opts.isLift1, isDeadlift = !!opts.isDeadlift;
     var sets = [];
-    // 1) leere Stange
-    sets.push({ reps: isDeadlift ? 6 : 8, weight: barWeight, type: "warmup", done: false });
-    // 2) Rampe ~50/70/85 %
-    var pct = isLift1 ? [0.5, 0.7, 0.85] : [0.55, 0.8];
-    var reps = isDeadlift ? [5, 3, 2] : [5, 4, 3];
-    pct.forEach(function (p, i) {
-      var tgt = workWeight * p;
+    if (!(workWeight > barWeight)) return sets;       // Arbeit <= Stange: kein Aufwärmen
+    var step = 2 * plateGrid(plates);                 // kleinster Ladeschritt (beide Seiten)
+    var steps = step > 0 ? Math.round((workWeight - barWeight) / step) : 0;
+
+    // 1) leere Stange – Bewegungsvorbereitung, niedrige Reps
+    sets.push({ reps: 5, weight: barWeight, type: "warmup", done: false });
+    if (steps <= 1) return sets;                      // winziger Abstand: Stange genügt
+
+    // 2) Endstufe ~85 % des Arbeitsgewichts, mind. einen Ladeschritt darunter
+    var top = nearestLoadable(workWeight * 0.85, barWeight, plates, false);
+    var maxTop = round2(workWeight - step);
+    if (top > maxTop) top = maxTop;
+    if (top <= barWeight) return sets;                // kein Platz für Zwischenstufen
+
+    // 3) Stufenzahl aus der Spanne: Zielsprung ~18 % (LIFT1, gründlicher) bzw. 22 %
+    //    des Arbeitsgewichts pro Stufe; 1..4 Zwischenstufen
+    var perStep = (isLift1 ? 0.18 : 0.22) * workWeight;
+    var nMid = Math.max(1, Math.min(4, Math.round((top - barWeight) / perStep)));
+
+    // 4) gleichmäßig zwischen Stange und Endstufe verteilen, Reps nach relativer Last
+    for (var i = 1; i <= nMid; i++) {
+      var tgt = barWeight + (top - barWeight) * (i / nMid);
       var ld = nearestLoadable(tgt, barWeight, plates, false);
-      if (ld <= barWeight) return;
-      if (ld >= workWeight) return; // keine Aufwärmstufe >= Arbeitsgewicht
+      if (ld <= barWeight || ld >= workWeight) continue;
       var last = sets[sets.length - 1];
-      if (last && Math.abs(last.weight - ld) < 1e-9 && last.weight > barWeight) return; // Dubletten vermeiden
-      sets.push({ reps: reps[i] != null ? reps[i] : reps[reps.length - 1], weight: ld, type: "warmup", done: false });
-    });
+      if (last && Math.abs(last.weight - ld) < 1e-9) continue; // Dubletten vermeiden
+      var p = ld / workWeight;
+      var reps = p < 0.6 ? 5 : p < 0.75 ? 3 : 2;
+      if (isDeadlift && reps > 3) reps = 3;           // Deadlift: weniger Aufwärmvolumen
+      sets.push({ reps: reps, weight: ld, type: "warmup", done: false });
+    }
     return sets;
   }
 
