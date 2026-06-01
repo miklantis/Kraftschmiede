@@ -978,7 +978,7 @@
     var s = UI.live; if (!s) return;
     openEndModal();
   }
-  function discardWorkout() { skipRest(); UI.live = null; render(); }
+  function discardWorkout() { skipRest(); UI.live = null; render(); scrollToTop(); }
   function ensureEndModal() {
     if (document.getElementById("ks-end-modal")) return;
     var ov = document.createElement("div");
@@ -1030,6 +1030,72 @@
   }
   function closeEndModal() { var m = document.getElementById("ks-end-modal"); if (m) m.classList.remove("open"); }
 
+  // Start-Popup: zeigt vor dem Start eine kompakte Vorschau (gleiche Optik
+  // wie das Beenden-Popup) und startet erst nach Bestaetigung ("Los geht's").
+  function ensureStartModal() {
+    if (document.getElementById("ks-start-modal")) return;
+    var ov = document.createElement("div");
+    ov.id = "ks-start-modal"; ov.className = "ks-modal-overlay";
+    ov.innerHTML = '<div class="ks-modal" role="dialog" aria-modal="true" aria-label="Workout starten">'
+      + '<div class="ks-modal-head"><span class="ks-modal-title">Workout starten</span>'
+      + '<button class="ks-modal-x" data-action="start-cancel" aria-label="Schließen">\u2715</button></div>'
+      + '<div class="end-body" id="ks-start-body"></div>'
+      + '<div class="end-btns">'
+      + '<button class="btn primary" data-action="start-go">Los geht\u2019s</button>'
+      + '<button class="btn ghost" data-action="start-cancel">Abbrechen</button>'
+      + '</div></div>';
+    ov.addEventListener("click", function (e) { if (e.target === ov) cancelStart(); });
+    document.body.appendChild(ov);
+  }
+  function openStartModal(tplId) {
+    UI.pendingLive = buildLive(tplId);
+    ensureStartModal();
+    var body = document.getElementById("ks-start-body");
+    if (body) body.innerHTML = startSummaryHTML();
+    document.getElementById("ks-start-modal").classList.add("open");
+  }
+  // Kompakte Vorschau der geplanten Session: pro Uebung die Arbeitssaetze
+  // als Chips (reps x kg), oben Workout, Anzahl Uebungen und Saetze.
+  function startSummaryHTML() {
+    var s = UI.pendingLive; if (!s) return "";
+    var t = tplById(s.templateId);
+    var totalWork = 0;
+    var rows = (s.entries || []).map(function (en) {
+      var exo = exById(en.exerciseId);
+      var sets = en.sets || [];
+      totalWork += sets.length;
+      var chips = sets.map(function (x) {
+        return '<span class="es-set">' + (x.reps || 0) + '\u00D7' + fmtNum(x.weight) + '</span>';
+      }).join("");
+      return '<div class="es-ex">'
+        + '<div class="es-ex-head"><span class="es-name">' + esc(exo ? exo.name : en.exerciseId) + '</span>'
+        + '<span class="es-count">' + sets.length + ' \u00D7 Satz</span></div>'
+        + (chips ? '<div class="es-sets">' + chips + '</div>' : '')
+        + '</div>';
+    }).join("");
+    return '<div class="es-meta"><span>Workout ' + esc(t ? t.name : "?") + '</span><span>' + (s.entries || []).length + ' Übungen</span><span>' + totalWork + ' Sätze</span></div>'
+      + '<div class="es-list">' + rows + '</div>'
+      + '<div class="es-hint">Tippe „Los geht\u2019s", um Uhr und Workout zu starten.</div>';
+  }
+  function confirmStart() {
+    if (!UI.pendingLive) { closeStartModal(); return; }
+    UI.live = UI.pendingLive;
+    UI.live.startedAt = Date.now();
+    UI.pendingLive = null;
+    closeStartModal();
+    clickTick(true);
+    render();
+    scrollToTop();
+  }
+  function cancelStart() { UI.pendingLive = null; closeStartModal(); }
+  function closeStartModal() { var m = document.getElementById("ks-start-modal"); if (m) m.classList.remove("open"); }
+  // Nach oben scrollen (window und ggf. scrollender Container), z. B. beim Start.
+  function scrollToTop() {
+    try { window.scrollTo(0, 0); } catch (e) {}
+    try { if (document.scrollingElement) document.scrollingElement.scrollTop = 0; } catch (e) {}
+    var app = document.getElementById("app"); if (app) app.scrollTop = 0;
+  }
+
   function finishSession() {
     var s = UI.live;
     s.status = "done";
@@ -1058,7 +1124,7 @@
     DB.sessions.push(s);
     UI.live = null;
     persist();
-    UI.tab = "workouts"; render();
+    UI.tab = "workouts"; render(); scrollToTop();
   }
 
   /* =========================================================
@@ -1566,7 +1632,9 @@
       case "menu-toggle": UI.menuOpen = !UI.menuOpen; render(); break;
       case "auth-open": openAuthModal(); break;
       case "auth-close": closeAuthModal(); break;
-      case "start": UI.live = buildLive(el.getAttribute("data-tpl")); render(); break;
+      case "start": openStartModal(el.getAttribute("data-tpl")); break;
+      case "start-go": confirmStart(); break;
+      case "start-cancel": cancelStart(); break;
       case "finish-workout": endWorkout(); break;
       case "end-save": closeEndModal(); finishSession(); break;
       case "end-discard": closeEndModal(); discardWorkout(); break;
