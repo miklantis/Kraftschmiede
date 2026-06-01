@@ -677,8 +677,11 @@
   function fillRestBar() {
     var r = UI.live && UI.live.rest; var bar = document.getElementById("ks-rest-bar"); if (!r || !bar) return;
     var en = UI.live.entries[r.ei]; var exo = en ? exById(en.exerciseId) : null;
-    var ctx = exo ? esc(exo.name) : "";
-    if (r.type === "set" && en && r.si >= 0 && r.si < en.sets.length) ctx += " · nächster Satz S" + (r.si + 1);
+    var name = exo ? esc(exo.name) : "—";
+    var ctx;
+    if (r.type === "exercise") ctx = "nächste Übung · " + name;
+    else { ctx = name; if (en && r.si >= 0 && r.si < en.sets.length) ctx += " · nächster Satz S" + (r.si + 1); }
+    bar.classList.toggle("exercise", r.type === "exercise");
     var lab = bar.querySelector(".rb-label"); if (lab) lab.textContent = (r.type === "exercise" ? "Übungspause" : "Satzpause");
     var cx = bar.querySelector(".rb-ctx"); if (cx) cx.innerHTML = ctx;
   }
@@ -703,7 +706,7 @@
     ensureRestBar();
     var bar = document.getElementById("ks-rest-bar"); if (!bar) return;
     var active = !!(UI.tab === "training" && UI.live && UI.live.rest);
-    if (!active) { bar.classList.remove("show", "done"); stopRestTick(); return; }
+    if (!active) { bar.classList.remove("show", "done", "exercise"); stopRestTick(); return; }
     fillRestBar(); bar.classList.add("show"); restTick(); startRestTick();
   }
   function startRest(type, sec, ei, si) {
@@ -724,7 +727,7 @@
   function skipRest() {
     if (UI.live) UI.live.rest = null;
     stopRestTick();
-    var bar = document.getElementById("ks-rest-bar"); if (bar) bar.classList.remove("show", "done");
+    var bar = document.getElementById("ks-rest-bar"); if (bar) bar.classList.remove("show", "done", "exercise");
   }
   function syncActiveSet() {
     var root = document.getElementById("app"); if (!root) return;
@@ -735,13 +738,35 @@
     var row = root.querySelector('.set-row.work[data-ei="' + a.ei + '"][data-si="' + a.si + '"]');
     if (row) row.classList.add("active-next");
   }
+  function firstOpenSet(en) { for (var i = 0; i < en.sets.length; i++) { if (!en.sets[i].done) return i; } return -1; }
+  function nextOpenExercise(fromEi) {
+    for (var i = fromEi + 1; i < UI.live.entries.length; i++) { if (firstOpenSet(UI.live.entries[i]) >= 0) return i; }
+    return -1;
+  }
   function onSetCompleted(ei, si) {
     ensureAudio();
     var en = UI.live.entries[ei]; var T = DB.settings.timers || {};
-    var nextSi = (si + 1 < en.sets.length) ? si + 1 : -1;
-    UI.live.activeSet = (nextSi >= 0) ? { ei: ei, si: nextSi } : null;
-    syncActiveSet();
-    if (T.autoStart) startRest("set", T.setRestSec, ei, nextSi >= 0 ? nextSi : si);
+    var openSi = firstOpenSet(en);
+    if (openSi >= 0) {
+      // Uebung noch nicht fertig -> Satz-Pause auf den naechsten offenen Satz
+      UI.live.activeSet = { ei: ei, si: openSi };
+      syncActiveSet();
+      if (T.autoStart) startRest("set", T.setRestSec, ei, openSi);
+      return;
+    }
+    // letzter Satz der Uebung -> naechste Uebung mit offenen Saetzen
+    var nextEi = nextOpenExercise(ei);
+    if (nextEi >= 0) {
+      var firstSi = firstOpenSet(UI.live.entries[nextEi]); if (firstSi < 0) firstSi = 0;
+      UI.live.activeSet = { ei: nextEi, si: firstSi };
+      syncActiveSet();
+      if (T.autoStart) startRest("exercise", T.exerciseRestSec, nextEi, firstSi);
+    } else {
+      // letzter Satz der letzten Uebung -> kein Timer, Markierung weg, Balken schliessen
+      UI.live.activeSet = null;
+      syncActiveSet();
+      skipRest();
+    }
   }
 
   function buildLive(templateId) {
