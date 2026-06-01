@@ -451,6 +451,8 @@
     return { svg: s, label: label, perSide: pb.perSide };
   }
 
+  // Stoppuhr-Icon fuer den Pausen-Timer-Toggle im Workout-Kopf.
+  function timerIcon() { return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"></circle><path d="M12 13l3-2"></path><path d="M9 2h6"></path><path d="M12 5V2"></path></svg>'; }
   // Hantel-/Scheiben-Icon, geteilt von Scheiben-Hinweis und Toggle-Button.
   function plateIcon(cls) { return '<svg class="' + cls + '" viewBox="0 0 16 16" aria-hidden="true"><rect x="6.7" y="2" width="2.6" height="12" rx="1"/><rect x="3.6" y="4.4" width="2" height="7.2" rx="1"/><rect x="10.4" y="4.4" width="2" height="7.2" rx="1"/></svg>'; }
   // Dezente Scheiben-Anzeige: kleines Icon + Scheiben pro Seite (Zahl). Kein großer SVG.
@@ -670,7 +672,7 @@
       + '<div class="rb-ctrl">'
       + '<button class="btn tiny ghost rb-step" data-action="rest-minus">\u221215</button>'
       + '<button class="btn tiny ghost rb-step" data-action="rest-plus">+15</button>'
-      + '<button class="btn tiny ghost" data-action="rest-skip">überspringen</button>'
+      + '<button class="btn tiny ghost rb-skip" data-action="rest-skip">überspringen</button>'
       + '</div>';
     document.body.appendChild(bar);
   }
@@ -692,13 +694,16 @@
     if (!r || !bar) { stopRestTick(); return; }
     var remain = Math.round((r.endsAt - Date.now()) / 1000);
     var timeEl = bar.querySelector(".rb-time");
+    var skipEl = bar.querySelector(".rb-skip");
     if (remain <= 0) {
       if (timeEl) timeEl.textContent = "0:00";
+      if (skipEl) skipEl.textContent = "OK";
       bar.classList.add("done");
       if (!r.fired) { r.fired = true; if (remain > -3) { playBeep(); buzz(); } }
       stopRestTick();
     } else {
       if (timeEl) timeEl.textContent = fmtDur(remain);
+      if (skipEl) skipEl.textContent = "überspringen";
       bar.classList.remove("done");
     }
   }
@@ -728,6 +733,14 @@
     if (UI.live) UI.live.rest = null;
     stopRestTick();
     var bar = document.getElementById("ks-rest-bar"); if (bar) bar.classList.remove("show", "done", "exercise");
+  }
+  function toggleTimers() {
+    var T = DB.settings.timers = DB.settings.timers || {};
+    T.autoStart = !T.autoStart;
+    persist();
+    if (!T.autoStart) skipRest();
+    var btn = document.querySelector(".timer-toggle");
+    if (btn) { btn.classList.toggle("on", !!T.autoStart); btn.setAttribute("aria-pressed", T.autoStart ? "true" : "false"); }
   }
   function syncActiveSet() {
     var root = document.getElementById("app"); if (!root) return;
@@ -799,9 +812,11 @@
     var s = UI.live; var t = tplById(s.templateId);
     if (!s.startedAt) s.startedAt = Date.now();
     var gw = s.generalWarmup;
+    var timersOn = !!((DB.settings.timers || {}).autoStart);
     var html = '<div class="live-head">'
       + '<div class="live-head-l"><div class="section-title">Training · Workout ' + esc(t.name) + '</div></div>'
       + '<div class="live-head-r"><span class="live-clock" id="live-clock" title="Trainingsdauer">' + fmtDur((Date.now() - s.startedAt) / 1000) + '</span>'
+      + '<button class="icon-btn timer-toggle' + (timersOn ? ' on' : '') + '" data-action="toggle-timers" aria-pressed="' + (timersOn ? 'true' : 'false') + '" title="Pausen-Timer ein/aus" aria-label="Pausen-Timer ein- oder ausschalten">' + timerIcon() + '</button>'
       + '<button class="btn ghost small" data-action="cancel-live">verwerfen</button></div></div>';
 
     // Allgemeines Aufwärmen
@@ -1446,6 +1461,7 @@
       case "rest-minus": adjustRest(-15); break;
       case "rest-plus": adjustRest(15); break;
       case "rest-skip": skipRest(); break;
+      case "toggle-timers": toggleTimers(); break;
       case "add-set": addSet(+el.getAttribute("data-ei")); break;
       case "del-set": delSet(+el.getAttribute("data-ei")); break;
       case "detail": UI.detail = el.getAttribute("data-id"); render(); break;

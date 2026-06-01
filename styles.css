@@ -600,3 +600,7 @@ input[type=date]{background:var(--panel2);border:1px solid var(--line2);color:va
 /* v0.14 (Schritt 3) – Uebungs-Pause optisch abheben (tuerkis), done bleibt gruen */
 .ks-rest-bar.exercise:not(.done){border-color:var(--accent-2)}
 .ks-rest-bar.exercise:not(.done) .rb-label{color:var(--accent-2)}
+
+/* v0.14 (Feinschliff) – Timer-Toggle im Kopf, OK-Button bei abgelaufener Pause */
+.timer-toggle svg{width:18px;height:18px;flex:none}
+.ks-rest-bar.done .rb-skip{border-color:var(--good);color:var(--good)}
