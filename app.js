@@ -288,6 +288,8 @@
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]; }); }
   function exById(id) { return DB.exercises.find(function (e) { return e.id === id; }); }
   function barById(id) { return DB.inventory.bars.find(function (b) { return b.id === id; }) || DB.inventory.bars.find(function (b) { return b.default; }) || DB.inventory.bars[0]; }
+  // Erste Stange der Liste – wird im Workout pro Uebung vorausgewaehlt.
+  function firstBar() { return DB.inventory.bars[0]; }
   function tplById(id) { return DB.templates.find(function (t) { return t.id === id; }); }
   function activeJourney() {
     var js = DB.journeys || [];
@@ -849,15 +851,16 @@
       var sug = suggestForExercise(exo, phase);
       // Core-Uebungen fix 3 Saetze; Kraftuebungen folgen der Phasen-Satzrampe.
       var setN = exo.profile === "core" ? 3 : plannedSetCount();
+      var startBarId = (firstBar() || {}).id || exo.barId;
       var warm = [];
       if (exo.category === "barbell") {
-        warm = E.generateWarmup(sug.weight, barById(exo.barId).weight, DB.inventory.plates, { isLift1: idx === 0, isDeadlift: /deadlift/i.test(exo.id) });
+        warm = E.generateWarmup(sug.weight, barById(startBarId).weight, DB.inventory.plates, { isLift1: idx === 0, isDeadlift: /deadlift/i.test(exo.id) });
       }
       var planned = []; for (var k = 0; k < setN; k++) planned.push({ reps: sug.targetReps, weight: sug.weight, targetScore: exo.targetScore });
       var sets = planned.map(function (p) {
         return { reps: p.reps, weight: p.weight, score: exo.targetScore, failed: false, done: false, targetReps: p.reps, targetWeight: p.weight, adjusted: false, adjustNote: "" };
       });
-      return { exerciseId: id, barId: exo.barId, slot: idx === 0 ? "lift1" : (idx === 1 ? "lift2" : "core"), warmupSets: warm, plannedSets: planned, sets: sets, suggestion: sug, tested1RM: null };
+      return { exerciseId: id, barId: startBarId, slot: idx === 0 ? "lift1" : (idx === 1 ? "lift2" : "core"), warmupSets: warm, plannedSets: planned, sets: sets, suggestion: sug, tested1RM: null };
     });
     var b = latestBody();
     return {
@@ -896,7 +899,7 @@
       var sug = en.suggestion || {};
       var showPlate = !!(UI.plateShow && UI.plateShow[ei]);
       html += '<div class="card exercise-live" data-ei="' + ei + '">';
-      var barOpts = exo.category === "barbell" ? DB.inventory.bars.map(function (bb) { return '<option value="' + bb.id + '"' + (bb.id === (en.barId || exo.barId) ? " selected" : "") + '>' + esc(bb.name) + ' ' + fmtW(bb.weight) + '</option>'; }).join("") : "";
+      var barOpts = exo.category === "barbell" ? DB.inventory.bars.map(function (bb) { return '<option value="' + bb.id + '"' + (bb.id === (en.barId || (firstBar() || {}).id) ? " selected" : "") + '>' + esc(bb.name) + ' ' + fmtW(bb.weight) + '</option>'; }).join("") : "";
       html += '<div class="ex-live-head"><div class="ehl"><span class="ex-name">' + esc(exo.name) + '</span><span class="slot-tag">' + en.slot.toUpperCase() + '</span></div>'
         + (exo.category === "barbell" ? '<div class="ehr"><label class="barpick">Stange <select data-barpick data-ei="' + ei + '">' + barOpts + '</select></label><button class="icon-btn plate-toggle' + (showPlate ? ' on' : '') + '" data-action="toggle-plate" data-ei="' + ei + '" aria-pressed="' + (showPlate ? 'true' : 'false') + '" title="' + (showPlate ? 'Scheiben ausblenden' : 'Scheiben einblenden') + '" aria-label="' + (showPlate ? 'Scheiben ausblenden' : 'Scheiben einblenden') + '">' + plateIcon("pt-ic") + '</button></div>' : '') + '</div>';
 
@@ -1446,7 +1449,7 @@
     var ei = +el.getAttribute("data-ei"); var barId = el.value;
     var en = UI.live && UI.live.entries[ei]; if (!en) return;
     en.barId = barId;
-    var exo = exById(en.exerciseId); if (exo) exo.barId = barId;
+    var exo = exById(en.exerciseId);
     if (exo && exo.category === "barbell" && en.suggestion) {
       en.warmupSets = E.generateWarmup(en.suggestion.weight, barById(barId).weight, DB.inventory.plates, { isLift1: en.slot === "lift1", isDeadlift: /deadlift/i.test(en.exerciseId) });
     }
@@ -1508,14 +1511,13 @@
 
   function viewInventory() {
     var html = '<div class="section-title">Inventar</div>';
-    html += '<div class="card"><div class="sets-title">Stangen</div><div class="bar-list">';
+    html += '<div class="card"><div class="sets-title">Stangen</div><div class="hint">Die erste Stange ist im Workout vorausgewählt. Reihenfolge zählt – Namen frei wählbar.</div><div class="bar-list">';
     DB.inventory.bars.forEach(function (b, i) {
-      html += '<div class="bar-card' + (b.default ? ' is-default' : '') + '">'
-        + '<div class="bar-card-main"><span class="bar-name">' + esc(b.name) + '</span>'
-        + (b.default ? '<span class="def">Standard</span>' : '') + '</div>'
+      html += '<div class="bar-card">'
+        + '<div class="bar-card-main"><input type="text" class="bar-name-inp" data-bar="name" data-i="' + i + '" value="' + esc(b.name) + '" placeholder="Stangenname">'
+        + (i === 0 ? '<span class="def">Vorausgewählt</span>' : '') + '</div>'
         + '<div class="bar-card-controls">'
         + '<span class="bar-weight"><input type="number" step="0.5" class="num" data-bar="weight" data-i="' + i + '" value="' + b.weight + '"><span class="bar-unit">' + DB.settings.unit + '</span></span>'
-        + (b.default ? '' : '<button class="btn tiny ghost" data-action="bar-default" data-i="' + i + '">Als Standard</button>')
         + '<button class="btn tiny ghost bar-del" data-action="bar-del" data-i="' + i + '" title="Stange entfernen">×</button>'
         + '</div></div>';
     });
@@ -1711,8 +1713,7 @@
       case "journey-finish": if (confirm("Journey abschließen und archivieren? Der Verlauf bleibt erhalten.")) finishJourney(el.getAttribute("data-id")); break;
       case "journey-del": if (confirm("Journey wirklich löschen? Sessions bleiben erhalten.")) deleteJourney(el.getAttribute("data-id")); break;
       case "bar-add": DB.inventory.bars.push({ id: uid("bar_"), name: "Stange", weight: 20, default: false }); persist(); render(); break;
-      case "bar-del": DB.inventory.bars.splice(+el.getAttribute("data-i"), 1); persist(); render(); break;
-      case "bar-default": DB.inventory.bars.forEach(function (b, i) { b.default = i === +el.getAttribute("data-i"); }); persist(); render(); break;
+      case "bar-del": if (DB.inventory.bars.length > 1) { DB.inventory.bars.splice(+el.getAttribute("data-i"), 1); persist(); render(); } else { toast("Mindestens eine Stange muss bleiben."); } break;
       case "plate-del": DB.inventory.plates = DB.inventory.plates.filter(function (p) { return p !== parseFloat(el.getAttribute("data-p")); }); persist(); render(); break;
       case "plate-add": addPlate(); break;
       case "loader-calc": loaderCalc(); break;
@@ -1732,7 +1733,12 @@
     else if (el.hasAttribute && el.hasAttribute("data-set-timer")) { timerEdit(el); }
     else if (el.hasAttribute && el.hasAttribute("data-body")) { onBodyChange(el); }
     else if (el.hasAttribute && el.hasAttribute("data-barpick")) { onBarPick(el); }
-    else if (el.hasAttribute && el.hasAttribute("data-bar")) { var i = +el.getAttribute("data-i"); DB.inventory.bars[i].weight = parseFloat(el.value) || 0; persist(); }
+    else if (el.hasAttribute && el.hasAttribute("data-bar")) {
+      var i = +el.getAttribute("data-i"); var field = el.getAttribute("data-bar");
+      if (field === "name") DB.inventory.bars[i].name = el.value;
+      else DB.inventory.bars[i].weight = parseFloat(el.value) || 0;
+      persist();
+    }
   });
 
   // Dashboard: Drag-and-drop zum Sortieren (Desktop); Pfeile als Fallback für Touch

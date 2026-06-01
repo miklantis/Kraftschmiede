@@ -254,9 +254,9 @@ label.chk.bfield{flex-direction:row;align-items:center}
 /* Inventory */
 .bar-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
 .bar-card{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--panel2);border:1px solid var(--line2);border-radius:var(--radius);padding:9px 12px}
-.bar-card.is-default{border-color:var(--accent)}
 .bar-card-main{display:flex;align-items:center;gap:8px;min-width:0;flex:1 1 140px}
-.bar-name{font-family:var(--display);font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-name-inp{font-family:var(--display);font-weight:600;font-size:15px;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 9px;min-width:0;flex:1 1 auto}
+.bar-name-inp:focus{outline:none;border-color:var(--accent)}
 .bar-card-controls{display:flex;align-items:center;gap:6px;flex:0 0 auto}
 .bar-weight{display:inline-flex;align-items:center;gap:5px}
 .bar-unit{color:var(--muted);font-family:var(--mono);font-size:12px}
