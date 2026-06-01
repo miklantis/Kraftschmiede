@@ -588,15 +588,17 @@
     var s = UI.live; var t = tplById(s.templateId);
     var gw = s.generalWarmup;
     var html = '<div class="live-head">'
-      + '<div><div class="section-title">Training · Workout ' + esc(t.name) + '</div><div class="hint">' + esc(s.date) + ' · Sätze live abhaken, Score je Satz, Versagen/Anpassung markieren.</div></div>'
+      + '<div><div class="section-title">Training · Workout ' + esc(t.name) + '</div></div>'
       + '<button class="btn ghost small" data-action="cancel-live">verwerfen</button></div>';
 
     // Allgemeines Aufwärmen
-    html += '<div class="card gw">'
-      + '<label class="chk"><input type="checkbox" data-live="gw.done"' + (gw.done ? ' checked' : '') + '> Allgemeines Aufwärmen</label>'
+    html += '<div class="card exercise-live gw-card">'
+      + '<div class="ex-live-head"><div class="ehl"><span class="slot-tag warm">WARM</span><span class="ex-name">Allgemeines Aufwärmen</span></div></div>'
+      + '<div class="gw-body">'
+      + '<label class="chk"><input type="checkbox" data-live="gw.done"' + (gw.done ? ' checked' : '') + '> erledigt</label>'
       + '<span class="gw-fields"><input type="number" class="num mini" data-live="gw.minutes" value="' + gw.minutes + '"> min ·'
       + ' <select data-live="gw.mode"><option value="bike"' + (gw.mode === "bike" ? " selected" : "") + '>Rad</option><option value="row"' + (gw.mode === "row" ? " selected" : "") + '>Rudern</option><option value="walk"' + (gw.mode === "walk" ? " selected" : "") + '>Gehen</option><option value="other"' + (gw.mode === "other" ? " selected" : "") + '>Sonstiges</option></select></span>'
-      + '</div>';
+      + '</div></div>';
 
     s.entries.forEach(function (en, ei) {
       var exo = exById(en.exerciseId); var bar = entryBar(en);
@@ -1074,12 +1076,6 @@
     html += '</div><div class="plate-add"><input type="number" step="0.25" class="num" id="plate-new" placeholder="z.B. 0.5"><button class="btn tiny ghost" data-action="plate-add">+ Scheibe</button></div>';
     html += '<div class="hint">Kleinster Sprung gesamt: <strong>' + fmtW(2 * E.plateGrid(DB.inventory.plates)) + '</strong></div></div>';
 
-    // Plate-Loader-Vorschau
-    html += '<div class="card"><div class="sets-title">Plate-Loader-Vorschau</div>'
-      + '<div class="loader-preview"><input type="number" step="0.25" class="num" id="loader-target" value="60"> '
-      + '<select id="loader-bar">' + DB.inventory.bars.map(function (b) { return '<option value="' + b.id + '"' + (b.default ? " selected" : "") + '>' + esc(b.name) + ' ' + fmtW(b.weight) + '</option>'; }).join("") + '</select>'
-      + ' <button class="btn tiny ghost" data-action="loader-calc">zeigen</button></div>'
-      + '<div id="loader-out"></div></div>';
     return html;
   }
 
