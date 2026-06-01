@@ -453,6 +453,7 @@
 
   // Stoppuhr-Icon fuer den Pausen-Timer-Toggle im Workout-Kopf.
   function timerIcon() { return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"></circle><path d="M12 13l3-2"></path><path d="M9 2h6"></path><path d="M12 5V2"></path></svg>'; }
+  function xIcon() { return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>'; }
   // Hantel-/Scheiben-Icon, geteilt von Scheiben-Hinweis und Toggle-Button.
   function plateIcon(cls) { return '<svg class="' + cls + '" viewBox="0 0 16 16" aria-hidden="true"><rect x="6.7" y="2" width="2.6" height="12" rx="1"/><rect x="3.6" y="4.4" width="2" height="7.2" rx="1"/><rect x="10.4" y="4.4" width="2" height="7.2" rx="1"/></svg>'; }
   // Dezente Scheiben-Anzeige: kleines Icon + Scheiben pro Seite (Zahl). Kein großer SVG.
@@ -670,7 +671,7 @@
     bar.innerHTML = '<button class="btn tiny ghost rb-step" data-action="rest-minus">\u221215</button>'
       + '<span class="rb-time">0:00</span>'
       + '<button class="btn tiny ghost rb-step" data-action="rest-plus">+15</button>'
-      + '<button class="btn tiny ghost rb-skip" data-action="rest-skip">überspringen</button>';
+      + '<button class="icon-btn rb-skip" data-action="rest-skip" title="überspringen" aria-label="Pause überspringen">' + xIcon() + '</button>';
     document.body.appendChild(bar);
   }
   function startRestTick() { if (restTimer) return; restTimer = setInterval(restTick, 500); }
@@ -680,16 +681,13 @@
     if (!r || !bar) { stopRestTick(); return; }
     var remain = Math.round((r.endsAt - Date.now()) / 1000);
     var timeEl = bar.querySelector(".rb-time");
-    var skipEl = bar.querySelector(".rb-skip");
     if (remain <= 0) {
       if (timeEl) timeEl.textContent = "0:00";
-      if (skipEl) skipEl.textContent = "OK";
       bar.classList.add("done");
       if (!r.fired) { r.fired = true; if (remain > -3) { playBeep(); buzz(); } }
       stopRestTick();
     } else {
       if (timeEl) timeEl.textContent = fmtDur(remain);
-      if (skipEl) skipEl.textContent = "überspringen";
       bar.classList.remove("done");
     }
   }
