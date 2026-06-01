@@ -437,7 +437,7 @@
     var txt;
     if (pb.remainder > 0) txt = '<span class="phint-warn">nicht exakt ladbar (Rest ' + fmtW(pb.remainder * 2) + ')</span>';
     else if (!pb.plates.length) txt = 'nur Stange';
-    else txt = pb.plates.map(function (p) { return p.count + '\u00D7' + fmtNum(p.plate); }).join(' + ') + ' <small>je Seite</small>';
+    else txt = pb.plates.reduce(function (acc, p) { for (var i = 0; i < p.count; i++) acc.push(fmtNum(p.plate)); return acc; }, []).join(' \u00B7 ');
     return '<span class="phint" title="Scheiben pro Seite">' + icon + '<span class="phint-t">' + txt + '</span></span>';
   }
 
@@ -616,7 +616,7 @@
 
     // Allgemeines Aufwärmen
     html += '<div class="card exercise-live gw-card">'
-      + '<div class="ex-live-head"><div class="ehl"><span class="slot-tag warm">WARM</span><span class="ex-name">Allgemeines Aufwärmen</span></div></div>'
+      + '<div class="ex-live-head"><div class="ehl"><span class="ex-name">Aufwärmen</span><span class="slot-tag warm">WARM</span></div></div>'
       + '<div class="gw-body">'
       + '<label class="chk"><input type="checkbox" data-live="gw.done"' + (gw.done ? ' checked' : '') + '> erledigt</label>'
       + '<span class="gw-fields"><input type="number" class="num mini" data-live="gw.minutes" value="' + gw.minutes + '"> min ·'
@@ -629,7 +629,7 @@
       var showPlate = !UI.plateHide[ei];
       html += '<div class="card exercise-live" data-ei="' + ei + '">';
       var barOpts = exo.category === "barbell" ? DB.inventory.bars.map(function (bb) { return '<option value="' + bb.id + '"' + (bb.id === (en.barId || exo.barId) ? " selected" : "") + '>' + esc(bb.name) + ' ' + fmtW(bb.weight) + '</option>'; }).join("") : "";
-      html += '<div class="ex-live-head"><div class="ehl"><span class="slot-tag">' + en.slot.toUpperCase() + '</span><span class="ex-name">' + esc(exo.name) + '</span></div>'
+      html += '<div class="ex-live-head"><div class="ehl"><span class="ex-name">' + esc(exo.name) + '</span><span class="slot-tag">' + en.slot.toUpperCase() + '</span></div>'
         + (exo.category === "barbell" ? '<div class="ehr"><label class="barpick">Stange <select data-barpick data-ei="' + ei + '">' + barOpts + '</select></label><button class="btn tiny ghost plate-toggle" data-action="toggle-plate" data-ei="' + ei + '">' + (showPlate ? 'Scheiben aus' : 'Scheiben ein') + '</button></div>' : '') + '</div>';
 
       // Sätze: Aufwärmen (A1..) und Arbeit (S1..) in einer Liste

@@ -104,7 +104,7 @@ textarea{width:100%;min-height:90px;resize:vertical;font-family:var(--mono);font
 .slot-tag.warm{background:var(--accent-2);color:#04222a}
 .exercise-live{padding:0;overflow:hidden}
 .ex-live-head{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--panel2);border-bottom:1px solid var(--line);flex-wrap:wrap}
-.slot-tag{font-family:var(--mono);font-size:10px;letter-spacing:1px;background:var(--accent);color:#1a0e06;padding:2px 7px;border-radius:4px;font-weight:600}
+.slot-tag{font-family:var(--mono);font-size:10px;letter-spacing:1px;background:var(--accent);color:#1a0e06;padding:2px 7px;border-radius:4px;font-weight:600;flex:0 0 auto}
 .ex-live-head .ex-name{font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:.5px}
 .ex-rep{margin-left:auto;color:var(--muted);font-size:12px;font-family:var(--mono)}
 .suggest-line{padding:10px 16px;font-size:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
