@@ -728,3 +728,17 @@ body{overflow-x:clip}
   .exercise-live .set-row{padding-left:14px;padding-right:14px}
   .exercise-live .set-actions{padding-left:14px;padding-right:14px}
 }
+
+/* ============================================================
+   v0.20 – Koerperzustand-Hinweis im Start-Popup
+   Erscheint nur, wenn der Koerperzustand heute noch nicht erfasst ist.
+   Button navigiert zum Koerper-Tab; Start bleibt trotzdem moeglich.
+   ============================================================ */
+.es-bodywarn{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:rgba(243,177,58,.1);border:1px solid rgba(243,177,58,.35);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+.es-bw-txt{display:flex;flex-direction:column;gap:2px;flex:1;min-width:140px}
+.es-bw-txt strong{font-size:13px;color:var(--warn)}
+.es-bw-txt span{font-size:11.5px;color:var(--muted)}
+.es-bodywarn .btn{flex:none}
+@media (max-width:560px){
+  .es-bodywarn .btn{width:100%}
+}

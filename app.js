@@ -894,9 +894,6 @@
       html += '</div></div>';
     });
 
-    // Körperzustand: Eingabe im Körper-Tab, hier nur Kontext
-    html += '<div class="card body-context"><span class="bc-l">Körperzustand heute:</span> <span class="bc-v">' + bodyContextText() + '</span> <button class="btn tiny ghost" data-action="tab" data-tab="body">erfassen / ändern</button></div>';
-
     return html;
   }
   function bodyContextText() {
@@ -1078,10 +1075,17 @@
         + (chips ? '<div class="es-sets">' + chips + '</div>' : '')
         + '</div>';
     }).join("");
+    var bodyNote = todayBody() ? "" :
+      '<div class="es-bodywarn"><div class="es-bw-txt"><strong>Körperzustand heute noch nicht erfasst</strong><span>Kurz eintragen, dann passen die Gewichtsvorschläge besser. Du kannst aber auch direkt starten.</span></div>'
+      + '<button class="btn" data-action="start-to-body">Körperzustand eintragen</button></div>';
     return '<div class="es-meta"><span>Workout ' + esc(t ? t.name : "?") + '</span><span>' + (s.entries || []).length + ' Übungen</span><span>' + totalWork + ' Sätze</span></div>'
+      + bodyNote
       + '<div class="es-list">' + rows + '</div>'
       + '<div class="es-hint">Tippe „Los geht\u2019s", um Uhr und Workout zu starten.</div>';
   }
+  // Aus dem Start-Popup zum Koerper-Tab: Vorschau verwerfen, dort eintragen,
+  // danach erneut starten (buildLive nutzt dann den neuen Koerperzustand).
+  function startToBody() { UI.pendingLive = null; closeStartModal(); UI.tab = "body"; UI.menuOpen = false; render(); scrollToTop(); }
   function confirmStart() {
     if (!UI.pendingLive) { closeStartModal(); return; }
     UI.live = UI.pendingLive;
@@ -1643,6 +1647,7 @@
       case "start": openStartModal(el.getAttribute("data-tpl")); break;
       case "start-go": confirmStart(); break;
       case "start-cancel": cancelStart(); break;
+      case "start-to-body": startToBody(); break;
       case "finish-workout": endWorkout(); break;
       case "end-save": closeEndModal(); finishSession(); break;
       case "end-discard": closeEndModal(); discardWorkout(); break;
