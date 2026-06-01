@@ -245,6 +245,7 @@ label.chk.bfield{flex-direction:row;align-items:center}
 .bar-weight{display:inline-flex;align-items:center;gap:5px}
 .bar-unit{color:var(--muted);font-family:var(--mono);font-size:12px}
 .bar-del{color:var(--bad)}
+@media(max-width:560px){.bar-card{flex-direction:column;align-items:stretch}.bar-card-main{flex:0 0 auto}}
 .def{font-family:var(--mono);font-size:10px;color:var(--accent);border:1px solid var(--accent);border-radius:4px;padding:0 4px;text-transform:uppercase}
 .plate-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .plate-chip{font-family:var(--mono);background:var(--panel2);border:1px solid var(--line2);border-radius:20px;padding:5px 6px 5px 12px;display:inline-flex;align-items:center;gap:4px;font-size:13px}
