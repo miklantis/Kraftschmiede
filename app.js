@@ -545,8 +545,9 @@
     }
     root.innerHTML = head + nav + banner + '<main class="content">' + body + '</main>';
     if (window.KSSync) window.KSSync.mountPanel();
-    if (UI.tab === "training" && UI.live) bindLiveInputs();
+    if (UI.tab === "training" && UI.live) { bindLiveInputs(); syncActiveSet(); }
     manageClock();
+    syncRestBar();
   }
 
   /* =========================================================
@@ -626,6 +627,123 @@
     if (UI.tab === "training" && UI.live && UI.live.startedAt) { updateClock(); clockTimer = setInterval(updateClock, 1000); }
   }
 
+  /* ---------------------------------------------------------
+     Schritt 2: Satz-Pause-Timer, Signal (Ton + Vibration),
+     Aktiv-Markierung des naechsten Satzes. Der Pausen-Balken
+     (#ks-rest-bar) lebt im body und ueberlebt App-Re-Renders.
+     Countdown ueber absoluten Zielzeitstempel -> robust gegen
+     Hintergrund/Tab-Wechsel. Edit (-15/+15) gilt nur fuer den
+     laufenden Durchgang und aendert die Defaults nicht. */
+  var audioCtx = null, restTimer = null;
+  function ensureAudio() {
+    try {
+      if (!audioCtx) { var AC = window.AudioContext || window.webkitAudioContext; if (AC) audioCtx = new AC(); }
+      if (audioCtx && audioCtx.state === "suspended" && audioCtx.resume) audioCtx.resume();
+    } catch (e) {}
+  }
+  function playBeep() {
+    var T = DB.settings.timers || {}; if (!T.sound) return;
+    try {
+      ensureAudio(); if (!audioCtx) return;
+      var t0 = audioCtx.currentTime;
+      [0, 0.2].forEach(function (off) {
+        var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = "sine"; o.frequency.setValueAtTime(880, t0 + off);
+        g.gain.setValueAtTime(0.0001, t0 + off);
+        g.gain.exponentialRampToValueAtTime(0.3, t0 + off + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + off + 0.16);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(t0 + off); o.stop(t0 + off + 0.18);
+      });
+    } catch (e) {}
+  }
+  function buzz() {
+    var T = DB.settings.timers || {}; if (!T.vibrate) return;
+    try { if (navigator.vibrate) navigator.vibrate([120, 60, 120]); } catch (e) {}
+  }
+  function ensureRestBar() {
+    if (document.getElementById("ks-rest-bar")) return;
+    var bar = document.createElement("div");
+    bar.id = "ks-rest-bar"; bar.className = "ks-rest-bar";
+    bar.innerHTML = '<div class="rb-info"><span class="rb-label">Satzpause</span><span class="rb-ctx"></span></div>'
+      + '<div class="rb-time">0:00</div>'
+      + '<div class="rb-ctrl">'
+      + '<button class="btn tiny ghost rb-step" data-action="rest-minus">\u221215</button>'
+      + '<button class="btn tiny ghost rb-step" data-action="rest-plus">+15</button>'
+      + '<button class="btn tiny ghost" data-action="rest-skip">überspringen</button>'
+      + '</div>';
+    document.body.appendChild(bar);
+  }
+  function fillRestBar() {
+    var r = UI.live && UI.live.rest; var bar = document.getElementById("ks-rest-bar"); if (!r || !bar) return;
+    var en = UI.live.entries[r.ei]; var exo = en ? exById(en.exerciseId) : null;
+    var ctx = exo ? esc(exo.name) : "";
+    if (r.type === "set" && en && r.si >= 0 && r.si < en.sets.length) ctx += " · nächster Satz S" + (r.si + 1);
+    var lab = bar.querySelector(".rb-label"); if (lab) lab.textContent = (r.type === "exercise" ? "Übungspause" : "Satzpause");
+    var cx = bar.querySelector(".rb-ctx"); if (cx) cx.innerHTML = ctx;
+  }
+  function startRestTick() { if (restTimer) return; restTimer = setInterval(restTick, 500); }
+  function stopRestTick() { if (restTimer) { clearInterval(restTimer); restTimer = null; } }
+  function restTick() {
+    var r = UI.live && UI.live.rest; var bar = document.getElementById("ks-rest-bar");
+    if (!r || !bar) { stopRestTick(); return; }
+    var remain = Math.round((r.endsAt - Date.now()) / 1000);
+    var timeEl = bar.querySelector(".rb-time");
+    if (remain <= 0) {
+      if (timeEl) timeEl.textContent = "0:00";
+      bar.classList.add("done");
+      if (!r.fired) { r.fired = true; if (remain > -3) { playBeep(); buzz(); } }
+      stopRestTick();
+    } else {
+      if (timeEl) timeEl.textContent = fmtDur(remain);
+      bar.classList.remove("done");
+    }
+  }
+  function syncRestBar() {
+    ensureRestBar();
+    var bar = document.getElementById("ks-rest-bar"); if (!bar) return;
+    var active = !!(UI.tab === "training" && UI.live && UI.live.rest);
+    if (!active) { bar.classList.remove("show", "done"); stopRestTick(); return; }
+    fillRestBar(); bar.classList.add("show"); restTick(); startRestTick();
+  }
+  function startRest(type, sec, ei, si) {
+    if (!UI.live) return;
+    sec = Math.max(0, parseInt(sec, 10) || 0); if (!sec) return;
+    UI.live.rest = { type: type, baseSec: sec, endsAt: Date.now() + sec * 1000, ei: ei, si: si, fired: false };
+    syncRestBar();
+  }
+  function adjustRest(delta) {
+    var r = UI.live && UI.live.rest; if (!r) return;
+    r.endsAt = Math.max(Date.now(), r.endsAt) + delta * 1000;
+    if (r.endsAt < Date.now()) r.endsAt = Date.now();
+    if (r.endsAt - Date.now() > 0) r.fired = false;
+    ensureAudio();
+    var bar = document.getElementById("ks-rest-bar"); if (bar) bar.classList.remove("done");
+    restTick(); startRestTick();
+  }
+  function skipRest() {
+    if (UI.live) UI.live.rest = null;
+    stopRestTick();
+    var bar = document.getElementById("ks-rest-bar"); if (bar) bar.classList.remove("show", "done");
+  }
+  function syncActiveSet() {
+    var root = document.getElementById("app"); if (!root) return;
+    root.querySelectorAll(".set-row.work.active-next").forEach(function (r) { r.classList.remove("active-next"); });
+    var a = UI.live && UI.live.activeSet; if (!a) return;
+    var en = UI.live.entries[a.ei]; var st = en && en.sets[a.si];
+    if (!st || st.done) return;
+    var row = root.querySelector('.set-row.work[data-ei="' + a.ei + '"][data-si="' + a.si + '"]');
+    if (row) row.classList.add("active-next");
+  }
+  function onSetCompleted(ei, si) {
+    ensureAudio();
+    var en = UI.live.entries[ei]; var T = DB.settings.timers || {};
+    var nextSi = (si + 1 < en.sets.length) ? si + 1 : -1;
+    UI.live.activeSet = (nextSi >= 0) ? { ei: ei, si: nextSi } : null;
+    syncActiveSet();
+    if (T.autoStart) startRest("set", T.setRestSec, ei, nextSi >= 0 ? nextSi : si);
+  }
+
   function buildLive(templateId) {
     var t = tplById(templateId); var phase = currentPhase(); var j = activeJourney();
     var entries = [t.lift1, t.lift2, t.core].map(function (id, idx) {
@@ -647,7 +765,7 @@
     return {
       id: "s_" + today().replace(/-/g, "") + "_" + Math.floor(Math.random() * 1000),
       date: today(), journeyId: j ? j.id : null, phaseId: phase ? phase.id : null, templateId: templateId,
-      status: "live", startedAt: Date.now(), generalWarmup: { done: false, minutes: 7, mode: "bike" },
+      status: "live", startedAt: Date.now(), activeSet: { ei: 0, si: 0 }, generalWarmup: { done: false, minutes: 7, mode: "bike" },
       entries: entries, body: { legs: b.legs || 0, upper_body: b.upper_body || 0, overall: b.overall || 0, pain: {}, readiness: b.readiness || 3, notes: "" }
     };
   }
@@ -715,10 +833,11 @@
   }
 
   function workSetRow(ei, si, st, bar, showChips) {
+    var isActive = !!(UI.live && UI.live.activeSet && UI.live.activeSet.ei === ei && UI.live.activeSet.si === si && !st.done);
     var rirCls = "rir-sel" + (st.score === 5 ? " fail" : "") + (st.done ? " set" : "");
     var rirOpts = [1, 2, 3, 4, 5].map(function (v) { var i = E.scoreInfo(v); return '<option value="' + v + '"' + (st.score === v ? " selected" : "") + '>' + i.rir + '</option>'; }).join("");
     var sub = (showChips && bar) ? '<div class="set-sub" data-sub-ei="' + ei + '" data-sub-si="' + si + '">' + plateHint(st.weight, bar) + '</div>' : "";
-    return '<div class="set-row work' + (st.done ? ' done' : '') + '" data-ei="' + ei + '" data-si="' + si + '">'
+    return '<div class="set-row work' + (st.done ? ' done' : '') + (isActive ? ' active-next' : '') + '" data-ei="' + ei + '" data-si="' + si + '">'
       + '<span class="set-i">S' + (si + 1) + '</span>'
       + '<div class="field f-reps"><input type="number" inputmode="numeric" class="num" data-set="reps" data-ei="' + ei + '" data-si="' + si + '" value="' + st.reps + '"></div>'
       + '<div class="field f-weight"><input type="number" step="0.25" inputmode="decimal" class="num" data-set="weight" data-ei="' + ei + '" data-si="' + si + '" value="' + st.weight + '"></div>'
@@ -758,7 +877,7 @@
     else if (kind === "weight") { var nw = parseFloat(el.value); if (nw !== st.targetWeight) markAdjust(st, "Gewicht angepasst"); st.weight = isNaN(nw) ? 0 : nw; }
     else if (kind === "score") { st.score = +el.value; st.failed = (st.score === 5); }
     else if (kind === "failed") st.failed = el.checked;
-    else if (kind === "done") st.done = el.checked;
+    else if (kind === "done") { var wasDone = st.done; st.done = el.checked; if (!wasDone && st.done) onSetCompleted(ei, si); }
     if (kind === "reps" && st.reps < st.targetReps && st.done) { /* verfehlt – kein Auto-Fail, Nutzer entscheidet */ }
     refreshSetStatus(ei, si);
   }
@@ -1299,6 +1418,9 @@
       case "start": UI.live = buildLive(el.getAttribute("data-tpl")); render(); break;
       case "cancel-live": if (confirm("Laufende Session verwerfen?")) { UI.live = null; render(); } break;
       case "finish": finishSession(); break;
+      case "rest-minus": adjustRest(-15); break;
+      case "rest-plus": adjustRest(15); break;
+      case "rest-skip": skipRest(); break;
       case "add-set": addSet(+el.getAttribute("data-ei")); break;
       case "del-set": delSet(+el.getAttribute("data-ei")); break;
       case "detail": UI.detail = el.getAttribute("data-id"); render(); break;
