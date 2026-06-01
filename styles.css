@@ -77,6 +77,11 @@ strong{font-weight:600}
 .icon-btn:hover{border-color:var(--accent);color:var(--text)}
 .icon-btn .pt-ic{width:16px;height:16px;flex:none;fill:currentColor}
 .icon-btn.on{border-color:var(--accent);color:var(--accent);background:rgba(255,122,45,.12)}
+.icon-btn svg{flex:none}
+.icon-btn.danger{border-color:rgba(239,91,91,.5);color:var(--bad)}
+.icon-btn.danger:hover{border-color:var(--bad);background:rgba(239,91,91,.14);color:var(--bad)}
+.icon-btn.save{border-color:var(--accent-d);color:var(--accent);background:rgba(255,122,45,.12)}
+.icon-btn.save:hover{border-color:var(--accent);background:rgba(255,122,45,.22);color:#fff}
 
 /* Inputs */
 input[type=number],input[type=text],select,textarea{
@@ -177,8 +182,6 @@ textarea{width:100%;min-height:90px;resize:vertical;font-family:var(--mono);font
 .bfield select{width:auto}
 .notes{margin-top:4px}
 label.chk.bfield{flex-direction:row;align-items:center}
-
-.finish-bar{position:sticky;bottom:8px;margin-top:6px}
 
 /* Journey */
 .journey-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}

@@ -453,6 +453,9 @@
 
   // Stoppuhr-Icon fuer den Pausen-Timer-Toggle im Workout-Kopf.
   function timerIcon() { return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"></circle><path d="M12 13l3-2"></path><path d="M9 2h6"></path><path d="M12 5V2"></path></svg>'; }
+  // Papierkorb-Icon (Session verwerfen) und Disketten-Icon (Session speichern).
+  function trashIcon() { return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6M14 11v6"></path></svg>'; }
+  function saveIcon() { return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><path d="M17 21v-8H7v8"></path><path d="M7 3v5h8"></path></svg>'; }
   // Hantel-/Scheiben-Icon, geteilt von Scheiben-Hinweis und Toggle-Button.
   function plateIcon(cls) { return '<svg class="' + cls + '" viewBox="0 0 16 16" aria-hidden="true"><rect x="6.7" y="2" width="2.6" height="12" rx="1"/><rect x="3.6" y="4.4" width="2" height="7.2" rx="1"/><rect x="10.4" y="4.4" width="2" height="7.2" rx="1"/></svg>'; }
   // Dezente Scheiben-Anzeige: kleines Icon + Scheiben pro Seite (Zahl). Kein großer SVG.
@@ -817,7 +820,8 @@
       + '<div class="live-head-l"><div class="section-title">Training · Workout ' + esc(t.name) + '</div></div>'
       + '<div class="live-head-r"><span class="live-clock" id="live-clock" title="Trainingsdauer">' + fmtDur((Date.now() - s.startedAt) / 1000) + '</span>'
       + '<button class="icon-btn timer-toggle' + (timersOn ? ' on' : '') + '" data-action="toggle-timers" aria-pressed="' + (timersOn ? 'true' : 'false') + '" title="Pausen-Timer ein/aus" aria-label="Pausen-Timer ein- oder ausschalten">' + timerIcon() + '</button>'
-      + '<button class="btn ghost small" data-action="cancel-live">verwerfen</button></div></div>';
+      + '<button class="icon-btn danger" data-action="cancel-live" title="Session verwerfen" aria-label="Session verwerfen">' + trashIcon() + '</button>'
+      + '<button class="icon-btn save" data-action="finish" title="Session speichern" aria-label="Session speichern">' + saveIcon() + '</button></div></div>';
 
     // Allgemeines Aufwärmen
     html += '<div class="card exercise-live gw-card">'
@@ -861,7 +865,6 @@
     // Körperzustand: Eingabe im Körper-Tab, hier nur Kontext
     html += '<div class="card body-context"><span class="bc-l">Körperzustand heute:</span> <span class="bc-v">' + bodyContextText() + '</span> <button class="btn tiny ghost" data-action="tab" data-tab="body">erfassen / ändern</button></div>';
 
-    html += '<div class="finish-bar"><button class="btn primary big" data-action="finish">Session speichern</button></div>';
     return html;
   }
   function bodyContextText() {
