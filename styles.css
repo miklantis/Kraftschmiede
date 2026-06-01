@@ -668,6 +668,12 @@ input[type=date]{background:var(--panel2);border:1px solid var(--line2);color:va
 /* Yoga-Eintrag (Popup im Training-Tab) */
 .yoga-modal-form{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
 .yoga-modal-form label{font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+/* Blaue UI-Akzente nur fuer das Yoga-Popup (accent-2), passend zur Yoga-Karte */
+#ks-yoga-modal .ks-modal{border-color:rgba(84,193,200,.45)}
+#ks-yoga-modal .ks-modal-title{color:var(--accent-2)}
+#ks-yoga-modal input:focus{outline:none;border-color:var(--accent-2)}
+#ks-yoga-modal .btn.primary{background:var(--accent-2);border-color:var(--accent-2);color:#04222a}
+#ks-yoga-modal .btn.primary:hover{filter:brightness(1.08)}
 @media (max-width:560px){
   .yoga-modal-form{flex-direction:column;align-items:stretch}
   .yoga-modal-form .yf-date input[type="date"]{flex:1;min-width:0}
