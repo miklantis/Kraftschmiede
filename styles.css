@@ -136,6 +136,8 @@ textarea{width:100%;min-height:90px;resize:vertical;font-family:var(--mono);font
 .set-row.head{grid-template-columns:46px 1fr 1fr 92px 54px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--faint);border-bottom:1px solid var(--line2)}
 .set-row.head>*{text-align:center}
 .set-row.work{grid-template-columns:46px 1fr 1fr 92px 54px}
+.set-row.work,.set-row.warm{min-height:40px;padding:5px 0}
+.set-row .num,.set-row .rir-sel{padding-top:4px;padding-bottom:4px}
 .field{display:flex;align-items:center;justify-content:center;min-width:0}
 .field .num{width:100%;max-width:118px}
 .f-rir{padding:0 2px}
@@ -147,7 +149,7 @@ textarea{width:100%;min-height:90px;resize:vertical;font-family:var(--mono);font
 .set-sub{padding:2px 0 8px 52px;border-bottom:1px solid var(--line)}
 .set-row:not(.done):has(+ .set-sub){border-bottom:none}
 .set-row.done+.set-sub{display:none}
-.set-row.work.done{background:rgba(94,194,106,.05)}
+.set-row.done{background:rgba(94,194,106,.12)}
 .set-i{font-family:var(--mono);color:var(--faint);text-align:center;font-size:13px}
 .scoresel{font-size:12px;padding:6px 6px}
 .chk.c{justify-content:center}
