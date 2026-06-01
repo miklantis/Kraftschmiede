@@ -718,11 +718,13 @@ body{overflow-x:clip}
    Nur Mobile (<=560px); ab 561px bleibt der normale Karten-Look.
    ============================================================ */
 @media (max-width:560px){
-  /* Karte bis an die Kante ziehen (gleicht #app-Padding 10px aus) */
-  .card.exercise-live{margin-left:-10px;margin-right:-10px;border-left:0;border-right:0;border-radius:0}
+  /* Karte randlos ueber die volle Viewport-Breite (Full-Bleed): unabhaengig
+     vom umgebenden Padding/Wrapper, rechnet relativ zum Viewport. */
+  .card.exercise-live{margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);border-left:0;border-right:0;border-radius:0}
   /* Block-Innenabstand horizontal raus -> Zeilen fuellen die volle Breite */
   .exercise-live .sets-block{padding-left:0;padding-right:0}
   /* Innenabstand pro Zeile (Hintergrund deckt ihn mit ab, bleibt randlos) */
-  .exercise-live .set-row{padding-left:12px;padding-right:12px}
-  .exercise-live .set-actions{padding-left:12px;padding-right:12px}
+  .exercise-live .ex-live-head{padding-left:14px;padding-right:14px}
+  .exercise-live .set-row{padding-left:14px;padding-right:14px}
+  .exercise-live .set-actions{padding-left:14px;padding-right:14px}
 }
