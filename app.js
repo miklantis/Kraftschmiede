@@ -811,10 +811,13 @@
     // Allgemeines Aufwärmen
     html += '<div class="card exercise-live gw-card">'
       + '<div class="ex-live-head"><div class="ehl"><span class="ex-name">Aufwärmen</span><span class="slot-tag warm">WARM</span></div></div>'
-      + '<div class="gw-body">'
-      + '<span class="gw-fields"><input type="number" class="num mini" data-live="gw.minutes" value="' + gw.minutes + '"> min ·'
+      + '<div class="sets-block">'
+      + '<div class="set-row warm gw-row' + (gw.done ? ' done' : '') + '">'
+      + '<span class="set-i">AF</span>'
+      + '<span class="gw-mid"><input type="number" class="num mini" data-live="gw.minutes" value="' + gw.minutes + '"> min ·'
       + ' <select data-live="gw.mode"><option value="bike"' + (gw.mode === "bike" ? " selected" : "") + '>Rad</option><option value="row"' + (gw.mode === "row" ? " selected" : "") + '>Rudern</option><option value="walk"' + (gw.mode === "walk" ? " selected" : "") + '>Gehen</option><option value="other"' + (gw.mode === "other" ? " selected" : "") + '>Sonstiges</option></select></span>'
-      + '<label class="field f-done done-chk gw-done" title="Aufwärmen erledigt"><span class="gw-done-lbl">erledigt</span><input type="checkbox" data-live="gw.done"' + (gw.done ? ' checked' : '') + '></label>'
+      + '<label class="field f-done done-chk" title="Aufwärmen erledigt"><input type="checkbox" data-live="gw.done"' + (gw.done ? ' checked' : '') + '></label>'
+      + '</div>'
       + '</div></div>';
 
     s.entries.forEach(function (en, ei) {

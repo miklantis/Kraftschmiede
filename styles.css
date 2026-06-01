@@ -107,10 +107,10 @@ textarea{width:100%;min-height:90px;resize:vertical;font-family:var(--mono);font
 /* Live session */
 .live-head{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:10px 0;background:var(--bg);border-bottom:1px solid var(--line);box-shadow:0 6px 16px -12px #000}
 .live-head .section-title{margin:0}
-.gw-body{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:12px 16px}
-.gw-fields{color:var(--muted);font-size:13px;display:inline-flex;align-items:center;gap:6px}
-.gw-body .gw-done{flex:none;justify-content:flex-end;gap:8px}
-.gw-done-lbl{font-size:13px;color:var(--muted)}
+.gw-row{border-bottom:none}
+.gw-row .gw-mid{grid-column:2 / 5;display:flex;align-items:center;gap:6px;min-width:0;color:var(--muted);font-size:13px}
+.gw-row .f-done{grid-column:5}
+.gw-row.done,.gw-row:has(.done-chk input:checked){background:rgba(94,194,106,.12)}
 .slot-tag.warm{background:var(--accent-2);color:#04222a}
 .exercise-live{padding:0;overflow:hidden}
 .ex-live-head{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--panel2);border-bottom:1px solid var(--line);flex-wrap:wrap}
@@ -623,7 +623,7 @@ input[type=date]{background:var(--panel2);border:1px solid var(--line2);color:va
     margin-left:-10px;margin-right:-10px;
   }
   /* Uebungs-/Aufwaerm-Header kompakter: weniger oben, seitlich buendig mit den Saetzen */
-  .ex-live-head,.gw-body{padding:8px 12px}
+  .ex-live-head{padding:8px 12px}
   /* Sticky Workout-Kopf randvoll (deckt die vollbreiten Baender ab) und einzeilig */
   .live-head{flex-wrap:nowrap;margin:0 -10px 12px;padding:10px 10px}
   .live-head .section-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
