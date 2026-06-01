@@ -596,10 +596,11 @@
 
   function buildLive(templateId) {
     var t = tplById(templateId); var phase = currentPhase(); var j = activeJourney();
-    var setN = plannedSetCount();
     var entries = [t.lift1, t.lift2, t.core].map(function (id, idx) {
       var exo = exById(id);
       var sug = suggestForExercise(exo, phase);
+      // Core-Uebungen fix 3 Saetze; Kraftuebungen folgen der Phasen-Satzrampe.
+      var setN = exo.profile === "core" ? 3 : plannedSetCount();
       var warm = [];
       if (exo.category === "barbell") {
         warm = E.generateWarmup(sug.weight, barById(exo.barId).weight, DB.inventory.plates, { isLift1: idx === 0, isDeadlift: /deadlift/i.test(exo.id) });
