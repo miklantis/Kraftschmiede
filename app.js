@@ -1592,11 +1592,6 @@
       + '<button class="btn primary" data-action="import">Importieren</button></div>'
       + '</div>';
 
-    html += '<div class="card"><div class="sets-title">Demo & Zurücksetzen</div>'
-      + '<div class="data-btns"><button class="btn ghost" data-action="demo">Demo-Daten laden</button>'
-      + '<button class="btn danger" data-action="reset">Alles zurücksetzen</button></div>'
-      + '<div class="hint">Demo-Daten erzeugen Beispiel-Sessions, damit Grafiken/Kalender befüllt sind.</div></div>';
-
     html += '<div class="card"><div class="sets-title">Score ↔ RIR ↔ RPE</div><div class="score-table">'
       + [1, 2, 3, 4, 5].map(function (v) { var i = E.scoreInfo(v); return '<div class="score-cell"><strong>' + v + '</strong><span>RIR ' + i.rir + '</span><span>RPE ' + i.rpe + '</span><span class="sl">' + i.label + '</span></div>'; }).join("")
       + '</div><div class="hint">Ziel Arbeitssätze: Score 3–4 (RIR 1–3). Wiedereinstieg ≤ 3.</div></div>';
@@ -1605,39 +1600,6 @@
   function numSetting(label, field, val, step) { return '<label class="edit-field"><span>' + label + '</span><input type="number" step="' + step + '" class="num" data-set-setting="' + field + '" value="' + val + '"></label>'; }
   function timerNum(label, field, val) { return '<label class="edit-field"><span>' + label + '</span><input type="number" step="5" min="0" class="num" data-set-timer="' + field + '" value="' + (val == null ? "" : val) + '"></label>'; }
   function timerChk(label, field, val) { return '<label class="chk"><input type="checkbox" data-set-timer="' + field + '"' + (val ? " checked" : "") + '> ' + label + '</label>'; }
-
-  /* =========================================================
-     Demo-Daten
-     ========================================================= */
-  function loadDemo() {
-    DB.sessions = [];
-    var order = ["t_a", "t_b", "t_c", "t_a", "t_b", "t_c"];
-    var base = new Date(); base.setDate(base.getDate() - 18);
-    order.forEach(function (tid, k) {
-      var t = tplById(tid); var d = new Date(base); d.setDate(base.getDate() + k * 3);
-      var ds = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
-      var entries = [t.lift1, t.lift2, t.core].map(function (id, idx) {
-        var exo = exById(id); var grow = 1 + k * 0.04;
-        var w = E.nearestLoadable((exo.workWeight) * grow, exo.barId ? barById(exo.barId).weight : 0, DB.inventory.plates, false);
-        var tr = exo.repRange[1];
-        var sets = []; var n = 3;
-        for (var i = 0; i < n; i++) {
-          var fail = (k === 2 && idx === 0 && i === n - 1);
-          var reps = fail ? tr - 3 : tr; var sc = fail ? 5 : (3 + (i === n - 1 ? 1 : 0));
-          sets.push({ reps: reps, weight: w, score: sc, failed: fail, done: true, type: "work", targetReps: tr, targetWeight: w, metTarget: !fail, adjusted: false });
-        }
-        var best = E.best1RMFromSets(sets, DB.settings.rmFormula);
-        return { exerciseId: id, slot: idx === 0 ? "lift1" : idx === 1 ? "lift2" : "core", warmupSets: [], plannedSets: sets.map(function (s) { return { reps: s.targetReps, weight: s.targetWeight, targetScore: exo.targetScore }; }), sets: sets, hadDeviation: E.hadDeviation(sets), est1RM: best.value, tested1RM: null };
-      });
-      DB.sessions.push({ id: "s_demo_" + k, date: ds, journeyId: "j_2026_aufbau", phaseId: "p1", templateId: tid, status: "done", generalWarmup: { done: true, minutes: 7, mode: "bike" }, entries: entries, body: { legs: k === 2 ? 2 : 1, upper_body: 1, overall: 1, pain: {}, readiness: k === 2 ? 2 : 4, notes: "" } });
-    });
-    var yd = new Date(); yd.setDate(yd.getDate() - 1); var yds = yd.getFullYear() + "-" + pad(yd.getMonth() + 1) + "-" + pad(yd.getDate());
-    DB.bodyLog = [
-      { date: yds, legs: 2, upper_body: 1, overall: 1, pain: { flag: false }, readiness: 4, notes: "gut erholt" },
-      { date: today(), legs: 1, upper_body: 1, overall: 1, pain: { flag: false }, readiness: 4, notes: "" }
-    ];
-    persist(); render();
-  }
 
   /* =========================================================
      Import / Export
@@ -1737,8 +1699,6 @@
       case "export": download(); break;
       case "export-copy": copyExport(); break;
       case "import": doImport(); break;
-      case "demo": if (confirm("Demo-Daten laden (überschreibt Sessions)?")) loadDemo(); break;
-      case "reset": if (confirm("Wirklich alles zurücksetzen?")) { Store.wipe(); DASH = []; dashSave(); try { localStorage.removeItem(DASH_KEY); } catch (e) {} DB = seed(); UI = { tab: "settings", detail: null, live: null }; persist(); render(); } break;
     }
   });
 
