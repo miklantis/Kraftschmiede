@@ -668,10 +668,15 @@
     if (document.getElementById("ks-rest-bar")) return;
     var bar = document.createElement("div");
     bar.id = "ks-rest-bar"; bar.className = "ks-rest-bar";
-    bar.innerHTML = '<button class="btn tiny ghost rb-step" data-action="rest-minus">\u221215</button>'
+    bar.innerHTML = '<span class="rb-side" aria-hidden="true"></span>'
+      + '<div class="rb-center">'
+      + '<button class="btn tiny ghost rb-step" data-action="rest-minus">\u221215</button>'
       + '<span class="rb-time">0:00</span>'
       + '<button class="btn tiny ghost rb-step" data-action="rest-plus">+15</button>'
-      + '<button class="icon-btn rb-skip" data-action="rest-skip" title="überspringen" aria-label="Pause überspringen">' + xIcon() + '</button>';
+      + '</div>'
+      + '<span class="rb-side rb-side-r">'
+      + '<button class="icon-btn rb-skip" data-action="rest-skip" title="überspringen" aria-label="Pause überspringen">' + xIcon() + '</button>'
+      + '</span>';
     document.body.appendChild(bar);
   }
   function startRestTick() { if (restTimer) return; restTimer = setInterval(restTick, 500); }

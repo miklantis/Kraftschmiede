@@ -581,17 +581,22 @@ input[type=date]{background:var(--panel2);border:1px solid var(--line2);color:va
 .set-row.work.active-next{background:rgba(255,122,45,.10);box-shadow:inset 3px 0 0 var(--accent)}
 .set-row.work.active-next .set-i{color:var(--accent)}
 
-.ks-rest-bar{position:fixed;left:50%;bottom:0;transform:translateX(-50%) translateY(115%);width:fit-content;max-width:94%;background:var(--accent);border:1px solid var(--accent-d);border-bottom:none;border-radius:12px 12px 0 0;box-shadow:0 -10px 30px -12px #000;padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:nowrap;z-index:90;transition:transform .25s ease}
-.ks-rest-bar.show{transform:translateX(-50%) translateY(0)}
+.ks-rest-bar{position:fixed;left:0;right:0;bottom:0;transform:translateY(115%);background:var(--accent);border:1px solid var(--accent-d);border-bottom:none;border-radius:14px 14px 0 0;box-shadow:0 -12px 34px -12px #000;padding:20px max(20px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));display:flex;align-items:center;z-index:90;transition:transform .28s ease}
+.ks-rest-bar.show{transform:translateY(0)}
 .ks-rest-bar.done{background:var(--good);border-color:var(--good)}
-.rb-time{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:28px;font-weight:700;color:#1a0e06;text-align:center;line-height:1}
-.rb-step{font-family:var(--mono);font-weight:700;font-size:14px;min-width:48px;flex:none}
+.rb-side{flex:1 1 0;display:flex;align-items:center;min-width:0}
+.rb-side-r{justify-content:flex-end}
+.rb-center{flex:none;display:flex;align-items:center;justify-content:center;gap:20px}
+.rb-time{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:44px;font-weight:700;color:#1a0e06;text-align:center;line-height:1;min-width:132px}
+.rb-step{font-family:var(--mono);font-weight:700;font-size:16px;min-width:60px;flex:none}
 .rb-skip{flex:none}
 .ks-rest-bar .rb-step,.ks-rest-bar .rb-skip{border-color:rgba(0,0,0,.32);color:#1a0e06;background:rgba(0,0,0,.06)}
 .ks-rest-bar .rb-step:hover,.ks-rest-bar .rb-skip:hover{background:rgba(0,0,0,.16);border-color:rgba(0,0,0,.5);color:#1a0e06}
 @media (max-width:560px){
-  .ks-rest-bar{gap:10px;padding:10px max(12px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
-  .rb-time{font-size:26px}
+  .ks-rest-bar{padding:18px max(12px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+  .rb-center{gap:14px}
+  .rb-time{font-size:38px;min-width:104px}
+  .rb-step{font-size:15px;min-width:52px}
 }
 
 /* v0.14 (Feinschliff) – Timer-Toggle im Kopf */
