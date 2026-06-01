@@ -61,14 +61,14 @@
         core("plate_twist", "Plate Twist", [12, 20], 5),
         core("plate_cocoon", "Plate Cocoon", [10, 16], 5),
         ex("lunge", "Lunge", "strength", "lift1", "bar_std", ["legs", "glutes"], [8, 12], 30, 48, false),
-        ex("pull_over", "Pull Over", "strength", "lift2", "bar_std", ["back", "chest"], [8, 12], 20, 48, false)
+        ex("pull_over", "Pull Over", "strength", "lift2", "bar_std", ["back", "chest"], [8, 12], 20, 48)
       ],
       templates: [
         tpl("t_a", "A", "back_squat", "bench_press", "plate_situps"),
         tpl("t_b", "B", "deadlift", "bent_row", "plate_twist"),
-        tpl("t_c", "C", "back_squat", "push_press", "plate_cocoon"),
+        tpl("t_c", "C", "back_squat", "push_press", "pull_over"),
         tpl("t_d", "D", "deadlift", "barbell_curl", "plate_situps"),
-        tpl("t_e", "E", "push_press", "barbell_curl", "plate_twist"),
+        tpl("t_e", "E", "push_press", "barbell_curl", "pull_over"),
         tpl("t_f", "F", "bench_press", "bent_row", "plate_cocoon")
       ],
       journeys: [
@@ -233,6 +233,7 @@
     db.journeys = db.journeys || [];
     db.exercises = db.exercises || [];
     db.bodyLog = db.bodyLog || [];
+    db.templates = db.templates || [];
     // Journey-/Phasen-Felder nachrüsten (non-destruktiv)
     db.journeys.forEach(function (j) {
       if (!j.status) j.status = "active";
@@ -247,6 +248,17 @@
       } else if (act.length > 1) {
         act.slice(1).forEach(function (j) { j.active = false; });
       }
+    }
+    // Einmalige Migration (2026): Pull Over aktivieren und in den Einheiten C und E
+    // den Core-Slot durch Pull Over ersetzen. Greift genau einmal; spaetere manuelle
+    // Aenderungen werden nicht zurueckgesetzt.
+    db.migrations = db.migrations || {};
+    if (!db.migrations.pulloverSlots) {
+      var po = db.exercises.find(function (e) { return e.id === "pull_over"; });
+      if (!po) db.exercises.push(ex("pull_over", "Pull Over", "strength", "lift2", "bar_std", ["back", "chest"], [8, 12], 20, 48));
+      else po.active = true;
+      db.templates.forEach(function (t) { if (t.id === "t_c" || t.id === "t_e") t.core = "pull_over"; });
+      db.migrations.pulloverSlots = true;
     }
   }
   function persist() { var okp = Store.save(DB); if (!okp) flashStore(); if (window.KSSync) window.KSSync.schedulePush(); }
