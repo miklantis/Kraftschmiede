@@ -453,9 +453,6 @@
 
   // Stoppuhr-Icon fuer den Pausen-Timer-Toggle im Workout-Kopf.
   function timerIcon() { return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"></circle><path d="M12 13l3-2"></path><path d="M9 2h6"></path><path d="M12 5V2"></path></svg>'; }
-  // Papierkorb-Icon (Session verwerfen) und Disketten-Icon (Session speichern).
-  function trashIcon() { return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6M14 11v6"></path></svg>'; }
-  function saveIcon() { return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><path d="M17 21v-8H7v8"></path><path d="M7 3v5h8"></path></svg>'; }
   // Hantel-/Scheiben-Icon, geteilt von Scheiben-Hinweis und Toggle-Button.
   function plateIcon(cls) { return '<svg class="' + cls + '" viewBox="0 0 16 16" aria-hidden="true"><rect x="6.7" y="2" width="2.6" height="12" rx="1"/><rect x="3.6" y="4.4" width="2" height="7.2" rx="1"/><rect x="10.4" y="4.4" width="2" height="7.2" rx="1"/></svg>'; }
   // Dezente Scheiben-Anzeige: kleines Icon + Scheiben pro Seite (Zahl). Kein großer SVG.
@@ -820,8 +817,7 @@
       + '<div class="live-head-l"><div class="section-title">Training · Workout ' + esc(t.name) + '</div></div>'
       + '<div class="live-head-r"><span class="live-clock" id="live-clock" title="Trainingsdauer">' + fmtDur((Date.now() - s.startedAt) / 1000) + '</span>'
       + '<button class="icon-btn timer-toggle' + (timersOn ? ' on' : '') + '" data-action="toggle-timers" aria-pressed="' + (timersOn ? 'true' : 'false') + '" title="Pausen-Timer ein/aus" aria-label="Pausen-Timer ein- oder ausschalten">' + timerIcon() + '</button>'
-      + '<button class="icon-btn danger" data-action="cancel-live" title="Session verwerfen" aria-label="Session verwerfen">' + trashIcon() + '</button>'
-      + '<button class="icon-btn save" data-action="finish" title="Session speichern" aria-label="Session speichern">' + saveIcon() + '</button></div></div>';
+      + '<button class="btn end-btn small" data-action="finish-workout">Beenden</button></div></div>';
 
     // Allgemeines Aufwärmen
     html += '<div class="card exercise-live gw-card">'
@@ -938,6 +934,39 @@
       if (sub) sub.innerHTML = plateHint(st.weight, entryBar(enX));
     }
   }
+
+  // Workout beenden: bei sehr kurzer Dauer (< 5 min) nachfragen, sonst speichern.
+  var MIN_WORKOUT_SEC = 300;
+  function endWorkout() {
+    var s = UI.live; if (!s) return;
+    var sec = s.startedAt ? Math.round((Date.now() - s.startedAt) / 1000) : 0;
+    if (sec < MIN_WORKOUT_SEC) { openEndModal(sec); return; }
+    finishSession();
+  }
+  function discardWorkout() { skipRest(); UI.live = null; render(); }
+  function ensureEndModal() {
+    if (document.getElementById("ks-end-modal")) return;
+    var ov = document.createElement("div");
+    ov.id = "ks-end-modal"; ov.className = "ks-modal-overlay";
+    ov.innerHTML = '<div class="ks-modal" role="dialog" aria-modal="true" aria-label="Workout beenden">'
+      + '<div class="ks-modal-head"><span class="ks-modal-title">Workout beenden</span>'
+      + '<button class="ks-modal-x" data-action="end-cancel" aria-label="Schließen">\u2715</button></div>'
+      + '<p class="end-text" id="ks-end-text"></p>'
+      + '<div class="end-btns">'
+      + '<button class="btn primary" data-action="end-save">Speichern</button>'
+      + '<button class="btn danger" data-action="end-discard">Verwerfen</button>'
+      + '<button class="btn ghost" data-action="end-cancel">Abbrechen</button>'
+      + '</div></div>';
+    ov.addEventListener("click", function (e) { if (e.target === ov) closeEndModal(); });
+    document.body.appendChild(ov);
+  }
+  function openEndModal(sec) {
+    ensureEndModal();
+    var t = document.getElementById("ks-end-text");
+    if (t) t.textContent = "Das Workout läuft erst " + fmtDur(sec) + " (unter 5 Minuten). Trotzdem speichern oder verwerfen?";
+    document.getElementById("ks-end-modal").classList.add("open");
+  }
+  function closeEndModal() { var m = document.getElementById("ks-end-modal"); if (m) m.classList.remove("open"); }
 
   function finishSession() {
     var s = UI.live;
@@ -1459,8 +1488,10 @@
       case "auth-open": openAuthModal(); break;
       case "auth-close": closeAuthModal(); break;
       case "start": UI.live = buildLive(el.getAttribute("data-tpl")); render(); break;
-      case "cancel-live": if (confirm("Laufende Session verwerfen?")) { UI.live = null; render(); } break;
-      case "finish": finishSession(); break;
+      case "finish-workout": endWorkout(); break;
+      case "end-save": closeEndModal(); finishSession(); break;
+      case "end-discard": closeEndModal(); discardWorkout(); break;
+      case "end-cancel": closeEndModal(); break;
       case "rest-minus": adjustRest(-15); break;
       case "rest-plus": adjustRest(15); break;
       case "rest-skip": skipRest(); break;
