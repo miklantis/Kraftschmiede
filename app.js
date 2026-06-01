@@ -679,6 +679,32 @@
     var T = DB.settings.timers || {}; if (!T.vibrate) return;
     try { if (navigator.vibrate) navigator.vibrate([120, 60, 120]); } catch (e) {}
   }
+  // Kurzer, moderner UI-Klick beim Umschalten einer Erledigt-Checkbox.
+  // "An" klingt heller/aufsteigend, "Aus" tiefer/abfallend. Plus kurze
+  // Vibration (Android; iOS Safari unterstuetzt navigator.vibrate nicht).
+  // Folgt den Ton-/Vibration-Schaltern in den Einstellungen.
+  function clickTick(on) {
+    var T = DB.settings.timers || {};
+    if (T.sound) {
+      try {
+        ensureAudio();
+        if (audioCtx) {
+          var t0 = audioCtx.currentTime;
+          var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+          var f = on ? 540 : 400;
+          o.type = "triangle";
+          o.frequency.setValueAtTime(f, t0);
+          o.frequency.exponentialRampToValueAtTime(on ? f * 1.7 : f * 0.6, t0 + 0.05);
+          g.gain.setValueAtTime(0.0001, t0);
+          g.gain.exponentialRampToValueAtTime(0.16, t0 + 0.005);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.085);
+          o.connect(g); g.connect(audioCtx.destination);
+          o.start(t0); o.stop(t0 + 0.1);
+        }
+      } catch (e) {}
+    }
+    if (T.vibrate) { try { if (navigator.vibrate) navigator.vibrate(on ? 18 : 11); } catch (e) {} }
+  }
   function ensureRestBar() {
     if (document.getElementById("ks-rest-bar")) return;
     var bar = document.createElement("div");
@@ -908,6 +934,10 @@
     root.querySelectorAll(".set-row [data-set]").forEach(function (el) {
       var ev = (el.type === "checkbox" || el.tagName === "SELECT") ? "change" : "input";
       el.addEventListener(ev, function () { onSetChange(el); });
+    });
+    // Klick-Ton + Vibration fuer jede Erledigt-Checkbox (on wie off)
+    root.querySelectorAll(".done-chk input[type=checkbox]").forEach(function (el) {
+      el.addEventListener("change", function () { clickTick(el.checked); });
     });
   }
   function setLivePath(path, val) {
