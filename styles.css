@@ -707,3 +707,22 @@ body{overflow-x:clip}
 .es-set{font-family:var(--mono);font-size:10.5px;color:var(--faint);background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:2px 6px}
 .es-set.done{color:var(--good);background:rgba(94,194,106,.12);border-color:rgba(94,194,106,.35)}
 .es-hint{font-size:10.5px;color:var(--faint);margin-top:10px}
+
+/* ============================================================
+   v0.19 – Mobile: Uebungskarten randlos ueber die volle Breite
+   Im laufenden Workout laufen Kopfzeile (helleres Grau) und die
+   Satz-Zeilen-Highlights (grau/gruen/orange) sowie die Trennlinien
+   durchgehend von Bildschirmkante zu Bildschirmkante. Der Innenabstand
+   wandert vom Block auf die Zeilen, damit Text/Inputs ihren Abstand und
+   die Zentrierung behalten, der Hintergrund aber bis an den Rand reicht.
+   Nur Mobile (<=560px); ab 561px bleibt der normale Karten-Look.
+   ============================================================ */
+@media (max-width:560px){
+  /* Karte bis an die Kante ziehen (gleicht #app-Padding 10px aus) */
+  .card.exercise-live{margin-left:-10px;margin-right:-10px;border-left:0;border-right:0;border-radius:0}
+  /* Block-Innenabstand horizontal raus -> Zeilen fuellen die volle Breite */
+  .exercise-live .sets-block{padding-left:0;padding-right:0}
+  /* Innenabstand pro Zeile (Hintergrund deckt ihn mit ab, bleibt randlos) */
+  .exercise-live .set-row{padding-left:12px;padding-right:12px}
+  .exercise-live .set-actions{padding-left:12px;padding-right:12px}
+}
