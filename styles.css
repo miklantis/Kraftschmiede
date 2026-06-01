@@ -154,7 +154,11 @@ textarea{width:100%;min-height:90px;resize:vertical;font-family:var(--mono);font
 .chk.c input{accent-color:var(--bad)}
 .chk.r{justify-content:flex-end}
 .done-chk{justify-content:center;font-weight:600}
-.done-chk input{accent-color:var(--good)}
+.done-chk input{-webkit-appearance:none;appearance:none;box-sizing:border-box;margin:0;border:1px solid var(--line2);border-radius:6px;background:var(--panel2);position:relative;transition:.15s}
+.done-chk input::after{content:"";position:absolute;left:50%;top:44%;width:5px;height:10px;border:solid var(--faint);border-width:0 2px 2px 0;transform:translate(-50%,-50%) rotate(45deg);opacity:.4;transition:.15s}
+.done-chk input:hover{border-color:var(--accent)}
+.done-chk input:checked{background:var(--good);border-color:var(--good)}
+.done-chk input:checked::after{border-color:var(--bg);opacity:1}
 .status-cell{display:flex;align-items:center;gap:5px;font-size:12px}
 .st{padding:2px 7px;border-radius:4px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
 .st.pending{color:var(--faint);border:1px solid var(--line2)}
