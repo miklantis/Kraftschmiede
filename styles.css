@@ -580,7 +580,7 @@ input[type=date]{background:var(--panel2);border:1px solid var(--line2);color:va
 .set-row.work.active-next{background:rgba(255,122,45,.10);box-shadow:inset 3px 0 0 var(--accent)}
 .set-row.work.active-next .set-i{color:var(--accent)}
 
-.ks-rest-bar{position:fixed;left:50%;bottom:0;transform:translateX(-50%) translateY(115%);width:min(920px,100%);background:var(--panel2);border:1px solid var(--accent);border-bottom:none;border-radius:12px 12px 0 0;box-shadow:0 -10px 30px -12px #000;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;z-index:90;transition:transform .25s ease}
+.ks-rest-bar{position:fixed;left:50%;bottom:0;transform:translateX(-50%) translateY(115%);width:min(920px,100%);background:var(--panel2);border:1px solid var(--accent);border-bottom:none;border-radius:12px 12px 0 0;box-shadow:0 -10px 30px -12px #000;padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:14px;flex-wrap:wrap;z-index:90;transition:transform .25s ease}
 .ks-rest-bar.show{transform:translateX(-50%) translateY(0)}
 .ks-rest-bar.done{border-color:var(--good)}
 .rb-info{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
@@ -592,7 +592,7 @@ input[type=date]{background:var(--panel2);border:1px solid var(--line2);color:va
 .rb-ctrl{display:flex;align-items:center;gap:6px;flex:none}
 .rb-step{font-family:var(--mono);font-weight:700;font-size:14px;min-width:48px}
 @media (max-width:560px){
-  .ks-rest-bar{gap:10px;padding:10px 12px}
+  .ks-rest-bar{gap:10px;padding:10px max(12px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
   .rb-info{flex:1 1 100%;order:-1}
   .rb-time{font-size:26px;min-width:74px}
 }
