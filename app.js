@@ -225,7 +225,7 @@
   function dashReorder(from, to) { if (from === to || from < 0 || to < 0 || from >= DASH.length || to >= DASH.length) return; var item = DASH.splice(from, 1)[0]; DASH.splice(to, 0, item); dashSave(); }
 
   migrate(DB);
-  var UI = { tab: "training", detail: null, live: null, importPreview: null, journeyPicker: false, calMonth: null, plateHide: {}, menuOpen: false };
+  var UI = { tab: "training", detail: null, live: null, importPreview: null, journeyPicker: false, calMonth: null, plateShow: {}, menuOpen: false };
 
   function migrate(db) {
     if (!db.schemaVersion) db.schemaVersion = SCHEMA;
@@ -639,7 +639,7 @@
     s.entries.forEach(function (en, ei) {
       var exo = exById(en.exerciseId); var bar = entryBar(en);
       var sug = en.suggestion || {};
-      var showPlate = !UI.plateHide[ei];
+      var showPlate = !!(UI.plateShow && UI.plateShow[ei]);
       html += '<div class="card exercise-live" data-ei="' + ei + '">';
       var barOpts = exo.category === "barbell" ? DB.inventory.bars.map(function (bb) { return '<option value="' + bb.id + '"' + (bb.id === (en.barId || exo.barId) ? " selected" : "") + '>' + esc(bb.name) + ' ' + fmtW(bb.weight) + '</option>'; }).join("") : "";
       html += '<div class="ex-live-head"><div class="ehl"><span class="ex-name">' + esc(exo.name) + '</span><span class="slot-tag">' + en.slot.toUpperCase() + '</span></div>'
@@ -1258,7 +1258,7 @@
       case "cal-prev": calShift(-1); break;
       case "cal-next": calShift(1); break;
       case "cal-today": calToday(); break;
-      case "toggle-plate": { var pe = el.getAttribute("data-ei"); UI.plateHide[pe] = !UI.plateHide[pe]; render(); break; }
+      case "toggle-plate": { var pe = el.getAttribute("data-ei"); if (!UI.plateShow) UI.plateShow = {}; UI.plateShow[pe] = !UI.plateShow[pe]; render(); break; }
       case "add-yoga": addYoga(); break;
       case "pin-chart": dashToggle(el.getAttribute("data-ex"), el.getAttribute("data-metric")); render(); break;
       case "dash-up": dashMove(+el.getAttribute("data-i"), -1); render(); break;
