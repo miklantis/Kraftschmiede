@@ -1518,7 +1518,7 @@
         + (i === 0 ? '<span class="def">Vorausgewählt</span>' : '') + '</div>'
         + '<div class="bar-card-controls">'
         + '<span class="bar-weight"><input type="number" step="0.5" class="num" data-bar="weight" data-i="' + i + '" value="' + b.weight + '"><span class="bar-unit">' + DB.settings.unit + '</span></span>'
-        + '<button class="btn tiny ghost bar-del" data-action="bar-del" data-i="' + i + '" title="Stange entfernen">×</button>'
+        + (i === 0 ? '' : '<button class="btn tiny ghost bar-del" data-action="bar-del" data-i="' + i + '" title="Stange entfernen">×</button>')
         + '</div></div>';
     });
     html += '</div><button class="btn tiny ghost" data-action="bar-add">+ Stange</button></div>';
@@ -1713,7 +1713,7 @@
       case "journey-finish": if (confirm("Journey abschließen und archivieren? Der Verlauf bleibt erhalten.")) finishJourney(el.getAttribute("data-id")); break;
       case "journey-del": if (confirm("Journey wirklich löschen? Sessions bleiben erhalten.")) deleteJourney(el.getAttribute("data-id")); break;
       case "bar-add": DB.inventory.bars.push({ id: uid("bar_"), name: "Stange", weight: 20, default: false }); persist(); render(); break;
-      case "bar-del": if (DB.inventory.bars.length > 1) { DB.inventory.bars.splice(+el.getAttribute("data-i"), 1); persist(); render(); } else { toast("Mindestens eine Stange muss bleiben."); } break;
+      case "bar-del": var bi = +el.getAttribute("data-i"); if (bi === 0) { toast("Die erste Stange ist die Vorauswahl und kann nicht gelöscht werden."); } else { DB.inventory.bars.splice(bi, 1); persist(); render(); } break;
       case "plate-del": DB.inventory.plates = DB.inventory.plates.filter(function (p) { return p !== parseFloat(el.getAttribute("data-p")); }); persist(); render(); break;
       case "plate-add": addPlate(); break;
       case "loader-calc": loaderCalc(); break;
