@@ -73,6 +73,10 @@ strong{font-weight:600}
 .btn.tiny{padding:4px 9px;font-size:11px;letter-spacing:.5px}
 .btn.big{padding:15px 28px;font-size:17px;width:100%}
 .btn:disabled{opacity:.4;cursor:not-allowed;border-color:var(--line)}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;border-radius:8px;border:1px solid var(--line2);background:transparent;color:var(--muted);cursor:pointer;transition:.15s}
+.icon-btn:hover{border-color:var(--accent);color:var(--text)}
+.icon-btn .pt-ic{width:16px;height:16px;flex:none;fill:currentColor}
+.icon-btn.on{border-color:var(--accent);color:var(--accent);background:rgba(255,122,45,.12)}
 
 /* Inputs */
 input[type=number],input[type=text],select,textarea{

@@ -441,11 +441,13 @@
     return { svg: s, label: label, perSide: pb.perSide };
   }
 
+  // Hantel-/Scheiben-Icon, geteilt von Scheiben-Hinweis und Toggle-Button.
+  function plateIcon(cls) { return '<svg class="' + cls + '" viewBox="0 0 16 16" aria-hidden="true"><rect x="6.7" y="2" width="2.6" height="12" rx="1"/><rect x="3.6" y="4.4" width="2" height="7.2" rx="1"/><rect x="10.4" y="4.4" width="2" height="7.2" rx="1"/></svg>'; }
   // Dezente Scheiben-Anzeige: kleines Icon + Scheiben pro Seite (Zahl). Kein großer SVG.
   function plateHint(total, bar) {
     if (!bar) return "";
     var pb = E.plateBreakdown(total, bar.weight, DB.inventory.plates);
-    var icon = '<svg class="phint-ic" viewBox="0 0 16 16" aria-hidden="true"><rect x="6.7" y="2" width="2.6" height="12" rx="1"/><rect x="3.6" y="4.4" width="2" height="7.2" rx="1"/><rect x="10.4" y="4.4" width="2" height="7.2" rx="1"/></svg>';
+    var icon = plateIcon("phint-ic");
     var txt;
     if (pb.remainder > 0) txt = '<span class="phint-warn">nicht exakt ladbar (Rest ' + fmtW(pb.remainder * 2) + ')</span>';
     else if (!pb.plates.length) txt = 'nur Stange';
@@ -643,7 +645,7 @@
       html += '<div class="card exercise-live" data-ei="' + ei + '">';
       var barOpts = exo.category === "barbell" ? DB.inventory.bars.map(function (bb) { return '<option value="' + bb.id + '"' + (bb.id === (en.barId || exo.barId) ? " selected" : "") + '>' + esc(bb.name) + ' ' + fmtW(bb.weight) + '</option>'; }).join("") : "";
       html += '<div class="ex-live-head"><div class="ehl"><span class="ex-name">' + esc(exo.name) + '</span><span class="slot-tag">' + en.slot.toUpperCase() + '</span></div>'
-        + (exo.category === "barbell" ? '<div class="ehr"><label class="barpick">Stange <select data-barpick data-ei="' + ei + '">' + barOpts + '</select></label><button class="btn tiny ghost plate-toggle" data-action="toggle-plate" data-ei="' + ei + '">' + (showPlate ? 'Scheiben aus' : 'Scheiben ein') + '</button></div>' : '') + '</div>';
+        + (exo.category === "barbell" ? '<div class="ehr"><label class="barpick">Stange <select data-barpick data-ei="' + ei + '">' + barOpts + '</select></label><button class="icon-btn plate-toggle' + (showPlate ? ' on' : '') + '" data-action="toggle-plate" data-ei="' + ei + '" aria-pressed="' + (showPlate ? 'true' : 'false') + '" title="' + (showPlate ? 'Scheiben ausblenden' : 'Scheiben einblenden') + '" aria-label="' + (showPlate ? 'Scheiben ausblenden' : 'Scheiben einblenden') + '">' + plateIcon("pt-ic") + '</button></div>' : '') + '</div>';
 
       // Sätze: Aufwärmen (A1..) und Arbeit (S1..) in einer Liste
       html += '<div class="sets-block">';
