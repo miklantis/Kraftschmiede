@@ -667,25 +667,11 @@
     if (document.getElementById("ks-rest-bar")) return;
     var bar = document.createElement("div");
     bar.id = "ks-rest-bar"; bar.className = "ks-rest-bar";
-    bar.innerHTML = '<div class="rb-info"><span class="rb-label">Satzpause</span><span class="rb-ctx"></span></div>'
-      + '<div class="rb-time">0:00</div>'
-      + '<div class="rb-ctrl">'
-      + '<button class="btn tiny ghost rb-step" data-action="rest-minus">\u221215</button>'
+    bar.innerHTML = '<button class="btn tiny ghost rb-step" data-action="rest-minus">\u221215</button>'
+      + '<span class="rb-time">0:00</span>'
       + '<button class="btn tiny ghost rb-step" data-action="rest-plus">+15</button>'
-      + '<button class="btn tiny ghost rb-skip" data-action="rest-skip">überspringen</button>'
-      + '</div>';
+      + '<button class="btn tiny ghost rb-skip" data-action="rest-skip">überspringen</button>';
     document.body.appendChild(bar);
-  }
-  function fillRestBar() {
-    var r = UI.live && UI.live.rest; var bar = document.getElementById("ks-rest-bar"); if (!r || !bar) return;
-    var en = UI.live.entries[r.ei]; var exo = en ? exById(en.exerciseId) : null;
-    var name = exo ? esc(exo.name) : "—";
-    var ctx;
-    if (r.type === "exercise") ctx = "nächste Übung · " + name;
-    else { ctx = name; if (en && r.si >= 0 && r.si < en.sets.length) ctx += " · nächster Satz S" + (r.si + 1); }
-    bar.classList.toggle("exercise", r.type === "exercise");
-    var lab = bar.querySelector(".rb-label"); if (lab) lab.textContent = (r.type === "exercise" ? "Übungspause" : "Satzpause");
-    var cx = bar.querySelector(".rb-ctx"); if (cx) cx.innerHTML = ctx;
   }
   function startRestTick() { if (restTimer) return; restTimer = setInterval(restTick, 500); }
   function stopRestTick() { if (restTimer) { clearInterval(restTimer); restTimer = null; } }
@@ -711,8 +697,8 @@
     ensureRestBar();
     var bar = document.getElementById("ks-rest-bar"); if (!bar) return;
     var active = !!(UI.tab === "training" && UI.live && UI.live.rest);
-    if (!active) { bar.classList.remove("show", "done", "exercise"); stopRestTick(); return; }
-    fillRestBar(); bar.classList.add("show"); restTick(); startRestTick();
+    if (!active) { bar.classList.remove("show", "done"); stopRestTick(); return; }
+    bar.classList.add("show"); restTick(); startRestTick();
   }
   function startRest(type, sec, ei, si) {
     if (!UI.live) return;
@@ -732,7 +718,7 @@
   function skipRest() {
     if (UI.live) UI.live.rest = null;
     stopRestTick();
-    var bar = document.getElementById("ks-rest-bar"); if (bar) bar.classList.remove("show", "done", "exercise");
+    var bar = document.getElementById("ks-rest-bar"); if (bar) bar.classList.remove("show", "done");
   }
   function toggleTimers() {
     var T = DB.settings.timers = DB.settings.timers || {};
