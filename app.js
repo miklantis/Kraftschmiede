@@ -911,7 +911,7 @@
   }
   function onSetChange(el) {
     var ei = +el.getAttribute("data-ei"), si = +el.getAttribute("data-si"), kind = el.getAttribute("data-set");
-    if (kind === "w") { UI.live.entries[ei].warmupSets[si].done = el.checked; return; }
+    if (kind === "w") { UI.live.entries[ei].warmupSets[si].done = el.checked; var wr = el.closest(".set-row"); if (wr) wr.classList.toggle("done", el.checked); return; }
     var st = UI.live.entries[ei].sets[si];
     if (kind === "reps") st.reps = parseInt(el.value, 10) || 0;
     else if (kind === "weight") { var nw = parseFloat(el.value); if (nw !== st.targetWeight) markAdjust(st, "Gewicht angepasst"); st.weight = isNaN(nw) ? 0 : nw; }
