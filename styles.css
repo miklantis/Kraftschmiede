@@ -638,9 +638,9 @@ input[type=date]{background:var(--panel2);border:1px solid var(--line2);color:va
 
 /* ============================================================
    v0.15 – Workout-Vorschaubilder im Training-Tab
-   Banner je Workout-Karte (Bild + Name/Score als Overlay),
-   Yoga-Karte mit Thumbnail. Ohne Bild faellt es sauber auf den
-   Panel-Verlauf zurueck (img entfernt sich per onerror).
+   Banner je Workout-Karte (Bild + Name/Score als Overlay).
+   Ohne Bild faellt es sauber auf den Panel-Verlauf zurueck
+   (img entfernt sich per onerror).
    ============================================================ */
 .wo-card{padding:0;gap:0;overflow:hidden}
 .wo-thumb{position:relative;aspect-ratio:16/9;background:linear-gradient(135deg,var(--panel2),var(--panel));overflow:hidden}
@@ -650,8 +650,24 @@ input[type=date]{background:var(--panel2);border:1px solid var(--line2);color:va
 .wo-thumb .score-badge{position:absolute;top:10px;right:10px;z-index:2;background:rgba(12,13,15,.62);border-color:rgba(255,255,255,.18)}
 .wo-body{padding:13px 14px 14px;display:flex;flex-direction:column;gap:8px}
 
-/* Yoga-Vorschaubild */
-.yoga-thumb{width:64px;height:64px;flex:none;border-radius:10px;object-fit:cover;border:1px solid rgba(84,193,200,.4)}
+/* ============================================================
+   v0.16 – Yoga als Karte im Training-Stil + Eintrag im Workouts-Tab
+   Yoga-Karte nutzt die Workout-Card-Struktur, aber in Blau
+   (accent-2) statt Orange. Eintrag fuer andere Tage im Workouts-Tab.
+   ============================================================ */
+.wo-card.yoga-wo{border-color:rgba(84,193,200,.45)}
+.yoga-wo .wo-thumb{background:linear-gradient(135deg,rgba(84,193,200,.18),var(--panel))}
+.yoga-wo .wo-grad{background:linear-gradient(to top,rgba(4,34,42,.92),rgba(4,34,42,.30) 46%,rgba(4,34,42,0) 78%)}
+.yoga-wo .score-badge{color:var(--accent-2);border-color:rgba(84,193,200,.4);background:rgba(4,34,42,.6)}
+.yoga-wo .wo-lifts{color:var(--accent-2)}
+.btn.yoga-btn{border-color:rgba(84,193,200,.5);color:var(--accent-2)}
+.btn.yoga-btn:hover{background:var(--accent-2);border-color:var(--accent-2);color:#04222a}
+
+/* Yoga-Eintrag (Workouts-Tab) */
+.yoga-entry .ye-form{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.yoga-entry .ye-form label{font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
 @media (max-width:560px){
-  .yoga-thumb{width:54px;height:54px}
+  .yoga-entry .ye-form{flex-direction:column;align-items:stretch}
+  .yoga-entry .ye-form .yf-date input[type="date"]{flex:1;min-width:0}
+  .yoga-entry .yoga-btn{width:100%}
 }

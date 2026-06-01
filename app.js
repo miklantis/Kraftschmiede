@@ -584,26 +584,37 @@
     return '<div class="section-title">Heute trainieren</div>'
       + restBanner()
       + '<div class="hint">Coach-Empfehlung nach Erholung, Recency, Wochenbalance und Phase. Geplante Arbeitssätze pro Übung: <strong>' + plannedSetCount() + '</strong> (' + (phase ? esc(phase.name) : '—') + ').</div>'
-      + '<div class="wo-grid">' + cards + '</div>'
-      + yogaBox();
+      + '<div class="wo-grid">' + cards + yogaCard() + '</div>';
   }
-  function yogaBox() {
-    return '<div class="section-title">Yoga / Mobility</div>'
-      + '<div class="yoga-card">'
-      + '<div class="yoga-main"><img class="yoga-thumb" src="images/Yoga.jpeg" alt="Yoga" loading="lazy" onerror="this.remove()"><span class="yoga-tag">YOGA</span><div class="yoga-txt"><strong>Einheit eintragen</strong><span>Erholungs- oder Mobility-Tag, getrennt vom Krafttraining.</span></div></div>'
-      + '<div class="yoga-form">'
-      + '<label class="yf-date">Datum <input type="date" id="yoga-date" value="' + today() + '"></label>'
-      + '<label class="yf-dur">Dauer <input type="number" class="num mini" id="yoga-min" value="80"> min</label>'
-      + '<input type="text" class="yoga-note" id="yoga-note" placeholder="Notiz (optional)">'
-      + '<button class="btn yf-submit" data-action="add-yoga">Eintragen</button>'
-      + '</div></div>';
+  // Yoga als Karte im Training-Stil, am Ende der Workout-Liste. Blau (accent-2)
+  // statt orange. Ein Klick traegt sofort eine Einheit fuer heute ein (80 min).
+  function yogaCard() {
+    return '<div class="wo-card yoga-wo">'
+      + '<div class="wo-thumb">'
+      + '<img class="wo-img" src="images/Yoga.jpeg" alt="Yoga" loading="lazy" onerror="this.remove()">'
+      + '<span class="wo-grad"></span>'
+      + '<span class="wo-name">Yoga</span>'
+      + '<span class="score-badge" title="Standarddauer">80 min</span>'
+      + '</div>'
+      + '<div class="wo-body">'
+      + '<div class="wo-lifts">Erholungs- / Mobility-Tag</div>'
+      + '<div class="wo-reasons">Getrennt vom Krafttraining · trägt für heute ein</div>'
+      + '<button class="btn ghost yoga-btn" data-action="add-yoga">Eintragen</button>'
+      + '</div>'
+      + '</div>';
   }
-  function addYoga() {
-    var d = (document.getElementById("yoga-date") || {}).value || today();
-    var min = parseInt((document.getElementById("yoga-min") || {}).value, 10) || 80;
-    var note = (document.getElementById("yoga-note") || {}).value || "";
-    DB.sessions.push({ id: "y_" + d.replace(/-/g, "") + "_" + Math.floor(Math.random() * 1000), date: d, type: "yoga", minutes: min, notes: note, status: "done", entries: [] });
+  // Yoga-Einheit eintragen. Ohne Argumente: heute, 80 min, ohne Notiz.
+  function addYoga(dateStr, min) {
+    var d = dateStr || today();
+    var m = (min != null && !isNaN(min)) ? min : 80;
+    DB.sessions.push({ id: "y_" + d.replace(/-/g, "") + "_" + Math.floor(Math.random() * 1000), date: d, type: "yoga", minutes: m, notes: "", status: "done", entries: [] });
     persist(); render(); toast("Yoga-Einheit eingetragen (" + d + ").");
+  }
+  // Yoga aus dem Formular im Workouts-Tab (anderer Tag / andere Dauer).
+  function addYogaFromForm() {
+    var d = (document.getElementById("wo-yoga-date") || {}).value || today();
+    var m = parseInt((document.getElementById("wo-yoga-min") || {}).value, 10);
+    addYoga(d, isNaN(m) ? 80 : m);
   }
   function restBanner() {
     var a = restAdvice();
@@ -1028,6 +1039,17 @@
 
     // Kalender (aktueller Monat)
     html += '<div class="section-title">Kalender</div>' + calendarHTML();
+
+    // Yoga / Mobility eintragen (anderer Tag oder andere Dauer als der Schnell-Eintrag im Training-Tab)
+    html += '<div class="section-title">Yoga / Mobility eintragen</div>'
+      + '<div class="card yoga-entry">'
+      + '<div class="ye-form">'
+      + '<label class="yf-date">Datum <input type="date" id="wo-yoga-date" value="' + today() + '"></label>'
+      + '<label class="yf-dur">Dauer <input type="number" class="num mini" id="wo-yoga-min" value="80"> min</label>'
+      + '<button class="btn yoga-btn" data-action="add-yoga-form">Eintragen</button>'
+      + '</div>'
+      + '<div class="hint">Für einen anderen Tag oder eine andere Dauer. Heute schnell eintragen geht direkt über die blaue Yoga-Karte im Training-Tab.</div>'
+      + '</div>';
 
     // Verlauf
     var ss = doneSessions().slice().reverse();
@@ -1515,6 +1537,7 @@
       case "cal-today": calToday(); break;
       case "toggle-plate": { var pe = el.getAttribute("data-ei"); if (!UI.plateShow) UI.plateShow = {}; UI.plateShow[pe] = !UI.plateShow[pe]; render(); break; }
       case "add-yoga": addYoga(); break;
+      case "add-yoga-form": addYogaFromForm(); break;
       case "pin-chart": dashToggle(el.getAttribute("data-ex"), el.getAttribute("data-metric")); render(); break;
       case "dash-up": dashMove(+el.getAttribute("data-i"), -1); render(); break;
       case "dash-down": dashMove(+el.getAttribute("data-i"), 1); render(); break;
