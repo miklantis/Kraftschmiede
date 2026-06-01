@@ -1417,7 +1417,7 @@
     var adv = restAdvice();
     var lvlTitle = { rest: "Rest-Tag empfohlen", caution: "Vorsicht – reduziert trainieren", ok: "Bereit fürs Training", unknown: "Heute noch nicht erfasst" }[adv.level];
     var html = '<div class="section-title">Körperzustand</div>';
-    html += '<p class="hint body-lead">Werte einstellen und mit „Eintragen" speichern. Ohne Eintrag bleibt der Tag ohne Angabe. Die Angaben fließen in die Workout-Empfehlung und den Rest-Tag-Hinweis ein.</p>';
+    html += '<p class="hint body-lead">Werte einstellen und „Eintragen" tippen – der Eintrag erscheint dann unten im Verlauf.</p>';
     html += '<div class="rest-card ' + adv.level + '"><div class="rc-main"><strong>' + lvlTitle + '</strong>' + (adv.reasons.length ? '<span>' + esc(adv.reasons.join(" · ")) + '</span>' : '<span>Körperzustand grün.</span>') + '</div></div>';
     html += '<div class="card body-form"><div class="sets-title">Heute (' + today() + ')' + (hasToday ? ' – erfasst, bearbeiten' : ' – noch nicht erfasst') + '</div>'
       + '<div class="body-grid">'
@@ -1427,14 +1427,14 @@
       + '</div>'
       + '<textarea class="notes body-notes" data-body="notes" rows="4" placeholder="Notiz (optional, mehrzeilig)">' + esc(t.notes || "") + '</textarea>'
       + '<div class="hint scale-hint">Kater 0 keine · 1 leicht · 2 deutlich · 3 stark (Region wird im Vorschlag ausgeschlossen). Readiness 1 mies … 5 top.</div>'
-      + '<div class="body-actions"><button class="btn primary" data-action="body-save">' + (hasToday ? 'Aktualisieren' : 'Eintragen') + '</button>'
-      + (hasToday ? '<button class="btn ghost" data-action="body-del-today">Heutigen Eintrag löschen</button>' : '') + '</div>'
+      + '<div class="body-actions"><button class="btn primary" data-action="body-save">' + (hasToday ? 'Aktualisieren' : 'Eintragen') + '</button></div>'
       + '</div>';
-    var log = sortedBodyLog().slice().reverse().filter(function (e) { return e.date !== today(); });
-    html += '<div class="section-title">Verlauf</div>';
-    if (!log.length) html += '<div class="empty">Noch keine früheren Einträge.</div>';
+    var log = sortedBodyLog().slice().reverse();
+    html += '<div class="section-title">Verlauf (' + log.length + ')</div>';
+    if (!log.length) html += '<div class="empty">Noch kein Eintrag. Stelle oben deine Werte ein und tippe „Eintragen".</div>';
     else html += '<div class="blog-list">' + log.map(function (e) {
-      return '<div class="blog-item"><span class="bl-date">' + esc(e.date) + '</span>'
+      var isToday = e.date === today();
+      return '<div class="blog-item' + (isToday ? ' today' : '') + '"><span class="bl-date">' + esc(e.date) + (isToday ? ' <span class="bl-today">heute</span>' : '') + '</span>'
         + '<span class="bl-vals">Beine ' + (e.legs || 0) + ' · OK ' + (e.upper_body || 0) + ' · Ges ' + (e.overall || 0) + ' · Rdy ' + (e.readiness || 3) + (e.pain && e.pain.flag ? ' · Schmerz' : '') + '</span>'
         + (e.notes ? '<span class="bl-note">' + esc(e.notes) + '</span>' : '')
         + '<button class="btn tiny ghost danger" data-action="body-del" data-d="' + esc(e.date) + '">×</button></div>';
@@ -1460,11 +1460,6 @@
     e.readiness = d.readiness || 3; e.pain = { flag: !!(d.pain && d.pain.flag), note: (d.pain && d.pain.note) || "" }; e.notes = d.notes || "";
     UI.bodyDraft = cloneBody(e);
     persist(); render(); toast("Körperzustand eingetragen (" + today() + ").");
-  }
-  function delBodyToday() {
-    DB.bodyLog = DB.bodyLog.filter(function (e) { return e.date !== today(); });
-    UI.bodyDraft = blankBody();
-    persist(); render(); toast("Heutiger Eintrag gelöscht.");
   }
   function onBarPick(el) {
     var ei = +el.getAttribute("data-ei"); var barId = el.value;
@@ -1715,8 +1710,7 @@
       case "wk": adjustWeek(+el.getAttribute("data-d")); break;
       case "phase-next": nextPhase(); break;
       case "body-save": saveBodyToday(); break;
-      case "body-del-today": delBodyToday(); break;
-      case "body-del": DB.bodyLog = DB.bodyLog.filter(function (e) { return e.date !== el.getAttribute("data-d"); }); persist(); render(); break;
+      case "body-del": var bd = el.getAttribute("data-d"); DB.bodyLog = DB.bodyLog.filter(function (e) { return e.date !== bd; }); if (bd === today()) UI.bodyDraft = blankBody(); persist(); render(); break;
       case "wo-view": UI.woView = el.getAttribute("data-v"); render(); break;
       case "cal-prev": calShift(-1); break;
       case "cal-next": calShift(1); break;

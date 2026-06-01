@@ -777,3 +777,11 @@ body{overflow-x:clip}
   .body-actions{flex-direction:column}
   .body-actions .btn{width:100%}
 }
+
+/* ============================================================
+   v0.23 – Koerper-Verlauf: heutiger Eintrag sichtbar markiert
+   Der heutige Eintrag erscheint jetzt im Verlauf (oben), damit
+   "Eintragen" sichtbar etwas zur Liste hinzufuegt.
+   ============================================================ */
+.blog-item.today{border-color:var(--accent);background:var(--panel2)}
+.bl-today{font-family:var(--mono);font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:var(--accent);border:1px solid var(--accent);border-radius:3px;padding:0 4px;margin-left:4px}
