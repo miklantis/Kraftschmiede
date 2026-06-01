@@ -561,8 +561,6 @@
   function viewTraining() {
     if (UI.live) return liveSession();
     var ranked = rankWorkouts();
-    var top = ranked[0];
-    var phase = currentPhase();
     var cards = ranked.map(function (r, i) {
       var t = r.tpl;
       var names = [t.lift1, t.lift2, t.core].map(function (id) { var e = exById(id); return e ? esc(e.name) : id; });
@@ -582,8 +580,6 @@
         + '</div>';
     }).join("");
     return '<div class="section-title">Heute trainieren</div>'
-      + restBanner()
-      + '<div class="hint">Coach-Empfehlung nach Erholung, Recency, Wochenbalance und Phase. Geplante Arbeitssätze pro Übung: <strong>' + plannedSetCount() + '</strong> (' + (phase ? esc(phase.name) : '—') + ').</div>'
       + '<div class="wo-grid">' + cards + yogaCard() + '</div>';
   }
   // Yoga als Karte im Training-Stil, am Ende der Workout-Liste. Blau (accent-2)
