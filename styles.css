@@ -105,7 +105,8 @@ textarea{width:100%;min-height:90px;resize:vertical;font-family:var(--mono);font
 .wo-card .btn{margin-top:4px}
 
 /* Live session */
-.live-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}
+.live-head{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:10px 0;background:var(--bg);border-bottom:1px solid var(--line);box-shadow:0 6px 16px -12px #000}
+.live-head .section-title{margin:0}
 .gw-body{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 16px}
 .gw-fields{color:var(--muted);font-size:13px;display:inline-flex;align-items:center;gap:6px}
 .slot-tag.warm{background:var(--accent-2);color:#04222a}
@@ -621,4 +622,7 @@ input[type=date]{background:var(--panel2);border:1px solid var(--line2);color:va
   }
   /* Uebungs-/Aufwaerm-Header kompakter: weniger oben, seitlich buendig mit den Saetzen */
   .ex-live-head,.gw-body{padding:8px 12px}
+  /* Sticky Workout-Kopf randvoll (deckt die vollbreiten Baender ab) und einzeilig */
+  .live-head{flex-wrap:nowrap;margin:0 -10px 12px;padding:10px 10px}
+  .live-head .section-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }
