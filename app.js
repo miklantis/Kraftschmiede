@@ -622,7 +622,7 @@
 
       // Arbeitssätze
       html += '<div class="sets-block"><div class="sets-title">Arbeitssätze</div>';
-      html += '<div class="set-row head"><span class="set-i">#</span><span>Wdh</span><span>Gewicht</span><span>Score</span><span>Versagen</span><span>Status</span></div>';
+      html += '<div class="set-row head"><span class="set-i">Satz</span><span>Wdh</span><span>kg</span><span>RIR</span><span class="h-done">\u2713</span></div>';
       en.sets.forEach(function (st, si) {
         html += workSetRow(ei, si, st, bar, showPlate && exo.category === "barbell");
       });
@@ -646,19 +646,16 @@
   }
 
   function workSetRow(ei, si, st, bar, showChips) {
-    var mt = E.metTarget(st);
-    var status = !st.done ? '<span class="st pending">offen</span>'
-      : (mt === true ? '<span class="st good">Ziel ✓</span>'
-        : (st.failed ? '<span class="st bad">Versagen</span>' : (st.adjusted ? '<span class="st warn">angepasst</span>' : '<span class="st warn">verfehlt</span>')));
+    var rirCls = "rir-sel" + (st.score === 5 ? " fail" : "") + (st.done ? " set" : "");
+    var rirOpts = [1, 2, 3, 4, 5].map(function (v) { var i = E.scoreInfo(v); return '<option value="' + v + '"' + (st.score === v ? " selected" : "") + '>' + i.rir + '</option>'; }).join("");
+    var sub = (showChips && bar) ? '<div class="set-sub" data-sub-ei="' + ei + '" data-sub-si="' + si + '">' + plateHint(st.weight, bar) + '</div>' : "";
     return '<div class="set-row work' + (st.done ? ' done' : '') + '" data-ei="' + ei + '" data-si="' + si + '">'
       + '<span class="set-i">' + (si + 1) + '</span>'
-      + '<div class="field f-reps"><span class="cap">Wdh</span><input type="number" class="num" data-set="reps" data-ei="' + ei + '" data-si="' + si + '" value="' + st.reps + '"></div>'
-      + '<div class="field f-weight"><span class="cap">Gewicht</span><div class="wcell"><input type="number" step="0.25" class="num" data-set="weight" data-ei="' + ei + '" data-si="' + si + '" value="' + st.weight + '">' + (showChips ? '<span class="wchips" data-wchips-ei="' + ei + '" data-wchips-si="' + si + '">' + plateChips(st.weight, bar) + '</span>' : '') + '</div></div>'
-      + '<div class="field f-score"><span class="cap">Score</span><select class="scoresel" data-set="score" data-ei="' + ei + '" data-si="' + si + '">' + [1, 2, 3, 4, 5].map(function (v) { var inf = E.scoreInfo(v); return '<option value="' + v + '"' + (st.score === v ? " selected" : "") + '>' + v + ' · RIR ' + inf.rir + '</option>'; }).join("") + '</select></div>'
-      + '<label class="chk c"><input type="checkbox" data-set="failed" data-ei="' + ei + '" data-si="' + si + '"' + (st.failed ? " checked" : "") + '><span class="ctxt">Versagen</span></label>'
-      + '<span class="status-cell">' + status + (st.adjusted ? '<span class="adj-dot" title="angepasst: ' + esc(st.adjustNote || "") + '">●</span>' : '') + '</span>'
-      + '<label class="chk done-chk"><input type="checkbox" data-set="done" data-ei="' + ei + '" data-si="' + si + '"' + (st.done ? " checked" : "") + '><span class="ctxt">Erledigt</span> \u2713</label>'
-      + '</div>';
+      + '<div class="field f-reps"><input type="number" inputmode="numeric" class="num" data-set="reps" data-ei="' + ei + '" data-si="' + si + '" value="' + st.reps + '"></div>'
+      + '<div class="field f-weight"><input type="number" step="0.25" inputmode="decimal" class="num" data-set="weight" data-ei="' + ei + '" data-si="' + si + '" value="' + st.weight + '"></div>'
+      + '<div class="field f-rir"><select class="' + rirCls + '" data-set="score" data-ei="' + ei + '" data-si="' + si + '" title="RIR / Score je Satz">' + rirOpts + '</select></div>'
+      + '<label class="field f-done done-chk" title="Satz erledigt"><input type="checkbox" data-set="done" data-ei="' + ei + '" data-si="' + si + '"' + (st.done ? " checked" : "") + '></label>'
+      + '</div>' + sub;
   }
   function sorePicker(key, label, val) {
     return '<div class="bfield"><span>' + label + ' (Kater)</span><select data-body="' + key + '">'
@@ -690,7 +687,7 @@
     var st = UI.live.entries[ei].sets[si];
     if (kind === "reps") st.reps = parseInt(el.value, 10) || 0;
     else if (kind === "weight") { var nw = parseFloat(el.value); if (nw !== st.targetWeight) markAdjust(st, "Gewicht angepasst"); st.weight = isNaN(nw) ? 0 : nw; }
-    else if (kind === "score") { st.score = +el.value; if (st.score === 5) { st.failed = true; var fc = el.closest(".set-row").querySelector('[data-set="failed"]'); if (fc) fc.checked = true; } }
+    else if (kind === "score") { st.score = +el.value; st.failed = (st.score === 5); }
     else if (kind === "failed") st.failed = el.checked;
     else if (kind === "done") st.done = el.checked;
     if (kind === "reps" && st.reps < st.targetReps && st.done) { /* verfehlt – kein Auto-Fail, Nutzer entscheidet */ }
@@ -701,15 +698,14 @@
     var row = document.querySelector('.set-row.work[data-ei="' + ei + '"][data-si="' + si + '"]');
     if (!row) return;
     var st = UI.live.entries[ei].sets[si];
-    var mt = E.metTarget(st);
-    var cell = row.querySelector(".status-cell");
-    var status = !st.done ? '<span class="st pending">offen</span>'
-      : (mt === true ? '<span class="st good">Ziel ✓</span>'
-        : (st.failed ? '<span class="st bad">Versagen</span>' : (st.adjusted ? '<span class="st warn">angepasst</span>' : '<span class="st warn">verfehlt</span>')));
-    cell.innerHTML = status + (st.adjusted ? '<span class="adj-dot" title="angepasst: ' + esc(st.adjustNote || "") + '">●</span>' : '');
     row.classList.toggle("done", !!st.done);
-    var wc = document.querySelector('.wchips[data-wchips-ei="' + ei + '"][data-wchips-si="' + si + '"]');
-    if (wc) { var enX = UI.live.entries[ei]; if ((exById(enX.exerciseId) || {}).category === "barbell") wc.innerHTML = plateChips(st.weight, entryBar(enX)); }
+    var sel = row.querySelector(".rir-sel");
+    if (sel) { sel.classList.toggle("fail", st.score === 5); sel.classList.toggle("set", !!st.done); }
+    var enX = UI.live.entries[ei];
+    if ((exById(enX.exerciseId) || {}).category === "barbell") {
+      var sub = document.querySelector('.set-sub[data-sub-ei="' + ei + '"][data-sub-si="' + si + '"]');
+      if (sub) sub.innerHTML = plateHint(st.weight, entryBar(enX));
+    }
   }
 
   function finishSession() {
