@@ -976,9 +976,7 @@
   var MIN_WORKOUT_SEC = 300;
   function endWorkout() {
     var s = UI.live; if (!s) return;
-    var sec = s.startedAt ? Math.round((Date.now() - s.startedAt) / 1000) : 0;
-    if (sec < MIN_WORKOUT_SEC) { openEndModal(sec); return; }
-    finishSession();
+    openEndModal();
   }
   function discardWorkout() { skipRest(); UI.live = null; render(); }
   function ensureEndModal() {
@@ -988,7 +986,7 @@
     ov.innerHTML = '<div class="ks-modal" role="dialog" aria-modal="true" aria-label="Workout beenden">'
       + '<div class="ks-modal-head"><span class="ks-modal-title">Workout beenden</span>'
       + '<button class="ks-modal-x" data-action="end-cancel" aria-label="Schließen">\u2715</button></div>'
-      + '<p class="end-text" id="ks-end-text"></p>'
+      + '<div class="end-body" id="ks-end-body"></div>'
       + '<div class="end-btns">'
       + '<button class="btn primary" data-action="end-save">Speichern</button>'
       + '<button class="btn danger" data-action="end-discard">Verwerfen</button>'
@@ -997,11 +995,38 @@
     ov.addEventListener("click", function (e) { if (e.target === ov) closeEndModal(); });
     document.body.appendChild(ov);
   }
-  function openEndModal(sec) {
+  function openEndModal() {
     ensureEndModal();
-    var t = document.getElementById("ks-end-text");
-    if (t) t.textContent = "Das Workout läuft erst " + fmtDur(sec) + " (unter 5 Minuten). Trotzdem speichern oder verwerfen?";
+    var body = document.getElementById("ks-end-body");
+    if (body) body.innerHTML = endSummaryHTML();
     document.getElementById("ks-end-modal").classList.add("open");
+  }
+  // Kompakte Uebersicht der laufenden Session: pro Uebung die Arbeitssaetze
+  // als Chips (erledigte gruen), oben Dauer und erledigt/gesamt.
+  function endSummaryHTML() {
+    var s = UI.live; if (!s) return "";
+    var t = tplById(s.templateId);
+    var sec = s.startedAt ? Math.round((Date.now() - s.startedAt) / 1000) : 0;
+    var totalWork = 0, totalDone = 0;
+    var rows = (s.entries || []).map(function (en) {
+      var exo = exById(en.exerciseId);
+      var sets = en.sets || [];
+      var done = sets.filter(function (x) { return x.done; }).length;
+      totalWork += sets.length; totalDone += done;
+      var chips = sets.map(function (x) {
+        return '<span class="es-set' + (x.done ? ' done' : '') + '">' + (x.reps || 0) + '\u00D7' + fmtNum(x.weight) + '</span>';
+      }).join("");
+      return '<div class="es-ex">'
+        + '<div class="es-ex-head"><span class="es-name">' + esc(exo ? exo.name : en.exerciseId) + '</span>'
+        + '<span class="es-count' + (sets.length && done === sets.length ? ' done' : '') + '">' + done + '/' + sets.length + '</span></div>'
+        + (chips ? '<div class="es-sets">' + chips + '</div>' : '')
+        + '</div>';
+    }).join("");
+    var warn = sec < MIN_WORKOUT_SEC ? '<div class="es-warn">Erst ' + fmtDur(sec) + ' trainiert (unter 5 Min).</div>' : '';
+    return '<div class="es-meta"><span>Workout ' + esc(t ? t.name : "?") + '</span><span>Dauer ' + fmtDur(sec) + '</span><span>' + totalDone + '/' + totalWork + ' Sätze</span></div>'
+      + warn
+      + '<div class="es-list">' + rows + '</div>'
+      + '<div class="es-hint">Speichern übernimmt nur erledigte Sätze in den Verlauf.</div>';
   }
   function closeEndModal() { var m = document.getElementById("ks-end-modal"); if (m) m.classList.remove("open"); }
 
