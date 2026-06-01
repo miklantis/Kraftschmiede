@@ -227,6 +227,9 @@
 
   migrate(DB);
   var UI = { tab: "training", detail: null, live: null, importPreview: null, journeyPicker: false, calMonth: null, plateShow: {}, menuOpen: false };
+  // Laufende Session nach Browser-/App-Neustart wiederherstellen. Die Uhr
+  // laeuft ueber den gespeicherten startedAt-Zeitstempel korrekt weiter.
+  if (DB.live && DB.live.status === "live") { UI.live = DB.live; UI.tab = "training"; }
 
   function migrate(db) {
     db.schemaVersion = SCHEMA;
@@ -944,10 +947,11 @@
     var parts = path.split("."); var o = UI.live;
     for (var i = 0; i < parts.length - 1; i++) { if (o[parts[i]] == null) o[parts[i]] = {}; o = o[parts[i]]; }
     o[parts[parts.length - 1]] = val;
+    persist();
   }
   function onSetChange(el) {
     var ei = +el.getAttribute("data-ei"), si = +el.getAttribute("data-si"), kind = el.getAttribute("data-set");
-    if (kind === "w") { UI.live.entries[ei].warmupSets[si].done = el.checked; var wr = el.closest(".set-row"); if (wr) wr.classList.toggle("done", el.checked); return; }
+    if (kind === "w") { UI.live.entries[ei].warmupSets[si].done = el.checked; var wr = el.closest(".set-row"); if (wr) wr.classList.toggle("done", el.checked); persist(); return; }
     var st = UI.live.entries[ei].sets[si];
     if (kind === "reps") st.reps = parseInt(el.value, 10) || 0;
     else if (kind === "weight") { var nw = parseFloat(el.value); if (nw !== st.targetWeight) markAdjust(st, "Gewicht angepasst"); st.weight = isNaN(nw) ? 0 : nw; }
@@ -956,6 +960,7 @@
     else if (kind === "done") { var wasDone = st.done; st.done = el.checked; if (!wasDone && st.done) onSetCompleted(ei, si); }
     if (kind === "reps" && st.reps < st.targetReps && st.done) { /* verfehlt – kein Auto-Fail, Nutzer entscheidet */ }
     refreshSetStatus(ei, si);
+    persist();
   }
   function markAdjust(st, note) { st.adjusted = true; st.adjustNote = note; }
   function refreshSetStatus(ei, si) {
@@ -978,7 +983,7 @@
     var s = UI.live; if (!s) return;
     openEndModal();
   }
-  function discardWorkout() { skipRest(); UI.live = null; render(); scrollToTop(); }
+  function discardWorkout() { skipRest(); UI.live = null; DB.live = null; persist(); render(); scrollToTop(); }
   function ensureEndModal() {
     if (document.getElementById("ks-end-modal")) return;
     var ov = document.createElement("div");
@@ -1082,8 +1087,10 @@
     UI.live = UI.pendingLive;
     UI.live.startedAt = Date.now();
     UI.pendingLive = null;
+    DB.live = UI.live;
     closeStartModal();
     clickTick(true);
+    persist();
     render();
     scrollToTop();
   }
@@ -1123,6 +1130,7 @@
     s.entries = s.entries.filter(function (en) { return en.sets && en.sets.length; });
     DB.sessions.push(s);
     UI.live = null;
+    DB.live = null;
     persist();
     UI.tab = "workouts"; render(); scrollToTop();
   }
@@ -1717,9 +1725,9 @@
     var en = UI.live.entries[ei]; var last = en.sets[en.sets.length - 1] || { reps: 8, weight: barById(exById(en.exerciseId).barId).weight, score: 3 };
     en.sets.push({ reps: last.targetReps || last.reps, weight: last.targetWeight || last.weight, score: exById(en.exerciseId).targetScore, failed: false, done: false, targetReps: last.targetReps || last.reps, targetWeight: last.targetWeight || last.weight, adjusted: false, adjustNote: "" });
     en.plannedSets.push({ reps: last.targetReps || last.reps, weight: last.targetWeight || last.weight, targetScore: exById(en.exerciseId).targetScore });
-    render();
+    persist(); render();
   }
-  function delSet(ei) { var en = UI.live.entries[ei]; if (en.sets.length > 1) { en.sets.pop(); en.plannedSets.pop(); render(); } }
+  function delSet(ei) { var en = UI.live.entries[ei]; if (en.sets.length > 1) { en.sets.pop(); en.plannedSets.pop(); persist(); render(); } }
   function adjustWeek(d) { var j = activeJourney(); var ph = currentPhase(); j.currentWeek = Math.max(1, Math.min(ph ? ph.weeks : 99, (j.currentWeek || 1) + d)); persist(); render(); }
   function nextPhase() {
     var j = activeJourney(); if (!j) return;
@@ -1820,7 +1828,7 @@
   /* init */
   window.KS_APP = {
     getDB: function () { return DB; },
-    setDB: function (db) { DB = db; if (typeof migrate === "function") migrate(DB); Store.save(DB); render(); },
+    setDB: function (db) { DB = db; if (typeof migrate === "function") migrate(DB); UI.live = (DB.live && DB.live.status === "live") ? DB.live : null; Store.save(DB); render(); },
     schema: SCHEMA
   };
   render();
