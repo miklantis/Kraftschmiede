@@ -556,6 +556,8 @@
   /* =========================================================
      View: Training (Live)
      ========================================================= */
+  // Pfad zum Vorschaubild eines Workouts (images/Workout X.jpeg). Leerzeichen wird URL-codiert.
+  function woImage(name) { return "images/" + encodeURIComponent("Workout " + name) + ".jpeg"; }
   function viewTraining() {
     if (UI.live) return liveSession();
     var ranked = rankWorkouts();
@@ -565,12 +567,18 @@
       var t = r.tpl;
       var names = [t.lift1, t.lift2, t.core].map(function (id) { var e = exById(id); return e ? esc(e.name) : id; });
       return '<div class="wo-card' + (i === 0 ? ' rec' : '') + (r.excluded ? ' excl' : '') + '">'
-        + '<div class="wo-head"><span class="wo-name">Workout ' + esc(t.name) + '</span>'
-        + '<span class="score-badge" title="Suitability-Score">' + fmtNum(r.score) + '</span></div>'
+        + '<div class="wo-thumb">'
+        + '<img class="wo-img" src="' + woImage(t.name) + '" alt="Workout ' + esc(t.name) + '" loading="lazy" onerror="this.remove()">'
+        + '<span class="wo-grad"></span>'
+        + '<span class="wo-name">Workout ' + esc(t.name) + '</span>'
+        + '<span class="score-badge" title="Suitability-Score">' + fmtNum(r.score) + '</span>'
+        + '</div>'
+        + '<div class="wo-body">'
         + '<div class="wo-lifts">' + names[0] + ' › ' + names[1] + ' › ' + names[2] + '</div>'
         + (r.excluded ? '<div class="wo-excl">ausgeschlossen (Muskelkater)</div>' : '')
         + '<div class="wo-reasons">' + r.reasons.slice(0, 3).map(esc).join(" · ") + '</div>'
         + '<button class="btn ' + (i === 0 ? 'primary' : 'ghost') + '" data-action="start" data-tpl="' + t.id + '"' + (r.excluded ? ' disabled' : '') + '>' + (i === 0 ? 'Empfehlung starten' : 'starten') + '</button>'
+        + '</div>'
         + '</div>';
     }).join("");
     return '<div class="section-title">Heute trainieren</div>'
@@ -582,7 +590,7 @@
   function yogaBox() {
     return '<div class="section-title">Yoga / Mobility</div>'
       + '<div class="yoga-card">'
-      + '<div class="yoga-main"><span class="yoga-tag">YOGA</span><div class="yoga-txt"><strong>Einheit eintragen</strong><span>Erholungs- oder Mobility-Tag, getrennt vom Krafttraining.</span></div></div>'
+      + '<div class="yoga-main"><img class="yoga-thumb" src="images/Yoga.jpeg" alt="Yoga" loading="lazy" onerror="this.remove()"><span class="yoga-tag">YOGA</span><div class="yoga-txt"><strong>Einheit eintragen</strong><span>Erholungs- oder Mobility-Tag, getrennt vom Krafttraining.</span></div></div>'
       + '<div class="yoga-form">'
       + '<label class="yf-date">Datum <input type="date" id="yoga-date" value="' + today() + '"></label>'
       + '<label class="yf-dur">Dauer <input type="number" class="num mini" id="yoga-min" value="80"> min</label>'
