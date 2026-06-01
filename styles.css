@@ -530,9 +530,16 @@ input[type=date]{background:var(--panel2);border:1px solid var(--line2);color:va
   .score-table{grid-template-columns:repeat(2,1fr)}
   .metric-row{grid-template-columns:1fr 1fr}
   .tab{padding:10px 10px;letter-spacing:.5px}
+}
+
+/* Yoga/Mobility-Eingabe auf Mobile aufgeraeumt stapeln:
+   jedes Feld volle Breite, Notiz mit ganzer Zeile, Button volle Breite */
+@media (max-width:560px){
   .yoga-card{flex-direction:column;align-items:stretch}
-  .yoga-form{width:100%}
-  .yoga-note{min-width:0}
+  .yoga-form{flex-direction:column;align-items:stretch;gap:10px;width:100%}
+  .yf-date input[type="date"]{flex:1;min-width:0}
+  .yoga-note{flex:none;width:100%;min-width:0}
+  .yf-submit{width:100%}
 }
 
 /* ============================================================

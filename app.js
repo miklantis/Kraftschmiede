@@ -584,10 +584,10 @@
       + '<div class="yoga-card">'
       + '<div class="yoga-main"><span class="yoga-tag">YOGA</span><div class="yoga-txt"><strong>Einheit eintragen</strong><span>Erholungs- oder Mobility-Tag, getrennt vom Krafttraining.</span></div></div>'
       + '<div class="yoga-form">'
-      + '<label>Datum <input type="date" id="yoga-date" value="' + today() + '"></label>'
-      + '<label>Dauer <input type="number" class="num mini" id="yoga-min" value="80"> min</label>'
+      + '<label class="yf-date">Datum <input type="date" id="yoga-date" value="' + today() + '"></label>'
+      + '<label class="yf-dur">Dauer <input type="number" class="num mini" id="yoga-min" value="80"> min</label>'
       + '<input type="text" class="yoga-note" id="yoga-note" placeholder="Notiz (optional)">'
-      + '<button class="btn" data-action="add-yoga">Eintragen</button>'
+      + '<button class="btn yf-submit" data-action="add-yoga">Eintragen</button>'
       + '</div></div>';
   }
   function addYoga() {
