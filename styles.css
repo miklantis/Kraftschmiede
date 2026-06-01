@@ -210,15 +210,17 @@ label.chk.bfield{flex-direction:row;align-items:center}
 
 /* Log */
 .log-list{display:flex;flex-direction:column;gap:8px}
-.log-item{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;position:relative}
-.log-main{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.log-date{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.log-item{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:start;gap:12px}
+.log-date{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap;padding-top:1px}
+.log-body{min-width:0}
+.log-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .log-wo{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
 .dev-badge{font-size:11px;font-weight:600;color:var(--warn);border:1px solid var(--warn);border-radius:4px;padding:1px 6px}
 .ok-badge{font-size:11px;font-weight:600;color:var(--good);border:1px solid rgba(94,194,106,.4);border-radius:4px;padding:1px 6px}
 .log-sub{color:var(--muted);font-size:12px;margin-top:4px;font-family:var(--mono)}
+.log-meta{display:flex;gap:12px;margin-top:4px;font-family:var(--mono);font-size:12px}
 .log-vol{color:var(--accent)}
-.log-item .btn{position:absolute;top:8px;right:10px}
+.log-del{flex:none;align-self:start}
 
 /* Exercises list */
 .ex-group{margin-bottom:8px}
@@ -740,4 +742,20 @@ body{overflow-x:clip}
 .es-bodywarn .btn{flex:none}
 @media (max-width:560px){
   .es-bodywarn .btn{width:100%}
+}
+
+/* ============================================================
+   v0.21 – Workouts-Tab: Umschalter Kalender/Liste
+   Kalender und Liste gebuendelt, nur eine Ansicht gleichzeitig.
+   Segmented Control oben; Listeneintraege aufgeraeumt (Datum-Spalte
+   links, rechts Name/Badge/Details, Loeschen rechtsbuendig).
+   ============================================================ */
+.wo-viewbar{margin-bottom:12px}
+.seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:3px;gap:3px}
+.seg-btn{font-family:var(--display);font-size:13px;font-weight:600;letter-spacing:.3px;color:var(--muted);background:transparent;border:0;border-radius:6px;padding:6px 14px;cursor:pointer}
+.seg-btn.on{background:var(--accent);color:#1a1206}
+.seg-btn:not(.on):hover{color:var(--text)}
+@media (max-width:560px){
+  .seg{display:flex;width:100%}
+  .seg-btn{flex:1}
 }

@@ -226,7 +226,7 @@
   function dashReorder(from, to) { if (from === to || from < 0 || to < 0 || from >= DASH.length || to >= DASH.length) return; var item = DASH.splice(from, 1)[0]; DASH.splice(to, 0, item); dashSave(); }
 
   migrate(DB);
-  var UI = { tab: "training", detail: null, live: null, importPreview: null, journeyPicker: false, calMonth: null, plateShow: {}, menuOpen: false };
+  var UI = { tab: "training", detail: null, live: null, importPreview: null, journeyPicker: false, calMonth: null, plateShow: {}, menuOpen: false, woView: "calendar" };
   // Laufende Session nach Browser-/App-Neustart wiederherstellen. Die Uhr
   // laeuft ueber den gespeicherten startedAt-Zeitstempel korrekt weiter.
   if (DB.live && DB.live.status === "live") { UI.live = DB.live; UI.tab = "training"; }
@@ -1193,31 +1193,43 @@
       html += '<div class="card empty-journey"><p class="ej-lead">Keine aktive Journey.</p><p class="hint">Starte im <strong>Journey</strong>-Tab eine Journey aus einer Vorlage.</p><button class="btn primary" data-action="journey-picker">Journey wählen</button></div>';
     }
 
-    // Kalender (aktueller Monat)
-    html += '<div class="section-title">Kalender</div>' + calendarHTML();
-
-    // Verlauf
+    // Kalender / Liste – nur eine Ansicht gleichzeitig (Umschalter)
     var ss = doneSessions().slice().reverse();
-    html += '<div class="section-title">Verlauf (' + ss.length + ')</div>';
-    if (!ss.length) html += '<div class="empty">Noch keine Sessions. Starte ein Workout im Training-Tab.</div>';
-    else {
+    var view = UI.woView || "calendar";
+    html += '<div class="wo-viewbar">'
+      + '<div class="seg">'
+      + '<button class="seg-btn' + (view === "calendar" ? " on" : "") + '" data-action="wo-view" data-v="calendar">Kalender</button>'
+      + '<button class="seg-btn' + (view === "list" ? " on" : "") + '" data-action="wo-view" data-v="list">Liste (' + ss.length + ')</button>'
+      + '</div></div>';
+
+    if (view === "calendar") {
+      html += calendarHTML();
+    } else if (!ss.length) {
+      html += '<div class="empty">Noch keine Sessions. Starte ein Workout im Training-Tab.</div>';
+    } else {
       html += '<div class="log-list">' + ss.map(function (s) {
         if (s.type === "yoga") {
           return '<div class="log-item yoga">'
-            + '<div class="log-main"><span class="log-date">' + esc(s.date) + '</span> <span class="log-wo"><span class="yoga-tag sm">YOGA</span> Yoga / Mobility</span></div>'
+            + '<div class="log-date">' + esc(s.date) + '</div>'
+            + '<div class="log-body">'
+            + '<div class="log-top"><span class="log-wo"><span class="yoga-tag sm">YOGA</span> Yoga / Mobility</span></div>'
             + '<div class="log-sub">' + (s.minutes || 0) + ' min' + (s.notes ? ' · ' + esc(s.notes) : '') + '</div>'
-            + '<button class="btn tiny ghost" data-action="del-session" data-id="' + s.id + '">löschen</button>'
+            + '</div>'
+            + '<button class="btn tiny ghost log-del" data-action="del-session" data-id="' + s.id + '">löschen</button>'
             + '</div>';
         }
         var t = tplById(s.templateId);
         var dev = (s.entries || []).some(function (e) { return e.hadDeviation; });
         var vol = (s.entries || []).reduce(function (a, e) { return a + workVol(e); }, 0);
         return '<div class="log-item">'
-          + '<div class="log-main"><span class="log-date">' + esc(s.date) + '</span> <span class="log-wo">Workout ' + esc(t ? t.name : "?") + '</span>'
+          + '<div class="log-date">' + esc(s.date) + '</div>'
+          + '<div class="log-body">'
+          + '<div class="log-top"><span class="log-wo">Workout ' + esc(t ? t.name : "?") + '</span>'
           + (dev ? '<span class="dev-badge" title="Abweichung: geplant nicht erreicht / runterkorrigiert">Δ Abweichung</span>' : '<span class="ok-badge">im Plan</span>') + '</div>'
-          + '<div class="log-sub">' + (s.entries || []).map(function (e) { var ex = exById(e.exerciseId); return esc(ex ? ex.name : e.exerciseId) + ' ' + setSummary(e); }).join(" · ")
-          + ' <span class="log-vol">Vol ' + fmtNum(Math.round(vol)) + '</span>' + (s.durationSec ? ' <span class="log-dur">Dauer ' + fmtDur(s.durationSec) + '</span>' : '') + '</div>'
-          + '<button class="btn tiny ghost" data-action="del-session" data-id="' + s.id + '">löschen</button>'
+          + '<div class="log-sub">' + (s.entries || []).map(function (e) { var ex = exById(e.exerciseId); return esc(ex ? ex.name : e.exerciseId) + ' ' + setSummary(e); }).join(" · ") + '</div>'
+          + '<div class="log-meta"><span class="log-vol">Vol ' + fmtNum(Math.round(vol)) + '</span>' + (s.durationSec ? '<span class="log-dur">Dauer ' + fmtDur(s.durationSec) + '</span>' : '') + '</div>'
+          + '</div>'
+          + '<button class="btn tiny ghost log-del" data-action="del-session" data-id="' + s.id + '">löschen</button>'
           + '</div>';
       }).join("") + '</div>';
     }
@@ -1680,6 +1692,7 @@
       case "wk": adjustWeek(+el.getAttribute("data-d")); break;
       case "phase-next": nextPhase(); break;
       case "body-del": DB.bodyLog = DB.bodyLog.filter(function (e) { return e.date !== el.getAttribute("data-d"); }); persist(); render(); break;
+      case "wo-view": UI.woView = el.getAttribute("data-v"); render(); break;
       case "cal-prev": calShift(-1); break;
       case "cal-next": calShift(1); break;
       case "cal-today": calToday(); break;
