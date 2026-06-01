@@ -601,3 +601,17 @@ input[type=date]{background:var(--panel2);border:1px solid var(--line2);color:va
 .end-text{color:var(--muted);font-size:14px;line-height:1.5;margin:0 0 14px}
 .end-btns{display:flex;flex-direction:column;gap:8px}
 .end-btns .btn{width:100%}
+
+/* ============================================================
+   v0.14 – Mobile: Inhalts-Boxen als vollbreite Baender
+   Box-Optik aufloesen: kein Seitenrand, kein Radius, randvoll
+   ueber die Breite. Die Panel-Fuellung wird zur Flaeche, der
+   dunklere Body-Hintergrund trennt die Baender. Farbliche
+   Akzente (Slot-Tags, Status-Raender) bleiben erhalten.
+   ============================================================ */
+@media (max-width:560px){
+  .card,.rest-card,.yoga-card,.ex-row,.log-item,.jrow,.blog-item,.dash-tile{
+    border-radius:0;border-left:none;border-right:none;
+    margin-left:-10px;margin-right:-10px;
+  }
+}
