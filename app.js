@@ -3,7 +3,7 @@
 (function () {
   "use strict";
   var E = window.FSE;
-  var SCHEMA = "0.13";
+  var SCHEMA = "0.14";
 
   /* =========================================================
      Persistenz: localStorage mit In-Memory-Fallback
@@ -41,7 +41,8 @@
         recoveryWindows: { default: 48, squat: 48, deadlift: 72 },
         weeklyFrequencyTarget: 3,
         step: 2.5,
-        unit: "kg"
+        unit: "kg",
+        timers: { setRestSec: 120, exerciseRestSec: 180, autoStart: true, sound: true, vibrate: true }
       },
       inventory: {
         bars: [
@@ -228,12 +229,21 @@
   var UI = { tab: "training", detail: null, live: null, importPreview: null, journeyPicker: false, calMonth: null, plateShow: {}, menuOpen: false };
 
   function migrate(db) {
-    if (!db.schemaVersion) db.schemaVersion = SCHEMA;
+    db.schemaVersion = SCHEMA;
     db.sessions = db.sessions || [];
     db.journeys = db.journeys || [];
     db.exercises = db.exercises || [];
     db.bodyLog = db.bodyLog || [];
     db.templates = db.templates || [];
+    // Pausen-Timer-Settings nachruesten (non-destruktiv, feldweise)
+    db.settings = db.settings || {};
+    if (!db.settings.timers) db.settings.timers = {};
+    var TMR = db.settings.timers;
+    if (TMR.setRestSec == null) TMR.setRestSec = 120;
+    if (TMR.exerciseRestSec == null) TMR.exerciseRestSec = 180;
+    if (TMR.autoStart == null) TMR.autoStart = true;
+    if (TMR.sound == null) TMR.sound = true;
+    if (TMR.vibrate == null) TMR.vibrate = true;
     // Journey-/Phasen-Felder nachrüsten (non-destruktiv)
     db.journeys.forEach(function (j) {
       if (!j.status) j.status = "active";
@@ -536,6 +546,7 @@
     root.innerHTML = head + nav + banner + '<main class="content">' + body + '</main>';
     if (window.KSSync) window.KSSync.mountPanel();
     if (UI.tab === "training" && UI.live) bindLiveInputs();
+    manageClock();
   }
 
   /* =========================================================
@@ -596,6 +607,25 @@
     return '<div class="rest-card ok"><div class="rc-main"><strong>Bereit fürs Training</strong><span>Körperzustand grün.</span></div></div>';
   }
 
+  /* Trainings-Uhr: zaehlt aus startedAt hoch. Anzeige wird immer aus
+     (Date.now() - startedAt) berechnet, daher robust gegen Tab-Wechsel und
+     Hintergrund-Drosselung. Das laufende Workout liegt in UI.live. */
+  var clockTimer = null;
+  function fmtDur(sec) {
+    sec = Math.max(0, Math.round(sec || 0));
+    var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), ss = sec % 60;
+    return (h > 0 ? h + ":" + pad(m) : "" + m) + ":" + pad(ss);
+  }
+  function updateClock() {
+    var el = document.getElementById("live-clock");
+    if (!el || !UI.live || !UI.live.startedAt) { if (clockTimer) { clearInterval(clockTimer); clockTimer = null; } return; }
+    el.textContent = fmtDur((Date.now() - UI.live.startedAt) / 1000);
+  }
+  function manageClock() {
+    if (clockTimer) { clearInterval(clockTimer); clockTimer = null; }
+    if (UI.tab === "training" && UI.live && UI.live.startedAt) { updateClock(); clockTimer = setInterval(updateClock, 1000); }
+  }
+
   function buildLive(templateId) {
     var t = tplById(templateId); var phase = currentPhase(); var j = activeJourney();
     var entries = [t.lift1, t.lift2, t.core].map(function (id, idx) {
@@ -617,17 +647,19 @@
     return {
       id: "s_" + today().replace(/-/g, "") + "_" + Math.floor(Math.random() * 1000),
       date: today(), journeyId: j ? j.id : null, phaseId: phase ? phase.id : null, templateId: templateId,
-      status: "live", generalWarmup: { done: false, minutes: 7, mode: "bike" },
+      status: "live", startedAt: Date.now(), generalWarmup: { done: false, minutes: 7, mode: "bike" },
       entries: entries, body: { legs: b.legs || 0, upper_body: b.upper_body || 0, overall: b.overall || 0, pain: {}, readiness: b.readiness || 3, notes: "" }
     };
   }
 
   function liveSession() {
     var s = UI.live; var t = tplById(s.templateId);
+    if (!s.startedAt) s.startedAt = Date.now();
     var gw = s.generalWarmup;
     var html = '<div class="live-head">'
-      + '<div><div class="section-title">Training · Workout ' + esc(t.name) + '</div></div>'
-      + '<button class="btn ghost small" data-action="cancel-live">verwerfen</button></div>';
+      + '<div class="live-head-l"><div class="section-title">Training · Workout ' + esc(t.name) + '</div></div>'
+      + '<div class="live-head-r"><span class="live-clock" id="live-clock" title="Trainingsdauer">' + fmtDur((Date.now() - s.startedAt) / 1000) + '</span>'
+      + '<button class="btn ghost small" data-action="cancel-live">verwerfen</button></div></div>';
 
     // Allgemeines Aufwärmen
     html += '<div class="card exercise-live gw-card">'
@@ -748,6 +780,8 @@
   function finishSession() {
     var s = UI.live;
     s.status = "done";
+    s.endedAt = Date.now();
+    if (s.startedAt) s.durationSec = Math.max(0, Math.round((s.endedAt - s.startedAt) / 1000));
     s.entries.forEach(function (en) {
       var exo = exById(en.exerciseId);
       en.sets.forEach(function (st) { st.metTarget = E.metTarget(st); });
@@ -818,7 +852,7 @@
           + '<div class="log-main"><span class="log-date">' + esc(s.date) + '</span> <span class="log-wo">Workout ' + esc(t ? t.name : "?") + '</span>'
           + (dev ? '<span class="dev-badge" title="Abweichung: geplant nicht erreicht / runterkorrigiert">Δ Abweichung</span>' : '<span class="ok-badge">im Plan</span>') + '</div>'
           + '<div class="log-sub">' + (s.entries || []).map(function (e) { var ex = exById(e.exerciseId); return esc(ex ? ex.name : e.exerciseId) + ' ' + setSummary(e); }).join(" · ")
-          + ' <span class="log-vol">Vol ' + fmtNum(Math.round(vol)) + '</span></div>'
+          + ' <span class="log-vol">Vol ' + fmtNum(Math.round(vol)) + '</span>' + (s.durationSec ? ' <span class="log-dur">Dauer ' + fmtDur(s.durationSec) + '</span>' : '') + '</div>'
           + '<button class="btn tiny ghost" data-action="del-session" data-id="' + s.id + '">löschen</button>'
           + '</div>';
       }).join("") + '</div>';
@@ -1137,6 +1171,20 @@
       + '<label class="edit-field"><span>Einheit</span><select data-set-setting="unit"><option value="kg"' + (s.unit === "kg" ? " selected" : "") + '>kg</option><option value="lb"' + (s.unit === "lb" ? " selected" : "") + '>lb</option></select></label>'
       + '</div></div>';
 
+    var T = s.timers || {};
+    html += '<div class="card"><div class="sets-title">Pausen-Timer</div>'
+      + '<div class="settings-grid">'
+      + timerNum("Satz-Pause (Sek.)", "setRestSec", T.setRestSec)
+      + timerNum("Übungs-Pause (Sek.)", "exerciseRestSec", T.exerciseRestSec)
+      + '</div>'
+      + '<div class="timer-switches">'
+      + timerChk("Pause automatisch starten", "autoStart", T.autoStart)
+      + timerChk("Ton am Pausenende", "sound", T.sound)
+      + timerChk("Vibration am Pausenende", "vibrate", T.vibrate)
+      + '</div>'
+      + '<div class="hint">Standardvorgaben für die Pausen zwischen Sätzen und zwischen Übungen. Im laufenden Training lässt sich eine Pause per Tippen für diesen einen Durchgang anpassen. Auto-Start, Ton und Vibration werden mit den nächsten Ausbaustufen wirksam; Vibration ist nicht auf allen Geräten verfügbar (auf iPhone-Safari nur Ton, und nur bei aktivem Display).</div>'
+      + '</div>';
+
     html += '<div class="card"><div class="sets-title">Daten – Export / Import</div>'
       + '<div class="hint">JSON ist Backup und additive Schnittstelle zu Claude. Import in drei Modi.</div>'
       + '<div class="data-btns"><button class="btn ghost" data-action="export">Export (Download)</button>'
@@ -1161,6 +1209,8 @@
     return html;
   }
   function numSetting(label, field, val, step) { return '<label class="edit-field"><span>' + label + '</span><input type="number" step="' + step + '" class="num" data-set-setting="' + field + '" value="' + val + '"></label>'; }
+  function timerNum(label, field, val) { return '<label class="edit-field"><span>' + label + '</span><input type="number" step="5" min="0" class="num" data-set-timer="' + field + '" value="' + (val == null ? "" : val) + '"></label>'; }
+  function timerChk(label, field, val) { return '<label class="chk"><input type="checkbox" data-set-timer="' + field + '"' + (val ? " checked" : "") + '> ' + label + '</label>'; }
 
   /* =========================================================
      Demo-Daten
@@ -1291,6 +1341,7 @@
     var el = ev.target;
     if (el.hasAttribute && el.hasAttribute("data-exedit")) { exEdit(el); }
     else if (el.hasAttribute && el.hasAttribute("data-set-setting")) { settingEdit(el); }
+    else if (el.hasAttribute && el.hasAttribute("data-set-timer")) { timerEdit(el); }
     else if (el.hasAttribute && el.hasAttribute("data-body")) { onBodyChange(el); }
     else if (el.hasAttribute && el.hasAttribute("data-barpick")) { onBarPick(el); }
     else if (el.hasAttribute && el.hasAttribute("data-bar")) { var i = +el.getAttribute("data-i"); DB.inventory.bars[i].weight = parseFloat(el.value) || 0; persist(); }
@@ -1380,6 +1431,12 @@
     else if (f === "rec_deadlift") s.recoveryWindows.deadlift = parseInt(el.value, 10) || 72;
     else s[f] = parseFloat(el.value) || s[f];
     persist(); render();
+  }
+  function timerEdit(el) {
+    var f = el.getAttribute("data-set-timer"); var T = DB.settings.timers = DB.settings.timers || {};
+    if (f === "setRestSec" || f === "exerciseRestSec") { var v = parseInt(el.value, 10); T[f] = (isNaN(v) || v < 0) ? 0 : v; }
+    else T[f] = el.checked;
+    persist();
   }
   function addPlate() { var inp = document.getElementById("plate-new"); var v = parseFloat(inp.value); if (v > 0 && DB.inventory.plates.indexOf(v) < 0) { DB.inventory.plates.push(v); persist(); render(); } }
   function loaderCalc() {

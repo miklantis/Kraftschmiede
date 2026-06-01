@@ -561,3 +561,15 @@ input[type=date]{background:var(--panel2);border:1px solid var(--line2);color:va
 .ks-status.ks-saved{color:var(--accent-2);border-color:var(--accent-2)}
 .ks-status.ks-saving{color:var(--accent)}
 .ks-status.ks-error{color:var(--warn);border-color:var(--warn)}
+
+/* ============================================================
+   v0.14 – Trainings-Uhr & Pausen-Timer-Einstellungen
+   ============================================================ */
+.live-head-l{flex:1;min-width:0}
+.live-head-r{display:flex;align-items:center;gap:10px;flex:none}
+.live-clock{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:22px;font-weight:700;color:var(--accent);background:var(--panel);border:1px solid var(--line2);border-radius:8px;padding:6px 12px;line-height:1;min-width:80px;text-align:center}
+.timer-switches{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.log-dur{color:var(--accent-2)}
+@media (max-width:560px){
+  .live-clock{font-size:18px;padding:5px 10px;min-width:66px}
+}
