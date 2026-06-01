@@ -131,9 +131,12 @@
     _setStatus: function (state, msg) {
       this._status = { state: state, msg: msg, at: Date.now() };
       this._refreshPanel();
+      if (typeof this.onAuthChange === "function") { try { this.onAuthChange(); } catch (e) {} }
     },
 
     mountPanel: function () { this._refreshPanel(); },
+
+    status: function () { return { configured: this._configured(), loggedIn: !!this._session, email: this._email() }; },
 
     _refreshPanel: function () {
       var el = document.getElementById("ks-sync-panel");

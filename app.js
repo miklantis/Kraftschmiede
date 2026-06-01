@@ -472,12 +472,35 @@
     { id: "inventory", label: "Inventar" },
     { id: "settings", label: "Einstellungen" }
   ];
+  function authBtn() {
+    var s = (window.KSSync && window.KSSync.status) ? window.KSSync.status() : { loggedIn: false, email: "" };
+    var icon = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"></path></svg>';
+    return '<button class="auth-btn' + (s.loggedIn ? ' in' : '') + '" data-action="auth-open" title="' + (s.loggedIn ? esc("Angemeldet: " + (s.email || "")) : "Konto / Anmelden") + '" aria-label="Konto">' + icon + (s.loggedIn ? '<span class="auth-dot"></span>' : '') + '</button>';
+  }
+  function refreshAuthIcon() { var b = document.querySelector(".auth-btn"); if (b) b.outerHTML = authBtn(); }
+
+  function ensureAuthModal() {
+    if (document.getElementById("ks-auth-modal")) return;
+    var ov = document.createElement("div");
+    ov.id = "ks-auth-modal";
+    ov.className = "ks-modal-overlay";
+    ov.innerHTML = '<div class="ks-modal" role="dialog" aria-modal="true" aria-label="Konto">'
+      + '<div class="ks-modal-head"><span class="ks-modal-title">Konto &amp; Cloud-Sync</span>'
+      + '<button class="ks-modal-x" data-action="auth-close" aria-label="Schließen">\u2715</button></div>'
+      + '<div id="ks-sync-panel"></div></div>';
+    ov.addEventListener("click", function (e) { if (e.target === ov) closeAuthModal(); });
+    document.body.appendChild(ov);
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeAuthModal(); });
+  }
+  function openAuthModal() { ensureAuthModal(); if (window.KSSync) window.KSSync.mountPanel(); document.getElementById("ks-auth-modal").classList.add("open"); }
+  function closeAuthModal() { var m = document.getElementById("ks-auth-modal"); if (m) m.classList.remove("open"); }
+
   function render() {
     var root = document.getElementById("app");
     var phase = currentPhase(), j = activeJourney();
     var head = '<header class="topbar">'
       + '<div class="brand"><span class="logo">▦</span><span>KRAFTSCHMIEDE</span><span class="ver">Schema ' + SCHEMA + '</span></div>'
-      + '<div class="phasechip">' + (j ? esc(j.name) : "—") + (phase ? ' · <strong>' + esc(phase.name) + '</strong> · W' + (j.currentWeek || 1) + '/' + phase.weeks : '') + '</div>'
+      + '<div class="topbar-right"><div class="phasechip">' + (j ? esc(j.name) : "—") + (phase ? ' · <strong>' + esc(phase.name) + '</strong> · W' + (j.currentWeek || 1) + '/' + phase.weeks : '') + '</div>' + authBtn() + '</div>'
       + '</header>';
     var curTab = TABS.find(function (t) { return t.id === UI.tab; }) || TABS[0];
     var nav = '<nav class="tabs' + (UI.menuOpen ? ' menu-open' : '') + '">'
@@ -1085,7 +1108,6 @@
   function viewSettings() {
     var s = DB.settings;
     var html = '<div class="section-title">Einstellungen</div>';
-    html += '<div class="card" id="ks-sync-card"><div class="sets-title">Cloud-Sync</div><div id="ks-sync-panel"></div></div>';
     html += '<div class="card"><div class="sets-title">Engine & Einheiten</div><div class="settings-grid">'
       + '<label class="edit-field"><span>1RM-Formel</span><select data-set-setting="rmFormula">'
       + ["mean", "brzycki", "epley", "wathan"].map(function (f) { return '<option value="' + f + '"' + (s.rmFormula === f ? " selected" : "") + '>' + (f === "mean" ? "Mittelwert (B+E+W)" : f) + '</option>'; }).join("") + '</select></label>'
@@ -1203,6 +1225,8 @@
     switch (a) {
       case "tab": UI.tab = el.getAttribute("data-tab"); UI.detail = null; UI.journeyPicker = false; UI.menuOpen = false; render(); break;
       case "menu-toggle": UI.menuOpen = !UI.menuOpen; render(); break;
+      case "auth-open": openAuthModal(); break;
+      case "auth-close": closeAuthModal(); break;
       case "start": UI.live = buildLive(el.getAttribute("data-tpl")); render(); break;
       case "cancel-live": if (confirm("Laufende Session verwerfen?")) { UI.live = null; render(); } break;
       case "finish": finishSession(); break;
@@ -1379,6 +1403,10 @@
     schema: SCHEMA
   };
   render();
-  if (window.KSSync) window.KSSync.boot();
+  if (window.KSSync) {
+    window.KSSync.onAuthChange = function () { refreshAuthIcon(); };
+    window.KSSync.boot();
+  }
+  ensureAuthModal();
   window.__FS = { DB: function () { return DB; }, E: E }; // Debug-Hook
 })();
