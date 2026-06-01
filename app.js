@@ -1098,10 +1098,14 @@
     var html = '<div class="section-title">Inventar</div>';
     html += '<div class="card"><div class="sets-title">Stangen</div><div class="bar-list">';
     DB.inventory.bars.forEach(function (b, i) {
-      html += '<div class="bar-row"><span class="bar-name">' + esc(b.name) + (b.default ? ' <span class="def">Standard</span>' : '') + '</span>'
-        + '<input type="number" step="0.5" class="num" data-bar="weight" data-i="' + i + '" value="' + b.weight + '"> ' + DB.settings.unit
-        + ' <button class="btn tiny ghost" data-action="bar-default" data-i="' + i + '">Standard</button>'
-        + ' <button class="btn tiny ghost" data-action="bar-del" data-i="' + i + '">×</button></div>';
+      html += '<div class="bar-card' + (b.default ? ' is-default' : '') + '">'
+        + '<div class="bar-card-main"><span class="bar-name">' + esc(b.name) + '</span>'
+        + (b.default ? '<span class="def">Standard</span>' : '') + '</div>'
+        + '<div class="bar-card-controls">'
+        + '<span class="bar-weight"><input type="number" step="0.5" class="num" data-bar="weight" data-i="' + i + '" value="' + b.weight + '"><span class="bar-unit">' + DB.settings.unit + '</span></span>'
+        + (b.default ? '' : '<button class="btn tiny ghost" data-action="bar-default" data-i="' + i + '">Als Standard</button>')
+        + '<button class="btn tiny ghost bar-del" data-action="bar-del" data-i="' + i + '" title="Stange entfernen">×</button>'
+        + '</div></div>';
     });
     html += '</div><button class="btn tiny ghost" data-action="bar-add">+ Stange</button></div>';
 
