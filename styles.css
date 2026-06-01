@@ -614,4 +614,6 @@ input[type=date]{background:var(--panel2);border:1px solid var(--line2);color:va
     border-radius:0;border-left:none;border-right:none;
     margin-left:-10px;margin-right:-10px;
   }
+  /* Uebungs-/Aufwaerm-Header kompakter: weniger oben, seitlich buendig mit den Saetzen */
+  .ex-live-head,.gw-body{padding:8px 12px}
 }
