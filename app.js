@@ -967,6 +967,10 @@
     if (s.startedAt) s.durationSec = Math.max(0, Math.round((s.endedAt - s.startedAt) / 1000));
     s.entries.forEach(function (en) {
       var exo = exById(en.exerciseId);
+      // Nur tatsaechlich erledigte Saetze behalten – ungemachte verfallen und tauchen nicht im Verlauf auf
+      en.warmupSets = (en.warmupSets || []).filter(function (x) { return x.done; });
+      en.sets = (en.sets || []).filter(function (x) { return x.done; });
+      if (!en.sets.length) { en.hadDeviation = false; en.est1RM = null; return; }
       en.sets.forEach(function (st) { st.metTarget = E.metTarget(st); });
       en.hadDeviation = E.hadDeviation(en.sets.filter(function (x) { return x.type !== "warmup"; }));
       var best = E.best1RMFromSets(en.sets, DB.settings.rmFormula);
@@ -979,6 +983,8 @@
     delete s.suggestionMeta;
     s.body = snapshotBody();
     s.entries.forEach(function (en) { delete en.suggestion; });
+    // Übungen ohne erledigte Arbeitssätze nicht im Verlauf speichern
+    s.entries = s.entries.filter(function (en) { return en.sets && en.sets.length; });
     DB.sessions.push(s);
     UI.live = null;
     persist();
