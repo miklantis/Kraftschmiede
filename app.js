@@ -606,23 +606,20 @@
       var barOpts = exo.category === "barbell" ? DB.inventory.bars.map(function (bb) { return '<option value="' + bb.id + '"' + (bb.id === (en.barId || exo.barId) ? " selected" : "") + '>' + esc(bb.name) + ' ' + fmtW(bb.weight) + '</option>'; }).join("") : "";
       html += '<div class="ex-live-head"><div class="ehl"><span class="slot-tag">' + en.slot.toUpperCase() + '</span><span class="ex-name">' + esc(exo.name) + '</span></div>'
         + (exo.category === "barbell" ? '<div class="ehr"><label class="barpick">Stange <select data-barpick data-ei="' + ei + '">' + barOpts + '</select></label><button class="btn tiny ghost plate-toggle" data-action="toggle-plate" data-ei="' + ei + '">' + (showPlate ? 'Scheiben aus' : 'Scheiben ein') + '</button></div>' : '') + '</div>';
-      html += '<div class="suggest-line">Vorschlag <strong>' + fmtW(sug.weight) + '</strong> <span class="dec dec-' + (sug.decision || 'hold') + '">' + decLabel(sug.decision) + '</span> <span class="ex-rep-inl">· Ziel ' + en.plannedSets.length + '×' + sug.targetReps + ' · Score ' + exo.targetScore + '</span> <span class="note">' + esc(sug.note || "") + '</span></div>';
 
-      // Aufwärmsätze
-      if (en.warmupSets.length) {
-        html += '<div class="sets-block"><div class="sets-title">Aufwärmen</div>';
-        en.warmupSets.forEach(function (ws, wi) {
-          html += '<div class="set-row warm"><span class="set-i">A' + (wi + 1) + '</span>'
-            + '<span class="ro">' + ws.reps + ' \u00D7 ' + fmtW(ws.weight) + '</span>'
-            + (showPlate && bar ? plateChips(ws.weight, bar) : '')
-            + '<label class="chk r"><input type="checkbox" data-set="w" data-ei="' + ei + '" data-si="' + wi + '"' + (ws.done ? ' checked' : '') + '> ok</label></div>';
-        });
-        html += '</div>';
-      }
-
-      // Arbeitssätze
-      html += '<div class="sets-block"><div class="sets-title">Arbeitssätze</div>';
+      // Sätze: Aufwärmen (A1..) und Arbeit (S1..) in einer Liste
+      html += '<div class="sets-block">';
       html += '<div class="set-row head"><span class="set-i">Satz</span><span>Wdh</span><span>kg</span><span>RIR</span><span class="h-done">\u2713</span></div>';
+      en.warmupSets.forEach(function (ws, wi) {
+        html += '<div class="set-row warm' + (ws.done ? ' done' : '') + '">'
+          + '<span class="set-i">A' + (wi + 1) + '</span>'
+          + '<span class="ro">' + ws.reps + '</span>'
+          + '<span class="ro">' + fmtNum(ws.weight) + '</span>'
+          + '<span class="rir-empty"></span>'
+          + '<label class="field f-done done-chk" title="Aufwärmsatz erledigt"><input type="checkbox" data-set="w" data-ei="' + ei + '" data-si="' + wi + '"' + (ws.done ? ' checked' : '') + '></label>'
+          + '</div>'
+          + (showPlate && bar ? '<div class="set-sub">' + plateHint(ws.weight, bar) + '</div>' : '');
+      });
       en.sets.forEach(function (st, si) {
         html += workSetRow(ei, si, st, bar, showPlate && exo.category === "barbell");
       });
@@ -650,7 +647,7 @@
     var rirOpts = [1, 2, 3, 4, 5].map(function (v) { var i = E.scoreInfo(v); return '<option value="' + v + '"' + (st.score === v ? " selected" : "") + '>' + i.rir + '</option>'; }).join("");
     var sub = (showChips && bar) ? '<div class="set-sub" data-sub-ei="' + ei + '" data-sub-si="' + si + '">' + plateHint(st.weight, bar) + '</div>' : "";
     return '<div class="set-row work' + (st.done ? ' done' : '') + '" data-ei="' + ei + '" data-si="' + si + '">'
-      + '<span class="set-i">' + (si + 1) + '</span>'
+      + '<span class="set-i">S' + (si + 1) + '</span>'
       + '<div class="field f-reps"><input type="number" inputmode="numeric" class="num" data-set="reps" data-ei="' + ei + '" data-si="' + si + '" value="' + st.reps + '"></div>'
       + '<div class="field f-weight"><input type="number" step="0.25" inputmode="decimal" class="num" data-set="weight" data-ei="' + ei + '" data-si="' + si + '" value="' + st.weight + '"></div>'
       + '<div class="field f-rir"><select class="' + rirCls + '" data-set="score" data-ei="' + ei + '" data-si="' + si + '" title="RIR / Score je Satz">' + rirOpts + '</select></div>'

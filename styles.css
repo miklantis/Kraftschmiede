@@ -114,8 +114,8 @@ textarea{width:100%;min-height:90px;resize:vertical;font-family:var(--mono);font
 .sets-block{padding:8px 16px 14px}
 .sets-title{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:1px;font-size:13px;color:var(--muted);margin-bottom:8px}
 .set-row{display:grid;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
-.set-row.warm{grid-template-columns:32px 1fr auto;color:var(--muted)}
-.set-row.warm .ro{font-family:var(--mono)}
+.set-row.warm{grid-template-columns:46px 1fr 1fr 92px 54px;color:var(--muted)}
+.set-row.warm .ro{font-family:var(--mono);text-align:center;font-size:15px;color:var(--muted)}
 .set-row.head{grid-template-columns:46px 1fr 1fr 92px 54px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--faint);border-bottom:1px solid var(--line2)}
 .set-row.head>*{text-align:center}
 .set-row.work{grid-template-columns:46px 1fr 1fr 92px 54px}
@@ -128,7 +128,7 @@ textarea{width:100%;min-height:90px;resize:vertical;font-family:var(--mono);font
 .f-done{justify-content:center}
 .f-done input{width:24px;height:24px;accent-color:var(--accent-2);cursor:pointer}
 .set-sub{padding:2px 0 8px 52px;border-bottom:1px solid var(--line)}
-.set-row.work.done+.set-sub{display:none}
+.set-row.done+.set-sub{display:none}
 .set-row.work.done{background:rgba(94,194,106,.05)}
 .set-i{font-family:var(--mono);color:var(--faint);text-align:center;font-size:13px}
 .scoresel{font-size:12px;padding:6px 6px}
@@ -301,10 +301,6 @@ label.chk.bfield{flex-direction:row;align-items:center}
 .phint-ic{width:13px;height:13px;flex:none;fill:var(--faint)}
 .phint-t small{color:var(--faint);font-size:10px}
 .phint-warn{color:var(--warn)}
-.set-row.warm{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.set-row.warm .ro{min-width:78px}
-.set-row.warm .phint{margin-left:2px}
-.set-row.warm .chk.r{margin-left:auto}
 .jm-lead{max-width:640px;margin:0 0 14px}
 
 /* ---- v0.4: Körper-Tab, Rest-Empfehlung, Stangen-Picker, Satz-Plate ---- */
@@ -465,15 +461,11 @@ input[type=date]{background:var(--panel2);border:1px solid var(--line2);color:va
 
   /* Arbeitssaetze: kompakte Tabelle mit sichtbarer Kopfzeile statt gestapelter Bloecke */
   .set-row.head{display:grid;grid-template-columns:34px 1fr 1fr 56px 42px;gap:6px;font-size:10px;padding:4px 0}
-  .set-row.work{grid-template-columns:34px 1fr 1fr 56px 42px;gap:6px;padding:9px 0}
+  .set-row.work,.set-row.warm{grid-template-columns:34px 1fr 1fr 56px 42px;gap:6px;padding:9px 0}
   .set-row.work .num{width:100%;max-width:none;text-align:center;padding:9px 2px;font-size:16px}
   .rir-sel{font-size:15px;padding:9px 2px}
   .f-done input{width:26px;height:26px}
   .set-sub{padding:0 0 8px 40px}
-
-  /* Aufwärmzeile bleibt flex, Chips dürfen umbrechen */
-  .set-row.warm{align-items:flex-start}
-  .set-row.warm .chk.r{margin-left:auto}
 
   .score-table{grid-template-columns:repeat(3,1fr)}
   .metric-row{grid-template-columns:repeat(2,1fr)}
