@@ -1604,7 +1604,36 @@
   /* =========================================================
      Import / Export
      ========================================================= */
-  function exportText() { return JSON.stringify(DB, null, 2); }
+  // Export-Anreicherung: score (1-5) bleibt einzige gepflegte Groesse;
+  // rir/rpe/scoreLabel werden je Arbeitssatz aus SCORE_MAP abgeleitet, nur fuer den Export.
+  function enrichExport(db) {
+    var out = clone(db);
+    (out.sessions || []).forEach(function (s) {
+      (s.entries || []).forEach(function (en) {
+        (en.sets || []).forEach(function (st) {
+          var info = (st && st.score != null) ? E.scoreInfo(st.score) : null;
+          if (info) { st.rir = info.rir; st.rpe = info.rpe; st.scoreLabel = info.label; }
+        });
+      });
+    });
+    out._scoreScale = {
+      note: "score (1-5) ist die gepflegte Groesse; rir/rpe/scoreLabel je Satz sind daraus abgeleitet und werden beim Re-Import verworfen.",
+      map: clone(E.SCORE_MAP)
+    };
+    return out;
+  }
+  // Abgeleitete Felder vor dem Import entfernen, damit der Live-Zustand sauber bleibt.
+  function stripDerived(data) {
+    if (!data || typeof data !== "object") return data;
+    delete data._scoreScale;
+    (data.sessions || []).forEach(function (s) {
+      (s.entries || []).forEach(function (en) {
+        (en.sets || []).forEach(function (st) { delete st.rir; delete st.rpe; delete st.scoreLabel; });
+      });
+    });
+    return data;
+  }
+  function exportText() { return JSON.stringify(enrichExport(DB), null, 2); }
   function download() {
     var blob = new Blob([exportText()], { type: "application/json" });
     var a = document.createElement("a"); a.href = URL.createObjectURL(blob);
@@ -1613,6 +1642,7 @@
   }
   function importJSON(text, mode) {
     var data; try { data = JSON.parse(text); } catch (e) { alert("Ungültiges JSON: " + e.message); return; }
+    data = stripDerived(data);
     if (mode === "replace") {
       if (!confirm("Ersetzen: alle aktuellen Daten werden überschrieben. Fortfahren?")) return;
       DB = data; migrate(DB); persist(); UI.detail = null; render(); toast("Ersetzt."); return;
