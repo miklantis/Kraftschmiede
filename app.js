@@ -220,6 +220,7 @@
   function plateColor() { return KS.plateColor.apply(null, arguments); }
   function plateChips() { return KS.plateChips.apply(null, arguments); }
   function drawJourneyChart() { return KS.drawJourneyChart.apply(null, arguments); }
+  function drawExerciseCharts() { return KS.drawExerciseCharts.apply(null, arguments); }
 
   /* =========================================================
      Rendering – Shell & Nav
@@ -284,6 +285,7 @@
     if (window.KSSync) window.KSSync.mountPanel();
     if (UI.tab === "training" && UI.live) { bindLiveInputs(); syncActiveSet(); }
     if (UI.tab === "journey" && !UI.journeyPicker) drawJourneyChart();
+    if (UI.tab === "exercises") drawExerciseCharts();
     manageClock();
     syncRestBar();
   }
@@ -528,11 +530,11 @@
       volume: wk.map(function (w) { return { label: w.slice(-3), value: bw[w] }; })
     };
   }
-  function exerciseChartSVG(data, metric) { return metric === "volume" ? barChart(data.volume, {}) : lineChart(data[metric] || [], {}); }
-  function detailChartCard(ex, metric, svg) {
+  function detailChartCard(ex, metric) {
     var pinned = dashHas(ex.id, metric);
     return '<div class="card chart-card"><div class="sets-title chart-head"><span>' + METRIC_LABELS[metric] + '</span>'
-      + '<button class="btn tiny ghost pin' + (pinned ? ' on' : '') + '" data-action="pin-chart" data-ex="' + ex.id + '" data-metric="' + metric + '">' + (pinned ? 'Angeheftet' : 'Anheften') + '</button></div>' + svg + '</div>';
+      + '<button class="btn tiny ghost pin' + (pinned ? ' on' : '') + '" data-action="pin-chart" data-ex="' + ex.id + '" data-metric="' + metric + '">' + (pinned ? 'Angeheftet' : 'Anheften') + '</button></div>'
+      + '<div class="ks-exchart" data-ex="' + ex.id + '" data-metric="' + metric + '" style="overflow-x:auto;-webkit-overflow-scrolling:touch"></div></div>';
   }
   function dashboardHTML() {
     if (!DASH.length) {
@@ -541,7 +543,6 @@
     var html = '<div class="section-title">Dashboard</div><div class="dash-grid">';
     DASH.forEach(function (it, i) {
       var ex = exById(it.exerciseId); if (!ex) return;
-      var data = exerciseChartData(ex);
       html += '<div class="dash-tile" draggable="true" data-dash-idx="' + i + '">'
         + '<div class="dash-tile-head"><span class="dt-grip" title="Ziehen zum Sortieren">⠿</span>'
         + '<span class="dt-title">' + esc(ex.name) + ' · ' + METRIC_LABELS[it.metric] + '</span>'
@@ -549,7 +550,8 @@
         + '<button class="btn tiny ghost" data-action="dash-up" data-i="' + i + '" title="nach oben">↑</button>'
         + '<button class="btn tiny ghost" data-action="dash-down" data-i="' + i + '" title="nach unten">↓</button>'
         + '<button class="btn tiny ghost danger" data-action="dash-del" data-i="' + i + '" title="entfernen">×</button>'
-        + '</span></div>' + exerciseChartSVG(data, it.metric) + '</div>';
+        + '</span></div>'
+        + '<div class="ks-exchart" data-ex="' + ex.id + '" data-metric="' + it.metric + '" style="overflow-x:auto;-webkit-overflow-scrolling:touch"></div></div>';
     });
     html += '</div>';
     return html;
@@ -594,13 +596,6 @@
   function viewExerciseDetail(exId) {
     var e = exById(exId); if (!e) { UI.detail = null; return viewExercises(); }
     var h = exerciseHistory(exId);
-    var rmPts = h.filter(function (x) { return x.est1RM; }).map(function (x) { return { y: x.est1RM, flag: x.dev }; });
-    var wPts = h.map(function (x) { return { y: x.topW, flag: x.dev }; });
-    var rPts = h.map(function (x) { return { y: x.reps, flag: x.dev }; });
-    var sPts = h.map(function (x) { return { y: x.score, flag: x.dev }; });
-    // Wochenvolumen
-    var byWeek = {}; h.forEach(function (x) { byWeek[x.week] = (byWeek[x.week] || 0) + x.vol; });
-    var weeks = Object.keys(byWeek).sort(); var volItems = weeks.map(function (w) { return { label: w.slice(-3), value: byWeek[w] }; });
 
     var bar = e.barId ? barById(e.barId) : null;
     var sug = e.profile !== "core" ? suggestForExercise(e, currentPhase()) : null;
@@ -617,11 +612,11 @@
 
     if (sug) html += '<div class="card"><div class="sets-title">Nächster Vorschlag</div><div class="suggest-line big">' + fmtW(sug.weight) + ' · ' + sug.targetReps + ' Wdh <span class="dec dec-' + sug.decision + '">' + decLabel(sug.decision) + '</span></div><div class="note">' + esc(sug.note) + '</div></div>';
 
-    html += detailChartCard(e, "rm", lineChart(rmPts, {}));
-    html += detailChartCard(e, "weight", lineChart(wPts, {}));
-    html += detailChartCard(e, "reps", lineChart(rPts, {}));
-    html += detailChartCard(e, "volume", barChart(volItems, {}));
-    html += detailChartCard(e, "score", lineChart(sPts, {}));
+    html += detailChartCard(e, "rm");
+    html += detailChartCard(e, "weight");
+    html += detailChartCard(e, "reps");
+    html += detailChartCard(e, "volume");
+    html += detailChartCard(e, "score");
     html += '<div class="hint">Rote Punkte = Session mit Abweichung (Ziel verfehlt / runterkorrigiert). Über „Anheften" landet ein Diagramm oben im Dashboard.</div>';
 
     // Einstellungen je Übung
@@ -1124,6 +1119,7 @@
   KS.currentPhase = currentPhase;
   KS.entryBar = entryBar;
   KS.exById = exById;
+  KS.exerciseChartData = exerciseChartData;
   KS.firstBar = firstBar;
   KS.latestBody = latestBody;
   KS.pad = pad;
