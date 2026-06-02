@@ -209,7 +209,10 @@
     var H = 3600 * 1000;
     var score = 0, excluded = false, reasons = [];
 
-    var ids = [template.lift1, template.lift2, template.core].filter(Boolean);
+    var ids = (Array.isArray(template.items)
+      ? template.items.map(function (it) { return (typeof it === "string") ? it : (it && it.exerciseId); })
+      : [template.lift1, template.lift2, template.core]
+    ).filter(Boolean);
 
     // Recency: längster Abstand seit letztem Einsatz der enthaltenen Lifts
     var recencyDays = 999;
