@@ -922,7 +922,7 @@
       var sets = planned.map(function (p) {
         return { reps: p.reps, weight: p.weight, score: exo.targetScore, failed: false, done: false, targetReps: p.reps, targetWeight: p.weight, adjusted: false, adjustNote: "" };
       });
-      return { exerciseId: id, barId: startBarId, slot: idx === 0 ? "lift1" : (idx === 1 ? "lift2" : "core"), warmupSets: warm, plannedSets: planned, sets: sets, suggestion: sug, tested1RM: null };
+      return { exerciseId: id, barId: startBarId, warmupSets: warm, plannedSets: planned, sets: sets, suggestion: sug, tested1RM: null };
     });
     var b = latestBody();
     return {
@@ -962,7 +962,7 @@
       var showPlate = !!(UI.plateShow && UI.plateShow[ei]);
       html += '<div class="card exercise-live" data-ei="' + ei + '">';
       var barOpts = exo.category === "barbell" ? DB.inventory.bars.map(function (bb) { return '<option value="' + bb.id + '"' + (bb.id === (en.barId || (firstBar() || {}).id) ? " selected" : "") + '>' + esc(bb.name) + ' ' + fmtW(bb.weight) + '</option>'; }).join("") : "";
-      html += '<div class="ex-live-head"><div class="ehl"><span class="ex-name">' + esc(exo.name) + '</span><span class="slot-tag">' + en.slot.toUpperCase() + '</span></div>'
+      html += '<div class="ex-live-head"><div class="ehl"><span class="ex-name">' + esc(exo.name) + '</span>' + (exo.rm ? '<span class="slot-tag">1RM ' + fmtW(exo.rm) + '</span>' : '') + '</div>'
         + (exo.category === "barbell" ? '<div class="ehr"><label class="barpick">Stange <select data-barpick data-ei="' + ei + '">' + barOpts + '</select></label><button class="icon-btn plate-toggle' + (showPlate ? ' on' : '') + '" data-action="toggle-plate" data-ei="' + ei + '" aria-pressed="' + (showPlate ? 'true' : 'false') + '" title="' + (showPlate ? 'Scheiben ausblenden' : 'Scheiben einblenden') + '" aria-label="' + (showPlate ? 'Scheiben ausblenden' : 'Scheiben einblenden') + '">' + plateIcon("pt-ic") + '</button></div>' : '') + '</div>';
 
       // Sätze: Aufwärmen (A1..) und Arbeit (S1..) in einer Liste
@@ -1529,7 +1529,7 @@
     en.barId = barId;
     var exo = exById(en.exerciseId);
     if (exo && exo.category === "barbell" && en.suggestion) {
-      en.warmupSets = E.generateWarmup(en.suggestion.weight, barById(barId).weight, DB.inventory.plates, { isLift1: en.slot === "lift1", isDeadlift: /deadlift/i.test(en.exerciseId) });
+      en.warmupSets = E.generateWarmup(en.suggestion.weight, barById(barId).weight, DB.inventory.plates, { isLift1: ei === 0, isDeadlift: /deadlift/i.test(en.exerciseId) });
     }
     persist(); render();
   }
