@@ -1246,7 +1246,7 @@
     var cp = currentPhase();
     return '<div class="card journey">'
         + '<div class="journey-head"><strong>' + esc(j.name) + '</strong>' + (j.goal ? '<span class="jgoal">' + esc(j.goal) + '</span>' : '') + '<span class="hint">Start ' + esc(j.startDate) + '</span></div>'
-        + '<div class="journey-chart" id="ks-journey-chart" style="width:100%;margin:6px 0 2px"></div>'
+        + '<div class="journey-chart" id="ks-journey-chart" style="width:100%;margin:6px 0 2px;overflow-x:auto;-webkit-overflow-scrolling:touch"></div>'
         + '<div class="phase-ctrl"><span>Aktuelle Phase: <strong>' + esc((cp || {}).name || "—") + '</strong>' + (cp && cp.repTarget ? ' · Ziel ' + cp.repTarget[0] + '–' + cp.repTarget[1] + ' Wdh' : '') + '</span>'
         + '<div class="wk-ctrl">Woche <button class="btn tiny ghost" data-action="wk" data-d="-1">−</button><strong class="wk-val">' + (j.currentWeek || 1) + '</strong><button class="btn tiny ghost" data-action="wk" data-d="1">+</button> / ' + ((cp || {}).weeks || "?") + '</div>'
         + '<button class="btn tiny ghost" data-action="phase-next">nächste Phase ›</button></div>'
@@ -1304,14 +1304,17 @@
     function ny(v, lo, hi) { var t = hi > lo ? (v - lo) / (hi - lo) : 0.5; return 0.10 + t * 0.80; }
 
     // In echten CSS-Pixeln zeichnen (1 viewBox-Einheit = 1 px): Breite aus dem
-    // Container messen, Hoehe fest. So bleiben Schrift und Linienstaerke auf jedem
-    // Geraet gleich scharf, statt mit dem SVG runterskaliert zu werden.
-    var W = Math.max(280, Math.round(el.clientWidth || 680));
+    // Container messen, aber mindestens ~48px pro Woche, damit nichts gequetscht
+    // wird. Ist die Mindestbreite groesser als der Container (Mobile), wird die
+    // Grafik breiter als der Container und horizontal scrollbar. Hoehe fest.
     var H = 230, m = { t: 38, r: 16, b: 46, l: 16 };
+    var minW = N * 48 + m.l + m.r;
+    var W = Math.max(Math.round(el.clientWidth || 680), minW);
     var iw = W - m.l - m.r, ih = H - m.t - m.b;
     d3.select(el).selectAll("*").remove();
     var svg = d3.select(el).append("svg")
-      .attr("viewBox", "0 0 " + W + " " + H).attr("width", "100%").attr("height", H)
+      .attr("viewBox", "0 0 " + W + " " + H).attr("width", W).attr("height", H)
+      .style("display", "block")
       .attr("role", "img").attr("aria-label", "Periodisierung der Journey " + (j.name || ""));
 
     // Legende in eigenem Streifen oben, klar getrennt vom Kurvenbereich
