@@ -14,12 +14,15 @@
 
 <!-- Reihenfolge ist wichtig:
      1) Supabase-Client (CDN)  2) config.js  3) engine.js
-     4) supabase.js (definiert window.KSSync)  5) D3 (CDN, Grafiken)  6) app.js (ruft KSSync am Ende auf) -->
+     4) supabase.js (definiert window.KSSync)  5) D3 (CDN, Grafiken)
+     6) charts.js (haengt Chart-/Plate-Funktionen an window.KS)
+     7) app.js (definiert window.KS-Helfer, ruft beim Init render + KSSync auf) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script src="engine.js"></script>
 <script src="supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="charts.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
