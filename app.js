@@ -88,10 +88,18 @@
       bodyLog: []
     };
   }
+  // Funktions-Kategorie einer Uebung (was sie ist), unabhaengig von der Position im Workout.
+  // Initialklassifikation der bekannten Uebungen; eigene/unbekannte defaulten auf "main".
+  function kindOf(id, profile) {
+    if (profile === "core") return "core";
+    if (id === "barbell_curl" || id === "pull_over") return "accessory";
+    return "main";
+  }
+  function kindLabel(k) { return ({ main: "Hauptübung", accessory: "Assistenz", core: "Core" })[k] || k || "–"; }
   function ex(id, name, profile, slot, barId, mg, repRange, w, rec, active) {
     return {
       id: id, name: name, category: profile === "core" ? "core" : "barbell",
-      profile: profile, slot: slot, equipment: "barbell", barId: barId,
+      profile: profile, kind: kindOf(id, profile), equipment: "barbell", barId: barId,
       metrics: ["weight", "reps", "volume", "score", "est1RM"],
       muscleGroups: mg, repRange: repRange, targetScore: 3, workWeight: w,
       recoveryHours: rec || 48, rm: null, rmAsOf: null, rmStale: false,
@@ -100,7 +108,7 @@
   }
   function core(id, name, repRange, w) {
     return {
-      id: id, name: name, category: "core", profile: "core", slot: "core",
+      id: id, name: name, category: "core", profile: "core", kind: "core",
       equipment: "plate", barId: null, metrics: ["weight", "reps", "volume", "score"],
       muscleGroups: ["core"], repRange: repRange, targetScore: 3, workWeight: w,
       recoveryHours: 24, rm: null, rmAsOf: null, rmStale: false, active: true
@@ -299,6 +307,16 @@
         delete t.lift1; delete t.lift2; delete t.core;
       });
       db.migrations.templateItems = true;
+    }
+    // Einmalige Migration: Uebungseigenschaft slot (lift1/lift2/core, eine Position)
+    // durch kind ersetzen (main/accessory/core, eine Kategorie). Position steckt jetzt
+    // im Template-Item, nicht mehr an der Uebung.
+    if (!db.migrations.exerciseKind) {
+      db.exercises.forEach(function (e) {
+        if (!e.kind) e.kind = kindOf(e.id, e.profile);
+        delete e.slot;
+      });
+      db.migrations.exerciseKind = true;
     }
   }
   function persist() { var okp = Store.save(DB); if (!okp) flashStore(); if (window.KSSync) window.KSSync.schedulePush(); }
@@ -1370,7 +1388,7 @@
       var bar = e.barId ? barById(e.barId) : null;
       var rm = e.rm ? fmtW(e.rm) + (e.rmStale ? ' <span class="stale">veraltet</span>' : '') : '–';
       return '<div class="ex-row" data-action="detail" data-id="' + e.id + '">'
-        + '<div class="ex-main"><span class="ex-name">' + esc(e.name) + '</span><span class="ex-tags">' + esc(e.profile) + ' · ' + esc(e.slot) + (bar ? ' · ' + esc(bar.name) : '') + '</span></div>'
+        + '<div class="ex-main"><span class="ex-name">' + esc(e.name) + '</span><span class="ex-tags">' + esc(e.profile) + ' · ' + esc(kindLabel(e.kind)) + (bar ? ' · ' + esc(bar.name) : '') + '</span></div>'
         + '<div class="ex-stats"><span>Arbeit ' + fmtW(e.workWeight) + '</span><span>1RM ' + rm + '</span><span class="ex-reps">' + e.repRange[0] + '–' + e.repRange[1] + '</span></div>'
         + '<span class="chev">›</span></div>';
     }
@@ -1414,7 +1432,7 @@
     var sug = e.profile !== "core" ? suggestForExercise(e, currentPhase()) : null;
 
     var html = '<button class="btn ghost small back" data-action="ex-back">‹ Übungen</button>';
-    html += '<div class="detail-head"><h2>' + esc(e.name) + '</h2><span class="ex-tags">' + esc(e.profile) + ' · ' + esc(e.slot) + (bar ? ' · ' + esc(bar.name) + ' ' + fmtW(bar.weight) : '') + ' · ' + esc(e.muscleGroups.join(", ")) + '</span></div>';
+    html += '<div class="detail-head"><h2>' + esc(e.name) + '</h2><span class="ex-tags">' + esc(e.profile) + ' · ' + esc(kindLabel(e.kind)) + (bar ? ' · ' + esc(bar.name) + ' ' + fmtW(bar.weight) : '') + ' · ' + esc(e.muscleGroups.join(", ")) + '</span></div>';
 
     html += '<div class="metric-row">'
       + metric("Arbeitsgewicht", fmtW(e.workWeight))
