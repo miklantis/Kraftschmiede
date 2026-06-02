@@ -291,6 +291,22 @@
   // Erste Stange der Liste – wird im Workout pro Uebung vorausgewaehlt.
   function firstBar() { return DB.inventory.bars[0]; }
   function tplById(id) { return DB.templates.find(function (t) { return t.id === id; }); }
+  // Lese-Adapter: liefert fuer ein Template immer eine geordnete Item-Liste [{ exerciseId, role }].
+  // Liest die neue items-Form, faellt non-destruktiv auf die alten Felder lift1/lift2/core zurueck.
+  // role ist optional und rein beschreibend – Logik haengt weiter an Reihenfolge bzw. exercise.profile.
+  function tplItems(t) {
+    if (!t) return [];
+    if (Array.isArray(t.items)) {
+      return t.items
+        .map(function (it) { return (typeof it === "string") ? { exerciseId: it } : { exerciseId: it.exerciseId, role: it.role }; })
+        .filter(function (it) { return it.exerciseId; });
+    }
+    var out = [];
+    if (t.lift1) out.push({ exerciseId: t.lift1, role: "primary" });
+    if (t.lift2) out.push({ exerciseId: t.lift2, role: "secondary" });
+    if (t.core) out.push({ exerciseId: t.core, role: "core" });
+    return out;
+  }
   function activeJourney() {
     var js = DB.journeys || [];
     return js.find(function (j) { return j.active; }) || js.find(function (j) { return j.status !== "archived"; }) || js[0] || null;
@@ -568,7 +584,7 @@
     var ranked = rankWorkouts();
     var cards = ranked.map(function (r, i) {
       var t = r.tpl;
-      var names = [t.lift1, t.lift2, t.core].map(function (id) { var e = exById(id); return e ? esc(e.name) : id; });
+      var names = tplItems(t).map(function (it) { var e = exById(it.exerciseId); return e ? esc(e.name) : it.exerciseId; });
       return '<div class="wo-card' + (i === 0 ? ' rec' : '') + (r.excluded ? ' excl' : '') + '">'
         + '<div class="wo-thumb">'
         + '<img class="wo-img" src="' + woImage(t.name) + '" alt="Workout ' + esc(t.name) + '" loading="lazy" onerror="this.remove()">'
@@ -846,7 +862,8 @@
 
   function buildLive(templateId) {
     var t = tplById(templateId); var phase = currentPhase(); var j = activeJourney();
-    var entries = [t.lift1, t.lift2, t.core].map(function (id, idx) {
+    var entries = tplItems(t).map(function (it, idx) {
+      var id = it.exerciseId;
       var exo = exById(id);
       var sug = suggestForExercise(exo, phase);
       // Core-Uebungen fix 3 Saetze; Kraftuebungen folgen der Phasen-Satzrampe.
