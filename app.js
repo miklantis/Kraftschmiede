@@ -559,7 +559,7 @@
   var TABS = [
     { id: "training", label: "Training" },
     { id: "body", label: "Körper" },
-    { id: "workouts", label: "Workouts" },
+    { id: "workouts", label: "Verlauf" },
     { id: "journey", label: "Journey" },
     { id: "exercises", label: "Übungen" },
     { id: "inventory", label: "Inventar" },
@@ -1234,13 +1234,12 @@
   /* =========================================================
      View: Workouts (Liste + Kalender + Journey)
      ========================================================= */
-  function viewWorkouts() {
+  function journeyDashboardHTML() {
     var j = activeJourney();
-    var html = '<div class="section-title">Journey & Periodisierung</div>';
-    if (j) {
-      var idx = j.phases.findIndex(function (p) { return p.id === j.currentPhaseId; });
-      var cp = currentPhase();
-      html += '<div class="card journey">'
+    if (!j) return '';
+    var idx = j.phases.findIndex(function (p) { return p.id === j.currentPhaseId; });
+    var cp = currentPhase();
+    return '<div class="card journey">'
         + '<div class="journey-head"><strong>' + esc(j.name) + '</strong>' + (j.goal ? '<span class="jgoal">' + esc(j.goal) + '</span>' : '') + '<span class="hint">Start ' + esc(j.startDate) + '</span></div>'
         + '<div class="phase-track">' + j.phases.map(function (p, i) {
           return '<div class="phase-pill' + (p.id === j.currentPhaseId ? ' cur' : (i < idx ? ' past' : '')) + '">'
@@ -1254,9 +1253,9 @@
         + (!recoveryGreenNow() ? ' · <span class="warn-inline">Erholungsmarker gelb/rot → konservativ</span>' : '') + '</div>'
         + (idx >= j.phases.length - 1 ? '<div class="last-phase">Letzte Phase erreicht. <button class="btn tiny" data-action="journey-finish" data-id="' + j.id + '">Journey abschließen</button> <button class="btn tiny ghost" data-action="journey-picker">neue Journey starten</button></div>' : '')
         + '</div>';
-    } else {
-      html += '<div class="card empty-journey"><p class="ej-lead">Keine aktive Journey.</p><p class="hint">Starte im <strong>Journey</strong>-Tab eine Journey aus einer Vorlage.</p><button class="btn primary" data-action="journey-picker">Journey wählen</button></div>';
-    }
+  }
+  function viewWorkouts() {
+    var html = '<div class="section-title">Verlauf</div>';
 
     // Kalender / Liste – nur eine Ansicht gleichzeitig (Umschalter)
     var ss = doneSessions().slice().reverse();
@@ -1539,8 +1538,9 @@
      ========================================================= */
   function viewJourneyManager() {
     var act = activeJourney();
-    var html = '<div class="section-title jl-title">Journeys<button class="btn primary addj" data-action="journey-picker">+ Neue aus Vorlage</button></div>';
-    html += '<p class="hint jm-lead">Verwalte hier deine Trainingszyklen. Die aktive Journey steuert Phasen, Volumen und Wiederholungen im Training; ihr Verlauf ist unter Workouts sichtbar.</p>';
+    var html = journeyDashboardHTML();
+    html += '<div class="section-title jl-title">Journeys<button class="btn primary addj" data-action="journey-picker">+ Neue aus Vorlage</button></div>';
+    html += '<p class="hint jm-lead">Verwalte hier deine Trainingszyklen. Die aktive Journey steuert Phasen, Volumen und Wiederholungen im Training; ihr Verlauf ist im Verlauf-Tab sichtbar.</p>';
     if (!DB.journeys.length) {
       html += '<div class="card empty-journey"><p class="ej-lead">Noch keine Journey.</p><p class="hint">Wähle eine Vorlage, die zu deinem aktuellen Ziel passt.</p><button class="btn primary" data-action="journey-picker">Journey aus Vorlage wählen</button></div>';
       return html;
