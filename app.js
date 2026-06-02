@@ -1266,6 +1266,18 @@
     var j = activeJourney();
     if (!j || !j.phases || !j.phases.length) { el.innerHTML = ""; return; }
 
+    // Bei Fenster-/Orientierungsaenderung im Journey-Tab scharf neu zeichnen (einmalig gebunden).
+    if (!window.__ksJourneyResizeBound) {
+      window.__ksJourneyResizeBound = true;
+      var _rt;
+      window.addEventListener("resize", function () {
+        clearTimeout(_rt);
+        _rt = setTimeout(function () {
+          if (UI.tab === "journey" && !UI.journeyPicker) drawJourneyChart();
+        }, 150);
+      });
+    }
+
     var weeks = [], bands = [], gw = 0;
     var vMin = Infinity, vMax = -Infinity, iMin = Infinity, iMax = -Infinity;
     j.phases.forEach(function (p, pi) {
@@ -1289,14 +1301,26 @@
     for (var k = 0; k < ci; k++) curG += Math.max(1, j.phases[k].weeks || 1);
     curG += Math.max(0, Math.min((j.currentWeek || 1) - 1, Math.max(1, j.phases[ci].weeks || 1) - 1));
 
-    function ny(v, lo, hi) { var t = hi > lo ? (v - lo) / (hi - lo) : 0.5; return 0.08 + t * 0.84; }
+    function ny(v, lo, hi) { var t = hi > lo ? (v - lo) / (hi - lo) : 0.5; return 0.10 + t * 0.80; }
 
-    var W = 680, H = 240, m = { t: 22, r: 14, b: 48, l: 14 };
+    // In echten CSS-Pixeln zeichnen (1 viewBox-Einheit = 1 px): Breite aus dem
+    // Container messen, Hoehe fest. So bleiben Schrift und Linienstaerke auf jedem
+    // Geraet gleich scharf, statt mit dem SVG runterskaliert zu werden.
+    var W = Math.max(280, Math.round(el.clientWidth || 680));
+    var H = 230, m = { t: 38, r: 16, b: 46, l: 16 };
     var iw = W - m.l - m.r, ih = H - m.t - m.b;
     d3.select(el).selectAll("*").remove();
     var svg = d3.select(el).append("svg")
-      .attr("viewBox", "0 0 " + W + " " + H).attr("width", "100%")
+      .attr("viewBox", "0 0 " + W + " " + H).attr("width", "100%").attr("height", H)
       .attr("role", "img").attr("aria-label", "Periodisierung der Journey " + (j.name || ""));
+
+    // Legende in eigenem Streifen oben, klar getrennt vom Kurvenbereich
+    var lg = svg.append("g").attr("transform", "translate(" + m.l + ",16)");
+    lg.append("line").attr("x1", 0).attr("y1", 0).attr("x2", 20).attr("y2", 0).style("stroke", "var(--accent)").style("stroke-width", 1.8);
+    lg.append("text").attr("x", 26).attr("y", 3.5).style("fill", "var(--muted)").style("font-family", "var(--mono)").style("font-size", "11px").text("Volumen");
+    lg.append("line").attr("x1", 102).attr("y1", 0).attr("x2", 122).attr("y2", 0).style("stroke", "var(--accent-2)").style("stroke-width", 1.8).style("stroke-dasharray", "5 4");
+    lg.append("text").attr("x", 128).attr("y", 3.5).style("fill", "var(--muted)").style("font-family", "var(--mono)").style("font-size", "11px").text("Intensität");
+
     var g = svg.append("g").attr("transform", "translate(" + m.l + "," + m.t + ")");
     var x = d3.scaleLinear().domain([0, Math.max(1, N - 1)]).range([0, iw]);
     function yPix(t01) { return ih - t01 * ih; }
@@ -1306,39 +1330,36 @@
       var x1 = Math.min(iw, x(b.end + 0.5));
       if (bi % 2 === 1) {
         g.append("rect").attr("x", x0).attr("y", 0).attr("width", Math.max(0, x1 - x0)).attr("height", ih)
-          .style("fill", "var(--panel2)").style("opacity", 0.55);
+          .style("fill", "var(--panel2)").style("opacity", 0.5);
       }
       if (bi > 0) {
         g.append("line").attr("x1", x0).attr("y1", 0).attr("x2", x0).attr("y2", ih)
-          .style("stroke", "var(--line2)").style("stroke-dasharray", "3 4");
+          .style("stroke", "var(--line2)").style("stroke-dasharray", "3 4").style("stroke-width", 1);
       }
-      g.append("text").attr("x", (x0 + x1) / 2).attr("y", ih + 18).attr("text-anchor", "middle")
-        .style("fill", "var(--muted)").style("font-family", "var(--mono)").style("font-size", "10px")
+      // Label an den Raendern verankern, damit es nicht abgeschnitten wird
+      var lmid = (x0 + x1) / 2, lanchor = "middle", lx = lmid;
+      if (lmid < 30) { lanchor = "start"; lx = 0; } else if (lmid > iw - 30) { lanchor = "end"; lx = iw; }
+      g.append("text").attr("x", lx).attr("y", ih + 20).attr("text-anchor", lanchor)
+        .style("fill", "var(--muted)").style("font-family", "var(--mono)").style("font-size", "11px")
         .text(b.name);
     });
 
-    g.append("line").attr("x1", 0).attr("y1", ih).attr("x2", iw).attr("y2", ih).style("stroke", "var(--line2)");
+    g.append("line").attr("x1", 0).attr("y1", ih).attr("x2", iw).attr("y2", ih).style("stroke", "var(--line2)").style("stroke-width", 1);
 
     var volLine = d3.line().x(function (d) { return x(d.g); }).y(function (d) { return yPix(ny(d.vol, vMin, vMax)); }).curve(d3.curveCatmullRom.alpha(0.5));
     var intLine = d3.line().x(function (d) { return x(d.g); }).y(function (d) { return yPix(ny(d.intens, iMin, iMax)); }).curve(d3.curveCatmullRom.alpha(0.5));
 
-    g.append("path").datum(weeks).attr("d", intLine).style("fill", "none").style("stroke", "var(--accent-2)").style("stroke-width", 2.5).style("stroke-dasharray", "6 4").style("stroke-linejoin", "round").style("stroke-linecap", "round");
-    g.append("path").datum(weeks).attr("d", volLine).style("fill", "none").style("stroke", "var(--accent)").style("stroke-width", 2.5).style("stroke-linejoin", "round").style("stroke-linecap", "round");
+    g.append("path").datum(weeks).attr("d", intLine).style("fill", "none").style("stroke", "var(--accent-2)").style("stroke-width", 1.6).style("stroke-dasharray", "5 4").style("stroke-linejoin", "round").style("stroke-linecap", "round");
+    g.append("path").datum(weeks).attr("d", volLine).style("fill", "none").style("stroke", "var(--accent)").style("stroke-width", 1.6).style("stroke-linejoin", "round").style("stroke-linecap", "round");
 
     weeks.filter(function (d) { return d.deload; }).forEach(function (d) {
-      g.append("circle").attr("cx", x(d.g)).attr("cy", yPix(ny(d.vol, vMin, vMax))).attr("r", 3.5).style("fill", "var(--warn)");
+      g.append("circle").attr("cx", x(d.g)).attr("cy", yPix(ny(d.vol, vMin, vMax))).attr("r", 3).style("fill", "var(--warn)");
     });
 
-    var cx = x(Math.min(curG, N - 1));
-    g.append("line").attr("x1", cx).attr("y1", -6).attr("x2", cx).attr("y2", ih).style("stroke", "var(--text)").style("stroke-width", 1.5);
-    g.append("circle").attr("cx", cx).attr("cy", ih).attr("r", 4).style("fill", "var(--text)");
-    g.append("text").attr("x", cx + 5).attr("y", -2).style("fill", "var(--text)").style("font-family", "var(--mono)").style("font-size", "10px").text("jetzt");
-
-    var lg = svg.append("g").attr("transform", "translate(" + m.l + ",11)");
-    lg.append("line").attr("x1", 0).attr("y1", 0).attr("x2", 22).attr("y2", 0).style("stroke", "var(--accent)").style("stroke-width", 2.5);
-    lg.append("text").attr("x", 28).attr("y", 3).style("fill", "var(--muted)").style("font-family", "var(--mono)").style("font-size", "10px").text("Volumen");
-    lg.append("line").attr("x1", 100).attr("y1", 0).attr("x2", 122).attr("y2", 0).style("stroke", "var(--accent-2)").style("stroke-width", 2.5).style("stroke-dasharray", "6 4");
-    lg.append("text").attr("x", 128).attr("y", 3).style("fill", "var(--muted)").style("font-family", "var(--mono)").style("font-size", "10px").text("Intensität");
+    var cx = x(Math.min(curG, N - 1)), atEnd = cx > iw - 30;
+    g.append("line").attr("x1", cx).attr("y1", 0).attr("x2", cx).attr("y2", ih).style("stroke", "var(--text)").style("stroke-width", 1.2);
+    g.append("circle").attr("cx", cx).attr("cy", ih).attr("r", 3.5).style("fill", "var(--text)");
+    g.append("text").attr("x", cx + (atEnd ? -5 : 5)).attr("y", 11).attr("text-anchor", atEnd ? "end" : "start").style("fill", "var(--text)").style("font-family", "var(--mono)").style("font-size", "10px").text("jetzt");
   }
   function viewWorkouts() {
     var html = '<div class="section-title">Verlauf</div>';
