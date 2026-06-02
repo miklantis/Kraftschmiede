@@ -1078,7 +1078,7 @@
     var ov = document.createElement("div");
     ov.id = "ks-end-modal"; ov.className = "ks-modal-overlay";
     ov.innerHTML = '<div class="ks-modal" role="dialog" aria-modal="true" aria-label="Workout beenden">'
-      + '<div class="ks-modal-head"><span class="ks-modal-title">Workout beenden</span>'
+      + '<div class="ks-modal-head"><span class="ks-modal-title" id="ks-end-title">Workout beenden</span>'
       + '<button class="ks-modal-x" data-action="end-cancel" aria-label="Schließen">\u2715</button></div>'
       + '<div class="end-body" id="ks-end-body"></div>'
       + '<div class="end-btns">'
@@ -1091,6 +1091,9 @@
   }
   function openEndModal() {
     ensureEndModal();
+    var es = UI.live; var et = es ? tplById(es.templateId) : null;
+    var endTitle = document.getElementById("ks-end-title");
+    if (endTitle) endTitle.textContent = "Workout " + (et ? et.name : "") + " beenden";
     var body = document.getElementById("ks-end-body");
     if (body) body.innerHTML = endSummaryHTML();
     document.getElementById("ks-end-modal").classList.add("open");
@@ -1117,7 +1120,7 @@
         + '</div>';
     }).join("");
     var warn = sec < MIN_WORKOUT_SEC ? '<div class="es-warn">Erst ' + fmtDur(sec) + ' trainiert (unter 5 Min).</div>' : '';
-    return '<div class="es-meta"><span>Workout ' + esc(t ? t.name : "?") + '</span><span>Dauer ' + fmtDur(sec) + '</span><span>' + totalDone + '/' + totalWork + ' Sätze</span></div>'
+    return '<div class="es-meta"><span>Dauer ' + fmtDur(sec) + '</span><span>' + totalDone + '/' + totalWork + ' Sätze</span></div>'
       + warn
       + '<div class="es-list">' + rows + '</div>'
       + '<div class="es-hint">Speichern übernimmt nur erledigte Sätze in den Verlauf.</div>';
@@ -1131,7 +1134,7 @@
     var ov = document.createElement("div");
     ov.id = "ks-start-modal"; ov.className = "ks-modal-overlay";
     ov.innerHTML = '<div class="ks-modal" role="dialog" aria-modal="true" aria-label="Workout starten">'
-      + '<div class="ks-modal-head"><span class="ks-modal-title">Workout starten</span>'
+      + '<div class="ks-modal-head"><span class="ks-modal-title" id="ks-start-title">Workout starten</span>'
       + '<button class="ks-modal-x" data-action="start-cancel" aria-label="Schließen">\u2715</button></div>'
       + '<div class="end-body" id="ks-start-body"></div>'
       + '<div class="end-btns">'
@@ -1144,6 +1147,9 @@
   function openStartModal(tplId) {
     UI.pendingLive = buildLive(tplId);
     ensureStartModal();
+    var st = tplById(tplId);
+    var titleEl = document.getElementById("ks-start-title");
+    if (titleEl) titleEl.textContent = "Workout " + (st ? st.name : "") + " starten";
     var body = document.getElementById("ks-start-body");
     if (body) body.innerHTML = startSummaryHTML();
     document.getElementById("ks-start-modal").classList.add("open");
@@ -1170,10 +1176,8 @@
     var bodyNote = todayBody() ? "" :
       '<div class="es-bodywarn"><div class="es-bw-txt"><strong>Körperzustand heute noch nicht erfasst</strong><span>Kurz eintragen, dann passen die Gewichtsvorschläge besser. Du kannst aber auch direkt starten.</span></div>'
       + '<button class="btn" data-action="start-to-body">Körperzustand eintragen</button></div>';
-    return '<div class="es-meta"><span>Workout ' + esc(t ? t.name : "?") + '</span><span>' + (s.entries || []).length + ' Übungen</span><span>' + totalWork + ' Sätze</span></div>'
-      + bodyNote
-      + '<div class="es-list">' + rows + '</div>'
-      + '<div class="es-hint">Tippe „Los geht\u2019s", um Uhr und Workout zu starten.</div>';
+    return bodyNote
+      + '<div class="es-list">' + rows + '</div>';
   }
   // Aus dem Start-Popup zum Koerper-Tab: Vorschau verwerfen, dort eintragen,
   // danach erneut starten (buildLive nutzt dann den neuen Koerperzustand).
