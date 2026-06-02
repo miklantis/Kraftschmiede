@@ -273,6 +273,21 @@
       db.templates.forEach(function (t) { if (t.id === "t_c" || t.id === "t_e") t.core = "pull_over"; });
       db.migrations.pulloverSlots = true;
     }
+    // Einmalige Migration: Templates von festen Slots (lift1/lift2/core) auf die
+    // geordnete items-Liste umstellen. Laeuft nach pulloverSlots, damit die korrekten
+    // Slot-Werte uebernommen werden. role ist ein beschreibender Default, frei aenderbar.
+    if (!db.migrations.templateItems) {
+      db.templates.forEach(function (t) {
+        if (Array.isArray(t.items)) return;
+        var items = [];
+        if (t.lift1) items.push({ exerciseId: t.lift1, role: "primary" });
+        if (t.lift2) items.push({ exerciseId: t.lift2, role: "secondary" });
+        if (t.core) items.push({ exerciseId: t.core, role: "core" });
+        t.items = items;
+        delete t.lift1; delete t.lift2; delete t.core;
+      });
+      db.migrations.templateItems = true;
+    }
   }
   function persist() { var okp = Store.save(DB); if (!okp) flashStore(); if (window.KSSync) window.KSSync.schedulePush(); }
 
