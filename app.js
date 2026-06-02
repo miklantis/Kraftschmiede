@@ -106,7 +106,13 @@
       recoveryHours: 24, rm: null, rmAsOf: null, rmStale: false, active: true
     };
   }
-  function tpl(id, name, l1, l2, c) { return { id: id, name: name, lift1: l1, lift2: l2, core: c }; }
+  function tpl(id, name, l1, l2, c) {
+    var items = [];
+    if (l1) items.push({ exerciseId: l1, role: "primary" });
+    if (l2) items.push({ exerciseId: l2, role: "secondary" });
+    if (c) items.push({ exerciseId: c, role: "core" });
+    return { id: id, name: name, items: items };
+  }
   function phase(id, name, focus, weeks, s0, s1, dl, rt) {
     return { id: id, name: name, focus: focus, weeks: weeks, setsStart: s0, setsEnd: s1, deloadWeek: dl, repTarget: rt || repTargetForFocus(focus) };
   }
@@ -270,7 +276,13 @@
       var po = db.exercises.find(function (e) { return e.id === "pull_over"; });
       if (!po) db.exercises.push(ex("pull_over", "Pull Over", "strength", "lift2", "bar_std", ["back", "chest"], [8, 12], 20, 48));
       else po.active = true;
-      db.templates.forEach(function (t) { if (t.id === "t_c" || t.id === "t_e") t.core = "pull_over"; });
+      db.templates.forEach(function (t) {
+        if (t.id !== "t_c" && t.id !== "t_e") return;
+        if (Array.isArray(t.items)) {
+          var ci = t.items.find(function (it) { return it.role === "core"; });
+          if (ci) ci.exerciseId = "pull_over"; else t.items.push({ exerciseId: "pull_over", role: "core" });
+        } else { t.core = "pull_over"; }
+      });
       db.migrations.pulloverSlots = true;
     }
     // Einmalige Migration: Templates von festen Slots (lift1/lift2/core) auf die
