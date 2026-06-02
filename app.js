@@ -615,6 +615,7 @@
     root.innerHTML = head + nav + banner + '<main class="content">' + body + '</main>';
     if (window.KSSync) window.KSSync.mountPanel();
     if (UI.tab === "training" && UI.live) { bindLiveInputs(); syncActiveSet(); }
+    if (UI.tab === "journey" && !UI.journeyPicker) drawJourneyChart();
     manageClock();
     syncRestBar();
   }
@@ -1245,10 +1246,7 @@
     var cp = currentPhase();
     return '<div class="card journey">'
         + '<div class="journey-head"><strong>' + esc(j.name) + '</strong>' + (j.goal ? '<span class="jgoal">' + esc(j.goal) + '</span>' : '') + '<span class="hint">Start ' + esc(j.startDate) + '</span></div>'
-        + '<div class="phase-track">' + j.phases.map(function (p, i) {
-          return '<div class="phase-pill' + (p.id === j.currentPhaseId ? ' cur' : (i < idx ? ' past' : '')) + '">'
-            + '<span class="pn">' + esc(p.name) + '</span><span class="pmeta">' + p.weeks + ' Wo · ' + (p.repTarget ? p.repTarget[0] + '–' + p.repTarget[1] + ' Wdh · ' : '') + 'Sätze ' + p.setsStart + '→' + p.setsEnd + (p.deloadWeek ? ' · Deload W' + p.deloadWeek : '') + '</span></div>';
-        }).join('<span class="phase-arrow">›</span>') + '</div>'
+        + '<div class="journey-chart" id="ks-journey-chart" style="width:100%;margin:6px 0 2px"></div>'
         + '<div class="phase-ctrl"><span>Aktuelle Phase: <strong>' + esc((cp || {}).name || "—") + '</strong>' + (cp && cp.repTarget ? ' · Ziel ' + cp.repTarget[0] + '–' + cp.repTarget[1] + ' Wdh' : '') + '</span>'
         + '<div class="wk-ctrl">Woche <button class="btn tiny ghost" data-action="wk" data-d="-1">−</button><strong class="wk-val">' + (j.currentWeek || 1) + '</strong><button class="btn tiny ghost" data-action="wk" data-d="1">+</button> / ' + ((cp || {}).weeks || "?") + '</div>'
         + '<button class="btn tiny ghost" data-action="phase-next">nächste Phase ›</button></div>'
@@ -1257,6 +1255,90 @@
         + (!recoveryGreenNow() ? ' · <span class="warn-inline">Erholungsmarker gelb/rot → konservativ</span>' : '') + '</div>'
         + (idx >= j.phases.length - 1 ? '<div class="last-phase">Letzte Phase erreicht. <button class="btn tiny" data-action="journey-finish" data-id="' + j.id + '">Journey abschließen</button> <button class="btn tiny ghost" data-action="journey-picker">neue Journey starten</button></div>' : '')
         + '</div>';
+  }
+  // D3-Periodisierungsgrafik der aktiven Journey (Container #ks-journey-chart).
+  // Volumen aus der Engine-Satzrampe (volumeForWeek), Intensitaet aus der Rep-Range
+  // (weniger Reps = hoehere Last), weiche Catmull-Rom-Kurven. Wird nach dem Render
+  // des Journey-Tabs aufgerufen. Beide Serien je fuer sich auf "relative Last" normiert.
+  function drawJourneyChart() {
+    var el = document.getElementById("ks-journey-chart");
+    if (!el || typeof d3 === "undefined") return;
+    var j = activeJourney();
+    if (!j || !j.phases || !j.phases.length) { el.innerHTML = ""; return; }
+
+    var weeks = [], bands = [], gw = 0;
+    var vMin = Infinity, vMax = -Infinity, iMin = Infinity, iMax = -Infinity;
+    j.phases.forEach(function (p, pi) {
+      var pw = Math.max(1, p.weeks || 1);
+      var mid = p.repTarget ? (p.repTarget[0] + p.repTarget[1]) / 2 : 8;
+      var iScore = 1 / Math.max(1, mid);
+      bands.push({ name: p.name || ("Phase " + (pi + 1)), start: gw, end: gw + pw - 1 });
+      for (var wi = 0; wi < pw; wi++) {
+        var vol = E.volumeForWeek(p, wi, true);
+        weeks.push({ g: gw, vol: vol, intens: iScore, deload: !!(p.deloadWeek && wi === p.deloadWeek) });
+        vMin = Math.min(vMin, vol); vMax = Math.max(vMax, vol);
+        iMin = Math.min(iMin, iScore); iMax = Math.max(iMax, iScore);
+        gw++;
+      }
+    });
+    var N = weeks.length;
+
+    var ci = j.phases.findIndex(function (p) { return p.id === j.currentPhaseId; });
+    if (ci < 0) ci = 0;
+    var curG = 0;
+    for (var k = 0; k < ci; k++) curG += Math.max(1, j.phases[k].weeks || 1);
+    curG += Math.max(0, Math.min((j.currentWeek || 1) - 1, Math.max(1, j.phases[ci].weeks || 1) - 1));
+
+    function ny(v, lo, hi) { var t = hi > lo ? (v - lo) / (hi - lo) : 0.5; return 0.08 + t * 0.84; }
+
+    var W = 680, H = 240, m = { t: 22, r: 14, b: 48, l: 14 };
+    var iw = W - m.l - m.r, ih = H - m.t - m.b;
+    d3.select(el).selectAll("*").remove();
+    var svg = d3.select(el).append("svg")
+      .attr("viewBox", "0 0 " + W + " " + H).attr("width", "100%")
+      .attr("role", "img").attr("aria-label", "Periodisierung der Journey " + (j.name || ""));
+    var g = svg.append("g").attr("transform", "translate(" + m.l + "," + m.t + ")");
+    var x = d3.scaleLinear().domain([0, Math.max(1, N - 1)]).range([0, iw]);
+    function yPix(t01) { return ih - t01 * ih; }
+
+    bands.forEach(function (b, bi) {
+      var x0 = Math.max(0, x(b.start - 0.5));
+      var x1 = Math.min(iw, x(b.end + 0.5));
+      if (bi % 2 === 1) {
+        g.append("rect").attr("x", x0).attr("y", 0).attr("width", Math.max(0, x1 - x0)).attr("height", ih)
+          .style("fill", "var(--panel2)").style("opacity", 0.55);
+      }
+      if (bi > 0) {
+        g.append("line").attr("x1", x0).attr("y1", 0).attr("x2", x0).attr("y2", ih)
+          .style("stroke", "var(--line2)").style("stroke-dasharray", "3 4");
+      }
+      g.append("text").attr("x", (x0 + x1) / 2).attr("y", ih + 18).attr("text-anchor", "middle")
+        .style("fill", "var(--muted)").style("font-family", "var(--mono)").style("font-size", "10px")
+        .text(b.name);
+    });
+
+    g.append("line").attr("x1", 0).attr("y1", ih).attr("x2", iw).attr("y2", ih).style("stroke", "var(--line2)");
+
+    var volLine = d3.line().x(function (d) { return x(d.g); }).y(function (d) { return yPix(ny(d.vol, vMin, vMax)); }).curve(d3.curveCatmullRom.alpha(0.5));
+    var intLine = d3.line().x(function (d) { return x(d.g); }).y(function (d) { return yPix(ny(d.intens, iMin, iMax)); }).curve(d3.curveCatmullRom.alpha(0.5));
+
+    g.append("path").datum(weeks).attr("d", intLine).style("fill", "none").style("stroke", "var(--accent-2)").style("stroke-width", 2.5).style("stroke-dasharray", "6 4").style("stroke-linejoin", "round").style("stroke-linecap", "round");
+    g.append("path").datum(weeks).attr("d", volLine).style("fill", "none").style("stroke", "var(--accent)").style("stroke-width", 2.5).style("stroke-linejoin", "round").style("stroke-linecap", "round");
+
+    weeks.filter(function (d) { return d.deload; }).forEach(function (d) {
+      g.append("circle").attr("cx", x(d.g)).attr("cy", yPix(ny(d.vol, vMin, vMax))).attr("r", 3.5).style("fill", "var(--warn)");
+    });
+
+    var cx = x(Math.min(curG, N - 1));
+    g.append("line").attr("x1", cx).attr("y1", -6).attr("x2", cx).attr("y2", ih).style("stroke", "var(--text)").style("stroke-width", 1.5);
+    g.append("circle").attr("cx", cx).attr("cy", ih).attr("r", 4).style("fill", "var(--text)");
+    g.append("text").attr("x", cx + 5).attr("y", -2).style("fill", "var(--text)").style("font-family", "var(--mono)").style("font-size", "10px").text("jetzt");
+
+    var lg = svg.append("g").attr("transform", "translate(" + m.l + ",11)");
+    lg.append("line").attr("x1", 0).attr("y1", 0).attr("x2", 22).attr("y2", 0).style("stroke", "var(--accent)").style("stroke-width", 2.5);
+    lg.append("text").attr("x", 28).attr("y", 3).style("fill", "var(--muted)").style("font-family", "var(--mono)").style("font-size", "10px").text("Volumen");
+    lg.append("line").attr("x1", 100).attr("y1", 0).attr("x2", 122).attr("y2", 0).style("stroke", "var(--accent-2)").style("stroke-width", 2.5).style("stroke-dasharray", "6 4");
+    lg.append("text").attr("x", 128).attr("y", 3).style("fill", "var(--muted)").style("font-family", "var(--mono)").style("font-size", "10px").text("Intensität");
   }
   function viewWorkouts() {
     var html = '<div class="section-title">Verlauf</div>';
