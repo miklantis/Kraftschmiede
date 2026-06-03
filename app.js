@@ -231,7 +231,6 @@
     { id: "workouts", label: "Verlauf" },
     { id: "journey", label: "Journey" },
     { id: "exercises", label: "Übungen" },
-    { id: "inventory", label: "Inventar" },
     { id: "settings", label: "Einstellungen" }
   ];
   function authBtn() {
@@ -278,7 +277,6 @@
       case "workouts": body = viewWorkouts(); break;
       case "journey": body = UI.journeyPicker ? viewJourneyPicker() : viewJourneyManager(); break;
       case "exercises": body = UI.detail ? viewExerciseDetail(UI.detail) : viewExercises(); break;
-      case "inventory": body = viewInventory(); break;
       case "settings": body = viewSettings(); break;
     }
     root.innerHTML = head + nav + banner + '<main class="content">' + body + '</main>';
@@ -757,9 +755,9 @@
     return html;
   }
 
-  function viewInventory() {
-    var html = '<div class="section-title">Inventar</div>';
-    html += '<div class="card"><div class="sets-title">Stangen</div><div class="hint">Die erste Stange ist im Workout vorausgewählt. Reihenfolge zählt – Namen frei wählbar.</div><div class="bar-list">';
+  function inventoryCards() {
+    var html = '';
+    html += '<div class="card"><div class="sets-title">Inventar · Stangen</div><div class="hint">Die erste Stange ist im Workout vorausgewählt. Reihenfolge zählt – Namen frei wählbar.</div><div class="bar-list">';
     DB.inventory.bars.forEach(function (b, i) {
       html += '<div class="bar-card">'
         + '<div class="bar-card-main"><input type="text" class="bar-name-inp" data-bar="name" data-i="' + i + '" value="' + esc(b.name) + '" placeholder="Stangenname">'
@@ -771,7 +769,7 @@
     });
     html += '</div><button class="btn tiny ghost" data-action="bar-add">+ Stange</button></div>';
 
-    html += '<div class="card"><div class="sets-title">Scheiben (pro Stück, kg)</div><div class="plate-chips">';
+    html += '<div class="card"><div class="sets-title">Inventar · Scheiben (pro Stück, kg)</div><div class="plate-chips">';
     DB.inventory.plates.slice().sort(function (a, b) { return a - b; }).forEach(function (p) {
       html += '<span class="plate-chip">' + fmtNum(p) + ' <button data-action="plate-del" data-p="' + p + '">×</button></span>';
     });
@@ -796,6 +794,8 @@
       + numSetting("Erholung Deadlift (h)", "rec_deadlift", s.recoveryWindows.deadlift, 1)
       + '<label class="edit-field"><span>Einheit</span><select data-set-setting="unit"><option value="kg"' + (s.unit === "kg" ? " selected" : "") + '>kg</option><option value="lb"' + (s.unit === "lb" ? " selected" : "") + '>lb</option></select></label>'
       + '</div></div>';
+
+    html += inventoryCards();
 
     var T = s.timers || {};
     html += '<div class="card"><div class="sets-title">Pausen-Timer</div>'
