@@ -291,8 +291,9 @@
   /* =========================================================
      View: Training (Live)
      ========================================================= */
-  // Pfad zum Vorschaubild eines Workouts (images/Workout X.jpeg). Leerzeichen wird URL-codiert.
-  function woImage(name) { return "images/" + encodeURIComponent("Workout " + name) + ".jpeg"; }
+  // Pfad zum Vorschaubild: Dateiname aus dem Template-JSON (t.image), aufgeloest im
+  // images/-Ordner. Beliebige Namen moeglich; Leerzeichen werden URL-codiert.
+  function woImage(file) { return "images/" + encodeURIComponent(file); }
   function viewTraining() {
     if (UI.live) return liveSession();
     var ranked = rankWorkouts();
@@ -301,7 +302,7 @@
       var names = tplItems(t).map(function (it) { var e = exById(it.exerciseId); return e ? esc(e.name) : it.exerciseId; });
       return '<div class="wo-card' + (i === 0 ? ' rec' : '') + (r.excluded ? ' excl' : '') + '">'
         + '<div class="wo-thumb">'
-        + '<img class="wo-img" src="' + woImage(t.name) + '" alt="Workout ' + esc(t.name) + '" loading="lazy" onerror="this.remove()">'
+        + '<img class="wo-img" src="' + woImage(t.image || ("Workout " + t.name + ".jpeg")) + '" alt="Workout ' + esc(t.name) + '" loading="lazy" onerror="this.remove()">'
         + '<span class="wo-grad"></span>'
         + '<span class="wo-name">Workout ' + esc(t.name) + '</span>'
         + '<span class="score-badge" title="Suitability-Score">' + fmtNum(r.score) + '</span>'

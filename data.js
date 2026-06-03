@@ -95,12 +95,14 @@
       recoveryHours: 24, rm: null, rmAsOf: null, rmStale: false, active: true
     };
   }
-  function tpl(id, name, l1, l2, c) {
+  function tpl(id, name, l1, l2, c, image) {
     var items = [];
     if (l1) items.push({ exerciseId: l1, role: "primary" });
     if (l2) items.push({ exerciseId: l2, role: "secondary" });
     if (c) items.push({ exerciseId: c, role: "core" });
-    return { id: id, name: name, items: items };
+    // image: Dateiname des Vorschaubilds (im images/-Ordner). Frei waehlbar und
+    // pro Template ueberschreibbar; Default leitet sich nur bequemerweise aus dem Namen ab.
+    return { id: id, name: name, items: items, image: image || ("Workout " + name + ".jpeg") };
   }
   function phase(id, name, focus, weeks, s0, s1, dl, rt) {
     return { id: id, name: name, focus: focus, weeks: weeks, setsStart: s0, setsEnd: s1, deloadWeek: dl, repTarget: rt || repTargetForFocus(focus) };
@@ -214,6 +216,9 @@
     db.exercises = db.exercises || [];
     db.bodyLog = db.bodyLog || [];
     db.templates = db.templates || [];
+    // Vorschaubild-Feld feldweise nachruesten (non-destruktiv): vorhandene image-Werte
+    // bleiben unangetastet, fehlende werden bequem aus dem Namen abgeleitet.
+    db.templates.forEach(function (t) { if (!t.image) t.image = "Workout " + t.name + ".jpeg"; });
     // Pausen-Timer-Settings nachruesten (non-destruktiv, feldweise)
     db.settings = db.settings || {};
     if (!db.settings.timers) db.settings.timers = {};
