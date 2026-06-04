@@ -286,8 +286,8 @@
     { id: "body", label: "Körper" },
     { id: "workouts", label: "Verlauf" },
     { id: "journey", label: "Journey" },
-    { id: "skills", label: "Skills" },
     { id: "exercises", label: "Übungen" },
+    { id: "skills", label: "Skills" },
     { id: "settings", label: "Einstellungen" }
   ];
   function authBtn() {
