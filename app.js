@@ -317,7 +317,7 @@
     var root = document.getElementById("app");
     var phase = currentPhase(), j = activeJourney();
     var head = '<header class="topbar">'
-      + '<div class="brand"><span class="logo">▦</span><span>KRAFTSCHMIEDE</span><span class="ver">Schema ' + SCHEMA + '</span></div>'
+      + '<div class="brand"><span>KRAFTSCHMIEDE</span><span class="ver">Schema ' + SCHEMA + '</span></div>'
       + '<div class="topbar-right"><div class="phasechip">' + (j ? esc(j.name) : "—") + (phase ? ' · <strong>' + esc(phase.name) + '</strong> · W' + (j.currentWeek || 1) + '/' + phase.weeks : '') + '</div>' + authBtn() + '</div>'
       + '</header>';
     var curTab = TABS.find(function (t) { return t.id === UI.tab; }) || TABS[0];
