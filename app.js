@@ -48,7 +48,10 @@
   function repTargetForFocus() { return KS.repTargetForFocus.apply(null, arguments); }
   function focusLabel() { return KS.focusLabel.apply(null, arguments); }
   function templateWeeks() { return KS.templateWeeks.apply(null, arguments); }
+  function skillById() { return KS.skillById.apply(null, arguments); }
+  function skillProgressFor() { return KS.skillProgressFor.apply(null, arguments); }
   var JOURNEY_TEMPLATES = KS.JOURNEY_TEMPLATES;
+  var SKILLS = KS.SKILLS;
 
   /* =========================================================
      State
@@ -67,7 +70,7 @@
   function dashReorder(from, to) { if (from === to || from < 0 || to < 0 || from >= DASH.length || to >= DASH.length) return; var item = DASH.splice(from, 1)[0]; DASH.splice(to, 0, item); dashSave(); }
 
   migrate(DB);
-  var UI = { tab: "training", detail: null, live: null, importPreview: null, journeyPicker: false, calMonth: null, plateShow: {}, menuOpen: false, woView: "calendar", bodyDraft: null };
+  var UI = { tab: "training", detail: null, live: null, importPreview: null, journeyPicker: false, skillsPicker: false, skillOpen: {}, calMonth: null, plateShow: {}, menuOpen: false, woView: "calendar", bodyDraft: null };
   // Laufende Session nach Browser-/App-Neustart wiederherstellen. Die Uhr
   // laeuft ueber den gespeicherten startedAt-Zeitstempel korrekt weiter.
   if (DB.live && DB.live.status === "live") { UI.live = DB.live; UI.tab = "training"; }
@@ -282,6 +285,7 @@
     { id: "body", label: "Körper" },
     { id: "workouts", label: "Verlauf" },
     { id: "journey", label: "Journey" },
+    { id: "skills", label: "Skills" },
     { id: "exercises", label: "Übungen" },
     { id: "settings", label: "Einstellungen" }
   ];
@@ -328,6 +332,7 @@
       case "body": body = viewBody(); break;
       case "workouts": body = viewWorkouts(); break;
       case "journey": body = UI.journeyPicker ? viewJourneyPicker() : viewJourneyManager(); break;
+      case "skills": body = UI.skillsPicker ? viewSkillsPicker() : viewSkillsManager(); break;
       case "exercises": body = UI.detail ? viewExerciseDetail(UI.detail) : viewExercises(); break;
       case "settings": body = viewSettings(); break;
     }
@@ -808,6 +813,90 @@
     return html;
   }
 
+  /* =========================================================
+     View: Skills-Tab (Manager + Katalog/Picker)
+     ========================================================= */
+  // Phasen-Track eines Skills (lehnt sich an die Journey-Vorlagen-Pills an).
+  function skillPhasesTrack(def, prog) {
+    var track = def.phases.map(function (ph) {
+      var cur = ph.index === prog.currentPhase;
+      var ex = ph.exercises.map(function (e) {
+        var t = e.metric === "duration" ? (e.target + " s") : (e.target + " Wdh");
+        return esc(e.name) + " " + e.sets + "×" + t + (e.tempo ? " (" + esc(e.tempo) + ")" : "");
+      }).join(" · ");
+      var eq = (ph.equipment && ph.equipment.length) ? ph.equipment.map(equipmentLabel).map(esc).join(", ") : "Körpergewicht";
+      return '<div class="tpl-pill"><span class="tp-n">' + (cur ? "▶ " : "") + esc(ph.label) + '</span>'
+        + '<span class="tp-m">' + ex + ' · ' + eq + ' · ' + ph.consecutiveSessions + '× sauber</span></div>';
+    }).join('<span class="phase-arrow">›</span>');
+    return '<div class="tpl-track">' + track + '</div>';
+  }
+
+  function viewSkillsManager() {
+    var owned = ownedEquipmentIds();
+    var html = '<div class="section-title jl-title">Skills<button class="btn primary addj" data-action="skills-picker">+ Skill hinzufügen</button></div>';
+    html += '<p class="hint jm-lead">Skills sind eigenständige Trainingseinheiten, unabhängig von der Journey. Aktive Skills trainierst du über die Skill-Kachel im Training. Deaktivieren behält den Fortschritt.</p>';
+    var entries = (DB.skillProgress || []).filter(function (p) {
+      return p.active || (p.log && p.log.length) || (p.currentPhase || 0) > 0 || (p.consecutiveCount || 0) > 0;
+    });
+    if (!entries.length) {
+      html += '<div class="card empty-journey"><p class="ej-lead">Noch keine Skills.</p><p class="hint">Füge einen Skill aus dem Katalog hinzu, um ihn zu trainieren.</p><button class="btn primary" data-action="skills-picker">Skill aus Katalog wählen</button></div>';
+      return html;
+    }
+    entries = entries.slice().sort(function (a, b) { return (b.active ? 1 : 0) - (a.active ? 1 : 0); });
+    html += '<div class="jlist">' + entries.map(function (p) {
+      var def = skillById(p.skillId); if (!def) return '';
+      var adv = E.skillAdvice(def, p, owned);
+      var ph = def.phases[adv.phaseIndex];
+      var open = !!UI.skillOpen[p.skillId];
+      var badge = p.active ? '<span class="badge-active">aktiv</span>' : '<span class="badge-idle">inaktiv</span>';
+      var masteredTag = p.mastered ? ' <span class="badge-active">gemeistert</span>' : '';
+      var meta = 'Phase ' + (adv.phaseIndex + 1) + '/' + def.phases.length + ' · ' + esc(ph.label)
+        + (p.mastered ? ' · Erhaltung' : ' · Serie ' + (p.consecutiveCount || 0) + '/' + ph.consecutiveSessions);
+      var gate = adv.equipmentMissing
+        ? '<div class="hint" style="color:var(--accent)">Gerät fehlt: ' + adv.missingEquipment.map(equipmentLabel).map(esc).join(", ") + ' – im Skills-Inventar (Einstellungen) aktivieren.</div>'
+        : '';
+      var row = '<div class="jrow' + (p.active ? ' active' : '') + '">'
+        + '<div class="jr-main"><span class="jr-name">' + esc(def.name) + masteredTag + '</span>'
+        + '<span class="jr-meta">' + meta + '</span></div>'
+        + '<div class="jr-status">' + badge + '</div>'
+        + '<div class="jr-actions">'
+        + '<button class="btn tiny ghost" data-action="skill-toggle" data-id="' + p.skillId + '">' + (open ? "Details ▴" : "Details ▾") + '</button>'
+        + (p.active
+            ? '<button class="btn tiny ghost" data-action="skill-deactivate" data-id="' + p.skillId + '">deaktivieren</button>'
+            : '<button class="btn tiny ghost" data-action="skill-activate" data-id="' + p.skillId + '">aktivieren</button>')
+        + '<button class="btn tiny ghost" data-action="skill-phase-back" data-id="' + p.skillId + '">Phase −1</button>'
+        + '<button class="btn tiny ghost danger" data-action="skill-reset" data-id="' + p.skillId + '">zurücksetzen</button>'
+        + '</div></div>';
+      var detail = open ? '<div class="card skill-detail">' + gate + skillPhasesTrack(def, p) + '</div>' : '';
+      return row + detail;
+    }).join('') + '</div>';
+    return html;
+  }
+
+  function viewSkillsPicker() {
+    var html = '<button class="btn ghost small back" data-action="skills-picker-close">‹ Zurück</button>';
+    html += '<div class="section-title">Skill hinzufügen</div>';
+    html += '<p class="hint pick-lead">Skills sind bewegungsbasierte Einheiten mit aufeinander aufbauenden Phasen. Hinzufügen aktiviert den Skill; du trainierst ihn über die Skill-Kachel im Training. Der Fortschritt bleibt erhalten, auch wenn du ihn später deaktivierst.</p>';
+    html += '<div class="tpl-grid">' + SKILLS.map(function (def) {
+      var prog = (DB.skillProgress || []).find(function (p) { return p.skillId === def.id; });
+      var active = !!(prog && prog.active);
+      var tracked = !!(prog && ((prog.log && prog.log.length) || (prog.currentPhase || 0) > 0 || (prog.consecutiveCount || 0) > 0));
+      var track = def.phases.map(function (ph) {
+        var ex = ph.exercises.map(function (e) { return esc(e.name); }).join(", ");
+        return '<div class="tpl-pill"><span class="tp-n">' + esc(ph.label) + '</span><span class="tp-m">' + ex + '</span></div>';
+      }).join('<span class="phase-arrow">›</span>');
+      var btn = active
+        ? '<button class="btn ghost" disabled>Bereits aktiv ✓</button>'
+        : '<button class="btn primary" data-action="skill-activate" data-id="' + def.id + '">' + (tracked ? "Fortsetzen" : "+ Hinzufügen") + '</button>';
+      return '<div class="card tpl-card">'
+        + '<div class="tpl-head"><h3>' + esc(def.name) + '</h3><span class="tpl-dur">' + def.phases.length + ' Phasen · ' + esc(skillCategoryLabel(def.category)) + '</span></div>'
+        + '<div class="tpl-track">' + track + '</div>'
+        + btn
+        + '</div>';
+    }).join('') + '</div>';
+    return html;
+  }
+
   function inventoryCards() {
     var html = '';
     html += '<div class="card"><div class="sets-title">Inventar · Stangen</div><div class="hint">Die erste Stange ist im Workout vorausgewählt. Reihenfolge zählt – Namen frei wählbar.</div><div class="bar-list">';
@@ -992,7 +1081,7 @@
     var el = ev.target.closest("[data-action]"); if (!el) return;
     var a = el.getAttribute("data-action");
     switch (a) {
-      case "tab": UI.tab = el.getAttribute("data-tab"); UI.detail = null; UI.journeyPicker = false; UI.menuOpen = false; UI.bodyDraft = null; render(); break;
+      case "tab": UI.tab = el.getAttribute("data-tab"); UI.detail = null; UI.journeyPicker = false; UI.skillsPicker = false; UI.menuOpen = false; UI.bodyDraft = null; render(); break;
       case "menu-toggle": UI.menuOpen = !UI.menuOpen; render(); break;
       case "auth-open": openAuthModal(); break;
       case "auth-close": closeAuthModal(); break;
@@ -1035,6 +1124,13 @@
       case "journey-activate": activateJourney(el.getAttribute("data-id")); break;
       case "journey-finish": if (confirm("Journey abschließen und archivieren? Der Verlauf bleibt erhalten.")) finishJourney(el.getAttribute("data-id")); break;
       case "journey-del": if (confirm("Journey wirklich löschen? Sessions bleiben erhalten.")) deleteJourney(el.getAttribute("data-id")); break;
+      case "skills-picker": UI.tab = "skills"; UI.skillsPicker = true; render(); break;
+      case "skills-picker-close": UI.skillsPicker = false; render(); break;
+      case "skill-activate": activateSkill(el.getAttribute("data-id")); break;
+      case "skill-deactivate": deactivateSkill(el.getAttribute("data-id")); break;
+      case "skill-phase-back": if (confirm("Eine Phase zurück? Der Fortschritt der aktuellen Phase wird zurückgesetzt.")) regressSkill(el.getAttribute("data-id")); break;
+      case "skill-reset": if (confirm("Skill auf Phase 1 zurücksetzen? Der Fortschritt geht verloren (Verlauf bleibt erhalten).")) resetSkill(el.getAttribute("data-id")); break;
+      case "skill-toggle": var sid = el.getAttribute("data-id"); UI.skillOpen[sid] = !UI.skillOpen[sid]; render(); break;
       case "bar-add": DB.inventory.bars.push({ id: uid("bar_"), name: "Stange", weight: 20, default: false }); State.persist(); render(); break;
       case "bar-del": var bi = +el.getAttribute("data-i"); if (bi === 0) { toast("Die erste Stange ist die Vorauswahl und kann nicht gelöscht werden."); } else { DB.inventory.bars.splice(bi, 1); State.persist(); render(); } break;
       case "plate-del": DB.inventory.plates = DB.inventory.plates.filter(function (p) { return p !== parseFloat(el.getAttribute("data-p")); }); State.persist(); render(); break;
@@ -1133,6 +1229,43 @@
     var wasActive = (DB.journeys.find(function (x) { return x.id === id; }) || {}).active;
     DB.journeys = DB.journeys.filter(function (x) { return x.id !== id; });
     if (wasActive) { var next = DB.journeys.find(function (x) { return x.status !== "archived"; }) || DB.journeys[0]; if (next) next.active = true; }
+    State.persist(); render();
+  }
+
+  /* ===== Skills: Equipment-Helfer + Aktionen (Skills-Tab) ===== */
+  function ownedEquipmentIds() {
+    return (DB.inventory.equipment || []).filter(function (e) { return e.active; }).map(function (e) { return e.id; });
+  }
+  function equipmentLabel(id) {
+    var e = (DB.inventory.equipment || []).find(function (x) { return x.id === id; });
+    return e ? e.label : id;
+  }
+  function skillCategoryLabel(c) {
+    return ({ gymnastics: "Gymnastik", conditioning: "Kondition", strength: "Kraft", mobility: "Mobility" })[c] || c || "–";
+  }
+  // Aktivieren: legt bei Bedarf den Fortschritt an bzw. setzt active:true
+  // (vorhandener Fortschritt wird fortgesetzt). activate-Log nur beim ersten Mal.
+  function activateSkill(id) {
+    var def = skillById(id); if (!def) return;
+    var p = skillProgressFor(id);
+    var firstTime = !p.active && (!p.log || !p.log.length);
+    p.active = true;
+    if (firstTime) { p.log = p.log || []; p.log.push({ date: today(), type: "activate" }); }
+    UI.skillsPicker = false; UI.tab = "skills";
+    State.persist(); render();
+    toast("Skill \u201E" + def.name + "\u201C aktiviert.");
+  }
+  function deactivateSkill(id) { var p = skillProgressFor(id); p.active = false; State.persist(); render(); }
+  function regressSkill(id) {
+    var p = skillProgressFor(id); var from = p.currentPhase || 0;
+    p.currentPhase = Math.max(0, from - 1); p.consecutiveCount = 0; p.mastered = false;
+    p.log = p.log || []; p.log.push({ date: today(), type: "regress", from: from, to: p.currentPhase });
+    State.persist(); render();
+  }
+  function resetSkill(id) {
+    var p = skillProgressFor(id);
+    p.currentPhase = 0; p.consecutiveCount = 0; p.mastered = false;
+    p.log = p.log || []; p.log.push({ date: today(), type: "reset" });
     State.persist(); render();
   }
   function exEdit(el) {
