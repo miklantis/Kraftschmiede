@@ -6,12 +6,15 @@ synchronisieren.
 
 ## Dateien
 
-- `index.html` – Einstieg, laedt alle Skripte in der richtigen Reihenfolge
+- `index.html` – Einstieg, laedt alle Skripte in fester Reihenfolge
 - `styles.css` – Oberflaeche (Industrial-Dark-Theme)
-- `engine.js` – reine Rechen-Engine (1RM, Plate-Loader, Gewichtsvorschlaege …)
-- `app.js` – komplette App-Logik und Rendering
-- `supabase.js` – optionale Cloud-Sync-Schicht (Anmeldung + Laden/Speichern)
 - `config.js` – deine Supabase-Zugangsdaten (du traegst sie ein)
+- `engine.js` – reine Rechen-Engine (1RM, Plate-Loader, Gewichtsvorschlaege …)
+- `supabase.js` – optionale Cloud-Sync-Schicht (Anmeldung + Laden/Speichern)
+- `data.js` – Seed-Daten, Domaenen-Helfer, Journey-Vorlagen und Schema-Migration
+- `charts.js` – Diagramme (D3-Journey-Chart, Verlaufs-Charts) und Plate-Grafiken
+- `live.js` – Live-Session, Pausen-Timer, Audio/Vibration, Start-/Ende-Dialoge
+- `app.js` – App-Logik, Rendering und Verdrahtung der Module
 - `schema.sql` – einmalig in Supabase auszufuehren (Tabelle + Sicherheitsregeln)
 
 Ohne Cloud-Sync liegen die Daten im `localStorage` des Browsers (geraete- und
@@ -57,4 +60,4 @@ Hinweise:
 
 ## Schema-Version
 
-Datenschema 0.13. Die App migriert aeltere lokale Staende beim Laden.
+Datenschema 0.14. Die App migriert aeltere lokale Staende beim Laden.
