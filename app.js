@@ -72,7 +72,35 @@
   // laeuft ueber den gespeicherten startedAt-Zeitstempel korrekt weiter.
   if (DB.live && DB.live.status === "live") { UI.live = DB.live; UI.tab = "training"; }
 
-  function persist() { var okp = Store.save(DB); if (!okp) flashStore(); if (window.KSSync) window.KSSync.schedulePush(); }
+  /* =========================================================
+     State – der einzige Ort fuer "lesen / speichern / aus Cloud ersetzen".
+     Der Zustand liegt weiterhin in der Variable DB; State kapselt die
+     Persistenz (localStorage via Store) und das verzoegerte Hochladen
+     (KSSync). Die bisherigen drei Zugaenge (persist, KS.db, KS_APP)
+     zeigen alle hierher, damit es kuenftig nur eine Stelle zu pflegen gibt.
+     Das Dashboard (DASH) bleibt bewusst getrennt und unsynchronisiert.
+     ========================================================= */
+  var State = {
+    // aktuellen Zustand lesen
+    get: function () { return DB; },
+    // lokal sichern + (falls eingerichtet) verzoegert in die Cloud schieben
+    persist: function () {
+      if (!Store.save(DB)) flashStore();
+      if (window.KSSync) window.KSSync.schedulePush();
+    },
+    // kompletten Zustand ersetzen (Cloud-Pull): migrieren, laufende Session
+    // wiederherstellen, lokal sichern, neu rendern (kein sofortiges Hochladen)
+    replace: function (db) {
+      DB = db;
+      if (typeof migrate === "function") migrate(DB);
+      UI.live = (DB.live && DB.live.status === "live") ? DB.live : null;
+      Store.save(DB);
+      render();
+    },
+    persistent: function () { return Store.persistent; }
+  };
+  // Duenner Alias: die vielen vorhandenen persist()-Aufrufstellen bleiben unveraendert.
+  function persist() { State.persist(); }
 
   /* =========================================================
      Utils
@@ -1152,7 +1180,7 @@
 
   /* geteilte Helfer/State fuer ausgelagerte Module (charts.js u.a.).
      db() ist ein Getter, damit die Referenz nach setDB() korrekt bleibt. */
-  KS.db = function () { return DB; };
+  KS.db = State.get;
   KS.esc = esc;
   KS.fmtNum = fmtNum;
   KS.fmtW = fmtW;
@@ -1182,8 +1210,8 @@
 
   /* init */
   window.KS_APP = {
-    getDB: function () { return DB; },
-    setDB: function (db) { DB = db; if (typeof migrate === "function") migrate(DB); UI.live = (DB.live && DB.live.status === "live") ? DB.live : null; Store.save(DB); render(); },
+    getDB: State.get,
+    setDB: State.replace,
     schema: SCHEMA
   };
   render();
