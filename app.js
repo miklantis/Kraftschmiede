@@ -829,6 +829,17 @@
     html += '</div><div class="plate-add"><input type="number" step="0.25" class="num" id="plate-new" placeholder="z.B. 0.5"><button class="btn tiny ghost" data-action="plate-add">+ Scheibe</button></div>';
     html += '<div class="hint">Kleinster Sprung gesamt: <strong>' + fmtW(2 * E.plateGrid(DB.inventory.plates)) + '</strong></div></div>';
 
+    // Inventar · Geraete (Skills). Wirkt nur als Auswahl-Tor: ein Skill ist nur
+    // startbar, wenn alle in seiner aktuellen Phase geforderten Geraete aktiv sind.
+    var EQ = DB.inventory.equipment || [];
+    html += '<div class="card"><div class="sets-title">Inventar · Geräte (Skills)</div>'
+      + '<div class="hint">Auswahl-Tor für Skills: ist ein in der aktuellen Phase gefordertes Gerät nicht aktiv, lässt sich der Skill nicht starten.</div>'
+      + '<div class="timer-switches">';
+    EQ.forEach(function (e) {
+      html += '<label class="chk"><input type="checkbox" data-equip="' + esc(e.id) + '"' + (e.active ? ' checked' : '') + '> ' + esc(e.label) + '</label>';
+    });
+    html += '</div></div>';
+
     return html;
   }
 
@@ -1048,6 +1059,11 @@
       if (field === "name") DB.inventory.bars[i].name = el.value;
       else DB.inventory.bars[i].weight = parseFloat(el.value) || 0;
       State.persist();
+    }
+    else if (el.hasAttribute && el.hasAttribute("data-equip")) {
+      var eqId = el.getAttribute("data-equip");
+      var eq = (DB.inventory.equipment || []).find(function (x) { return x.id === eqId; });
+      if (eq) { eq.active = el.checked; State.persist(); }
     }
   });
 
