@@ -25,15 +25,12 @@
   function pad() { return KS.pad.apply(null, arguments); }
   function persist() { return KS.persist.apply(null, arguments); }
   function phase() { return KS.phase.apply(null, arguments); }
-  function plannedSetCount() { return KS.plannedSetCount.apply(null, arguments); }
   function plateHint() { return KS.plateHint.apply(null, arguments); }
   function plateIcon() { return KS.plateIcon.apply(null, arguments); }
   function render() { return KS.render.apply(null, arguments); }
   function restAdvice() { return KS.restAdvice.apply(null, arguments); }
   function scrollToTop() { return KS.scrollToTop.apply(null, arguments); }
   function snapshotBody() { return KS.snapshotBody.apply(null, arguments); }
-  function suggestForExercise() { return KS.suggestForExercise.apply(null, arguments); }
-  function warmupFor() { return KS.warmupFor.apply(null, arguments); }
   function timerIcon() { return KS.timerIcon.apply(null, arguments); }
   function today() { return KS.today.apply(null, arguments); }
   function todayBody() { return KS.todayBody.apply(null, arguments); }
@@ -249,11 +246,11 @@
     var entries = tplItems(t).map(function (it, idx) {
       var id = it.exerciseId;
       var exo = exById(id);
-      var sug = suggestForExercise(exo, phase);
+      var sug = KS.Coach.suggestionFor(exo, phase);
       // Core-Uebungen fix 3 Saetze; Kraftuebungen folgen der Phasen-Satzrampe.
-      var setN = exo.profile === "core" ? 3 : plannedSetCount();
+      var setN = exo.profile === "core" ? 3 : KS.Coach.plannedSets();
       var startBarId = (firstBar() || {}).id || exo.barId;
-      var warm = warmupFor(exo, sug.weight, barById(startBarId), idx === 0);
+      var warm = KS.Coach.warmupFor(exo, sug.weight, barById(startBarId), idx === 0);
       var planned = []; for (var k = 0; k < setN; k++) planned.push({ reps: sug.targetReps, weight: sug.weight, targetScore: exo.targetScore });
       var sets = planned.map(function (p) {
         return { reps: p.reps, weight: p.weight, score: exo.targetScore, failed: false, done: false, targetReps: p.reps, targetWeight: p.weight, adjusted: false, adjustNote: "" };

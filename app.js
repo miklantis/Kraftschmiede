@@ -213,6 +213,24 @@
   }
 
   /* =========================================================
+     Coach – das deterministische "Gehirn". Buendelt die Aufrufe an die
+     reine Engine (FSE): baut aus dem aktuellen Zustand (Phase, Verlauf,
+     Koerper, Inventar) die noetigen Kontexte zusammen, sodass Views in
+     Domaenensprache fragen und die FSE-Kontextformen nicht kennen muessen.
+     Implementierung in den Glue-Funktionen oben; hier nur die Fassade.
+     ========================================================= */
+  var Coach = {
+    // Gewichts-/Wdh.-Vorschlag fuer eine Uebung; Phase optional (Default: aktuelle).
+    suggestionFor: function (exo, ph) { return suggestForExercise(exo, ph === undefined ? currentPhase() : ph); },
+    // Aufwaermsaetze fuer eine Uebung an einer Stange (nur Langhantel).
+    warmupFor: warmupFor,
+    // Workouts nach Eignung sortiert (Recency, Erholung, Kater, Wochenbalance).
+    rankedWorkouts: rankWorkouts,
+    // Empfohlene Arbeitssatzzahl der Woche aus Phasen-Rampe + Erholung.
+    plannedSets: plannedSetCount
+  };
+
+  /* =========================================================
      Charts (SVG) – Implementierung ausgelagert nach charts.js.
      Lokale Delegates auf window.KS, damit alle Aufrufstellen
      unveraendert bleiben.
@@ -304,7 +322,7 @@
   function woImage(file) { return "images/" + encodeURIComponent(file); }
   function viewTraining() {
     if (UI.live) return liveSession();
-    var ranked = rankWorkouts();
+    var ranked = Coach.rankedWorkouts();
     var cards = ranked.map(function (r, i) {
       var t = r.tpl;
       var names = tplItems(t).map(function (it) { var e = exById(it.exerciseId); return e ? esc(e.name) : it.exerciseId; });
@@ -431,7 +449,7 @@
         + '<div class="phase-ctrl"><span>Aktuelle Phase: <strong>' + esc((cp || {}).name || "—") + '</strong>' + (cp && cp.repTarget ? ' · Ziel ' + cp.repTarget[0] + '–' + cp.repTarget[1] + ' Wdh' : '') + '</span>'
         + '<div class="wk-ctrl">Woche <button class="btn tiny ghost" data-action="wk" data-d="-1">−</button><strong class="wk-val">' + (j.currentWeek || 1) + '</strong><button class="btn tiny ghost" data-action="wk" data-d="1">+</button> / ' + ((cp || {}).weeks || "?") + '</div>'
         + '<button class="btn tiny ghost" data-action="phase-next">nächste Phase ›</button></div>'
-        + '<div class="hint">Volumen-Empfehlung diese Woche: <strong>' + plannedSetCount() + ' Arbeitssätze</strong>/Übung'
+        + '<div class="hint">Volumen-Empfehlung diese Woche: <strong>' + Coach.plannedSets() + ' Arbeitssätze</strong>/Übung'
         + (cp && cp.deloadWeek === (j.currentWeek) ? ' · <span class="warn-inline">Deload-Woche</span>' : '')
         + (!recoveryGreenNow() ? ' · <span class="warn-inline">Erholungsmarker gelb/rot → konservativ</span>' : '') + '</div>'
         + (idx >= j.phases.length - 1 ? '<div class="last-phase">Letzte Phase erreicht. <button class="btn tiny" data-action="journey-finish" data-id="' + j.id + '">Journey abschließen</button> <button class="btn tiny ghost" data-action="journey-picker">neue Journey starten</button></div>' : '')
@@ -605,7 +623,7 @@
     var h = exerciseHistory(exId);
 
     var bar = e.barId ? barById(e.barId) : null;
-    var sug = e.profile !== "core" ? suggestForExercise(e, currentPhase()) : null;
+    var sug = e.profile !== "core" ? Coach.suggestionFor(e) : null;
 
     var html = '<button class="btn ghost small back" data-action="ex-back">‹ Übungen</button>';
     html += '<div class="detail-head"><h2>' + esc(e.name) + '</h2><span class="ex-tags">' + esc(e.profile) + ' · ' + esc(kindLabel(e.kind)) + (bar ? ' · ' + esc(bar.name) + ' ' + fmtW(bar.weight) : '') + ' · ' + esc(e.muscleGroups.join(", ")) + '</span></div>';
@@ -705,7 +723,7 @@
     en.barId = barId;
     var exo = exById(en.exerciseId);
     if (en.suggestion) {
-      en.warmupSets = warmupFor(exo, en.suggestion.weight, barById(barId), ei === 0);
+      en.warmupSets = Coach.warmupFor(exo, en.suggestion.weight, barById(barId), ei === 0);
     }
     persist(); render();
   }
@@ -1151,16 +1169,16 @@
   KS.latestBody = latestBody;
   KS.pad = pad;
   KS.persist = persist;
-  KS.plannedSetCount = plannedSetCount;
   KS.render = render;
   KS.restAdvice = restAdvice;
   KS.scrollToTop = scrollToTop;
   KS.snapshotBody = snapshotBody;
-  KS.suggestForExercise = suggestForExercise;
-  KS.warmupFor = warmupFor;
   KS.todayBody = todayBody;
   KS.tplById = tplById;
   KS.tplItems = tplItems;
+
+  /* Coach – gebuendeltes Interface fuer live.js (Vorschlag, Aufwaermen, Satzzahl) */
+  KS.Coach = Coach;
 
   /* init */
   window.KS_APP = {
