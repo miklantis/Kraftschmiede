@@ -30,5 +30,67 @@ var C = { setsStart: 2, setsEnd: 4, weeks: 4, deloadWeek: null };
 eq(E.volumeForWeek(C, 0, true), 2, "C W1 Start");
 eq(E.volumeForWeek(C, 3, true), 4, "C W4 Ende (keine Deload-Senkung)");
 
+/* ===== Skills (skillSetMet / skillSessionResult / skillAdvice) ===== */
+
+/* skillSetMet: reps/duration, nicht-done, unbekannte Metrik */
+eq(E.skillSetMet("reps", 5, { value: 6, done: true }), true, "Set reps erfuellt (6>=5)");
+eq(E.skillSetMet("reps", 5, { value: 5, done: true }), true, "Set reps genau am Ziel (5>=5)");
+eq(E.skillSetMet("reps", 5, { value: 4, done: true }), false, "Set reps unter Ziel (4<5)");
+eq(E.skillSetMet("reps", 5, { value: 9, done: false }), false, "Set nicht abgehakt -> nicht erfuellt");
+eq(E.skillSetMet("duration", 30, { value: 30, done: true }), true, "Set duration am Ziel (30>=30)");
+eq(E.skillSetMet("duration", 30, { value: 20, done: true }), false, "Set duration unter Ziel (20<30)");
+eq(E.skillSetMet("distance", 4, { value: 99, done: true }), false, "unbekannte Metrik defensiv false");
+
+/* skillSessionResult – einfache Phase (eine Uebung, 3 Saetze, Ziel 8 reps) */
+var P1 = [{ metric: "reps", target: 8, sets: 3 }];
+eq(E.skillSessionResult(P1, [{ sets: [ {value:8,done:true},{value:9,done:true},{value:8,done:true} ] }]),
+   "completed", "Result completed (alle 3 done & im Ziel)");
+eq(E.skillSessionResult(P1, [{ sets: [ {value:8,done:true},{value:5,done:true},{value:8,done:true} ] }]),
+   "missed", "Result missed (1 Satz unter Ziel)");
+eq(E.skillSessionResult(P1, [{ sets: [ {value:8,done:true},{value:8,done:true} ] }]),
+   "missed", "Result missed (nur 2 von 3 Saetzen done)");
+eq(E.skillSessionResult(P1, [{ sets: [ {value:null,done:false},{value:null,done:false},{value:null,done:false} ] }]),
+   "skipped", "Result skipped (kein Satz done)");
+
+/* skillSessionResult – gemischte Phase (Pull-Up Phase 0: duration + reps) */
+var Pmix = [{ metric: "duration", target: 30, sets: 3 }, { metric: "reps", target: 5, sets: 3 }];
+eq(E.skillSessionResult(Pmix, [
+     { sets: [ {value:30,done:true},{value:32,done:true},{value:31,done:true} ] },   // Dead Hang ok
+     { sets: [ {value:5,done:true},{value:6,done:true},{value:5,done:true} ] }        // Scapular ok
+   ]), "completed", "Mixed completed (beide Uebungen voll im Ziel)");
+eq(E.skillSessionResult(Pmix, [
+     { sets: [ {value:30,done:true},{value:30,done:true},{value:30,done:true} ] },   // Dead Hang ok
+     { sets: [ {value:5,done:true},{value:3,done:true},{value:5,done:true} ] }        // Scapular ein Satz daneben
+   ]), "missed", "Mixed missed (eine Uebung erfuellt, andere nicht)");
+
+/* skillSessionResult – robust gegen vorab auf done gefilterte Saetze */
+eq(E.skillSessionResult(P1, [{ sets: [ {value:8,done:true},{value:8,done:true},{value:9,done:true} ] }]),
+   "completed", "Result completed (gefilterte done-Saetze)");
+
+/* skillAdvice – Equipment-Tor, Aufstiegsreife, Phasen-Clamp, Meisterung */
+var pull = {
+  phases: [
+    { index:0, equipment:["pullup-bar"],               consecutiveSessions:2, exercises:[{}] },
+    { index:1, equipment:["pullup-bar","band-light"],  consecutiveSessions:2, exercises:[{}] }
+  ]
+};
+var advHave = E.skillAdvice(pull, { currentPhase:0, consecutiveCount:0 }, ["pullup-bar"]);
+eq(advHave.equipmentMissing, false, "skillAdvice: Phase 0 Equipment vorhanden");
+eq(advHave.phaseIndex, 0, "skillAdvice: phaseIndex 0");
+
+var advMiss = E.skillAdvice(pull, { currentPhase:1, consecutiveCount:0 }, ["pullup-bar"]);
+eq(advMiss.equipmentMissing, true, "skillAdvice: Phase 1 Band fehlt -> Tor");
+eq(advMiss.missingEquipment.join(","), "band-light", "skillAdvice: fehlende ID gemeldet");
+
+eq(E.skillAdvice(pull, { currentPhase:0, consecutiveCount:1 }, ["pullup-bar"]).readyToAdvance, true,
+   "skillAdvice: readyToAdvance (count+1>=need)");
+eq(E.skillAdvice(pull, { currentPhase:0, consecutiveCount:0 }, ["pullup-bar"]).readyToAdvance, false,
+   "skillAdvice: noch nicht aufstiegsreif");
+
+var advClamp = E.skillAdvice(pull, { currentPhase:9, consecutiveCount:0, mastered:true }, ["pullup-bar","band-light"]);
+eq(advClamp.phaseIndex, 1, "skillAdvice: currentPhase ueber Ende -> clamp auf letzte Phase");
+eq(advClamp.mastered, true, "skillAdvice: mastered durchgereicht");
+eq(advClamp.readyToAdvance, false, "skillAdvice: mastered nicht mehr aufstiegsreif");
+
 console.log(fails ? ("\n" + fails + " Test(s) fehlgeschlagen.") : "\nAlle Tests gruen.");
 process.exit(fails ? 1 : 0);
