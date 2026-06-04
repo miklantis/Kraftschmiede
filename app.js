@@ -338,7 +338,10 @@
     }
     root.innerHTML = head + nav + banner + '<main class="content">' + body + '</main>';
     if (window.KSSync) window.KSSync.mountPanel();
-    if (UI.tab === "training" && UI.live) { bindLiveInputs(); syncActiveSet(); }
+    if (UI.tab === "training" && UI.live) {
+      if (UI.live.kind === "skill") bindSkillLiveInputs();
+      else { bindLiveInputs(); syncActiveSet(); }
+    }
     if (UI.tab === "journey" && !UI.journeyPicker) drawJourneyChart();
     if (UI.tab === "exercises") drawExerciseCharts();
     manageClock();
@@ -352,7 +355,7 @@
   // images/-Ordner. Beliebige Namen moeglich; Leerzeichen werden URL-codiert.
   function woImage(file) { return "images/" + encodeURIComponent(file); }
   function viewTraining() {
-    if (UI.live) return liveSession();
+    if (UI.live) return UI.live.kind === "skill" ? liveSkillSession() : liveSession();
     var ranked = Coach.rankedWorkouts();
     var cards = ranked.map(function (r, i) {
       var t = r.tpl;
@@ -373,7 +376,40 @@
         + '</div>';
     }).join("");
     return '<div class="section-title">Heute trainieren</div>'
-      + '<div class="wo-grid">' + cards + yogaCard() + '</div>';
+      + '<div class="wo-grid">' + cards + yogaCard() + skillTrainingCard() + '</div>';
+  }
+  // Skill-Kachel im Training: 0 aktive -> Hinweis/Link; sonst Auswahl der aktiven
+  // Skills mit Auswahl-Tor (fehlt ein Geraet, ist der Skill nicht startbar).
+  function skillTrainingCard() {
+    var active = (DB.skillProgress || []).filter(function (p) { return p.active; });
+    if (!active.length) {
+      return '<div class="wo-card skill-wo">'
+        + '<div class="wo-thumb skill-thumb"><span class="wo-name">Skills</span></div>'
+        + '<div class="wo-body"><div class="wo-lifts">Eigenständige Skill-Einheit</div>'
+        + '<div class="wo-reasons">Noch kein aktiver Skill</div>'
+        + '<button class="btn ghost" data-action="goto-skills">Im Skills-Tab hinzufügen</button>'
+        + '</div></div>';
+    }
+    var owned = ownedEquipmentIds();
+    var rows = active.map(function (p) {
+      var def = skillById(p.skillId); if (!def) return '';
+      var adv = E.skillAdvice(def, p, owned);
+      var ph = def.phases[adv.phaseIndex];
+      var gated = adv.equipmentMissing;
+      var meta = 'Phase ' + (adv.phaseIndex + 1) + '/' + def.phases.length + ' · ' + esc(ph.label) + (p.mastered ? ' · Erhaltung' : '');
+      return '<div class="sk-pick' + (gated ? ' gated' : '') + '">'
+        + '<div class="sk-pick-main"><span class="sk-pick-name">' + esc(def.name) + '</span>'
+        + '<span class="sk-pick-meta">' + meta + '</span>'
+        + (gated ? '<span class="sk-pick-gate">Gerät fehlt: ' + adv.missingEquipment.map(equipmentLabel).map(esc).join(", ") + '</span>' : '')
+        + '</div>'
+        + (gated ? '<button class="btn tiny ghost" disabled>gesperrt</button>'
+                 : '<button class="btn primary tiny" data-action="start-skill" data-id="' + p.skillId + '">starten</button>')
+        + '</div>';
+    }).join("");
+    return '<div class="wo-card skill-wo">'
+      + '<div class="wo-thumb skill-thumb"><span class="wo-name">Skills</span><span class="score-badge" title="Aktive Skills">' + active.length + '</span></div>'
+      + '<div class="wo-body skill-body"><div class="sk-picklist">' + rows + '</div></div>'
+      + '</div>';
   }
   // Yoga als Karte im Training-Stil, am Ende der Workout-Liste. Blau (accent-2)
   // statt orange. Ein Klick traegt sofort eine Einheit fuer heute ein (80 min).
@@ -447,6 +483,10 @@
   function finishSession() { return KS.finishSession.apply(null, arguments); }
   function fmtDur() { return KS.fmtDur.apply(null, arguments); }
   function liveSession() { return KS.liveSession.apply(null, arguments); }
+  function liveSkillSession() { return KS.liveSkillSession.apply(null, arguments); }
+  function bindSkillLiveInputs() { return KS.bindSkillLiveInputs.apply(null, arguments); }
+  function openSkillStartModal() { return KS.openSkillStartModal.apply(null, arguments); }
+  function finishSkillSession() { return KS.finishSkillSession.apply(null, arguments); }
   function manageClock() { return KS.manageClock.apply(null, arguments); }
   function openStartModal() { return KS.openStartModal.apply(null, arguments); }
   function skipRest() { return KS.RestTimer.skip.apply(null, arguments); }
@@ -1086,11 +1126,13 @@
       case "auth-open": openAuthModal(); break;
       case "auth-close": closeAuthModal(); break;
       case "start": openStartModal(el.getAttribute("data-tpl")); break;
+      case "start-skill": openSkillStartModal(el.getAttribute("data-id")); break;
+      case "goto-skills": UI.tab = "skills"; UI.skillsPicker = false; UI.menuOpen = false; render(); break;
       case "start-go": confirmStart(); break;
       case "start-cancel": cancelStart(); break;
       case "start-to-body": startToBody(); break;
       case "finish-workout": endWorkout(); break;
-      case "end-save": closeEndModal(); finishSession(); break;
+      case "end-save": closeEndModal(); if (UI.live && UI.live.kind === "skill") finishSkillSession(); else finishSession(); break;
       case "end-discard": closeEndModal(); discardWorkout(); break;
       case "end-cancel": closeEndModal(); break;
       case "rest-minus": adjustRest(-15); break;

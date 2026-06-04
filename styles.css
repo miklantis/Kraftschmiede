@@ -808,3 +808,36 @@ body{overflow-x:clip}
    ============================================================ */
 .blog-item.today{border-color:var(--accent);background:var(--panel2)}
 .bl-today{font-family:var(--mono);font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:var(--accent);border:1px solid var(--accent);border-radius:3px;padding:0 4px;margin-left:4px}
+
+/* ============================================================
+   v0.24 – Skills: Trainings-Kachel + Skill-Live-Screen
+   (Set-Row-Varianten reps/duration, Stoppuhr, Detail-Karte).
+   Desktop unangetastet; Mobile nutzt die bestehenden .set-row/
+   .exercise-live-Grundlagen (Breakpoints 720/560/430).
+   ============================================================ */
+/* Trainings-Kachel */
+.skill-wo .skill-thumb{position:relative;display:flex;align-items:center;justify-content:space-between;padding:14px;border-radius:8px;background:linear-gradient(135deg,rgba(84,193,200,.22),rgba(84,193,200,.05));border:1px solid rgba(84,193,200,.35)}
+.skill-wo .skill-thumb .wo-name{position:static;color:var(--accent-2);font-family:var(--display);font-weight:700;letter-spacing:.5px}
+.skill-wo .skill-thumb .score-badge{position:static;color:var(--accent-2);background:rgba(84,193,200,.12);border:1px solid rgba(84,193,200,.4)}
+.sk-picklist{display:flex;flex-direction:column;gap:8px}
+.sk-pick{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sk-pick-main{display:flex;flex-direction:column;gap:1px;min-width:0}
+.sk-pick-name{font-weight:600}
+.sk-pick-meta{font-size:12px;color:var(--muted)}
+.sk-pick-gate{font-size:11px;color:var(--accent)}
+.sk-pick.gated{opacity:.6}
+/* Skill-Live: Kopf-Hinweis + Tags */
+.sk-mastered-note{padding:10px 14px;color:var(--accent-2);font-size:13px}
+.skill-ex .sk-tag{color:var(--accent-2);border-color:rgba(84,193,200,.4)}
+.skill-ex .sk-tempo{font-family:var(--mono);font-size:11px;color:var(--muted)}
+/* Skill-Set-Rows: Satz | Ziel | Wert | Done */
+.set-row.head.sk-head{grid-template-columns:46px 1fr 1.2fr 54px}
+.set-row.work.sk-row{grid-template-columns:46px 1fr 1.2fr 54px}
+.sk-target{font-family:var(--mono);text-align:center;font-size:14px;color:var(--muted)}
+.sk-valwrap{display:flex;align-items:center;gap:6px}
+.sk-valwrap .num{flex:1 1 auto;min-width:0}
+.sk-watch-btn{flex:0 0 auto;width:34px;height:34px;border-radius:8px;background:var(--panel2);border:1px solid var(--line2);color:var(--accent-2);cursor:pointer;font-size:13px;line-height:1;display:inline-flex;align-items:center;justify-content:center;transition:.15s}
+.sk-watch-btn:hover{border-color:var(--accent-2)}
+.sk-watch-btn.running{background:rgba(84,193,200,.18);border-color:var(--accent-2);color:var(--text)}
+/* Skills-Tab: Detail-Karte im Akkordeon */
+.skill-detail{margin-top:-4px}

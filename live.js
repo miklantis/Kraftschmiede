@@ -431,7 +431,9 @@
     ensureEndModal();
     var es = KS.UI.live; var et = es ? tplById(es.templateId) : null;
     var endTitle = document.getElementById("ks-end-title");
-    if (endTitle) endTitle.textContent = "Workout " + (et ? et.name : "") + " beenden";
+    if (endTitle) endTitle.textContent = (es && es.kind === "skill")
+      ? ("Skill " + (es.skillName || "") + " beenden")
+      : ("Workout " + (et ? et.name : "") + " beenden");
     var body = document.getElementById("ks-end-body");
     if (body) body.innerHTML = endSummaryHTML();
     document.getElementById("ks-end-modal").classList.add("open");
@@ -440,6 +442,7 @@
   // als Chips (erledigte gruen), oben Dauer und erledigt/gesamt.
   function endSummaryHTML() {
     var s = KS.UI.live; if (!s) return "";
+    if (s.kind === "skill") return skillEndSummaryHTML(s);
     var t = tplById(s.templateId);
     var sec = s.startedAt ? Math.round((Date.now() - s.startedAt) / 1000) : 0;
     var totalWork = 0, totalDone = 0;
@@ -496,6 +499,7 @@
   // als Chips (reps x kg), oben Workout, Anzahl Uebungen und Saetze.
   function startSummaryHTML() {
     var s = KS.UI.pendingLive; if (!s) return "";
+    if (s.kind === "skill") return skillStartSummaryHTML(s);
     var t = tplById(s.templateId);
     var totalWork = 0;
     var rows = (s.entries || []).map(function (en) {
@@ -568,6 +572,199 @@
   }
 
   /* =========================================================
+     Skill-Live-Session (zweiter Renderpfad; UI.live.kind === "skill")
+     ========================================================= */
+  function buildSkillLive(skillId) {
+    var def = KS.skillById(skillId);
+    var prog = KS.skillProgressFor(skillId);
+    var adv = E.skillAdvice(def, prog, []); // Uebungen/Phase haengen nicht am Equipment; Tor greift in der Auswahl
+    var exercises = adv.exercises.map(function (e) {
+      var sets = [];
+      for (var i = 0; i < e.sets; i++) sets.push({ value: null, done: false, met: false });
+      return { name: e.name, metric: e.metric, target: e.target, tempo: e.tempo || null, sets: sets };
+    });
+    return {
+      id: "sk_" + today().replace(/-/g, "") + "_" + Math.floor(Math.random() * 1000),
+      kind: "skill", date: today(), status: "live", startedAt: Date.now(),
+      skillId: skillId, skillName: def.name, phase: adv.phaseIndex, mastered: !!prog.mastered,
+      exercises: exercises, result: null
+    };
+  }
+
+  function liveSkillSession() {
+    var s = KS.UI.live;
+    if (!s.startedAt) s.startedAt = Date.now();
+    var timersOn = !!((db().settings.timers || {}).autoStart);
+    var html = '<div class="live-head">'
+      + '<div class="live-head-l"><div class="section-title">Training · Skill ' + esc(s.skillName || "") + '</div></div>'
+      + '<div class="live-head-r"><span class="live-clock" id="live-clock" title="Trainingsdauer">' + fmtDur((Date.now() - s.startedAt) / 1000) + '</span>'
+      + '<button class="icon-btn timer-toggle' + (timersOn ? ' on' : '') + '" data-action="toggle-timers" aria-pressed="' + (timersOn ? 'true' : 'false') + '" title="Pausen-Timer ein/aus" aria-label="Pausen-Timer ein- oder ausschalten">' + timerIcon() + '</button>'
+      + '<button class="btn end-btn small" data-action="finish-workout">Beenden</button></div></div>';
+    if (s.mastered) html += '<div class="card sk-mastered-note">Skill gemeistert – Erhaltungstraining der letzten Phase.</div>';
+
+    s.exercises.forEach(function (we, ei) {
+      var isDur = we.metric === "duration";
+      var unit = isDur ? "s" : "Wdh";
+      var tag = isDur ? "DAUER" : "WDH";
+      html += '<div class="card exercise-live skill-ex" data-ei="' + ei + '">'
+        + '<div class="ex-live-head"><div class="ehl"><span class="ex-name">' + esc(we.name) + '</span>'
+        + '<span class="slot-tag sk-tag">' + tag + '</span></div>'
+        + (we.tempo ? '<div class="ehr"><span class="sk-tempo">' + esc(we.tempo) + '</span></div>' : '') + '</div>'
+        + '<div class="sets-block">'
+        + '<div class="set-row head sk-head"><span class="set-i">Satz</span><span>Ziel</span><span>' + (isDur ? "Sek." : "Wdh") + '</span><span class="h-done">\u2713</span></div>';
+      we.sets.forEach(function (st, si) {
+        var tgt = isDur ? (we.target + " s") : (we.target + " Wdh");
+        var valCell = isDur
+          ? '<div class="field sk-valwrap"><input type="number" inputmode="numeric" class="num" data-skset="value" data-ei="' + ei + '" data-si="' + si + '" value="' + (st.value == null ? "" : st.value) + '" placeholder="0">'
+            + '<button type="button" class="sk-watch-btn" data-ei="' + ei + '" data-si="' + si + '" title="Stoppuhr" aria-label="Stoppuhr starten/stoppen">\u25B7</button></div>'
+          : '<div class="field"><input type="number" inputmode="numeric" class="num" data-skset="value" data-ei="' + ei + '" data-si="' + si + '" value="' + (st.value == null ? "" : st.value) + '" placeholder="0"></div>';
+        html += '<div class="set-row work sk-row' + (st.done ? ' done' : '') + '" data-ei="' + ei + '" data-si="' + si + '">'
+          + '<span class="set-i">S' + (si + 1) + '</span>'
+          + '<span class="sk-target">' + tgt + '</span>'
+          + valCell
+          + '<label class="field f-done done-chk" title="Satz erledigt"><input type="checkbox" data-skdone data-ei="' + ei + '" data-si="' + si + '"' + (st.done ? " checked" : "") + '></label>'
+          + '</div>';
+      });
+      html += '</div></div>';
+    });
+    return html;
+  }
+
+  function bindSkillLiveInputs() {
+    var root = document.getElementById("app"); if (!root) return;
+    root.querySelectorAll('[data-skset="value"]').forEach(function (el) {
+      el.addEventListener("input", function () { onSkillSetInput(el); });
+    });
+    root.querySelectorAll('[data-skdone]').forEach(function (el) {
+      el.addEventListener("change", function () { onSkillDone(el); clickTick(el.checked); });
+    });
+    root.querySelectorAll('.sk-watch-btn').forEach(function (el) {
+      el.addEventListener("click", function () { skillWatchToggle(+el.getAttribute("data-ei"), +el.getAttribute("data-si")); });
+    });
+  }
+  function onSkillSetInput(el) {
+    var ei = +el.getAttribute("data-ei"), si = +el.getAttribute("data-si");
+    var v = parseInt(el.value, 10);
+    KS.UI.live.exercises[ei].sets[si].value = isNaN(v) ? null : v;
+    persist();
+  }
+  function onSkillDone(el) {
+    var ei = +el.getAttribute("data-ei"), si = +el.getAttribute("data-si");
+    var st = KS.UI.live.exercises[ei].sets[si];
+    var wasDone = st.done; st.done = el.checked;
+    var row = el.closest(".set-row"); if (row) row.classList.toggle("done", el.checked);
+    if (!wasDone && st.done) {
+      ensureAudio();
+      var T = db().settings.timers || {};
+      if (T.autoStart) startRest("set", T.setRestSec, ei, si);
+    }
+    persist();
+  }
+
+  /* Stoppuhr fuer Dauer-Saetze: eine zur Zeit. Schreibt Sekunden in set.value,
+     piept beim Erreichen des Ziels; Wert bleibt manuell ueberschreibbar. */
+  var skWatch = { ei: -1, si: -1, t: null, base: 0, startMs: 0, beeped: false };
+  function updateWatchBtn(ei, si, running) {
+    var b = document.querySelector('.sk-watch-btn[data-ei="' + ei + '"][data-si="' + si + '"]');
+    if (b) { b.textContent = running ? "\u25A0" : "\u25B7"; b.classList.toggle("running", !!running); }
+  }
+  function skillWatchTick() {
+    if (skWatch.ei < 0) return;
+    var ex = KS.UI.live.exercises[skWatch.ei]; var st = ex.sets[skWatch.si];
+    var elapsed = skWatch.base + Math.floor((Date.now() - skWatch.startMs) / 1000);
+    st.value = elapsed;
+    var inp = document.querySelector('[data-skset="value"][data-ei="' + skWatch.ei + '"][data-si="' + skWatch.si + '"]');
+    if (inp) inp.value = elapsed;
+    if (!skWatch.beeped && ex.target && elapsed >= ex.target) { skWatch.beeped = true; ensureAudio(); playBeep(); buzz(); }
+  }
+  function skillWatchStop() {
+    if (skWatch.t) clearInterval(skWatch.t);
+    var ei = skWatch.ei, si = skWatch.si;
+    skWatch.t = null; skWatch.beeped = false;
+    if (ei >= 0) { updateWatchBtn(ei, si, false); persist(); }
+    skWatch.ei = -1; skWatch.si = -1;
+  }
+  function skillWatchToggle(ei, si) {
+    if (skWatch.t && skWatch.ei === ei && skWatch.si === si) { skillWatchStop(); return; }
+    if (skWatch.t) skillWatchStop();
+    var st = KS.UI.live.exercises[ei].sets[si];
+    skWatch.ei = ei; skWatch.si = si; skWatch.base = Number(st.value) || 0; skWatch.startMs = Date.now(); skWatch.beeped = false;
+    ensureAudio();
+    skWatch.t = setInterval(skillWatchTick, 200);
+    updateWatchBtn(ei, si, true);
+  }
+
+  function finishSkillSession() {
+    var s = KS.UI.live; if (!s) return;
+    skillWatchStop();
+    var def = KS.skillById(s.skillId);
+    var ph = def.phases[s.phase];
+    s.exercises.forEach(function (we, i) {
+      var pe = ph.exercises[i];
+      we.sets = (we.sets || []).filter(function (x) { return x.done; });
+      we.sets.forEach(function (x) { x.met = E.skillSetMet(pe.metric, pe.target, x); });
+    });
+    s.result = E.skillSessionResult(ph.exercises, s.exercises);
+    var prog = KS.skillProgressFor(s.skillId);
+    if (s.result === "completed") {
+      prog.consecutiveCount = (prog.consecutiveCount || 0) + 1;
+      if (prog.consecutiveCount >= ph.consecutiveSessions) {
+        prog.currentPhase = (prog.currentPhase || 0) + 1;
+        prog.consecutiveCount = 0;
+        if (prog.currentPhase >= def.phases.length) { prog.currentPhase = def.phases.length - 1; prog.mastered = true; }
+      }
+    } else if (s.result === "missed") {
+      prog.consecutiveCount = 0;
+    } // skipped -> unveraendert
+    var dur = s.startedAt ? Math.max(0, Math.round((Date.now() - s.startedAt) / 1000)) : 0;
+    db().sessions.push({
+      id: s.id, date: s.date, type: "skill", status: "done", durationSec: dur,
+      entries: [],
+      skillWork: { skillId: s.skillId, phase: s.phase, result: s.result, exercises: s.exercises }
+    });
+    KS.UI.live = null; db().live = null; persist();
+    KS.UI.tab = "workouts"; render(); scrollToTop();
+  }
+
+  // Start-Popup fuer Skills (teilt sich das Modal mit dem Workout).
+  function openSkillStartModal(skillId) {
+    KS.UI.pendingLive = buildSkillLive(skillId);
+    ensureStartModal();
+    var titleEl = document.getElementById("ks-start-title");
+    if (titleEl) titleEl.textContent = "Skill " + (KS.UI.pendingLive.skillName || "") + " starten";
+    var body = document.getElementById("ks-start-body");
+    if (body) body.innerHTML = startSummaryHTML();
+    document.getElementById("ks-start-modal").classList.add("open");
+  }
+  function skillStartSummaryHTML(s) {
+    var rows = (s.exercises || []).map(function (we) {
+      var tgt = we.metric === "duration" ? (we.target + " s") : (we.target + " Wdh");
+      var chips = (we.sets || []).map(function () { return '<span class="es-set">' + tgt + '</span>'; }).join("");
+      return '<div class="es-ex"><div class="es-ex-head"><span class="es-name">' + esc(we.name) + '</span>'
+        + '<span class="es-count">' + (we.sets || []).length + ' \u00D7 Satz</span></div>'
+        + '<div class="es-sets">' + chips + '</div></div>';
+    }).join("");
+    return '<div class="es-list">' + rows + '</div>';
+  }
+  function skillEndSummaryHTML(s) {
+    var sec = s.startedAt ? Math.round((Date.now() - s.startedAt) / 1000) : 0;
+    var totalSets = 0, doneSets = 0;
+    var rows = (s.exercises || []).map(function (we) {
+      var sets = we.sets || [];
+      var done = sets.filter(function (x) { return x.done; }).length;
+      totalSets += sets.length; doneSets += done;
+      var unit = we.metric === "duration" ? "s" : "";
+      var chips = sets.map(function (x) { return '<span class="es-set' + (x.done ? " done" : "") + '">' + (x.value == null ? "\u2013" : x.value) + unit + '</span>'; }).join("");
+      return '<div class="es-ex"><div class="es-ex-head"><span class="es-name">' + esc(we.name) + '</span>'
+        + '<span class="es-count' + (sets.length && done === sets.length ? " done" : "") + '">' + done + '/' + sets.length + '</span></div>'
+        + (chips ? '<div class="es-sets">' + chips + '</div>' : '') + '</div>';
+    }).join("");
+    return '<div class="es-meta"><span>Dauer ' + fmtDur(sec) + '</span><span>' + doneSets + '/' + totalSets + ' Sätze</span></div>'
+      + '<div class="es-list">' + rows + '</div>'
+      + '<div class="es-hint">Speichern wertet die Session aus und schreibt den Fortschritt fort.</div>';
+  }
+
+  /* =========================================================
      View: Workouts (Liste + Kalender + Journey)
      ========================================================= */
 
@@ -603,4 +800,9 @@
   KS.cancelStart = cancelStart;
   KS.closeStartModal = closeStartModal;
   KS.finishSession = finishSession;
+  KS.buildSkillLive = buildSkillLive;
+  KS.liveSkillSession = liveSkillSession;
+  KS.bindSkillLiveInputs = bindSkillLiveInputs;
+  KS.openSkillStartModal = openSkillStartModal;
+  KS.finishSkillSession = finishSkillSession;
 })();
