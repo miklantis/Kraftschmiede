@@ -418,63 +418,12 @@
         + '</div></div>';
     }).join("");
   }
-  // Yoga als Karte im Training-Stil, am Ende der Workout-Liste. Blau (accent-2)
-  // statt orange. Ein Klick traegt sofort eine Einheit fuer heute ein (80 min).
-  function yogaCard() {
-    return '<div class="wo-card yoga-wo">'
-      + '<div class="wo-thumb">'
-      + '<img class="wo-img" src="images/Yoga.jpeg" alt="Yoga" loading="lazy" onerror="this.remove()">'
-      + '<span class="wo-grad"></span>'
-      + '<span class="wo-name">Yoga</span>'
-      + '<span class="score-badge" title="Standarddauer">80 min</span>'
-      + '</div>'
-      + '<div class="wo-body">'
-      + '<div class="wo-lifts">Erholungs- / Mobility-Tag</div>'
-      + '<div class="wo-reasons">Getrennt vom Krafttraining · trägt für heute ein</div>'
-      + '<button class="btn ghost yoga-btn" data-action="open-yoga">Eintragen</button>'
-      + '</div>'
-      + '</div>';
-  }
-  // Yoga-Einheit eintragen. Ohne Argumente: heute, 80 min, ohne Notiz.
-  function addYoga(dateStr, min) {
-    var d = dateStr || today();
-    var m = (min != null && !isNaN(min)) ? min : 80;
-    DB.sessions.push({ id: "y_" + d.replace(/-/g, "") + "_" + Math.floor(Math.random() * 1000), date: d, type: "yoga", minutes: m, notes: "", status: "done", entries: [] });
-    State.persist(); render(); toast("Yoga-Einheit eingetragen (" + d + ").");
-  }
-  // Popup zum Eintragen einer Yoga-Einheit (Datum + Dauer). Wird ueber die
-  // Yoga-Karte im Training-Tab geoeffnet.
-  function ensureYogaModal() {
-    if (document.getElementById("ks-yoga-modal")) return;
-    var ov = document.createElement("div");
-    ov.id = "ks-yoga-modal"; ov.className = "ks-modal-overlay";
-    ov.innerHTML = '<div class="ks-modal" role="dialog" aria-modal="true" aria-label="Yoga eintragen">'
-      + '<div class="ks-modal-head"><span class="ks-modal-title">Yoga / Mobility eintragen</span>'
-      + '<button class="ks-modal-x" data-action="yoga-cancel" aria-label="Schließen">\u2715</button></div>'
-      + '<div class="yoga-modal-form">'
-      + '<label class="yf-date">Datum <input type="date" id="ks-yoga-date"></label>'
-      + '<label class="yf-dur">Dauer <input type="number" class="num mini" id="ks-yoga-min" value="80"> min</label>'
-      + '</div>'
-      + '<div class="end-btns">'
-      + '<button class="btn primary" data-action="yoga-save">Eintragen</button>'
-      + '<button class="btn ghost" data-action="yoga-cancel">Abbrechen</button>'
-      + '</div></div>';
-    ov.addEventListener("click", function (e) { if (e.target === ov) closeYogaModal(); });
-    document.body.appendChild(ov);
-  }
-  function openYogaModal() {
-    ensureYogaModal();
-    var dEl = document.getElementById("ks-yoga-date"); if (dEl) dEl.value = today();
-    var mEl = document.getElementById("ks-yoga-min"); if (mEl) mEl.value = 80;
-    document.getElementById("ks-yoga-modal").classList.add("open");
-  }
-  function closeYogaModal() { var m = document.getElementById("ks-yoga-modal"); if (m) m.classList.remove("open"); }
-  function saveYoga() {
-    var d = (document.getElementById("ks-yoga-date") || {}).value || today();
-    var m = parseInt((document.getElementById("ks-yoga-min") || {}).value, 10);
-    closeYogaModal();
-    addYoga(d, isNaN(m) ? 80 : m);
-  }
+  /* Yoga/Mobility -> yoga.js. Lokale Delegates auf window.KS;
+     Aufrufstellen (Render + Event-Dispatcher) bleiben unveraendert. */
+  function yogaCard() { return KS.yogaCard.apply(null, arguments); }
+  function openYogaModal() { return KS.openYogaModal.apply(null, arguments); }
+  function closeYogaModal() { return KS.closeYogaModal.apply(null, arguments); }
+  function saveYoga() { return KS.saveYoga.apply(null, arguments); }
   /* =========================================================
      Live-Session/Timer/Audio/Dialoge -> live.js.
      Lokale Delegates auf window.KS; Aufrufstellen und Event-Dispatcher
@@ -1428,6 +1377,7 @@
   KS.esc = esc;
   KS.fmtNum = fmtNum;
   KS.fmtW = fmtW;
+  KS.toast = toast;
   KS.activeJourney = activeJourney;
   KS.UI = UI;
 
