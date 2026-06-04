@@ -149,7 +149,7 @@
       bands.push({ name: p.name || ("Phase " + (pi + 1)), start: gw, end: gw + pw - 1 });
       for (var wi = 0; wi < pw; wi++) {
         var vol = E.volumeForWeek(p, wi, true);
-        weeks.push({ g: gw, vol: vol, intens: iScore, deload: !!(p.deloadWeek && wi === p.deloadWeek) });
+        weeks.push({ g: gw, vol: vol, intens: iScore, deload: !!(p.deloadWeek && wi === p.deloadWeek - 1) });
         vMin = Math.min(vMin, vol); vMax = Math.max(vMax, vol);
         iMin = Math.min(iMin, iScore); iMax = Math.max(iMax, iScore);
         gw++;

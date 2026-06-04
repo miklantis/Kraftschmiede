@@ -275,10 +275,12 @@
 
   // ---------- Volumensteuerung & Deload (6.4) ----------
   // phase: { setsStart, setsEnd, weeks, deloadWeek }
+  // deloadWeek ist 1-basiert (Wochennummer der Phase, z. B. 6 = sechste Woche);
+  // weekIndex ist 0-basiert (currentWeek - 1), daher Vergleich gegen deloadWeek - 1.
   function volumeForWeek(phase, weekIndex, recoveryGreen) {
     var s0 = phase.setsStart || 2, s1 = phase.setsEnd || 4, weeks = Math.max(1, phase.weeks || 4);
     var base;
-    if (phase.deloadWeek && weekIndex === phase.deloadWeek) {
+    if (phase.deloadWeek && weekIndex === phase.deloadWeek - 1) {
       var prev = rampSets(s0, s1, Math.max(0, weekIndex - 1), weeks);
       return Math.max(s0, Math.round(prev * 0.75)); // -25 %
     }
