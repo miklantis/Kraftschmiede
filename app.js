@@ -1,4 +1,4 @@
-/* Fitness-System – App v0.1 (Schema 0.13). Vanilla JS, framework-frei.
+/* Fitness-System – App (Schema 0.14). Vanilla JS, framework-frei.
    Setzt window.FSE (engine.js) voraus. */
 (function () {
   "use strict";
@@ -809,7 +809,7 @@
       + timerChk("Ton am Pausenende", "sound", T.sound)
       + timerChk("Vibration am Pausenende", "vibrate", T.vibrate)
       + '</div>'
-      + '<div class="hint">Standardvorgaben für die Pausen zwischen Sätzen und zwischen Übungen. Im laufenden Training lässt sich eine Pause per Tippen für diesen einen Durchgang anpassen. Auto-Start, Ton und Vibration werden mit den nächsten Ausbaustufen wirksam; Vibration ist nicht auf allen Geräten verfügbar (auf iPhone-Safari nur Ton, und nur bei aktivem Display).</div>'
+      + '<div class="hint">Standardvorgaben für die Pausen zwischen Sätzen und zwischen Übungen. Im laufenden Training lässt sich eine Pause per Tippen für diesen einen Durchgang anpassen. Auto-Start startet die Pause automatisch nach einem erledigten Satz; Ton und Vibration quittieren jeden erledigten Satz und melden das Pausenende. Vibration ist nicht auf allen Geräten verfügbar (auf iPhone-Safari nur Ton, und nur bei aktivem Display).</div>'
       + '</div>';
 
     html += '<div class="card"><div class="sets-title">Daten</div>'
