@@ -70,7 +70,7 @@
   function dashReorder(from, to) { if (from === to || from < 0 || to < 0 || from >= DASH.length || to >= DASH.length) return; var item = DASH.splice(from, 1)[0]; DASH.splice(to, 0, item); dashSave(); }
 
   migrate(DB);
-  var UI = { tab: "training", detail: null, live: null, importPreview: null, journeyPicker: false, skillsPicker: false, skillOpen: {}, calMonth: null, plateShow: {}, menuOpen: false, woView: "calendar", bodyDraft: null };
+  var UI = { tab: "training", detail: null, live: null, importPreview: null, journeyPicker: false, skillsPicker: false, skillOpen: {}, journeyOpen: {}, calMonth: null, plateShow: {}, menuOpen: false, woView: "calendar", bodyDraft: null };
   // Laufende Session nach Browser-/App-Neustart wiederherstellen. Die Uhr
   // laeuft ueber den gespeicherten startedAt-Zeitstempel korrekt weiter.
   if (DB.live && DB.live.status === "live") { UI.live = DB.live; UI.tab = "training"; }
@@ -541,7 +541,6 @@
     return '<div class="card journey">'
         + '<div class="journey-head"><strong>' + esc(j.name) + '</strong>' + (j.goal ? '<span class="jgoal">' + esc(j.goal) + '</span>' : '') + '<span class="hint">Start ' + esc(j.startDate) + '</span></div>'
         + '<div class="journey-chart" id="ks-journey-chart" style="width:100%;margin:6px 0 2px;overflow-x:auto;-webkit-overflow-scrolling:touch"></div>'
-        + journeyPhaseListHTML(j.phases.map(function (p) { return { label: p.name, focus: p.focus, weeks: p.weeks, rt: p.repTarget, s0: p.setsStart, s1: p.setsEnd, dl: p.deloadWeek }; }), idx)
         + '<div class="phase-ctrl"><span>Aktuelle Phase: <strong>' + esc((cp || {}).name || "—") + '</strong>' + (cp && cp.repTarget ? ' · Ziel ' + cp.repTarget[0] + '–' + cp.repTarget[1] + ' Wdh' : '') + '</span>'
         + '<div class="wk-ctrl">Woche <button class="btn tiny ghost" data-action="wk" data-d="-1">−</button><strong class="wk-val">' + (j.currentWeek || 1) + '</strong><button class="btn tiny ghost" data-action="wk" data-d="1">+</button> / ' + ((cp || {}).weeks || "?") + '</div>'
         + '<button class="btn tiny ghost" data-action="phase-next">nächste Phase ›</button></div>'
@@ -863,17 +862,24 @@
     html += '<div class="jlist">' + DB.journeys.map(function (jj) {
       var wks = jj.phases.reduce(function (a, p) { return a + p.weeks; }, 0);
       var cur = jj.phases.find(function (p) { return p.id === jj.currentPhaseId; });
+      var curIdx = jj.phases.findIndex(function (p) { return p.id === jj.currentPhaseId; });
+      var open = !!UI.journeyOpen[jj.id];
       var badge = jj.active ? '<span class="badge-active">aktiv</span>'
         : (jj.status === "archived" ? '<span class="badge-arch">archiviert' + (jj.endDate ? ' · ' + esc(jj.endDate) : '') + '</span>' : '<span class="badge-idle">inaktiv</span>');
-      return '<div class="jrow' + (jj.active ? ' active' : '') + (jj.status === "archived" ? ' archived' : '') + '">'
+      var head = '<div class="skill-head">'
         + '<div class="jr-main"><span class="jr-name">' + esc(jj.name) + '</span>'
         + '<span class="jr-meta">' + jj.phases.length + ' Phasen · ' + wks + ' Wo' + (jj.goal ? ' · ' + esc(jj.goal) : '') + (jj.active && cur ? ' · jetzt: ' + esc(cur.name) + ' W' + (jj.currentWeek || 1) : '') + '</span></div>'
         + '<div class="jr-status">' + badge + '</div>'
         + '<div class="jr-actions">'
+        + '<button class="btn tiny ghost" data-action="journey-toggle" data-id="' + jj.id + '">' + (open ? "Details ▴" : "Details ▾") + '</button>'
         + (jj.active ? '' : '<button class="btn tiny ghost" data-action="journey-activate" data-id="' + jj.id + '">aktivieren</button>')
         + (jj.status !== "archived" ? '<button class="btn tiny ghost" data-action="journey-finish" data-id="' + jj.id + '">abschließen</button>' : '')
         + '<button class="btn tiny ghost danger" data-action="journey-del" data-id="' + jj.id + '">löschen</button>'
         + '</div></div>';
+      var detail = open ? '<div class="skill-detail-body">'
+        + journeyPhaseListHTML(jj.phases.map(function (p) { return { label: p.name, focus: p.focus, weeks: p.weeks, rt: p.repTarget, s0: p.setsStart, s1: p.setsEnd, dl: p.deloadWeek }; }), curIdx)
+        + '</div>' : '';
+      return '<div class="skill-block' + (jj.active ? ' active' : '') + (jj.status === "archived" ? ' archived' : '') + (open ? ' open' : '') + '">' + head + detail + '</div>';
     }).join('') + '</div>';
     return html;
   }
@@ -1192,6 +1198,7 @@
       case "dash-down": dashMove(+el.getAttribute("data-i"), 1); render(); break;
       case "dash-del": dashRemove(+el.getAttribute("data-i")); render(); break;
       case "journey-picker": UI.tab = "journey"; UI.journeyPicker = true; render(); break;
+      case "journey-toggle": var jtid = el.getAttribute("data-id"); UI.journeyOpen[jtid] = !UI.journeyOpen[jtid]; render(); break;
       case "journey-picker-close": UI.journeyPicker = false; render(); break;
       case "journey-create": createJourneyFromTemplate(el.getAttribute("data-tpl")); break;
       case "journey-activate": activateJourney(el.getAttribute("data-id")); break;

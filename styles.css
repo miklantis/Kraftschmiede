@@ -896,3 +896,4 @@ body{overflow-x:clip}
 @media(max-width:560px){.skill-head{flex-wrap:wrap}.skill-head .jr-actions{width:100%}}
 .sk-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--line2)}
 .sk-controls-lbl{font-family:var(--mono);font-size:11px;color:var(--faint);margin-right:2px}
+.skill-block.archived{opacity:.65}
