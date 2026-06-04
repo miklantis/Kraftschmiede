@@ -852,3 +852,13 @@ body{overflow-x:clip}
 .skill-tag.sm{font-size:9px;padding:2px 6px;margin-right:6px}
 .log-item.skill{border-left:3px solid #9b8cff}
 .cal-dot.skill{background:#9b8cff;color:#140b2e}
+
+/* ============================================================
+   v0.26 – Trainings-Kacheln: Buttons auf fixe Position unten.
+   Karten in einer Grid-Reihe sind gleich hoch (stretch); der Body
+   fuellt die Resthoehe, der Button wird per margin-top:auto nach
+   unten gedrueckt -> einheitlicher Abstand vom unteren Rand,
+   unabhaengig von der Textlaenge darueber.
+   ============================================================ */
+.wo-body{flex:1 1 auto}
+.wo-card .btn{margin-top:auto}

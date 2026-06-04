@@ -399,10 +399,11 @@
       var ph = def.phases[adv.phaseIndex];
       var gated = adv.equipmentMissing;
       var exNames = ph.exercises.map(function (e) { return esc(e.name); }).join(" › ");
+      var img = def.image ? '<img class="wo-img" src="' + woImage(def.image) + '" alt="' + esc(def.name) + '" loading="lazy" onerror="this.remove()">' : '';
       var sub = esc(ph.label) + (p.mastered ? ' · Erhaltung' : ' · Serie ' + (p.consecutiveCount || 0) + '/' + ph.consecutiveSessions)
         + (gated ? ' · Gerät fehlt: ' + adv.missingEquipment.map(equipmentLabel).map(esc).join(", ") : '');
       return '<div class="wo-card skill-wo' + (gated ? ' excl' : '') + '">'
-        + '<div class="wo-thumb"><span class="wo-grad"></span>'
+        + '<div class="wo-thumb">' + img + '<span class="wo-grad"></span>'
         + '<span class="wo-name">' + esc(def.name) + '</span>'
         + '<span class="score-badge" title="Phase">P' + (adv.phaseIndex + 1) + '/' + def.phases.length + '</span>'
         + '</div>'

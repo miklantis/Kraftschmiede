@@ -225,8 +225,8 @@
       exercises: exercises
     };
   }
-  function skill(id, name, category, phases) {
-    return { id: id, name: name, category: category, phases: phases };
+  function skill(id, name, category, phases, image) {
+    return { id: id, name: name, category: category, image: image || null, phases: phases };
   }
 
   var SKILLS = [
@@ -250,7 +250,7 @@
       skillPhase(5, "Freier Klimmzug", ["pullup-bar"], 2, [
         skEx("Strict Pull-Up", "reps", 3, 8)
       ])
-    ]),
+    ], "Strict_pull_up.jpeg"),
     skill("pushup", "Pushup", "gymnastics", [
       skillPhase(0, "Knie-Liegestütze", [], 2, [
         skEx("Knee Push-Up", "reps", 3, 10)
@@ -267,7 +267,7 @@
       skillPhase(4, "Archer", [], 2, [
         skEx("Archer Push-Up", "reps", 3, 5)
       ])
-    ])
+    ], "Pushup.jpeg")
     // Plank (reiner Zeit-Skill), Pistol Squat, Dip, Handstand, Turkish Get-Up,
     // Lauf/Kondition (eigene Metriken) folgen jeweils einzeln mit Recherche.
   ];
