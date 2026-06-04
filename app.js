@@ -99,8 +99,6 @@
     },
     persistent: function () { return Store.persistent; }
   };
-  // Duenner Alias: die vielen vorhandenen persist()-Aufrufstellen bleiben unveraendert.
-  function persist() { State.persist(); }
 
   /* =========================================================
      Utils
@@ -394,7 +392,7 @@
     var d = dateStr || today();
     var m = (min != null && !isNaN(min)) ? min : 80;
     DB.sessions.push({ id: "y_" + d.replace(/-/g, "") + "_" + Math.floor(Math.random() * 1000), date: d, type: "yoga", minutes: m, notes: "", status: "done", entries: [] });
-    persist(); render(); toast("Yoga-Einheit eingetragen (" + d + ").");
+    State.persist(); render(); toast("Yoga-Einheit eingetragen (" + d + ").");
   }
   // Popup zum Eintragen einer Yoga-Einheit (Datum + Dauer). Wird ueber die
   // Yoga-Karte im Training-Tab geoeffnet.
@@ -743,7 +741,7 @@
     e.legs = d.legs || 0; e.upper_body = d.upper_body || 0; e.overall = d.overall || 0;
     e.readiness = d.readiness || 3; e.pain = { flag: !!(d.pain && d.pain.flag), note: (d.pain && d.pain.note) || "" }; e.notes = d.notes || "";
     UI.bodyDraft = cloneBody(e);
-    persist(); render(); toast("Körperzustand eingetragen (" + today() + ").");
+    State.persist(); render(); toast("Körperzustand eingetragen (" + today() + ").");
   }
   function onBarPick(el) {
     var ei = +el.getAttribute("data-ei"); var barId = el.value;
@@ -753,7 +751,7 @@
     if (en.suggestion) {
       en.warmupSets = Coach.warmupFor(exo, en.suggestion.weight, barById(barId), ei === 0);
     }
-    persist(); render();
+    State.persist(); render();
   }
 
   /* =========================================================
@@ -950,7 +948,7 @@
     data = stripDerived(data);
     if (mode === "replace") {
       if (!confirm("Ersetzen: alle aktuellen Daten werden überschrieben. Fortfahren?")) return;
-      DB = data; migrate(DB); persist(); UI.detail = null; render(); toast("Ersetzt."); return;
+      DB = data; migrate(DB); State.persist(); UI.detail = null; render(); toast("Ersetzt."); return;
     }
     // additiv / update – Teil-JSON erlaubt
     var sections = ["exercises", "templates", "journeys", "sessions"];
@@ -973,7 +971,7 @@
       if (data.settings) Object.assign(DB.settings, data.settings);
       if (data.inventory) Object.assign(DB.inventory, data.inventory);
     }
-    persist(); render(); toast(added + " hinzugefügt, " + updated + " aktualisiert.");
+    State.persist(); render(); toast(added + " hinzugefügt, " + updated + " aktualisiert.");
   }
 
   /* =========================================================
@@ -1003,11 +1001,11 @@
       case "del-set": delSet(+el.getAttribute("data-ei")); break;
       case "detail": UI.detail = el.getAttribute("data-id"); render(); break;
       case "ex-back": UI.detail = null; render(); break;
-      case "del-session": if (confirm("Session löschen?")) { DB.sessions = DB.sessions.filter(function (s) { return s.id !== el.getAttribute("data-id"); }); persist(); render(); } break;
+      case "del-session": if (confirm("Session löschen?")) { DB.sessions = DB.sessions.filter(function (s) { return s.id !== el.getAttribute("data-id"); }); State.persist(); render(); } break;
       case "wk": adjustWeek(+el.getAttribute("data-d")); break;
       case "phase-next": nextPhase(); break;
       case "body-save": saveBodyToday(); break;
-      case "body-del": var bd = el.getAttribute("data-d"); DB.bodyLog = DB.bodyLog.filter(function (e) { return e.date !== bd; }); if (bd === today()) UI.bodyDraft = blankBody(); persist(); render(); break;
+      case "body-del": var bd = el.getAttribute("data-d"); DB.bodyLog = DB.bodyLog.filter(function (e) { return e.date !== bd; }); if (bd === today()) UI.bodyDraft = blankBody(); State.persist(); render(); break;
       case "wo-view": UI.woView = el.getAttribute("data-v"); render(); break;
       case "cal-prev": calShift(-1); break;
       case "cal-next": calShift(1); break;
@@ -1026,9 +1024,9 @@
       case "journey-activate": activateJourney(el.getAttribute("data-id")); break;
       case "journey-finish": if (confirm("Journey abschließen und archivieren? Der Verlauf bleibt erhalten.")) finishJourney(el.getAttribute("data-id")); break;
       case "journey-del": if (confirm("Journey wirklich löschen? Sessions bleiben erhalten.")) deleteJourney(el.getAttribute("data-id")); break;
-      case "bar-add": DB.inventory.bars.push({ id: uid("bar_"), name: "Stange", weight: 20, default: false }); persist(); render(); break;
-      case "bar-del": var bi = +el.getAttribute("data-i"); if (bi === 0) { toast("Die erste Stange ist die Vorauswahl und kann nicht gelöscht werden."); } else { DB.inventory.bars.splice(bi, 1); persist(); render(); } break;
-      case "plate-del": DB.inventory.plates = DB.inventory.plates.filter(function (p) { return p !== parseFloat(el.getAttribute("data-p")); }); persist(); render(); break;
+      case "bar-add": DB.inventory.bars.push({ id: uid("bar_"), name: "Stange", weight: 20, default: false }); State.persist(); render(); break;
+      case "bar-del": var bi = +el.getAttribute("data-i"); if (bi === 0) { toast("Die erste Stange ist die Vorauswahl und kann nicht gelöscht werden."); } else { DB.inventory.bars.splice(bi, 1); State.persist(); render(); } break;
+      case "plate-del": DB.inventory.plates = DB.inventory.plates.filter(function (p) { return p !== parseFloat(el.getAttribute("data-p")); }); State.persist(); render(); break;
       case "plate-add": addPlate(); break;
       case "loader-calc": loaderCalc(); break;
       case "export": download(); break;
@@ -1049,7 +1047,7 @@
       var i = +el.getAttribute("data-i"); var field = el.getAttribute("data-bar");
       if (field === "name") DB.inventory.bars[i].name = el.value;
       else DB.inventory.bars[i].weight = parseFloat(el.value) || 0;
-      persist();
+      State.persist();
     }
   });
 
@@ -1078,14 +1076,14 @@
     var en = UI.live.entries[ei]; var last = en.sets[en.sets.length - 1] || { reps: 8, weight: barById(exById(en.exerciseId).barId).weight, score: 3 };
     en.sets.push({ reps: last.targetReps || last.reps, weight: last.targetWeight || last.weight, score: exById(en.exerciseId).targetScore, failed: false, done: false, targetReps: last.targetReps || last.reps, targetWeight: last.targetWeight || last.weight, adjusted: false, adjustNote: "" });
     en.plannedSets.push({ reps: last.targetReps || last.reps, weight: last.targetWeight || last.weight, targetScore: exById(en.exerciseId).targetScore });
-    persist(); render();
+    State.persist(); render();
   }
-  function delSet(ei) { var en = UI.live.entries[ei]; if (en.sets.length > 1) { en.sets.pop(); en.plannedSets.pop(); persist(); render(); } }
-  function adjustWeek(d) { var j = activeJourney(); var ph = currentPhase(); j.currentWeek = Math.max(1, Math.min(ph ? ph.weeks : 99, (j.currentWeek || 1) + d)); persist(); render(); }
+  function delSet(ei) { var en = UI.live.entries[ei]; if (en.sets.length > 1) { en.sets.pop(); en.plannedSets.pop(); State.persist(); render(); } }
+  function adjustWeek(d) { var j = activeJourney(); var ph = currentPhase(); j.currentWeek = Math.max(1, Math.min(ph ? ph.weeks : 99, (j.currentWeek || 1) + d)); State.persist(); render(); }
   function nextPhase() {
     var j = activeJourney(); if (!j) return;
     var idx = j.phases.findIndex(function (p) { return p.id === j.currentPhaseId; });
-    if (idx < j.phases.length - 1) { j.currentPhaseId = j.phases[idx + 1].id; j.currentWeek = 1; persist(); render(); }
+    if (idx < j.phases.length - 1) { j.currentPhaseId = j.phases[idx + 1].id; j.currentWeek = 1; State.persist(); render(); }
     else toast("Letzte Phase erreicht. Journey abschließen oder eine neue starten.");
   }
   /* ---- Journey-Verwaltung ---- */
@@ -1100,26 +1098,26 @@
     };
     DB.journeys.push(nj);
     UI.journeyPicker = false; UI.tab = "workouts";
-    persist(); render();
+    State.persist(); render();
     toast("Journey \u201E" + t.name + "\u201C gestartet \u2013 Startbasis sind deine aktuellen Arbeitsgewichte.");
   }
   function activateJourney(id) {
     DB.journeys.forEach(function (j) { j.active = (j.id === id); if (j.id === id && j.status === "archived") j.status = "active"; });
-    persist(); render();
+    State.persist(); render();
   }
   function finishJourney(id) {
     var j = DB.journeys.find(function (x) { return x.id === id; }); if (!j) return;
     j.status = "archived"; j.active = false; j.endDate = today();
     var next = DB.journeys.find(function (x) { return x.status !== "archived"; });
     if (next) next.active = true;
-    persist(); render();
+    State.persist(); render();
     toast("Journey abgeschlossen und archiviert.");
   }
   function deleteJourney(id) {
     var wasActive = (DB.journeys.find(function (x) { return x.id === id; }) || {}).active;
     DB.journeys = DB.journeys.filter(function (x) { return x.id !== id; });
     if (wasActive) { var next = DB.journeys.find(function (x) { return x.status !== "archived"; }) || DB.journeys[0]; if (next) next.active = true; }
-    persist(); render();
+    State.persist(); render();
   }
   function exEdit(el) {
     var id = el.getAttribute("data-id"); var e = exById(id); if (!e) return; var f = el.getAttribute("data-exedit");
@@ -1128,7 +1126,7 @@
     else if (f === "targetScore") e.targetScore = parseInt(el.value, 10) || 3;
     else if (f === "repmin") e.repRange[0] = parseInt(el.value, 10) || 1;
     else if (f === "repmax") e.repRange[1] = parseInt(el.value, 10) || 1;
-    persist(); render();
+    State.persist(); render();
   }
   function settingEdit(el) {
     var f = el.getAttribute("data-set-setting"); var s = DB.settings;
@@ -1136,15 +1134,15 @@
     else if (f === "rec_squat") s.recoveryWindows.squat = parseInt(el.value, 10) || 48;
     else if (f === "rec_deadlift") s.recoveryWindows.deadlift = parseInt(el.value, 10) || 72;
     else s[f] = parseFloat(el.value) || s[f];
-    persist(); render();
+    State.persist(); render();
   }
   function timerEdit(el) {
     var f = el.getAttribute("data-set-timer"); var T = DB.settings.timers = DB.settings.timers || {};
     if (f === "setRestSec" || f === "exerciseRestSec") { var v = parseInt(el.value, 10); T[f] = (isNaN(v) || v < 0) ? 0 : v; }
     else T[f] = el.checked;
-    persist();
+    State.persist();
   }
-  function addPlate() { var inp = document.getElementById("plate-new"); var v = parseFloat(inp.value); if (v > 0 && DB.inventory.plates.indexOf(v) < 0) { DB.inventory.plates.push(v); persist(); render(); } }
+  function addPlate() { var inp = document.getElementById("plate-new"); var v = parseFloat(inp.value); if (v > 0 && DB.inventory.plates.indexOf(v) < 0) { DB.inventory.plates.push(v); State.persist(); render(); } }
   function loaderCalc() {
     var tgt = parseFloat(document.getElementById("loader-target").value);
     var barId = document.getElementById("loader-bar").value; var bar = barById(barId);
@@ -1196,7 +1194,7 @@
   KS.firstBar = firstBar;
   KS.latestBody = latestBody;
   KS.pad = pad;
-  KS.persist = persist;
+  KS.persist = State.persist;
   KS.render = render;
   KS.restAdvice = restAdvice;
   KS.scrollToTop = scrollToTop;
