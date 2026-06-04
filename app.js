@@ -756,70 +756,14 @@
   /* =========================================================
      View: Skills-Tab (Manager + Katalog/Picker)
      ========================================================= */
-  // Phasenliste eines Skills: nummeriert (Phase 1..x), aktuelle Phase gerahmt.
-  function skillPhasesList(def, prog) {
-    return '<ol class="sk-phaselist">' + def.phases.map(function (ph) {
-      var cur = ph.index === prog.currentPhase;
-      var ex = ph.exercises.map(function (e) {
-        var t = e.metric === "duration" ? (e.target + " s") : (e.target + " Wdh");
-        return esc(e.name) + " " + e.sets + "×" + t + (e.tempo ? " (" + esc(e.tempo) + ")" : "");
-      }).join(" · ");
-      var eq = (ph.equipment && ph.equipment.length) ? ph.equipment.map(equipmentLabel).map(esc).join(", ") : "Körpergewicht";
-      return '<li class="sk-ph' + (cur ? ' current' : '') + '">'
-        + '<span class="sk-ph-n">' + (ph.index + 1) + '</span>'
-        + '<div class="sk-ph-body">'
-        + '<div class="sk-ph-title">' + esc(ph.label) + (cur ? ' <span class="sk-ph-cur">aktuell</span>' : '') + '</div>'
-        + '<div class="sk-ph-meta">' + ex + ' · ' + eq + ' · ' + ph.consecutiveSessions + '× sauber</div>'
-        + '</div></li>';
-    }).join('') + '</ol>';
-  }
-
-  // Liste ALLER Skills im System. Kein Hinzufuegen – jeder Skill ist da und
-  // standardmaessig deaktiviert; per Toggle aktivieren/deaktivieren. Aktive
-  // Skills erscheinen als Karte im Training. Fortschritt bleibt beim Deaktivieren.
-  function viewSkillsManager() {
-    var owned = ownedEquipmentIds();
-    var html = '<div class="section-title">Skills</div>';
-    html += '<p class="hint jm-lead">Alle Skills sind hier gelistet. Aktiviere die, die du gerade trainierst – sie erscheinen dann als Karte im Training. Deaktivieren behält den Fortschritt.</p>';
-    html += '<div class="jlist">' + SKILLS.map(function (def) {
-      var p = skillProgressView(def.id);
-      var adv = E.skillAdvice(def, p, owned);
-      var ph = def.phases[adv.phaseIndex];
-      var open = !!UI.skillOpen[def.id];
-      var badge = p.active ? '<span class="badge-active">aktiv</span>' : '<span class="badge-idle">inaktiv</span>';
-      var masteredTag = p.mastered ? ' <span class="badge-active">gemeistert</span>' : '';
-      var meta = 'Phase ' + (adv.phaseIndex + 1) + '/' + def.phases.length + ' · ' + esc(ph.label)
-        + (p.mastered ? ' · Erhaltung' : ' · Serie ' + (p.consecutiveCount || 0) + '/' + ph.consecutiveSessions);
-      var gate = adv.equipmentMissing
-        ? '<div class="hint" style="color:var(--accent-2)">Gerät fehlt: ' + adv.missingEquipment.map(equipmentLabel).map(esc).join(", ") + ' – im Skills-Inventar (Einstellungen) aktivieren.</div>'
-        : '';
-      var canBack = (p.currentPhase || 0) > 0;
-      var canFwd = !p.mastered;
-      var canReset = (p.currentPhase || 0) > 0 || (p.consecutiveCount || 0) > 0 || (p.log && p.log.length);
-      var head = '<div class="skill-head">'
-        + '<div class="jr-main"><span class="jr-name">' + esc(def.name) + masteredTag + '</span>'
-        + '<span class="jr-meta">' + meta + '</span></div>'
-        + '<div class="jr-status">' + badge + '</div>'
-        + '<div class="jr-actions">'
-        + '<button class="btn tiny ghost" data-action="skill-toggle" data-id="' + def.id + '">' + (open ? "Details ▴" : "Details ▾") + '</button>'
-        + (p.active
-            ? '<button class="btn tiny ghost skill-act" data-action="skill-deactivate" data-id="' + def.id + '">deaktivieren</button>'
-            : '<button class="btn tiny primary skill-act" data-action="skill-activate" data-id="' + def.id + '">aktivieren</button>')
-        + '</div></div>';
-      var controls = '<div class="sk-controls"><span class="sk-controls-lbl">Fortschritt anpassen</span>'
-        + (canBack ? '<button class="btn tiny ghost" data-action="skill-phase-back" data-id="' + def.id + '">Phase −1</button>' : '')
-        + (canFwd ? '<button class="btn tiny ghost" data-action="skill-phase-fwd" data-id="' + def.id + '">Phase +1</button>' : '')
-        + (canReset ? '<button class="btn tiny ghost danger" data-action="skill-reset" data-id="' + def.id + '">zurücksetzen</button>' : '')
-        + '</div>';
-      var detailBody = open ? '<div class="skill-detail-body">' + gate
-        + '<div class="sk-chart-wrap"><div class="sk-chart-head"><span class="sk-chart-title">Verlauf · trainierte Phase je Session</span>'
-        + '<span class="sk-chart-legend"><span class="lg ok">geschafft</span><span class="lg miss">verfehlt</span></span></div>'
-        + '<div class="ks-skillchart" data-skill="' + def.id + '"></div></div>'
-        + skillPhasesList(def, p) + controls + '</div>' : '';
-      return '<div class="skill-block' + (p.active ? ' active' : '') + (open ? ' open' : '') + '">' + head + detailBody + '</div>';
-    }).join('') + '</div>';
-    return html;
-  }
+  /* Skills-Tab -> skills.js. Lokale Delegates auf window.KS; Aufrufstellen
+     (View-Dispatcher + skill-* im Event-Dispatcher) bleiben unveraendert. */
+  function viewSkillsManager() { return KS.viewSkillsManager.apply(null, arguments); }
+  function activateSkill() { return KS.activateSkill.apply(null, arguments); }
+  function deactivateSkill() { return KS.deactivateSkill.apply(null, arguments); }
+  function regressSkill() { return KS.regressSkill.apply(null, arguments); }
+  function advanceSkill() { return KS.advanceSkill.apply(null, arguments); }
+  function resetSkill() { return KS.resetSkill.apply(null, arguments); }
 
   function inventoryCards() {
     var html = '';
@@ -931,72 +875,11 @@
   /* =========================================================
      Import / Export
      ========================================================= */
-  // Export-Anreicherung: score (1-5) bleibt einzige gepflegte Groesse;
-  // rir/rpe/scoreLabel werden je Arbeitssatz aus SCORE_MAP abgeleitet, nur fuer den Export.
-  function enrichExport(db) {
-    var out = clone(db);
-    (out.sessions || []).forEach(function (s) {
-      (s.entries || []).forEach(function (en) {
-        (en.sets || []).forEach(function (st) {
-          var info = (st && st.score != null) ? E.scoreInfo(st.score) : null;
-          if (info) { st.rir = info.rir; st.rpe = info.rpe; st.scoreLabel = info.label; }
-        });
-      });
-    });
-    out._scoreScale = {
-      note: "score (1-5) ist die gepflegte Groesse; rir/rpe/scoreLabel je Satz sind daraus abgeleitet und werden beim Re-Import verworfen.",
-      map: clone(E.SCORE_MAP)
-    };
-    return out;
-  }
-  // Abgeleitete Felder vor dem Import entfernen, damit der Live-Zustand sauber bleibt.
-  function stripDerived(data) {
-    if (!data || typeof data !== "object") return data;
-    delete data._scoreScale;
-    (data.sessions || []).forEach(function (s) {
-      (s.entries || []).forEach(function (en) {
-        (en.sets || []).forEach(function (st) { delete st.rir; delete st.rpe; delete st.scoreLabel; });
-      });
-    });
-    return data;
-  }
-  function exportText() { return JSON.stringify(enrichExport(DB), null, 2); }
-  function download() {
-    var blob = new Blob([exportText()], { type: "application/json" });
-    var a = document.createElement("a"); a.href = URL.createObjectURL(blob);
-    a.download = "fitness-system_" + today() + ".json"; document.body.appendChild(a); a.click();
-    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 0);
-  }
-  function importJSON(text, mode) {
-    var data; try { data = JSON.parse(text); } catch (e) { alert("Ungültiges JSON: " + e.message); return; }
-    data = stripDerived(data);
-    if (mode === "replace") {
-      if (!confirm("Ersetzen: alle aktuellen Daten werden überschrieben. Fortfahren?")) return;
-      DB = data; migrate(DB); State.persist(); UI.detail = null; render(); toast("Ersetzt."); return;
-    }
-    // additiv / update – Teil-JSON erlaubt
-    var sections = ["exercises", "templates", "journeys", "sessions"];
-    var added = 0, updated = 0;
-    sections.forEach(function (sec) {
-      if (!Array.isArray(data[sec])) return;
-      DB[sec] = DB[sec] || [];
-      data[sec].forEach(function (item) {
-        var existing = DB[sec].find(function (x) { return x.id === item.id; });
-        if (existing) {
-          if (mode === "update") { Object.assign(existing, item); updated++; }
-          else { // append: ID-Kollision -> neue ID
-            var copy = clone(item); copy.id = uid(sec.slice(0, 3) + "_"); DB[sec].push(copy); added++;
-          }
-        } else { DB[sec].push(clone(item)); added++; }
-      });
-    });
-    // settings/inventory: nur bei update/replace übernehmen
-    if (mode === "update") {
-      if (data.settings) Object.assign(DB.settings, data.settings);
-      if (data.inventory) Object.assign(DB.inventory, data.inventory);
-    }
-    State.persist(); render(); toast(added + " hinzugefügt, " + updated + " aktualisiert.");
-  }
+  /* Import / Export -> io.js. Lokale Delegates auf window.KS;
+     Aufrufstellen (Event-Dispatcher) bleiben unveraendert. */
+  function download() { return KS.download.apply(null, arguments); }
+  function doImport() { return KS.doImport.apply(null, arguments); }
+  function copyExport() { return KS.copyExport.apply(null, arguments); }
 
   /* =========================================================
      Events (Delegation)
@@ -1166,52 +1049,6 @@
     var e = (DB.inventory.equipment || []).find(function (x) { return x.id === id; });
     return e ? e.label : id;
   }
-  function skillCategoryLabel(c) {
-    return ({ gymnastics: "Gymnastik", conditioning: "Kondition", strength: "Kraft", mobility: "Mobility" })[c] || c || "–";
-  }
-  // Read-only: vorhandenen Fortschritt holen oder einen transienten Default
-  // liefern (NICHT in DB schreiben) – fuer Render ohne Seiteneffekt.
-  function skillProgressView(id) {
-    return (DB.skillProgress || []).find(function (e) { return e.skillId === id; })
-      || { skillId: id, active: false, currentPhase: 0, consecutiveCount: 0, mastered: false, log: [] };
-  }
-  // Aktivieren: legt bei Bedarf den Fortschritt an bzw. setzt active:true
-  // (vorhandener Fortschritt wird fortgesetzt). activate-Log nur beim ersten Mal.
-  function activateSkill(id) {
-    var def = skillById(id); if (!def) return;
-    var p = skillProgressFor(id);
-    var firstTime = !p.active && (!p.log || !p.log.length);
-    p.active = true;
-    if (firstTime) { p.log = p.log || []; p.log.push({ date: today(), type: "activate" }); }
-    State.persist(); render();
-    toast("Skill \u201E" + def.name + "\u201C aktiviert.");
-  }
-  function deactivateSkill(id) { var p = skillProgressFor(id); p.active = false; State.persist(); render(); }
-  function regressSkill(id) {
-    var p = skillProgressFor(id); var from = p.currentPhase || 0;
-    p.currentPhase = Math.max(0, from - 1); p.consecutiveCount = 0; p.mastered = false;
-    p.log = p.log || []; p.log.push({ date: today(), type: "regress", from: from, to: p.currentPhase });
-    State.persist(); render();
-  }
-  // Phase + (manuell): eine Phase vor; auf der letzten Phase -> als gemeistert markieren.
-  function advanceSkill(id) {
-    var def = skillById(id); if (!def) return;
-    var p = skillProgressFor(id); var from = p.currentPhase || 0;
-    if (from < def.phases.length - 1) {
-      p.currentPhase = from + 1; p.consecutiveCount = 0; p.mastered = false;
-      p.log = p.log || []; p.log.push({ date: today(), type: "advance", from: from, to: p.currentPhase });
-    } else {
-      p.mastered = true; p.consecutiveCount = 0;
-      p.log = p.log || []; p.log.push({ date: today(), type: "advance", from: from, to: from, mastered: true });
-    }
-    State.persist(); render();
-  }
-  function resetSkill(id) {
-    var p = skillProgressFor(id);
-    p.currentPhase = 0; p.consecutiveCount = 0; p.mastered = false;
-    p.log = p.log || []; p.log.push({ date: today(), type: "reset" });
-    State.persist(); render();
-  }
   function exEdit(el) {
     var id = el.getAttribute("data-id"); var e = exById(id); if (!e) return; var f = el.getAttribute("data-exedit");
     if (f === "active") e.active = el.checked;
@@ -1243,22 +1080,6 @@
     var pl = plateLoaderSVG(ld, bar);
     document.getElementById("loader-out").innerHTML = '<div class="plate-wrap">' + pl.svg + '<div class="plate-label">Ziel ' + fmtW(tgt) + ' → ladbar <strong>' + fmtW(ld) + '</strong> · ' + pl.label + '</div></div>';
   }
-  function doImport() {
-    var mode = (document.querySelector('input[name="impmode"]:checked') || {}).value || "append";
-    var ta = document.getElementById("import-text"); var fileInp = document.getElementById("import-file");
-    if (fileInp.files && fileInp.files[0]) {
-      var r = new FileReader(); r.onload = function () { importJSON(r.result, mode); }; r.readAsText(fileInp.files[0]); return;
-    }
-    if (ta.value.trim()) importJSON(ta.value, mode);
-    else alert("Bitte JSON einfügen oder Datei wählen.");
-  }
-  function copyExport() {
-    var txt = exportText();
-    if (navigator.clipboard) navigator.clipboard.writeText(txt).then(function () { toast("In Zwischenablage kopiert."); }, function () { fallbackCopy(txt); });
-    else fallbackCopy(txt);
-  }
-  function fallbackCopy(txt) { var ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); toast("kopiert."); } catch (e) {} ta.remove(); }
-
   /* =========================================================
      Toast / Store-Hinweis
      ========================================================= */
@@ -1272,6 +1093,17 @@
   /* geteilte Helfer/State fuer ausgelagerte Module (charts.js u.a.).
      db() ist ein Getter, damit die Referenz nach setDB() korrekt bleibt. */
   KS.db = State.get;
+  KS.clone = clone;
+  KS.uid = uid;
+  /* kompletten Zustand ersetzen (JSON-Import, mode=replace): wie der
+     Original-Pfad in importJSON – migrieren, lokal+Cloud sichern, neu rendern. */
+  KS.replaceDB = function (data) {
+    DB = data;
+    if (typeof migrate === "function") migrate(DB);
+    State.persist();
+    UI.detail = null;
+    render();
+  };
   KS.esc = esc;
   KS.fmtNum = fmtNum;
   KS.fmtW = fmtW;
@@ -1284,6 +1116,8 @@
   KS.currentPhase = currentPhase;
   KS.entryBar = entryBar;
   KS.exById = exById;
+  KS.ownedEquipmentIds = ownedEquipmentIds;
+  KS.equipmentLabel = equipmentLabel;
   KS.exerciseChartData = exerciseChartData;
   KS.firstBar = firstBar;
   KS.latestBody = latestBody;
