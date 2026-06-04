@@ -259,13 +259,16 @@
         skEx("Incline Push-Up", "reps", 3, 10)
       ]),
       skillPhase(2, "Volle Liegestütze", [], 2, [
-        skEx("Full Push-Up", "reps", 3, 8)
+        skEx("Full Push-Up", "reps", 3, 12)
       ]),
-      skillPhase(3, "Tempo / eng", [], 2, [
-        skEx("Tempo Push-Up", "reps", 3, 6, "3 Sek. ablassen")
+      skillPhase(3, "Mehr Volumen", [], 2, [
+        skEx("Full Push-Up", "reps", 3, 18)
       ]),
-      skillPhase(4, "Archer", [], 2, [
-        skEx("Archer Push-Up", "reps", 3, 5)
+      skillPhase(4, "Hohes Volumen", [], 2, [
+        skEx("Full Push-Up", "reps", 3, 26)
+      ]),
+      skillPhase(5, "Ziel: 35 saubere", [], 2, [
+        skEx("Full Push-Up", "reps", 3, 35)
       ])
     ], "Pushup.jpeg")
     // Plank (reiner Zeit-Skill), Pistol Squat, Dip, Handstand, Turkish Get-Up,
