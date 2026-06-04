@@ -887,19 +887,22 @@
   /* =========================================================
      View: Skills-Tab (Manager + Katalog/Picker)
      ========================================================= */
-  // Phasen-Track eines Skills (lehnt sich an die Journey-Vorlagen-Pills an).
-  function skillPhasesTrack(def, prog) {
-    var track = def.phases.map(function (ph) {
+  // Phasenliste eines Skills: nummeriert (Phase 1..x), aktuelle Phase gerahmt.
+  function skillPhasesList(def, prog) {
+    return '<ol class="sk-phaselist">' + def.phases.map(function (ph) {
       var cur = ph.index === prog.currentPhase;
       var ex = ph.exercises.map(function (e) {
         var t = e.metric === "duration" ? (e.target + " s") : (e.target + " Wdh");
         return esc(e.name) + " " + e.sets + "×" + t + (e.tempo ? " (" + esc(e.tempo) + ")" : "");
       }).join(" · ");
       var eq = (ph.equipment && ph.equipment.length) ? ph.equipment.map(equipmentLabel).map(esc).join(", ") : "Körpergewicht";
-      return '<div class="tpl-pill"><span class="tp-n">' + (cur ? "▶ " : "") + esc(ph.label) + '</span>'
-        + '<span class="tp-m">' + ex + ' · ' + eq + ' · ' + ph.consecutiveSessions + '× sauber</span></div>';
-    }).join('<span class="phase-arrow">›</span>');
-    return '<div class="tpl-track">' + track + '</div>';
+      return '<li class="sk-ph' + (cur ? ' current' : '') + '">'
+        + '<span class="sk-ph-n">' + (ph.index + 1) + '</span>'
+        + '<div class="sk-ph-body">'
+        + '<div class="sk-ph-title">' + esc(ph.label) + (cur ? ' <span class="sk-ph-cur">aktuell</span>' : '') + '</div>'
+        + '<div class="sk-ph-meta">' + ex + ' · ' + eq + ' · ' + ph.consecutiveSessions + '× sauber</div>'
+        + '</div></li>';
+    }).join('') + '</ol>';
   }
 
   // Liste ALLER Skills im System. Kein Hinzufuegen – jeder Skill ist da und
@@ -922,7 +925,7 @@
       var gate = adv.equipmentMissing
         ? '<div class="hint" style="color:var(--accent-2)">Gerät fehlt: ' + adv.missingEquipment.map(equipmentLabel).map(esc).join(", ") + ' – im Skills-Inventar (Einstellungen) aktivieren.</div>'
         : '';
-      var row = '<div class="jrow skill-row' + (p.active ? ' active' : '') + '">'
+      var head = '<div class="skill-head">'
         + '<div class="jr-main"><span class="jr-name">' + esc(def.name) + masteredTag + '</span>'
         + '<span class="jr-meta">' + meta + '</span></div>'
         + '<div class="jr-status">' + badge + '</div>'
@@ -934,12 +937,12 @@
         + (hasProgress ? '<button class="btn tiny ghost" data-action="skill-phase-back" data-id="' + def.id + '">Phase −1</button>'
                          + '<button class="btn tiny ghost danger" data-action="skill-reset" data-id="' + def.id + '">zurücksetzen</button>' : '')
         + '</div></div>';
-      var detail = open ? '<div class="card skill-detail">' + gate
+      var detailBody = open ? '<div class="skill-detail-body">' + gate
         + '<div class="sk-chart-wrap"><div class="sk-chart-head"><span class="sk-chart-title">Verlauf · trainierte Phase je Session</span>'
         + '<span class="sk-chart-legend"><span class="lg ok">geschafft</span><span class="lg miss">verfehlt</span></span></div>'
         + '<div class="ks-skillchart" data-skill="' + def.id + '"></div></div>'
-        + skillPhasesTrack(def, p) + '</div>' : '';
-      return row + detail;
+        + skillPhasesList(def, p) + '</div>' : '';
+      return '<div class="skill-block' + (p.active ? ' active' : '') + (open ? ' open' : '') + '">' + head + detailBody + '</div>';
     }).join('') + '</div>';
     return html;
   }
