@@ -276,6 +276,7 @@
   function plateChips() { return KS.plateChips.apply(null, arguments); }
   function drawJourneyChart() { return KS.drawJourneyChart.apply(null, arguments); }
   function drawExerciseCharts() { return KS.drawExerciseCharts.apply(null, arguments); }
+  function drawSkillCharts() { return KS.drawSkillCharts.apply(null, arguments); }
 
   /* =========================================================
      Rendering – Shell & Nav
@@ -344,6 +345,7 @@
     }
     if (UI.tab === "journey" && !UI.journeyPicker) drawJourneyChart();
     if (UI.tab === "exercises") drawExerciseCharts();
+    if (UI.tab === "skills") drawSkillCharts();
     manageClock();
     syncRestBar();
   }
@@ -932,7 +934,11 @@
         + (hasProgress ? '<button class="btn tiny ghost" data-action="skill-phase-back" data-id="' + def.id + '">Phase −1</button>'
                          + '<button class="btn tiny ghost danger" data-action="skill-reset" data-id="' + def.id + '">zurücksetzen</button>' : '')
         + '</div></div>';
-      var detail = open ? '<div class="card skill-detail">' + gate + skillPhasesTrack(def, p) + '</div>' : '';
+      var detail = open ? '<div class="card skill-detail">' + gate
+        + '<div class="sk-chart-wrap"><div class="sk-chart-head"><span class="sk-chart-title">Verlauf · trainierte Phase je Session</span>'
+        + '<span class="sk-chart-legend"><span class="lg ok">geschafft</span><span class="lg miss">verfehlt</span></span></div>'
+        + '<div class="ks-skillchart" data-skill="' + def.id + '"></div></div>'
+        + skillPhasesTrack(def, p) + '</div>' : '';
       return row + detail;
     }).join('') + '</div>';
     return html;

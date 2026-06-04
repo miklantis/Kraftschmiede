@@ -317,6 +317,65 @@
     });
   }
 
+  /* =========================================================
+     Skill-Langzeit-Chart: trainierte Phase je Session ueber die
+     Zeit (Stufenlinie). Punkte nach Ergebnis gefaerbt. Quelle:
+     sessions[].skillWork (type:"skill"). Anlehnung an die Ex-Charts.
+     ========================================================= */
+  function skillChartData(skillId) {
+    var def = KS.skillById(skillId);
+    var phases = def ? def.phases.length : 1;
+    var pts = (db().sessions || [])
+      .filter(function (s) { return s.type === "skill" && s.status === "done" && s.skillWork && s.skillWork.skillId === skillId; })
+      .slice()
+      .sort(function (a, b) { return a.date < b.date ? -1 : (a.date > b.date ? 1 : 0); })
+      .map(function (s) { return { y: s.skillWork.phase || 0, result: s.skillWork.result, date: s.date }; });
+    return { points: pts, phases: phases };
+  }
+  function skillChartResizeBind() {
+    if (window.__ksSkillResizeBound) return;
+    window.__ksSkillResizeBound = true;
+    var _rt;
+    window.addEventListener("resize", function () {
+      clearTimeout(_rt);
+      _rt = setTimeout(function () { if (KS.UI.tab === "skills") drawSkillCharts(); }, 150);
+    });
+  }
+  function drawSkillChart(el, data) {
+    d3.select(el).selectAll("*").remove();
+    var pts = data.points, n = pts.length;
+    var D = exDims(el, n, 26);
+    if (!n) { el.innerHTML = emptyChart(D.W, D.H); return; }
+    var maxIdx = Math.max(1, data.phases - 1);
+    var x = d3.scaleLinear().domain([0, Math.max(1, n - 1)]).range([0, D.iw]);
+    function px(i) { return n === 1 ? D.iw / 2 : x(i); }
+    function Y(v) { return D.ih - (v / maxIdx) * D.ih; }
+    var svg = d3.select(el).append("svg")
+      .attr("viewBox", "0 0 " + D.W + " " + D.H).attr("width", D.W).attr("height", D.H)
+      .style("display", "block").attr("role", "img");
+    var g = svg.append("g").attr("transform", "translate(" + D.m.l + "," + D.m.t + ")");
+    g.append("line").attr("x1", 0).attr("y1", D.ih).attr("x2", D.iw).attr("y2", D.ih).style("stroke", "var(--line2)").style("stroke-width", 1);
+    [{ v: maxIdx, label: "P" + (maxIdx + 1) }, { v: 0, label: "P1" }].forEach(function (t) {
+      g.append("text").attr("x", -6).attr("y", Y(t.v) + 3.5).attr("text-anchor", "end")
+        .style("fill", "var(--faint)").style("font-family", "var(--mono)").style("font-size", "10px").text(t.label);
+    });
+    var line = d3.line().x(function (d, i) { return px(i); }).y(function (d) { return Y(d.y); }).curve(d3.curveStepAfter);
+    g.append("path").datum(pts).attr("d", line).style("fill", "none").style("stroke", "var(--accent-2)").style("stroke-width", 1.8).style("stroke-linejoin", "round").style("stroke-linecap", "round");
+    pts.forEach(function (p, i) {
+      var col = p.result === "completed" ? "var(--good)" : (p.result === "missed" ? "var(--bad)" : "var(--faint)");
+      g.append("circle").attr("cx", px(i)).attr("cy", Y(p.y)).attr("r", 3.2).style("fill", col);
+    });
+  }
+  function drawSkillCharts() {
+    if (typeof d3 === "undefined") return;
+    var nodes = document.querySelectorAll(".ks-skillchart");
+    if (!nodes.length) return;
+    skillChartResizeBind();
+    Array.prototype.forEach.call(nodes, function (el) {
+      drawSkillChart(el, skillChartData(el.getAttribute("data-skill")));
+    });
+  }
+
   /* Export der eigenen Funktionen an den geteilten Namespace */
   KS.lineChart = lineChart;
   KS.barChart = barChart;
@@ -330,4 +389,6 @@
   KS.plateChips = plateChips;
   KS.drawJourneyChart = drawJourneyChart;
   KS.drawExerciseCharts = drawExerciseCharts;
+  KS.drawSkillCharts = drawSkillCharts;
+  KS.skillChartData = skillChartData;
 })();
