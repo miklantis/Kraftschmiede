@@ -33,6 +33,7 @@
   function scrollToTop() { return KS.scrollToTop.apply(null, arguments); }
   function snapshotBody() { return KS.snapshotBody.apply(null, arguments); }
   function suggestForExercise() { return KS.suggestForExercise.apply(null, arguments); }
+  function warmupFor() { return KS.warmupFor.apply(null, arguments); }
   function timerIcon() { return KS.timerIcon.apply(null, arguments); }
   function today() { return KS.today.apply(null, arguments); }
   function todayBody() { return KS.todayBody.apply(null, arguments); }
@@ -252,10 +253,7 @@
       // Core-Uebungen fix 3 Saetze; Kraftuebungen folgen der Phasen-Satzrampe.
       var setN = exo.profile === "core" ? 3 : plannedSetCount();
       var startBarId = (firstBar() || {}).id || exo.barId;
-      var warm = [];
-      if (exo.category === "barbell") {
-        warm = E.generateWarmup(sug.weight, barById(startBarId).weight, db().inventory.plates, { isLift1: idx === 0, isDeadlift: /deadlift/i.test(exo.id) });
-      }
+      var warm = warmupFor(exo, sug.weight, barById(startBarId), idx === 0);
       var planned = []; for (var k = 0; k < setN; k++) planned.push({ reps: sug.targetReps, weight: sug.weight, targetScore: exo.targetScore });
       var sets = planned.map(function (p) {
         return { reps: p.reps, weight: p.weight, score: exo.targetScore, failed: false, done: false, targetReps: p.reps, targetWeight: p.weight, adjusted: false, adjustNote: "" };

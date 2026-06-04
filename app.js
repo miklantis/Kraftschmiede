@@ -154,6 +154,14 @@
       reentry: focus === "reentry"
     });
   }
+  // Aufwaermsaetze fuer eine Uebung an EINER Stelle: nur Langhantel bekommt eine
+  // Rampe, Deadlift weniger Volumen, erste Uebung (isFirst) gruendlicher. Genutzt
+  // von buildLive (Session-Aufbau) und onBarPick (Stangenwechsel), damit die Logik
+  // nicht auseinanderlaeuft. Gibt fuer Nicht-Langhantel/ohne Stange [] zurueck.
+  function warmupFor(exo, workWeight, bar, isFirst) {
+    if (!exo || exo.category !== "barbell" || !bar) return [];
+    return E.generateWarmup(workWeight, bar.weight, DB.inventory.plates, { isLift1: !!isFirst, isDeadlift: /deadlift/i.test(exo.id) });
+  }
   function plannedSetCount() {
     var ph = currentPhase(); var j = activeJourney();
     if (!ph) return 3;
@@ -696,8 +704,8 @@
     var en = UI.live && UI.live.entries[ei]; if (!en) return;
     en.barId = barId;
     var exo = exById(en.exerciseId);
-    if (exo && exo.category === "barbell" && en.suggestion) {
-      en.warmupSets = E.generateWarmup(en.suggestion.weight, barById(barId).weight, DB.inventory.plates, { isLift1: ei === 0, isDeadlift: /deadlift/i.test(en.exerciseId) });
+    if (en.suggestion) {
+      en.warmupSets = warmupFor(exo, en.suggestion.weight, barById(barId), ei === 0);
     }
     persist(); render();
   }
@@ -1149,6 +1157,7 @@
   KS.scrollToTop = scrollToTop;
   KS.snapshotBody = snapshotBody;
   KS.suggestForExercise = suggestForExercise;
+  KS.warmupFor = warmupFor;
   KS.todayBody = todayBody;
   KS.tplById = tplById;
   KS.tplItems = tplItems;
