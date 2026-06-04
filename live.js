@@ -210,7 +210,6 @@
      mehr einzeln veroeffentlicht. Nach aussen sichtbar ist nur RestTimer.
      ========================================================= */
   var RestTimer = {
-    start: startRest,     // (type, sec, ei, si) – Pause auf den naechsten Satz setzen
     adjust: adjustRest,   // (delta) – laufende Pause um +/- Sekunden aendern
     skip: skipRest,       // Pause beenden/ueberspringen
     syncBar: syncRestBar, // Balken-Sichtbarkeit nach jedem Render abgleichen

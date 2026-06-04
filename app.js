@@ -321,7 +321,7 @@
       + '<div class="tab-list">' + TABS.map(function (t) {
         return '<button class="tab' + (UI.tab === t.id ? ' active' : '') + '" data-action="tab" data-tab="' + t.id + '">' + t.label + '</button>';
       }).join("") + '</div></nav>';
-    var banner = Store.persistent ? '' : '<div class="banner">Kein dauerhafter Speicher in dieser Umgebung. Daten gehen beim Schließen verloren – nutze <strong>Export</strong> in den Einstellungen. Lokal gespeicherte Datei am Rechner speichert normal.</div>';
+    var banner = State.persistent() ? '' : '<div class="banner">Kein dauerhafter Speicher in dieser Umgebung. Daten gehen beim Schließen verloren – nutze <strong>Export</strong> in den Einstellungen. Lokal gespeicherte Datei am Rechner speichert normal.</div>';
     var body = '';
     switch (UI.tab) {
       case "training": body = viewTraining(); break;
