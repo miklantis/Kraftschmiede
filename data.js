@@ -59,7 +59,7 @@
           startDate: today(), currentPhaseId: "p0", currentWeek: 1,
           phases: [
             phase("p0", "Wiedereinstieg", "reentry", 2, 2, 2, null),
-            phase("p1", "Hypertrophie", "hypertrophy", 5, 2, 4, 4),
+            phase("p1", "Hypertrophie", "hypertrophy", 5, 2, 6, 4),
             phase("p2", "Maximalkraft", "strength", 5, 3, 5, 4),
             phase("p3", "Übergang / Test", "test", 1, 2, 2, null)
           ]
@@ -132,7 +132,7 @@
       summary: "Beginnt bewusst leicht, um Technik und Belastbarkeit aufzubauen, steigert dann Volumen für Muskelaufbau, schaltet auf Maximalkraft um und schließt mit einer Testwoche für neue Bestwerte.",
       phases: [
         { n: "Wiedereinstieg", f: "reentry", w: 2, s0: 2, s1: 2, dl: null, rt: [5, 8] },
-        { n: "Hypertrophie", f: "hypertrophy", w: 5, s0: 2, s1: 4, dl: 4, rt: [8, 12] },
+        { n: "Hypertrophie", f: "hypertrophy", w: 5, s0: 2, s1: 6, dl: 4, rt: [8, 12] },
         { n: "Maximalkraft", f: "strength", w: 5, s0: 3, s1: 5, dl: 4, rt: [4, 6] },
         { n: "Übergang / Test", f: "test", w: 1, s0: 2, s1: 2, dl: null, rt: [2, 4] }
       ]
@@ -143,7 +143,7 @@
       forWhom: "Grundtechnik sitzt, Ziel ist Muskelmasse. Setzt regelmäßiges Training voraus.",
       summary: "Zwei Akkumulationsblöcke mit ansteigendem Volumen im Bereich 8–12 Wiederholungen, getrennt durch eine Entlastung. Fokus auf Reizsetzung und Wachstum, ohne in den schweren Maximalkraftbereich zu gehen.",
       phases: [
-        { n: "Akkumulation I", f: "hypertrophy", w: 4, s0: 3, s1: 5, dl: null, rt: [8, 12] },
+        { n: "Akkumulation I", f: "hypertrophy", w: 4, s0: 3, s1: 6, dl: null, rt: [8, 12] },
         { n: "Deload", f: "maintenance", w: 1, s0: 2, s1: 2, dl: 1, rt: [8, 10] },
         { n: "Akkumulation II", f: "hypertrophy", w: 4, s0: 4, s1: 6, dl: 4, rt: [8, 12] }
       ]
@@ -196,7 +196,7 @@
       summary: "Ein langfristiger Plan über sechs Monate: sanfter Einstieg, zwei Hypertrophie-Blöcke und zwei Kraftblöcke im Wechsel, abgeschlossen durch eine Peak- und Testphase. Mehrere Entlastungswochen halten die Belastung nachhaltig.",
       phases: [
         { n: "Wiedereinstieg", f: "reentry", w: 2, s0: 2, s1: 2, dl: null, rt: [5, 8] },
-        { n: "Hypertrophie I", f: "hypertrophy", w: 5, s0: 3, s1: 5, dl: 5, rt: [8, 12] },
+        { n: "Hypertrophie I", f: "hypertrophy", w: 5, s0: 3, s1: 6, dl: 5, rt: [8, 12] },
         { n: "Kraft I", f: "strength", w: 4, s0: 3, s1: 5, dl: 4, rt: [4, 6] },
         { n: "Hypertrophie II", f: "hypertrophy", w: 5, s0: 4, s1: 6, dl: 5, rt: [8, 12] },
         { n: "Maximalkraft", f: "strength", w: 6, s0: 3, s1: 5, dl: 6, rt: [3, 5] },
