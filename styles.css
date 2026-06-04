@@ -650,7 +650,7 @@ input[type=date]{background:var(--panel2);border:1px solid var(--line2);color:va
    Akzente (Slot-Tags, Status-Raender) bleiben erhalten.
    ============================================================ */
 @media (max-width:560px){
-  .card,.rest-card,.yoga-card,.jrow,.blog-item,.dash-tile{
+  .card,.rest-card,.yoga-card,.jrow,.dash-tile{
     border-radius:0;border-left:none;border-right:none;
     margin-left:-10px;margin-right:-10px;
   }
