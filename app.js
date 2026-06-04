@@ -516,6 +516,23 @@
     var app = document.getElementById("app"); if (app) app.scrollTop = 0;
   }
 
+  // Nummerierte Phasenliste fuer Journeys (aktive Journey + Vorlagen),
+  // gleiche Optik wie die Skill-Phasenliste. items: [{label,focus,weeks,rt,s0,s1,dl}].
+  // curIdx: Index der aktuellen Phase (-1 = keine, z. B. bei Vorlagen).
+  function journeyPhaseListHTML(items, curIdx) {
+    return '<ol class="sk-phaselist">' + items.map(function (it, i) {
+      var cur = (i === curIdx);
+      var meta = esc(focusLabel(it.focus)) + ' · ' + it.weeks + ' Wo'
+        + (it.rt ? ' · ' + it.rt[0] + '–' + it.rt[1] + ' Wdh' : '')
+        + (it.s0 != null ? ' · Sätze ' + it.s0 + (it.s1 != null && it.s1 !== it.s0 ? '–' + it.s1 : '') : '')
+        + (it.dl ? ' · Deload W' + it.dl : '');
+      return '<li class="sk-ph' + (cur ? ' current' : '') + '">'
+        + '<span class="sk-ph-n">' + (i + 1) + '</span>'
+        + '<div class="sk-ph-body"><div class="sk-ph-title">' + esc(it.label) + (cur ? ' <span class="sk-ph-cur">aktuell</span>' : '') + '</div>'
+        + '<div class="sk-ph-meta">' + meta + '</div></div></li>';
+    }).join('') + '</ol>';
+  }
+
   function journeyDashboardHTML() {
     var j = activeJourney();
     if (!j) return '';
@@ -524,6 +541,7 @@
     return '<div class="card journey">'
         + '<div class="journey-head"><strong>' + esc(j.name) + '</strong>' + (j.goal ? '<span class="jgoal">' + esc(j.goal) + '</span>' : '') + '<span class="hint">Start ' + esc(j.startDate) + '</span></div>'
         + '<div class="journey-chart" id="ks-journey-chart" style="width:100%;margin:6px 0 2px;overflow-x:auto;-webkit-overflow-scrolling:touch"></div>'
+        + journeyPhaseListHTML(j.phases.map(function (p) { return { label: p.name, focus: p.focus, weeks: p.weeks, rt: p.repTarget, s0: p.setsStart, s1: p.setsEnd, dl: p.deloadWeek }; }), idx)
         + '<div class="phase-ctrl"><span>Aktuelle Phase: <strong>' + esc((cp || {}).name || "—") + '</strong>' + (cp && cp.repTarget ? ' · Ziel ' + cp.repTarget[0] + '–' + cp.repTarget[1] + ' Wdh' : '') + '</span>'
         + '<div class="wk-ctrl">Woche <button class="btn tiny ghost" data-action="wk" data-d="-1">−</button><strong class="wk-val">' + (j.currentWeek || 1) + '</strong><button class="btn tiny ghost" data-action="wk" data-d="1">+</button> / ' + ((cp || {}).weeks || "?") + '</div>'
         + '<button class="btn tiny ghost" data-action="phase-next">nächste Phase ›</button></div>'
@@ -869,15 +887,13 @@
     html += '<p class="hint pick-lead">Eine Journey gibt dir über mehrere Wochen einen roten Faden mit aufeinander aufbauenden Phasen. Wähle die, die zu deinem aktuellen Ziel passt – die aktuellen Arbeitsgewichte werden als Startbasis übernommen.</p>';
     html += '<div class="tpl-grid">' + JOURNEY_TEMPLATES.map(function (t) {
       var wks = templateWeeks(t);
-      var track = t.phases.map(function (p) {
-        return '<div class="tpl-pill"><span class="tp-n">' + esc(p.n) + '</span><span class="tp-m">' + p.w + ' Wo · ' + esc(focusLabel(p.f)) + (p.rt ? ' · ' + p.rt[0] + '–' + p.rt[1] + ' Wdh' : '') + '</span></div>';
-      }).join('<span class="phase-arrow">›</span>');
+      var phaseList = journeyPhaseListHTML(t.phases.map(function (p) { return { label: p.n, focus: p.f, weeks: p.w, rt: p.rt, s0: p.s0, s1: p.s1, dl: p.dl }; }), -1);
       return '<div class="card tpl-card">'
         + '<div class="tpl-head"><h3>' + esc(t.name) + '</h3><span class="tpl-dur">' + wks + ' Wochen · ' + t.phases.length + ' Phasen</span></div>'
         + '<div class="tpl-tag">' + esc(t.tagline) + '</div>'
         + '<div class="tpl-for"><strong>Für:</strong> ' + esc(t.forWhom) + '</div>'
         + '<div class="tpl-summary">' + esc(t.summary) + '</div>'
-        + '<div class="tpl-track">' + track + '</div>'
+        + phaseList
         + '<button class="btn primary" data-action="journey-create" data-tpl="' + t.id + '">Diese Journey starten</button>'
         + '</div>';
     }).join('') + '</div>';
