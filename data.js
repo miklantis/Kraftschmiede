@@ -207,6 +207,102 @@
   function templateWeeks(t) { return t.phases.reduce(function (a, p) { return a + p.w; }, 0); }
 
   /* =========================================================
+     Skills – statische Definition (wie JOURNEY_TEMPLATES Code,
+     kein Nutzerzustand). Korrekturen greifen ohne Migration.
+     Metrik sitzt auf der Uebung; Phasenaufstieg ist phasenweit.
+     metric: offener String (v1 "reps"/"duration").
+     target: Skalar (reps/duration) ODER Objekt (spaetere Metriken).
+     equipment: immer Array von Equipment-IDs ([] = Koerpergewicht).
+     ========================================================= */
+  // Skill-Uebung: { name, metric, sets, target, tempo? }
+  function skEx(name, metric, sets, target, tempo) {
+    return { name: name, metric: metric, sets: sets, target: target, tempo: tempo || null };
+  }
+  function skillPhase(index, label, equipment, consecutiveSessions, exercises, description) {
+    return {
+      index: index, label: label, description: description || "",
+      equipment: equipment || [], consecutiveSessions: consecutiveSessions,
+      exercises: exercises
+    };
+  }
+  function skill(id, name, category, phases) {
+    return { id: id, name: name, category: category, phases: phases };
+  }
+
+  var SKILLS = [
+    skill("strict_pullup", "Strict Pull-Up", "gymnastics", [
+      skillPhase(0, "Grundspannung", ["pullup-bar"], 2, [
+        skEx("Dead Hang", "duration", 3, 30),
+        skEx("Scapular Pull-Up", "reps", 3, 5)
+      ], "Dead Hang und Skapula-Kontrolle aufbauen."),
+      skillPhase(1, "Band stark", ["pullup-bar", "band-heavy"], 2, [
+        skEx("Band Pull-Up (stark)", "reps", 3, 6)
+      ]),
+      skillPhase(2, "Band mittel", ["pullup-bar", "band-medium"], 2, [
+        skEx("Band Pull-Up (mittel)", "reps", 3, 6)
+      ]),
+      skillPhase(3, "Band leicht", ["pullup-bar", "band-light"], 2, [
+        skEx("Band Pull-Up (leicht)", "reps", 3, 8)
+      ]),
+      skillPhase(4, "Negativs", ["pullup-bar"], 2, [
+        skEx("Negative Pull-Up", "reps", 3, 5, "5 Sek. ablassen")
+      ], "Sauber und langsam ablassen, Spannung halten."),
+      skillPhase(5, "Freier Klimmzug", ["pullup-bar"], 2, [
+        skEx("Strict Pull-Up", "reps", 3, 8)
+      ])
+    ]),
+    skill("pushup", "Pushup", "gymnastics", [
+      skillPhase(0, "Knie-Liegestütze", [], 2, [
+        skEx("Knee Push-Up", "reps", 3, 10)
+      ]),
+      skillPhase(1, "Hände erhöht", [], 2, [
+        skEx("Incline Push-Up", "reps", 3, 10)
+      ]),
+      skillPhase(2, "Volle Liegestütze", [], 2, [
+        skEx("Full Push-Up", "reps", 3, 8)
+      ]),
+      skillPhase(3, "Tempo / eng", [], 2, [
+        skEx("Tempo Push-Up", "reps", 3, 6, "3 Sek. ablassen")
+      ]),
+      skillPhase(4, "Archer", [], 2, [
+        skEx("Archer Push-Up", "reps", 3, 5)
+      ])
+    ])
+    // Plank (reiner Zeit-Skill), Pistol Squat, Dip, Handstand, Turkish Get-Up,
+    // Lauf/Kondition (eigene Metriken) folgen jeweils einzeln mit Recherche.
+  ];
+
+  // Skill-Equipment-Defaults (Auswahl-Tor). Wirkt nur ueber inventory.equipment.
+  function defaultEquipment() {
+    return [
+      { id: "band-heavy",  label: "Band stark",     active: true  },
+      { id: "band-medium", label: "Band mittel",    active: true  },
+      { id: "band-light",  label: "Band leicht",    active: false },
+      { id: "pullup-bar",  label: "Klimmzugstange", active: true  },
+      { id: "rings",       label: "Ringe",          active: false },
+      { id: "parallettes", label: "Parallettes",    active: false }
+    ];
+  }
+
+  // Statische Definition nachschlagen (kein DB-Zugriff).
+  function skillById(id) { return SKILLS.find(function (s) { return s.id === id; }) || null; }
+
+  // Dynamischen Fortschritt zum Skill holen. Legt bei Bedarf einen neutralen
+  // Eintrag an (active:false) und haengt ihn an db().skillProgress, damit der
+  // zurueckgegebene Eintrag persistierbar/mutierbar ist. Aktivieren (Skills-Tab)
+  // setzt active:true; ein neutraler Eintrag taucht in "Meine Skills" nicht auf.
+  function skillProgressFor(id) {
+    var db = KS.db();
+    db.skillProgress = db.skillProgress || [];
+    var p = db.skillProgress.find(function (e) { return e.skillId === id; });
+    if (!p) {
+      p = { skillId: id, active: false, currentPhase: 0, consecutiveCount: 0, mastered: false, log: [] };
+      db.skillProgress.push(p);
+    }
+    return p;
+  }
+
+  /* =========================================================
      Schema-Migration (non-destruktiv, feldweise)
      ========================================================= */
   function migrate(db) {
@@ -285,6 +381,17 @@
       });
       db.migrations.exerciseKind = true;
     }
+    // Skills-System (Schema 0.14, rein additiv): Equipment-Inventar und
+    // Fortschritts-Array nachruesten. Equipment-Merge laesst spaeter eingefuehrte
+    // Geraetetypen bei Bestandsnutzern auftauchen, ohne deren Auswahl zu ueberschreiben.
+    db.inventory = db.inventory || {};
+    if (!db.inventory.equipment) {
+      db.inventory.equipment = defaultEquipment();
+    } else {
+      var haveEq = db.inventory.equipment.map(function (e) { return e.id; });
+      defaultEquipment().forEach(function (d) { if (haveEq.indexOf(d.id) < 0) db.inventory.equipment.push(d); });
+    }
+    db.skillProgress = db.skillProgress || [];
   }
 
   /* Export an den geteilten Namespace. seed/migrate werden beim Init
@@ -297,4 +404,8 @@
   KS.focusLabel = focusLabel;
   KS.templateWeeks = templateWeeks;
   KS.JOURNEY_TEMPLATES = JOURNEY_TEMPLATES;
+  KS.SKILLS = SKILLS;
+  KS.defaultEquipment = defaultEquipment;
+  KS.skillById = skillById;
+  KS.skillProgressFor = skillProgressFor;
 })();
