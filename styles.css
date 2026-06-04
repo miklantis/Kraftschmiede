@@ -816,16 +816,18 @@ body{overflow-x:clip}
    .exercise-live-Grundlagen (Breakpoints 720/560/430).
    ============================================================ */
 /* Trainings-Kachel */
-.skill-wo .skill-thumb{position:relative;display:flex;align-items:center;justify-content:space-between;padding:14px;border-radius:8px;background:linear-gradient(135deg,rgba(84,193,200,.22),rgba(84,193,200,.05));border:1px solid rgba(84,193,200,.35)}
-.skill-wo .skill-thumb .wo-name{position:static;color:var(--accent-2);font-family:var(--display);font-weight:700;letter-spacing:.5px}
-.skill-wo .skill-thumb .score-badge{position:static;color:var(--accent-2);background:rgba(84,193,200,.12);border:1px solid rgba(84,193,200,.4)}
-.sk-picklist{display:flex;flex-direction:column;gap:8px}
-.sk-pick{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.sk-pick-main{display:flex;flex-direction:column;gap:1px;min-width:0}
-.sk-pick-name{font-weight:600}
-.sk-pick-meta{font-size:12px;color:var(--muted)}
-.sk-pick-gate{font-size:11px;color:var(--accent)}
-.sk-pick.gated{opacity:.6}
+/* Trainings-Kachel: optisch wie Yoga (blau), 16:9-Farbverlauf statt Bild */
+.wo-card.skill-wo{border-color:rgba(84,193,200,.45)}
+.skill-wo .wo-thumb{background:linear-gradient(135deg,rgba(84,193,200,.30),rgba(84,193,200,.05))}
+.skill-wo .wo-grad{background:linear-gradient(to top,rgba(4,34,42,.92),rgba(4,34,42,.30) 46%,rgba(4,34,42,0) 78%)}
+.skill-wo .score-badge{color:var(--accent-2);border-color:rgba(84,193,200,.4);background:rgba(4,34,42,.6)}
+.skill-wo .wo-lifts{color:var(--accent-2)}
+.btn.skill-btn{border-color:rgba(84,193,200,.5);color:var(--accent-2)}
+.btn.skill-btn:hover{background:var(--accent-2);border-color:var(--accent-2);color:#04222a}
+/* Skills-Tab: aktivieren-Button blau statt orange */
+.btn.skill-act.primary{background:var(--accent-2);border-color:var(--accent-2);color:#04222a}
+.btn.skill-act.primary:hover{background:#67ccd2;border-color:#67ccd2}
+.skill-row.active{border-left:3px solid var(--accent-2)}
 /* Skill-Live: Kopf-Hinweis + Tags */
 .sk-mastered-note{padding:10px 14px;color:var(--accent-2);font-size:13px}
 .skill-ex .sk-tag{color:var(--accent-2);border-color:rgba(84,193,200,.4)}
@@ -841,3 +843,12 @@ body{overflow-x:clip}
 .sk-watch-btn.running{background:rgba(84,193,200,.18);border-color:var(--accent-2);color:var(--text)}
 /* Skills-Tab: Detail-Karte im Akkordeon */
 .skill-detail{margin-top:-4px}
+
+/* ============================================================
+   v0.25 – Skills im Kalender und Verlauf (type:"skill")
+   Violett zur Abgrenzung von Workout (orange) und Yoga (teal).
+   ============================================================ */
+.skill-tag{font-family:var(--mono);font-size:10px;letter-spacing:1px;background:#9b8cff;color:#140b2e;padding:3px 8px;border-radius:4px;font-weight:600}
+.skill-tag.sm{font-size:9px;padding:2px 6px;margin-right:6px}
+.log-item.skill{border-left:3px solid #9b8cff}
+.cal-dot.skill{background:#9b8cff;color:#140b2e}

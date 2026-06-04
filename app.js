@@ -332,7 +332,7 @@
       case "body": body = viewBody(); break;
       case "workouts": body = viewWorkouts(); break;
       case "journey": body = UI.journeyPicker ? viewJourneyPicker() : viewJourneyManager(); break;
-      case "skills": body = UI.skillsPicker ? viewSkillsPicker() : viewSkillsManager(); break;
+      case "skills": body = viewSkillsManager(); break;
       case "exercises": body = UI.detail ? viewExerciseDetail(UI.detail) : viewExercises(); break;
       case "settings": body = viewSettings(); break;
     }
@@ -378,38 +378,42 @@
     return '<div class="section-title">Heute trainieren</div>'
       + '<div class="wo-grid">' + cards + yogaCard() + skillTrainingCard() + '</div>';
   }
-  // Skill-Kachel im Training: 0 aktive -> Hinweis/Link; sonst Auswahl der aktiven
-  // Skills mit Auswahl-Tor (fehlt ein Geraet, ist der Skill nicht startbar).
+  // Skill-Kacheln im Training: eine Karte je aktivem Skill, optisch wie die
+  // Yoga-Karte (blau, 16:9-Farbverlauf statt Bild). 0 aktive -> Hinweis-Karte.
+  // Auswahl-Tor: fehlt ein Geraet, ist die Karte ausgegraut und nicht startbar.
   function skillTrainingCard() {
     var active = (DB.skillProgress || []).filter(function (p) { return p.active; });
     if (!active.length) {
       return '<div class="wo-card skill-wo">'
-        + '<div class="wo-thumb skill-thumb"><span class="wo-name">Skills</span></div>'
-        + '<div class="wo-body"><div class="wo-lifts">Eigenständige Skill-Einheit</div>'
-        + '<div class="wo-reasons">Noch kein aktiver Skill</div>'
-        + '<button class="btn ghost" data-action="goto-skills">Im Skills-Tab hinzufügen</button>'
+        + '<div class="wo-thumb"><span class="wo-grad"></span><span class="wo-name">Skills</span></div>'
+        + '<div class="wo-body">'
+        + '<div class="wo-lifts">Eigenständige Skill-Einheit</div>'
+        + '<div class="wo-reasons">Kein aktiver Skill · im Skills-Tab aktivieren</div>'
+        + '<button class="btn ghost skill-btn" data-action="goto-skills">Zu den Skills</button>'
         + '</div></div>';
     }
     var owned = ownedEquipmentIds();
-    var rows = active.map(function (p) {
+    return active.map(function (p) {
       var def = skillById(p.skillId); if (!def) return '';
       var adv = E.skillAdvice(def, p, owned);
       var ph = def.phases[adv.phaseIndex];
       var gated = adv.equipmentMissing;
-      var meta = 'Phase ' + (adv.phaseIndex + 1) + '/' + def.phases.length + ' · ' + esc(ph.label) + (p.mastered ? ' · Erhaltung' : '');
-      return '<div class="sk-pick' + (gated ? ' gated' : '') + '">'
-        + '<div class="sk-pick-main"><span class="sk-pick-name">' + esc(def.name) + '</span>'
-        + '<span class="sk-pick-meta">' + meta + '</span>'
-        + (gated ? '<span class="sk-pick-gate">Gerät fehlt: ' + adv.missingEquipment.map(equipmentLabel).map(esc).join(", ") + '</span>' : '')
+      var exNames = ph.exercises.map(function (e) { return esc(e.name); }).join(" › ");
+      var sub = esc(ph.label) + (p.mastered ? ' · Erhaltung' : ' · Serie ' + (p.consecutiveCount || 0) + '/' + ph.consecutiveSessions)
+        + (gated ? ' · Gerät fehlt: ' + adv.missingEquipment.map(equipmentLabel).map(esc).join(", ") : '');
+      return '<div class="wo-card skill-wo' + (gated ? ' excl' : '') + '">'
+        + '<div class="wo-thumb"><span class="wo-grad"></span>'
+        + '<span class="wo-name">' + esc(def.name) + '</span>'
+        + '<span class="score-badge" title="Phase">P' + (adv.phaseIndex + 1) + '/' + def.phases.length + '</span>'
         + '</div>'
-        + (gated ? '<button class="btn tiny ghost" disabled>gesperrt</button>'
-                 : '<button class="btn primary tiny" data-action="start-skill" data-id="' + p.skillId + '">starten</button>')
-        + '</div>';
+        + '<div class="wo-body">'
+        + '<div class="wo-lifts">' + exNames + '</div>'
+        + '<div class="wo-reasons">' + sub + '</div>'
+        + (gated
+            ? '<button class="btn ghost skill-btn" disabled>Gerät fehlt</button>'
+            : '<button class="btn ghost skill-btn" data-action="start-skill" data-id="' + p.skillId + '">Starten</button>')
+        + '</div></div>';
     }).join("");
-    return '<div class="wo-card skill-wo">'
-      + '<div class="wo-thumb skill-thumb"><span class="wo-name">Skills</span><span class="score-badge" title="Aktive Skills">' + active.length + '</span></div>'
-      + '<div class="wo-body skill-body"><div class="sk-picklist">' + rows + '</div></div>'
-      + '</div>';
   }
   // Yoga als Karte im Training-Stil, am Ende der Workout-Liste. Blau (accent-2)
   // statt orange. Ein Klick traegt sofort eine Einheit fuer heute ein (80 min).
@@ -555,6 +559,29 @@
             + '<button class="btn tiny ghost log-del" data-action="del-session" data-id="' + s.id + '">löschen</button>'
             + '</div>';
         }
+        if (s.type === "skill") {
+          var sw = s.skillWork || {};
+          var sdef = skillById(sw.skillId);
+          var sname = sdef ? sdef.name : (sw.skillId || "Skill");
+          var phLabel = (sdef && sdef.phases[sw.phase]) ? sdef.phases[sw.phase].label : ("Phase " + ((sw.phase || 0) + 1));
+          var resLabel = ({ completed: "geschafft", missed: "verfehlt", skipped: "abgebrochen" })[sw.result] || sw.result || "";
+          var resCls = sw.result === "completed" ? "ok-badge" : (sw.result === "missed" ? "dev-badge" : "");
+          var exSummary = (sw.exercises || []).map(function (we) {
+            var dn = (we.sets || []).filter(function (x) { return x.done; }).length;
+            var unit = we.metric === "duration" ? "s" : "Wdh";
+            return esc(we.name) + " " + dn + "×" + (we.target || "") + unit;
+          }).join(" · ");
+          return '<div class="log-item skill">'
+            + '<div class="log-date">' + esc(s.date) + '</div>'
+            + '<div class="log-body">'
+            + '<div class="log-top"><span class="log-wo"><span class="skill-tag sm">SKILL</span> ' + esc(sname) + '</span>'
+            + (resLabel ? '<span class="' + resCls + '">' + esc(resLabel) + '</span>' : '') + '</div>'
+            + '<div class="log-sub">' + esc(phLabel) + (exSummary ? ' · ' + exSummary : '') + '</div>'
+            + (s.durationSec ? '<div class="log-meta"><span class="log-dur">Dauer ' + fmtDur(s.durationSec) + '</span></div>' : '')
+            + '</div>'
+            + '<button class="btn tiny ghost log-del" data-action="del-session" data-id="' + s.id + '">löschen</button>'
+            + '</div>';
+        }
         var t = tplById(s.templateId);
         var dev = (s.entries || []).some(function (e) { return e.hadDeviation; });
         var vol = (s.entries || []).reduce(function (a, e) { return a + workVol(e); }, 0);
@@ -596,6 +623,7 @@
       if (has) {
         dot = has.map(function (s) {
           if (s.type === "yoga") return '<span class="cal-dot yoga">Yoga</span>';
+          if (s.type === "skill") { var sd = skillById((s.skillWork || {}).skillId); return '<span class="cal-dot skill">' + esc(sd ? sd.name : "Skill") + '</span>'; }
           var t = tplById(s.templateId); var dev = (s.entries || []).some(function (e) { return e.hadDeviation; });
           return '<span class="cal-dot' + (dev ? ' dev' : '') + '">' + (t ? t.name : "•") + '</span>';
         }).join("");
@@ -871,68 +899,40 @@
     return '<div class="tpl-track">' + track + '</div>';
   }
 
+  // Liste ALLER Skills im System. Kein Hinzufuegen – jeder Skill ist da und
+  // standardmaessig deaktiviert; per Toggle aktivieren/deaktivieren. Aktive
+  // Skills erscheinen als Karte im Training. Fortschritt bleibt beim Deaktivieren.
   function viewSkillsManager() {
     var owned = ownedEquipmentIds();
-    var html = '<div class="section-title jl-title">Skills<button class="btn primary addj" data-action="skills-picker">+ Skill hinzufügen</button></div>';
-    html += '<p class="hint jm-lead">Skills sind eigenständige Trainingseinheiten, unabhängig von der Journey. Aktive Skills trainierst du über die Skill-Kachel im Training. Deaktivieren behält den Fortschritt.</p>';
-    var entries = (DB.skillProgress || []).filter(function (p) {
-      return p.active || (p.log && p.log.length) || (p.currentPhase || 0) > 0 || (p.consecutiveCount || 0) > 0;
-    });
-    if (!entries.length) {
-      html += '<div class="card empty-journey"><p class="ej-lead">Noch keine Skills.</p><p class="hint">Füge einen Skill aus dem Katalog hinzu, um ihn zu trainieren.</p><button class="btn primary" data-action="skills-picker">Skill aus Katalog wählen</button></div>';
-      return html;
-    }
-    entries = entries.slice().sort(function (a, b) { return (b.active ? 1 : 0) - (a.active ? 1 : 0); });
-    html += '<div class="jlist">' + entries.map(function (p) {
-      var def = skillById(p.skillId); if (!def) return '';
+    var html = '<div class="section-title">Skills</div>';
+    html += '<p class="hint jm-lead">Alle Skills sind hier gelistet. Aktiviere die, die du gerade trainierst – sie erscheinen dann als Karte im Training. Deaktivieren behält den Fortschritt.</p>';
+    html += '<div class="jlist">' + SKILLS.map(function (def) {
+      var p = skillProgressView(def.id);
       var adv = E.skillAdvice(def, p, owned);
       var ph = def.phases[adv.phaseIndex];
-      var open = !!UI.skillOpen[p.skillId];
+      var open = !!UI.skillOpen[def.id];
+      var hasProgress = p.active || (p.currentPhase || 0) > 0 || (p.consecutiveCount || 0) > 0 || (p.log && p.log.length);
       var badge = p.active ? '<span class="badge-active">aktiv</span>' : '<span class="badge-idle">inaktiv</span>';
       var masteredTag = p.mastered ? ' <span class="badge-active">gemeistert</span>' : '';
       var meta = 'Phase ' + (adv.phaseIndex + 1) + '/' + def.phases.length + ' · ' + esc(ph.label)
         + (p.mastered ? ' · Erhaltung' : ' · Serie ' + (p.consecutiveCount || 0) + '/' + ph.consecutiveSessions);
       var gate = adv.equipmentMissing
-        ? '<div class="hint" style="color:var(--accent)">Gerät fehlt: ' + adv.missingEquipment.map(equipmentLabel).map(esc).join(", ") + ' – im Skills-Inventar (Einstellungen) aktivieren.</div>'
+        ? '<div class="hint" style="color:var(--accent-2)">Gerät fehlt: ' + adv.missingEquipment.map(equipmentLabel).map(esc).join(", ") + ' – im Skills-Inventar (Einstellungen) aktivieren.</div>'
         : '';
-      var row = '<div class="jrow' + (p.active ? ' active' : '') + '">'
+      var row = '<div class="jrow skill-row' + (p.active ? ' active' : '') + '">'
         + '<div class="jr-main"><span class="jr-name">' + esc(def.name) + masteredTag + '</span>'
         + '<span class="jr-meta">' + meta + '</span></div>'
         + '<div class="jr-status">' + badge + '</div>'
         + '<div class="jr-actions">'
-        + '<button class="btn tiny ghost" data-action="skill-toggle" data-id="' + p.skillId + '">' + (open ? "Details ▴" : "Details ▾") + '</button>'
+        + '<button class="btn tiny ghost" data-action="skill-toggle" data-id="' + def.id + '">' + (open ? "Details ▴" : "Details ▾") + '</button>'
         + (p.active
-            ? '<button class="btn tiny ghost" data-action="skill-deactivate" data-id="' + p.skillId + '">deaktivieren</button>'
-            : '<button class="btn tiny ghost" data-action="skill-activate" data-id="' + p.skillId + '">aktivieren</button>')
-        + '<button class="btn tiny ghost" data-action="skill-phase-back" data-id="' + p.skillId + '">Phase −1</button>'
-        + '<button class="btn tiny ghost danger" data-action="skill-reset" data-id="' + p.skillId + '">zurücksetzen</button>'
+            ? '<button class="btn tiny ghost skill-act" data-action="skill-deactivate" data-id="' + def.id + '">deaktivieren</button>'
+            : '<button class="btn tiny primary skill-act" data-action="skill-activate" data-id="' + def.id + '">aktivieren</button>')
+        + (hasProgress ? '<button class="btn tiny ghost" data-action="skill-phase-back" data-id="' + def.id + '">Phase −1</button>'
+                         + '<button class="btn tiny ghost danger" data-action="skill-reset" data-id="' + def.id + '">zurücksetzen</button>' : '')
         + '</div></div>';
       var detail = open ? '<div class="card skill-detail">' + gate + skillPhasesTrack(def, p) + '</div>' : '';
       return row + detail;
-    }).join('') + '</div>';
-    return html;
-  }
-
-  function viewSkillsPicker() {
-    var html = '<button class="btn ghost small back" data-action="skills-picker-close">‹ Zurück</button>';
-    html += '<div class="section-title">Skill hinzufügen</div>';
-    html += '<p class="hint pick-lead">Skills sind bewegungsbasierte Einheiten mit aufeinander aufbauenden Phasen. Hinzufügen aktiviert den Skill; du trainierst ihn über die Skill-Kachel im Training. Der Fortschritt bleibt erhalten, auch wenn du ihn später deaktivierst.</p>';
-    html += '<div class="tpl-grid">' + SKILLS.map(function (def) {
-      var prog = (DB.skillProgress || []).find(function (p) { return p.skillId === def.id; });
-      var active = !!(prog && prog.active);
-      var tracked = !!(prog && ((prog.log && prog.log.length) || (prog.currentPhase || 0) > 0 || (prog.consecutiveCount || 0) > 0));
-      var track = def.phases.map(function (ph) {
-        var ex = ph.exercises.map(function (e) { return esc(e.name); }).join(", ");
-        return '<div class="tpl-pill"><span class="tp-n">' + esc(ph.label) + '</span><span class="tp-m">' + ex + '</span></div>';
-      }).join('<span class="phase-arrow">›</span>');
-      var btn = active
-        ? '<button class="btn ghost" disabled>Bereits aktiv ✓</button>'
-        : '<button class="btn primary" data-action="skill-activate" data-id="' + def.id + '">' + (tracked ? "Fortsetzen" : "+ Hinzufügen") + '</button>';
-      return '<div class="card tpl-card">'
-        + '<div class="tpl-head"><h3>' + esc(def.name) + '</h3><span class="tpl-dur">' + def.phases.length + ' Phasen · ' + esc(skillCategoryLabel(def.category)) + '</span></div>'
-        + '<div class="tpl-track">' + track + '</div>'
-        + btn
-        + '</div>';
     }).join('') + '</div>';
     return html;
   }
@@ -1166,8 +1166,6 @@
       case "journey-activate": activateJourney(el.getAttribute("data-id")); break;
       case "journey-finish": if (confirm("Journey abschließen und archivieren? Der Verlauf bleibt erhalten.")) finishJourney(el.getAttribute("data-id")); break;
       case "journey-del": if (confirm("Journey wirklich löschen? Sessions bleiben erhalten.")) deleteJourney(el.getAttribute("data-id")); break;
-      case "skills-picker": UI.tab = "skills"; UI.skillsPicker = true; render(); break;
-      case "skills-picker-close": UI.skillsPicker = false; render(); break;
       case "skill-activate": activateSkill(el.getAttribute("data-id")); break;
       case "skill-deactivate": deactivateSkill(el.getAttribute("data-id")); break;
       case "skill-phase-back": if (confirm("Eine Phase zurück? Der Fortschritt der aktuellen Phase wird zurückgesetzt.")) regressSkill(el.getAttribute("data-id")); break;
@@ -1285,6 +1283,12 @@
   function skillCategoryLabel(c) {
     return ({ gymnastics: "Gymnastik", conditioning: "Kondition", strength: "Kraft", mobility: "Mobility" })[c] || c || "–";
   }
+  // Read-only: vorhandenen Fortschritt holen oder einen transienten Default
+  // liefern (NICHT in DB schreiben) – fuer Render ohne Seiteneffekt.
+  function skillProgressView(id) {
+    return (DB.skillProgress || []).find(function (e) { return e.skillId === id; })
+      || { skillId: id, active: false, currentPhase: 0, consecutiveCount: 0, mastered: false, log: [] };
+  }
   // Aktivieren: legt bei Bedarf den Fortschritt an bzw. setzt active:true
   // (vorhandener Fortschritt wird fortgesetzt). activate-Log nur beim ersten Mal.
   function activateSkill(id) {
@@ -1293,7 +1297,6 @@
     var firstTime = !p.active && (!p.log || !p.log.length);
     p.active = true;
     if (firstTime) { p.log = p.log || []; p.log.push({ date: today(), type: "activate" }); }
-    UI.skillsPicker = false; UI.tab = "skills";
     State.persist(); render();
     toast("Skill \u201E" + def.name + "\u201C aktiviert.");
   }
