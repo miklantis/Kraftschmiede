@@ -917,7 +917,6 @@
       var adv = E.skillAdvice(def, p, owned);
       var ph = def.phases[adv.phaseIndex];
       var open = !!UI.skillOpen[def.id];
-      var hasProgress = p.active || (p.currentPhase || 0) > 0 || (p.consecutiveCount || 0) > 0 || (p.log && p.log.length);
       var badge = p.active ? '<span class="badge-active">aktiv</span>' : '<span class="badge-idle">inaktiv</span>';
       var masteredTag = p.mastered ? ' <span class="badge-active">gemeistert</span>' : '';
       var meta = 'Phase ' + (adv.phaseIndex + 1) + '/' + def.phases.length + ' · ' + esc(ph.label)
@@ -925,6 +924,9 @@
       var gate = adv.equipmentMissing
         ? '<div class="hint" style="color:var(--accent-2)">Gerät fehlt: ' + adv.missingEquipment.map(equipmentLabel).map(esc).join(", ") + ' – im Skills-Inventar (Einstellungen) aktivieren.</div>'
         : '';
+      var canBack = (p.currentPhase || 0) > 0;
+      var canFwd = !p.mastered;
+      var canReset = (p.currentPhase || 0) > 0 || (p.consecutiveCount || 0) > 0 || (p.log && p.log.length);
       var head = '<div class="skill-head">'
         + '<div class="jr-main"><span class="jr-name">' + esc(def.name) + masteredTag + '</span>'
         + '<span class="jr-meta">' + meta + '</span></div>'
@@ -934,14 +936,17 @@
         + (p.active
             ? '<button class="btn tiny ghost skill-act" data-action="skill-deactivate" data-id="' + def.id + '">deaktivieren</button>'
             : '<button class="btn tiny primary skill-act" data-action="skill-activate" data-id="' + def.id + '">aktivieren</button>')
-        + (hasProgress ? '<button class="btn tiny ghost" data-action="skill-phase-back" data-id="' + def.id + '">Phase −1</button>'
-                         + '<button class="btn tiny ghost danger" data-action="skill-reset" data-id="' + def.id + '">zurücksetzen</button>' : '')
         + '</div></div>';
+      var controls = '<div class="sk-controls"><span class="sk-controls-lbl">Fortschritt anpassen</span>'
+        + (canBack ? '<button class="btn tiny ghost" data-action="skill-phase-back" data-id="' + def.id + '">Phase −1</button>' : '')
+        + (canFwd ? '<button class="btn tiny ghost" data-action="skill-phase-fwd" data-id="' + def.id + '">Phase +1</button>' : '')
+        + (canReset ? '<button class="btn tiny ghost danger" data-action="skill-reset" data-id="' + def.id + '">zurücksetzen</button>' : '')
+        + '</div>';
       var detailBody = open ? '<div class="skill-detail-body">' + gate
         + '<div class="sk-chart-wrap"><div class="sk-chart-head"><span class="sk-chart-title">Verlauf · trainierte Phase je Session</span>'
         + '<span class="sk-chart-legend"><span class="lg ok">geschafft</span><span class="lg miss">verfehlt</span></span></div>'
         + '<div class="ks-skillchart" data-skill="' + def.id + '"></div></div>'
-        + skillPhasesList(def, p) + '</div>' : '';
+        + skillPhasesList(def, p) + controls + '</div>' : '';
       return '<div class="skill-block' + (p.active ? ' active' : '') + (open ? ' open' : '') + '">' + head + detailBody + '</div>';
     }).join('') + '</div>';
     return html;
@@ -1179,6 +1184,7 @@
       case "skill-activate": activateSkill(el.getAttribute("data-id")); break;
       case "skill-deactivate": deactivateSkill(el.getAttribute("data-id")); break;
       case "skill-phase-back": if (confirm("Eine Phase zurück? Der Fortschritt der aktuellen Phase wird zurückgesetzt.")) regressSkill(el.getAttribute("data-id")); break;
+      case "skill-phase-fwd": advanceSkill(el.getAttribute("data-id")); break;
       case "skill-reset": if (confirm("Skill auf Phase 1 zurücksetzen? Der Fortschritt geht verloren (Verlauf bleibt erhalten).")) resetSkill(el.getAttribute("data-id")); break;
       case "skill-toggle": var sid = el.getAttribute("data-id"); UI.skillOpen[sid] = !UI.skillOpen[sid]; render(); break;
       case "bar-add": DB.inventory.bars.push({ id: uid("bar_"), name: "Stange", weight: 20, default: false }); State.persist(); render(); break;
@@ -1315,6 +1321,19 @@
     var p = skillProgressFor(id); var from = p.currentPhase || 0;
     p.currentPhase = Math.max(0, from - 1); p.consecutiveCount = 0; p.mastered = false;
     p.log = p.log || []; p.log.push({ date: today(), type: "regress", from: from, to: p.currentPhase });
+    State.persist(); render();
+  }
+  // Phase + (manuell): eine Phase vor; auf der letzten Phase -> als gemeistert markieren.
+  function advanceSkill(id) {
+    var def = skillById(id); if (!def) return;
+    var p = skillProgressFor(id); var from = p.currentPhase || 0;
+    if (from < def.phases.length - 1) {
+      p.currentPhase = from + 1; p.consecutiveCount = 0; p.mastered = false;
+      p.log = p.log || []; p.log.push({ date: today(), type: "advance", from: from, to: p.currentPhase });
+    } else {
+      p.mastered = true; p.consecutiveCount = 0;
+      p.log = p.log || []; p.log.push({ date: today(), type: "advance", from: from, to: from, mastered: true });
+    }
     State.persist(); render();
   }
   function resetSkill(id) {
