@@ -406,7 +406,7 @@
      Lokale Delegates auf window.KS; Aufrufstellen und Event-Dispatcher
      bleiben unveraendert.
      ========================================================= */
-  function adjustRest() { return KS.adjustRest.apply(null, arguments); }
+  function adjustRest() { return KS.RestTimer.adjust.apply(null, arguments); }
   function bindLiveInputs() { return KS.bindLiveInputs.apply(null, arguments); }
   function cancelStart() { return KS.cancelStart.apply(null, arguments); }
   function closeEndModal() { return KS.closeEndModal.apply(null, arguments); }
@@ -418,11 +418,11 @@
   function liveSession() { return KS.liveSession.apply(null, arguments); }
   function manageClock() { return KS.manageClock.apply(null, arguments); }
   function openStartModal() { return KS.openStartModal.apply(null, arguments); }
-  function skipRest() { return KS.skipRest.apply(null, arguments); }
+  function skipRest() { return KS.RestTimer.skip.apply(null, arguments); }
   function startToBody() { return KS.startToBody.apply(null, arguments); }
   function syncActiveSet() { return KS.syncActiveSet.apply(null, arguments); }
-  function syncRestBar() { return KS.syncRestBar.apply(null, arguments); }
-  function toggleTimers() { return KS.toggleTimers.apply(null, arguments); }
+  function syncRestBar() { return KS.RestTimer.syncBar.apply(null, arguments); }
+  function toggleTimers() { return KS.RestTimer.toggle.apply(null, arguments); }
   function sorePicker(key, label, val) {
     return '<div class="bfield"><span>' + label + ' (Kater)</span><select data-body="' + key + '">'
       + [0, 1, 2, 3].map(function (v) { return '<option value="' + v + '"' + (val === v ? " selected" : "") + '>' + v + '</option>'; }).join("") + '</select></div>';

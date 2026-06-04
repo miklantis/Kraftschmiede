@@ -201,6 +201,21 @@
     var btn = document.querySelector(".timer-toggle");
     if (btn) { btn.classList.toggle("on", !!T.autoStart); btn.setAttribute("aria-pressed", T.autoStart ? "true" : "false"); }
   }
+
+  /* =========================================================
+     RestTimer – der Pausen-Timer als Baustein. Buendelt den Pausen-Balken
+     (#ks-rest-bar), den Countdown und die Signale (Ton + Vibration) hinter
+     einem kleinen Interface. Die internen Helfer (ensureRestBar, restTick,
+     playBeep, buzz, clickTick ...) bleiben privat in live.js und werden nicht
+     mehr einzeln veroeffentlicht. Nach aussen sichtbar ist nur RestTimer.
+     ========================================================= */
+  var RestTimer = {
+    start: startRest,     // (type, sec, ei, si) – Pause auf den naechsten Satz setzen
+    adjust: adjustRest,   // (delta) – laufende Pause um +/- Sekunden aendern
+    skip: skipRest,       // Pause beenden/ueberspringen
+    syncBar: syncRestBar, // Balken-Sichtbarkeit nach jedem Render abgleichen
+    toggle: toggleTimers  // Auto-Pausen ein/aus (Einstellungs-Schalter)
+  };
   function syncActiveSet() {
     var root = document.getElementById("app"); if (!root) return;
     root.querySelectorAll(".set-row.work.active-next").forEach(function (r) { r.classList.remove("active-next"); });
@@ -558,23 +573,10 @@
      ========================================================= */
 
   /* Export aller Live-Funktionen an den geteilten Namespace */
-  KS.restBanner = restBanner;
   KS.fmtDur = fmtDur;
-  KS.updateClock = updateClock;
   KS.manageClock = manageClock;
-  KS.ensureAudio = ensureAudio;
-  KS.playBeep = playBeep;
-  KS.buzz = buzz;
-  KS.clickTick = clickTick;
-  KS.ensureRestBar = ensureRestBar;
-  KS.startRestTick = startRestTick;
-  KS.stopRestTick = stopRestTick;
-  KS.restTick = restTick;
-  KS.syncRestBar = syncRestBar;
-  KS.startRest = startRest;
-  KS.adjustRest = adjustRest;
-  KS.skipRest = skipRest;
-  KS.toggleTimers = toggleTimers;
+  /* Pausen-Timer + Signale gebuendelt; interne Helfer bleiben privat */
+  KS.RestTimer = RestTimer;
   KS.syncActiveSet = syncActiveSet;
   KS.firstOpenSet = firstOpenSet;
   KS.nextOpenExercise = nextOpenExercise;
