@@ -30,7 +30,7 @@
     html += '<div class="wo-viewbar">'
       + '<div class="seg">'
       + '<button class="seg-btn' + (view === "calendar" ? " on" : "") + '" data-action="wo-view" data-v="calendar">Kalender</button>'
-      + '<button class="seg-btn' + (view === "list" ? " on" : "") + '" data-action="wo-view" data-v="list">Liste (' + ss.length + ')</button>'
+      + '<button class="seg-btn' + (view === "list" ? " on" : "") + '" data-action="wo-view" data-v="list">Liste</button>'
       + '</div></div>';
 
     if (view === "calendar") {
