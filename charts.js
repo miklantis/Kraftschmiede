@@ -149,7 +149,7 @@
       bands.push({ name: p.name || ("Phase " + (pi + 1)), start: gw, end: gw + pw - 1 });
       for (var wi = 0; wi < pw; wi++) {
         var vol = E.volumeForWeek(p, wi, true);
-        weeks.push({ g: gw, vol: vol, intens: iScore, deload: !!(p.deloadWeek && wi === p.deloadWeek - 1) });
+        weeks.push({ g: gw, vol: vol, intens: iScore, wi: wi, deload: !!(p.deloadWeek && wi === p.deloadWeek - 1) });
         vMin = Math.min(vMin, vol); vMax = Math.max(vMax, vol);
         iMin = Math.min(iMin, iScore); iMax = Math.max(iMax, iScore);
         gw++;
@@ -208,6 +208,18 @@
     });
 
     g.append("line").attr("x1", 0).attr("y1", ih).attr("x2", iw).attr("y2", ih).style("stroke", "var(--line2)").style("stroke-width", 1);
+
+    // Subtile Wochen-Andeutung INNERHALB der Phasen: jede zweite Woche minimal aufgehellt.
+    // Bewusst sehr schwach (WK_TINT), damit die Phasen-Baender dominant bleiben und man die
+    // Wochenzahl je Phase nur ahnt. Alternierung startet je Phase neu bei wi=0, daher bleibt
+    // der Phasenanfang stabil. Liegt unter Kurven und "jetzt"-Linie.
+    var WK_TINT = 0.06;
+    weeks.forEach(function (w) {
+      if (w.wi % 2 !== 1) return;
+      var wx0 = Math.max(0, x(w.g - 0.5)), wx1 = Math.min(iw, x(w.g + 0.5));
+      g.append("rect").attr("x", wx0).attr("y", 0).attr("width", Math.max(0, wx1 - wx0)).attr("height", ih)
+        .style("fill", "var(--text)").style("opacity", WK_TINT);
+    });
 
     var volLine = d3.line().x(function (d) { return x(d.g); }).y(function (d) { return yPix(ny(d.vol, vMin, vMax)); }).curve(d3.curveCatmullRom.alpha(0.5));
     var intLine = d3.line().x(function (d) { return x(d.g); }).y(function (d) { return yPix(ny(d.intens, iMin, iMax)); }).curve(d3.curveCatmullRom.alpha(0.5));
