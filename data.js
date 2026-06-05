@@ -207,6 +207,85 @@
   function templateWeeks(t) { return t.phases.reduce(function (a, p) { return a + p.w; }, 0); }
 
   /* =========================================================
+     Journey-Fortschritt – trainingsgetrieben ueber Kalenderwochen.
+     Eine ISO-Kalenderwoche gilt als erfuellt, wenn darin mindestens
+     freqTarget abgeschlossene Krafteinheiten der Journey liegen
+     (Yoga und Skills zaehlen nicht). Aktuelle Phase/Woche werden daraus
+     abgeleitet, nicht von Hand gesetzt. Keine Pausenlogik: eine Woche
+     ohne genug Einheiten zaehlt einfach nicht und schiebt nichts.
+     Reine Funktionen: Sessions/Phasen/freqTarget als Argumente, kein
+     DB-Zugriff (heute nur ueber KS.today() fuer die laufende Woche).
+     ========================================================= */
+  // ISO-8601-Wochenschluessel "YYYY-Www" zu einem Datum "YYYY-MM-DD".
+  // Fixbreite => lexikografischer Vergleich entspricht chronologischer Reihenfolge.
+  function isoWeekKey(dateStr) {
+    var d = new Date(dateStr + "T00:00:00");
+    var t = new Date(d.valueOf());
+    var day = (d.getDay() + 6) % 7;        // Mo=0 .. So=6
+    t.setDate(t.getDate() - day + 3);      // Donnerstag der ISO-Woche
+    var firstThu = new Date(t.getFullYear(), 0, 4);
+    var week = 1 + Math.round(((t - firstThu) / 86400000 - 3 + ((firstThu.getDay() + 6) % 7)) / 7);
+    return t.getFullYear() + "-W" + (week < 10 ? "0" + week : week);
+  }
+  // Zaehlende Einheiten einer Journey: abgeschlossen, kein Yoga, mit passender journeyId.
+  function countingSessions(sessions, journeyId) {
+    return (sessions || []).filter(function (s) {
+      return s && s.status === "done" && s.type !== "yoga" && s.journeyId === journeyId && s.date;
+    });
+  }
+  // Set-artiges Objekt der erfuellten Wochenschluessel (>= freqTarget Einheiten).
+  function fulfilledWeekKeys(sessions, journeyId, freqTarget) {
+    var counts = {};
+    countingSessions(sessions, journeyId).forEach(function (s) {
+      var k = isoWeekKey(s.date); counts[k] = (counts[k] || 0) + 1;
+    });
+    var out = {};
+    Object.keys(counts).forEach(function (k) { if (counts[k] >= freqTarget) out[k] = true; });
+    return out;
+  }
+  // Journey-Wochennummer (1-basiert) der Kalenderwoche, in der dateStr liegt:
+  // Anzahl erfuellter Wochen STRIKT VOR dieser Woche + 1. Die laufende Woche
+  // behaelt ihre Nummer Mo–So und wird erst rueckwirkend erfuellt.
+  function journeyWeekForDate(dateStr, sessions, journeyId, freqTarget) {
+    var key = isoWeekKey(dateStr);
+    var ful = fulfilledWeekKeys(sessions, journeyId, freqTarget);
+    var before = 0;
+    Object.keys(ful).forEach(function (k) { if (k < key) before++; });
+    return before + 1;
+  }
+  // Globale Journey-Wochennummer JETZT (heute).
+  function currentJourneyWeek(journey, sessions, freqTarget) {
+    return journeyWeekForDate(today(), sessions, journey.id, freqTarget);
+  }
+  // Mapping globale Wochennummer -> { phaseIndex, phaseId, weekInPhase, done }.
+  // globalWeek > Summe aller Phasenwochen => done:true (Journey durchlaufen).
+  function phasePlacement(phases, globalWeek) {
+    phases = phases || [];
+    var acc = 0;
+    for (var i = 0; i < phases.length; i++) {
+      var w = phases[i].weeks || 0;
+      if (globalWeek <= acc + w) {
+        return { phaseIndex: i, phaseId: phases[i].id, weekInPhase: globalWeek - acc, done: false };
+      }
+      acc += w;
+    }
+    var last = phases.length - 1;
+    return {
+      phaseIndex: last,
+      phaseId: last >= 0 ? phases[last].id : null,
+      weekInPhase: last >= 0 ? (phases[last].weeks || 0) : 0,
+      done: true
+    };
+  }
+  // Komfort: aktuelle Platzierung der Journey (Phase + Woche-in-Phase + globale Woche).
+  function journeyPlacement(journey, sessions, freqTarget) {
+    var gw = currentJourneyWeek(journey, sessions, freqTarget);
+    var p = phasePlacement(journey.phases || [], gw);
+    p.globalWeek = gw;
+    return p;
+  }
+
+  /* =========================================================
      Skills – statische Definition (wie JOURNEY_TEMPLATES Code,
      kein Nutzerzustand). Korrekturen greifen ohne Migration.
      Metrik sitzt auf der Uebung; Phasenaufstieg ist phasenweit.
@@ -395,6 +474,22 @@
       defaultEquipment().forEach(function (d) { if (haveEq.indexOf(d.id) < 0) db.inventory.equipment.push(d); });
     }
     db.skillProgress = db.skillProgress || [];
+    // Einmalig: globale Journey-Wochennummer je Krafteinheit einfrieren (Feld week),
+    // damit auch Altdaten nachvollziehbar bleiben. Yoga bleibt bewusst ohne week.
+    // Pro Journey einmal die erfuellten Wochen bestimmen (O(n) je Einheit).
+    if (!db.migrations.journeyWeek) {
+      var freqM = (db.settings && db.settings.weeklyFrequencyTarget) || 3;
+      (db.journeys || []).forEach(function (j) {
+        var keys = Object.keys(fulfilledWeekKeys(db.sessions, j.id, freqM));
+        (db.sessions || []).forEach(function (s) {
+          if (s.status !== "done" || s.type === "yoga" || s.journeyId !== j.id || !s.date) return;
+          var key = isoWeekKey(s.date), before = 0;
+          for (var i = 0; i < keys.length; i++) if (keys[i] < key) before++;
+          s.week = before + 1;
+        });
+      });
+      db.migrations.journeyWeek = true;
+    }
   }
 
   /* Export an den geteilten Namespace. seed/migrate werden beim Init
@@ -406,6 +501,12 @@
   KS.repTargetForFocus = repTargetForFocus;
   KS.focusLabel = focusLabel;
   KS.templateWeeks = templateWeeks;
+  KS.isoWeekKey = isoWeekKey;
+  KS.fulfilledWeekKeys = fulfilledWeekKeys;
+  KS.journeyWeekForDate = journeyWeekForDate;
+  KS.currentJourneyWeek = currentJourneyWeek;
+  KS.phasePlacement = phasePlacement;
+  KS.journeyPlacement = journeyPlacement;
   KS.JOURNEY_TEMPLATES = JOURNEY_TEMPLATES;
   KS.SKILLS = SKILLS;
   KS.defaultEquipment = defaultEquipment;
