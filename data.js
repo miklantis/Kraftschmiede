@@ -55,7 +55,7 @@
       ],
       journeys: [
         {
-          id: "j_2026_aufbau", name: "Aufbau 2026", active: true,
+          id: "j_2026_aufbau", name: "Aufbau 2026", active: true, templateId: "reentry_build",
           startDate: today(),
           phases: [
             phase("p0", "Wiedereinstieg", "reentry", 2, 2, 2, null),
@@ -496,6 +496,21 @@
     if (!db.migrations.journeyFieldsStripped) {
       (db.journeys || []).forEach(function (j) { delete j.currentPhaseId; delete j.currentWeek; });
       db.migrations.journeyFieldsStripped = true;
+    }
+    // Einmalig: die Standard-Journey (j_2026_aufbau) als Instanz ihrer Vorlage
+    // "Wiedereinstieg & Aufbau" kennzeichnen und ihre Phasen exakt auf den
+    // Vorlagenstand bringen (veralteter Hypertrophie-Wert -> aktueller Stand).
+    // Name bleibt erhalten (frei umbenennbar); Phasen-IDs p0..p3 bleiben gleich,
+    // daher bleiben Session-Verknuepfungen (phaseId) gueltig.
+    if (!db.migrations.journeyTemplateLink) {
+      var rt = JOURNEY_TEMPLATES.find(function (t) { return t.id === "reentry_build"; });
+      (db.journeys || []).forEach(function (j) {
+        if (j.id === "j_2026_aufbau" && !j.templateId && rt) {
+          j.templateId = "reentry_build";
+          j.phases = rt.phases.map(function (p, i) { return phase("p" + i, p.n, p.f, p.w, p.s0, p.s1, p.dl, p.rt); });
+        }
+      });
+      db.migrations.journeyTemplateLink = true;
     }
   }
 
