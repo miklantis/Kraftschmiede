@@ -56,7 +56,7 @@
       journeys: [
         {
           id: "j_2026_aufbau", name: "Aufbau 2026", active: true,
-          startDate: today(), currentPhaseId: "p0", currentWeek: 1,
+          startDate: today(),
           phases: [
             phase("p0", "Wiedereinstieg", "reentry", 2, 2, 2, null),
             phase("p1", "Hypertrophie", "hypertrophy", 5, 2, 6, 4),
@@ -489,6 +489,13 @@
         });
       });
       db.migrations.journeyWeek = true;
+    }
+    // Einmalig: inerte Felder currentPhaseId/currentWeek aus allen Journeys entfernen.
+    // Phase und Woche werden trainingsgetrieben berechnet; die Felder werden nirgends
+    // mehr gelesen (Reste alter manueller Steuerung bzw. versehentlicher Klicks).
+    if (!db.migrations.journeyFieldsStripped) {
+      (db.journeys || []).forEach(function (j) { delete j.currentPhaseId; delete j.currentWeek; });
+      db.migrations.journeyFieldsStripped = true;
     }
   }
 

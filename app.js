@@ -796,12 +796,15 @@
       var open = !!UI.journeyOpen[jj.id];
       var badge = jj.active ? '<span class="badge-active">aktiv</span>'
         : (jj.status === "archived" ? '<span class="badge-arch">archiviert' + (jj.endDate ? ' · ' + esc(jj.endDate) : '') + '</span>' : '<span class="badge-idle">inaktiv</span>');
+      var tplSrc = jj.templateId ? JOURNEY_TEMPLATES.find(function (t) { return t.id === jj.templateId; }) : null;
+      var srcLabel = tplSrc ? ' · Vorlage: ' + esc(tplSrc.name) : ' · eigene Journey';
       var head = '<div class="skill-head">'
         + '<div class="jr-main"><span class="jr-name">' + esc(jj.name) + '</span>'
-        + '<span class="jr-meta">' + jj.phases.length + ' Phasen · ' + wks + ' Wo' + (jj.goal ? ' · ' + esc(jj.goal) : '') + (jj.active && cur ? ' · jetzt: ' + esc(cur.name) + ' W' + wkJ : '') + '</span></div>'
+        + '<span class="jr-meta">' + jj.phases.length + ' Phasen · ' + wks + ' Wo' + srcLabel + (jj.goal ? ' · ' + esc(jj.goal) : '') + (jj.active && cur ? ' · jetzt: ' + esc(cur.name) + ' W' + wkJ : '') + '</span></div>'
         + '<div class="jr-status">' + badge + '</div>'
         + '<div class="jr-actions">'
         + '<button class="btn tiny ghost" data-action="journey-toggle" data-id="' + jj.id + '">' + (open ? "Details ▴" : "Details ▾") + '</button>'
+        + '<button class="btn tiny ghost" data-action="journey-rename" data-id="' + jj.id + '">umbenennen</button>'
         + (jj.active ? '' : '<button class="btn tiny ghost" data-action="journey-activate" data-id="' + jj.id + '">aktivieren</button>')
         + (jj.status !== "archived" ? '<button class="btn tiny ghost" data-action="journey-finish" data-id="' + jj.id + '">abschließen</button>' : '')
         + '<button class="btn tiny ghost danger" data-action="journey-del" data-id="' + jj.id + '">löschen</button>'
@@ -1017,6 +1020,7 @@
       case "journey-picker-close": UI.journeyPicker = false; render(); break;
       case "journey-create": createJourneyFromTemplate(el.getAttribute("data-tpl")); break;
       case "journey-activate": activateJourney(el.getAttribute("data-id")); break;
+      case "journey-rename": renameJourney(el.getAttribute("data-id")); break;
       case "journey-finish": if (confirm("Journey abschließen und archivieren? Der Verlauf bleibt erhalten.")) finishJourney(el.getAttribute("data-id")); break;
       case "journey-del": if (confirm("Journey wirklich löschen? Sessions bleiben erhalten.")) deleteJourney(el.getAttribute("data-id")); break;
       case "skill-activate": activateSkill(el.getAttribute("data-id")); break;
@@ -1086,14 +1090,20 @@
   }
   function delSet(ei) { var en = UI.live.entries[ei]; if (en.sets.length > 1) { en.sets.pop(); en.plannedSets.pop(); State.persist(); render(); } }
   /* ---- Journey-Verwaltung ---- */
+  function renameJourney(id) {
+    var j = DB.journeys.find(function (x) { return x.id === id; }); if (!j) return;
+    var name = prompt("Journey umbenennen:", j.name || "");
+    if (name == null) return;            // Abbrechen
+    name = name.trim(); if (!name) return; // leer ignorieren
+    j.name = name; State.persist(); render();
+  }
   function createJourneyFromTemplate(tplId) {
     var t = JOURNEY_TEMPLATES.find(function (x) { return x.id === tplId; }); if (!t) return;
     var phases = t.phases.map(function (p, i) { return phase("p" + i, p.n, p.f, p.w, p.s0, p.s1, p.dl, p.rt); });
     DB.journeys.forEach(function (j) { j.active = false; });
     var nj = {
       id: uid("j_"), name: t.name, goal: t.tagline, templateId: t.id,
-      active: true, status: "active", startDate: today(),
-      currentPhaseId: phases[0].id, currentWeek: 1, phases: phases
+      active: true, status: "active", startDate: today(), phases: phases
     };
     DB.journeys.push(nj);
     UI.journeyPicker = false; UI.tab = "workouts";
