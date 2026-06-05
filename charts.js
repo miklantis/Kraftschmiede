@@ -157,11 +157,9 @@
     });
     var N = weeks.length;
 
-    var ci = j.phases.findIndex(function (p) { return p.id === j.currentPhaseId; });
-    if (ci < 0) ci = 0;
-    var curG = 0;
-    for (var k = 0; k < ci; k++) curG += Math.max(1, j.phases[k].weeks || 1);
-    curG += Math.max(0, Math.min((j.currentWeek || 1) - 1, Math.max(1, j.phases[ci].weeks || 1) - 1));
+    // Aktuelle Position aus dem trainingsgetriebenen Fortschritt (0-basierte Gesamtwoche).
+    var pl = KS.journeyPlacement(j, db().sessions, db().settings.weeklyFrequencyTarget || 3);
+    var curG = Math.max(0, Math.min((pl.globalWeek || 1) - 1, N - 1));
 
     function ny(v, lo, hi) { var t = hi > lo ? (v - lo) / (hi - lo) : 0.5; return 0.10 + t * 0.80; }
 

@@ -138,7 +138,18 @@
     var js = DB.journeys || [];
     return js.find(function (j) { return j.active; }) || js.find(function (j) { return j.status !== "archived"; }) || js[0] || null;
   }
-  function currentPhase() { var j = activeJourney(); if (!j) return null; return (j.phases || []).find(function (p) { return p.id === j.currentPhaseId; }) || (j.phases || [])[0]; }
+  // Trainingsgetriebene Platzierung (Phase + Woche-in-Phase) aus dem Verlauf – nicht von Hand gesetzt.
+  function currentPlacement() {
+    var j = activeJourney(); if (!j) return null;
+    return KS.journeyPlacement(j, DB.sessions, DB.settings.weeklyFrequencyTarget || 3);
+  }
+  function currentPhase() {
+    var j = activeJourney(); if (!j) return null;
+    var pl = currentPlacement();
+    return (j.phases || []).find(function (p) { return p.id === pl.phaseId; }) || (j.phases || [])[0];
+  }
+  // Abgeleitete Woche innerhalb der aktuellen Phase (1-basiert) fuer Anzeige und Volumen.
+  function currentWeekInPhase() { var pl = currentPlacement(); return pl ? pl.weekInPhase : 1; }
   function dateMs(s) { return new Date(s + "T12:00:00").getTime(); }
   function isoWeek(dateStr) {
     var d = new Date(dateStr + "T00:00:00"); var t = new Date(d.valueOf());
@@ -200,10 +211,10 @@
     return E.generateWarmup(workWeight, bar.weight, DB.inventory.plates, { isLift1: !!isFirst, isDeadlift: /deadlift/i.test(exo.id) });
   }
   function plannedSetCount() {
-    var ph = currentPhase(); var j = activeJourney();
+    var ph = currentPhase();
     if (!ph) return 3;
     var green = recoveryGreenNow();
-    return E.volumeForWeek(ph, (j.currentWeek || 1) - 1, green);
+    return E.volumeForWeek(ph, currentWeekInPhase() - 1, green);
   }
   function blankBody() { return { legs: 0, upper_body: 0, overall: 0, pain: { flag: false, note: "" }, readiness: 3, notes: "" }; }
   function sortedBodyLog() { return (DB.bodyLog || []).slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; }); }
@@ -392,7 +403,7 @@
     var phase = currentPhase(), j = activeJourney();
     var head = '<header class="topbar">'
       + '<div class="brand"><span>KRAFTSCHMIEDE</span><span class="ver">Schema ' + SCHEMA + '</span></div>'
-      + '<div class="topbar-right"><div class="phasechip">' + (j ? esc(j.name) : "—") + (phase ? ' · <strong>' + esc(phase.name) + '</strong> · W' + (j.currentWeek || 1) + '/' + phase.weeks : '') + '</div>' + authBtn() + '</div>'
+      + '<div class="topbar-right"><div class="phasechip">' + (j ? esc(j.name) : "—") + (phase ? ' · <strong>' + esc(phase.name) + '</strong> · W' + currentWeekInPhase() + '/' + phase.weeks : '') + '</div>' + authBtn() + '</div>'
       + '</header>';
     var curTab = TABS.find(function (t) { return t.id === UI.tab; }) || TABS[0];
     var nav = '<nav class="tabs' + (UI.menuOpen ? ' menu-open' : '') + '">'
@@ -559,18 +570,18 @@
   function journeyDashboardHTML() {
     var j = activeJourney();
     if (!j) return '';
-    var idx = j.phases.findIndex(function (p) { return p.id === j.currentPhaseId; });
+    var pl = currentPlacement();
     var cp = currentPhase();
+    var wk = pl ? pl.weekInPhase : 1;
     return '<div class="card journey">'
         + '<div class="journey-head"><strong>' + esc(j.name) + '</strong>' + (j.goal ? '<span class="jgoal">' + esc(j.goal) + '</span>' : '') + '<span class="hint">Start ' + esc(j.startDate) + '</span></div>'
         + '<div class="journey-chart" id="ks-journey-chart" style="width:100%;margin:6px 0 2px;overflow-x:auto;-webkit-overflow-scrolling:touch"></div>'
         + '<div class="phase-ctrl"><span>Aktuelle Phase: <strong>' + esc((cp || {}).name || "—") + '</strong>' + (cp && cp.repTarget ? ' · Ziel ' + cp.repTarget[0] + '–' + cp.repTarget[1] + ' Wdh' : '') + '</span>'
-        + '<div class="wk-ctrl">Woche <button class="btn tiny ghost" data-action="wk" data-d="-1">−</button><strong class="wk-val">' + (j.currentWeek || 1) + '</strong><button class="btn tiny ghost" data-action="wk" data-d="1">+</button> / ' + ((cp || {}).weeks || "?") + '</div>'
-        + '<button class="btn tiny ghost" data-action="phase-next">nächste Phase ›</button></div>'
+        + '<div class="wk-ctrl">Woche <strong class="wk-val">' + wk + '</strong> / ' + ((cp || {}).weeks || "?") + '</div></div>'
         + '<div class="hint">Volumen-Empfehlung diese Woche: <strong>' + Coach.plannedSets() + ' Arbeitssätze</strong>/Übung'
-        + (cp && cp.deloadWeek === (j.currentWeek) ? ' · <span class="warn-inline">Deload-Woche</span>' : '')
+        + (cp && cp.deloadWeek === wk ? ' · <span class="warn-inline">Deload-Woche</span>' : '')
         + (!recoveryGreenNow() ? ' · <span class="warn-inline">Erholungsmarker gelb/rot → konservativ</span>' : '') + '</div>'
-        + (idx >= j.phases.length - 1 ? '<div class="last-phase">Letzte Phase erreicht. <button class="btn tiny" data-action="journey-finish" data-id="' + j.id + '">Journey abschließen</button> <button class="btn tiny ghost" data-action="journey-picker">neue Journey starten</button></div>' : '')
+        + (pl && pl.done ? '<div class="last-phase">Alle Phasen durchlaufen. <button class="btn tiny" data-action="journey-finish" data-id="' + j.id + '">Journey abschließen</button> <button class="btn tiny ghost" data-action="journey-picker">neue Journey starten</button></div>' : '')
         + '</div>';
   }
   /* Historie/Kalender -> history.js. Lokale Delegates auf window.KS;
@@ -778,14 +789,16 @@
     }
     html += '<div class="jlist">' + DB.journeys.map(function (jj) {
       var wks = jj.phases.reduce(function (a, p) { return a + p.weeks; }, 0);
-      var cur = jj.phases.find(function (p) { return p.id === jj.currentPhaseId; });
-      var curIdx = jj.phases.findIndex(function (p) { return p.id === jj.currentPhaseId; });
+      var plJ = jj.active ? currentPlacement() : null;
+      var cur = plJ ? jj.phases.find(function (p) { return p.id === plJ.phaseId; }) : null;
+      var curIdx = plJ ? plJ.phaseIndex : -1;
+      var wkJ = plJ ? plJ.weekInPhase : 1;
       var open = !!UI.journeyOpen[jj.id];
       var badge = jj.active ? '<span class="badge-active">aktiv</span>'
         : (jj.status === "archived" ? '<span class="badge-arch">archiviert' + (jj.endDate ? ' · ' + esc(jj.endDate) : '') + '</span>' : '<span class="badge-idle">inaktiv</span>');
       var head = '<div class="skill-head">'
         + '<div class="jr-main"><span class="jr-name">' + esc(jj.name) + '</span>'
-        + '<span class="jr-meta">' + jj.phases.length + ' Phasen · ' + wks + ' Wo' + (jj.goal ? ' · ' + esc(jj.goal) : '') + (jj.active && cur ? ' · jetzt: ' + esc(cur.name) + ' W' + (jj.currentWeek || 1) : '') + '</span></div>'
+        + '<span class="jr-meta">' + jj.phases.length + ' Phasen · ' + wks + ' Wo' + (jj.goal ? ' · ' + esc(jj.goal) : '') + (jj.active && cur ? ' · jetzt: ' + esc(cur.name) + ' W' + wkJ : '') + '</span></div>'
         + '<div class="jr-status">' + badge + '</div>'
         + '<div class="jr-actions">'
         + '<button class="btn tiny ghost" data-action="journey-toggle" data-id="' + jj.id + '">' + (open ? "Details ▴" : "Details ▾") + '</button>'
@@ -985,8 +998,6 @@
       case "detail": UI.detail = el.getAttribute("data-id"); render(); break;
       case "ex-back": UI.detail = null; render(); break;
       case "del-session": if (confirm("Session löschen?")) { DB.sessions = DB.sessions.filter(function (s) { return s.id !== el.getAttribute("data-id"); }); State.persist(); render(); } break;
-      case "wk": adjustWeek(+el.getAttribute("data-d")); break;
-      case "phase-next": nextPhase(); break;
       case "body-save": saveBodyToday(); break;
       case "body-del": var bd = el.getAttribute("data-d"); DB.bodyLog = DB.bodyLog.filter(function (e) { return e.date !== bd; }); if (bd === today()) UI.bodyDraft = blankBody(); State.persist(); render(); break;
       case "wo-view": UI.woView = el.getAttribute("data-v"); render(); break;
@@ -1074,13 +1085,6 @@
     State.persist(); render();
   }
   function delSet(ei) { var en = UI.live.entries[ei]; if (en.sets.length > 1) { en.sets.pop(); en.plannedSets.pop(); State.persist(); render(); } }
-  function adjustWeek(d) { var j = activeJourney(); var ph = currentPhase(); j.currentWeek = Math.max(1, Math.min(ph ? ph.weeks : 99, (j.currentWeek || 1) + d)); State.persist(); render(); }
-  function nextPhase() {
-    var j = activeJourney(); if (!j) return;
-    var idx = j.phases.findIndex(function (p) { return p.id === j.currentPhaseId; });
-    if (idx < j.phases.length - 1) { j.currentPhaseId = j.phases[idx + 1].id; j.currentWeek = 1; State.persist(); render(); }
-    else toast("Letzte Phase erreicht. Journey abschließen oder eine neue starten.");
-  }
   /* ---- Journey-Verwaltung ---- */
   function createJourneyFromTemplate(tplId) {
     var t = JOURNEY_TEMPLATES.find(function (x) { return x.id === tplId; }); if (!t) return;
