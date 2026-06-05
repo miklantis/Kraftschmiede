@@ -910,3 +910,8 @@ body{overflow-x:clip}
 .exedit-row2{display:flex;gap:12px}
 .exedit-row2 .edit-field{flex:1;min-width:0}
 .exedit-info{margin:0;font-size:12px;line-height:1.5;color:var(--muted)}
+.exedit-warn{margin:0;font-size:12px;line-height:1.5;color:var(--accent)}
+.exedit-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:2px}
+.exedit-locked{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:9px 11px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2)}
+.exedit-locked .el-label{font-family:var(--mono);font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.5px}
+.exedit-locked .el-val{font-family:var(--mono);font-size:14px;color:var(--accent-2);font-weight:600}

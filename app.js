@@ -172,12 +172,20 @@
       (s.entries || []).forEach(function (en) { map[en.exerciseId] = (map[en.exerciseId] || 0) + 1; });
     }); return map;
   }
+  // Welches Repband gilt gerade? Hat die (aktuelle oder übergebene) Phase ein
+  // Ziel, überstimmt es das Übungs-Repband (außer bei Core). Sonst null.
+  // Eine Quelle für Coach-Vorschlag und Anzeige, damit nichts auseinanderläuft.
+  function activeRepTarget(ex, ph) {
+    ph = ph === undefined ? currentPhase() : ph;
+    if (!ph || !ex || ex.profile === "core") return null;
+    return ph.repTarget || repTargetForFocus(ph.focus) || null;
+  }
   function suggestForExercise(exo, ph) {
     var focus = ph ? ph.focus : null;
     var le = lastEntryForExercise(exo.id);
     var exUse = exo;
-    var rt = ph ? (ph.repTarget || repTargetForFocus(ph.focus)) : null;
-    if (rt && exo.profile !== "core") { exUse = clone(exo); exUse.repRange = rt.slice(); }
+    var rt = activeRepTarget(exo, ph);
+    if (rt) { exUse = clone(exo); exUse.repRange = rt.slice(); }
     return E.suggestWeight(exUse, le ? le.entry : null, {
       bar: barById(exo.barId), plates: DB.inventory.plates,
       reentry: focus === "reentry"
@@ -329,29 +337,56 @@
     document.body.appendChild(ov);
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeExEditModal(); });
   }
-  function exEditFormHTML(e) {
+  // Form aus dem Entwurf (UI.exEditDraft), nicht direkt aus der Übung:
+  // Änderungen landen erst im Entwurf, "Übernehmen" schreibt sie.
+  // rt (optional): aktives Phasen-Repband -> Repband gesperrt + Infozeile.
+  function exEditFormHTML(d, rt) {
+    var repBlock = rt
+      ? '<div class="exedit-group"><div class="exedit-locked"><span class="el-label">Repband</span><span class="el-val">' + rt[0] + '–' + rt[1] + ' Wdh</span></div>'
+        + '<p class="exedit-info">Kommt aus der aktiven Journey-Phase und lässt sich hier nicht ändern. Gewicht und Ziel-Score kannst du weiter anpassen.</p></div>'
+      : '<div class="exedit-group"><div class="exedit-row2">'
+        + editNum("Repband min", "repmin", d.repmin, 1, d.id)
+        + editNum("Repband max", "repmax", d.repmax, 1, d.id)
+        + '</div>'
+        + '<p class="exedit-info">Dein Ziel-Korridor an Wiederholungen. Triffst du das obere Ende in allen Sätzen sauber, schlägt der Coach mehr Gewicht vor und setzt die Wiederholungen aufs untere Ende zurück.</p></div>';
     return '<div class="exedit-group">'
-      + editNum("Arbeitsgewicht", "workWeight", e.workWeight, 0.25, e.id)
+      + editNum("Arbeitsgewicht", "workWeight", d.workWeight, 0.25, d.id)
       + '<p class="exedit-info">Läuft normalerweise von allein mit – nach jedem Training wird es auf dein höchstes gefahrenes Arbeitsgewicht gesetzt. Hier nur ändern, wenn du die Basis sofort korrigieren willst, etwa wenn ein Vorschlag zu hoch war.</p>'
       + '</div>'
-      + '<div class="exedit-group"><div class="exedit-row2">'
-      + editNum("Repband min", "repmin", e.repRange[0], 1, e.id)
-      + editNum("Repband max", "repmax", e.repRange[1], 1, e.id)
-      + '</div>'
-      + '<p class="exedit-info">Dein Ziel-Korridor an Wiederholungen. Triffst du das obere Ende in allen Sätzen sauber, schlägt der Coach mehr Gewicht vor und setzt die Wiederholungen aufs untere Ende zurück.</p>'
-      + '</div>'
+      + repBlock
       + '<div class="exedit-group">'
-      + editNum("Ziel-Score", "targetScore", e.targetScore, 1, e.id)
+      + editNum("Ziel-Score", "targetScore", d.targetScore, 1, d.id)
       + '<p class="exedit-info">Wie hart die Arbeitssätze im Schnitt sein sollen (1 sehr leicht … 3 im Ziel / 2 RIR … 5 Versagen). Bleibst du leichter, wird progressiert; wird es deutlich härter, hält oder senkt der Coach.</p>'
+      + '</div>'
+      + '<p class="exedit-warn">Diese Werte regelt normalerweise der Coach. Änderst du sie hier, greifst du bewusst in den Kern ein.</p>'
+      + '<div class="exedit-actions">'
+      + '<button class="btn ghost" data-action="ex-edit-cancel">Abbrechen</button>'
+      + '<button class="btn primary" data-action="ex-edit-save">Übernehmen</button>'
       + '</div>';
   }
   function openExEditModal(id) {
     ensureExEditModal();
     var e = exById(id); if (!e) return;
-    document.getElementById("ks-exedit-body").innerHTML = exEditFormHTML(e);
+    UI.exEditDraft = { id: e.id, workWeight: e.workWeight, repmin: e.repRange[0], repmax: e.repRange[1], targetScore: e.targetScore };
+    // Gleiche Quelle wie suggestForExercise: läuft eine Phase, gibt sie das
+    // Repband vor (außer bei Core). Dann ist es im Popup gesperrt.
+    var ph = currentPhase();
+    var rt = (ph && e.profile !== "core") ? (ph.repTarget || repTargetForFocus(ph.focus)) : null;
+    document.getElementById("ks-exedit-body").innerHTML = exEditFormHTML(UI.exEditDraft, rt);
     document.getElementById("ks-exedit-modal").classList.add("open");
   }
-  function closeExEditModal() { var m = document.getElementById("ks-exedit-modal"); if (m) m.classList.remove("open"); }
+  // Schließen ohne Speichern verwirft den Entwurf (X, Overlay-Klick, Escape, Abbrechen).
+  function closeExEditModal() { UI.exEditDraft = null; var m = document.getElementById("ks-exedit-modal"); if (m) m.classList.remove("open"); }
+  // Entwurf in die Übung schreiben, speichern, neu rendern.
+  function saveExEdit() {
+    var d = UI.exEditDraft;
+    if (d) {
+      var e = exById(d.id);
+      if (e) { e.workWeight = d.workWeight; e.repRange[0] = d.repmin; e.repRange[1] = d.repmax; e.targetScore = d.targetScore; State.persist(); }
+    }
+    closeExEditModal();
+    render();
+  }
 
   function render() {
     var root = document.getElementById("app");
@@ -634,9 +669,11 @@
     var html = '<button class="btn ghost small back" data-action="ex-back">‹ Übungen</button>';
     html += '<div class="detail-head"><h2>' + esc(e.name) + '</h2><span class="ex-tags">' + esc(e.profile) + ' · ' + esc(kindLabel(e.kind)) + (bar ? ' · ' + esc(bar.name) + ' ' + fmtW(bar.weight) : '') + ' · ' + esc(e.muscleGroups.join(", ")) + '</span></div>';
 
+    var art = activeRepTarget(e);
+    var repShown = art || e.repRange;
     html += '<div class="metric-row">'
       + metric("Arbeitsgewicht", fmtW(e.workWeight))
-      + metric("Repband", e.repRange[0] + "–" + e.repRange[1])
+      + metric(art ? "Repband · Phase" : "Repband", repShown[0] + "–" + repShown[1])
       + metric("1RM (geschätzt)", e.rm ? fmtW(e.rm) : "–")
       + metric("Sessions", h.length)
       + '</div>';
@@ -927,6 +964,8 @@
       case "auth-open": openAuthModal(); break;
       case "auth-close": closeAuthModal(); break;
       case "ex-edit-open": openExEditModal(el.getAttribute("data-id")); break;
+      case "ex-edit-save": saveExEdit(); break;
+      case "ex-edit-cancel": closeExEditModal(); break;
       case "ex-edit-close": closeExEditModal(); break;
       case "start": openStartModal(el.getAttribute("data-tpl")); break;
       case "start-skill": openSkillStartModal(el.getAttribute("data-id")); break;
@@ -1086,13 +1125,11 @@
     return e ? e.label : id;
   }
   function exEdit(el) {
-    var id = el.getAttribute("data-id"); var e = exById(id); if (!e) return; var f = el.getAttribute("data-exedit");
-    if (f === "active") e.active = el.checked;
-    else if (f === "workWeight") e.workWeight = parseFloat(el.value) || 0;
-    else if (f === "targetScore") e.targetScore = parseInt(el.value, 10) || 3;
-    else if (f === "repmin") e.repRange[0] = parseInt(el.value, 10) || 1;
-    else if (f === "repmax") e.repRange[1] = parseInt(el.value, 10) || 1;
-    State.persist(); render();
+    var d = UI.exEditDraft; if (!d) return; var f = el.getAttribute("data-exedit");
+    if (f === "workWeight") d.workWeight = parseFloat(el.value) || 0;
+    else if (f === "targetScore") d.targetScore = parseInt(el.value, 10) || 3;
+    else if (f === "repmin") d.repmin = parseInt(el.value, 10) || 1;
+    else if (f === "repmax") d.repmax = parseInt(el.value, 10) || 1;
   }
   function settingEdit(el) {
     var f = el.getAttribute("data-set-setting"); var s = DB.settings;
