@@ -564,6 +564,12 @@
     s.entries.forEach(function (en) { delete en.suggestion; });
     // Übungen ohne erledigte Arbeitssätze nicht im Verlauf speichern
     s.entries = s.entries.filter(function (en) { return en.sets && en.sets.length; });
+    // Globale Journey-Wochennummer einfrieren (nur Journey-Einheiten; Yoga/Skills laufen
+    // hier nicht durch). before-Zaehlung ist von dieser Einheit unabhaengig -> Reihenfolge egal.
+    if (s.journeyId) {
+      var freqW = db().settings.weeklyFrequencyTarget || 3;
+      s.week = KS.journeyWeekForDate(s.date, db().sessions, s.journeyId, freqW);
+    }
     db().sessions.push(s);
     KS.UI.live = null;
     db().live = null;
