@@ -790,17 +790,15 @@
     html += '<div class="jlist">' + DB.journeys.map(function (jj) {
       var wks = jj.phases.reduce(function (a, p) { return a + p.weeks; }, 0);
       var plJ = jj.active ? currentPlacement() : null;
-      var cur = plJ ? jj.phases.find(function (p) { return p.id === plJ.phaseId; }) : null;
       var curIdx = plJ ? plJ.phaseIndex : -1;
-      var wkJ = plJ ? plJ.weekInPhase : 1;
       var open = !!UI.journeyOpen[jj.id];
       var badge = jj.active ? '<span class="badge-active">aktiv</span>'
         : (jj.status === "archived" ? '<span class="badge-arch">archiviert' + (jj.endDate ? ' · ' + esc(jj.endDate) : '') + '</span>' : '<span class="badge-idle">inaktiv</span>');
       var tplSrc = jj.templateId ? JOURNEY_TEMPLATES.find(function (t) { return t.id === jj.templateId; }) : null;
-      var srcLabel = tplSrc ? ' · Vorlage: ' + esc(tplSrc.name) : ' · eigene Journey';
+      var srcName = tplSrc ? 'Vorlage: ' + esc(tplSrc.name) : 'eigene Journey';
       var head = '<div class="skill-head">'
         + '<div class="jr-main"><span class="jr-name">' + esc(jj.name) + '<button class="jr-rename" data-action="journey-rename" data-id="' + jj.id + '" title="Journey umbenennen" aria-label="Journey umbenennen"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path></svg></button></span>'
-        + '<span class="jr-meta">' + jj.phases.length + ' Phasen · ' + wks + ' Wo' + srcLabel + (jj.goal ? ' · ' + esc(jj.goal) : '') + (jj.active && cur ? ' · jetzt: ' + esc(cur.name) + ' W' + wkJ : '') + '</span></div>'
+        + '<span class="jr-meta">' + wks + ' Wo · ' + srcName + '</span></div>'
         + '<div class="jr-status">' + badge + '</div>'
         + '<div class="jr-actions">'
         + '<button class="btn tiny ghost" data-action="journey-toggle" data-id="' + jj.id + '">' + (open ? "Details ▴" : "Details ▾") + '</button>'
