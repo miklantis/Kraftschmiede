@@ -897,3 +897,16 @@ body{overflow-x:clip}
 .sk-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--line2)}
 .sk-controls-lbl{font-family:var(--mono);font-size:11px;color:var(--faint);margin-right:2px}
 .skill-block.archived{opacity:.65}
+
+/* ============================================================
+   v0.15 – Übung-anpassen-Popup
+   Anpassen liegt jetzt hinter einem Button (.ex-edit-btn) im
+   ks-modal. Drei getrennte Blöcke (.exedit-group) mit je einem
+   Erklärtext (.exedit-info); min/max in einer Zeile.
+   ============================================================ */
+.ex-edit-btn{width:100%;margin-top:4px}
+#ks-exedit-body{display:flex;flex-direction:column;gap:18px}
+.exedit-group{display:flex;flex-direction:column;gap:8px}
+.exedit-row2{display:flex;gap:12px}
+.exedit-row2 .edit-field{flex:1;min-width:0}
+.exedit-info{margin:0;font-size:12px;line-height:1.5;color:var(--muted)}

@@ -313,6 +313,46 @@
   function openAuthModal() { ensureAuthModal(); if (window.KSSync) window.KSSync.mountPanel(); document.getElementById("ks-auth-modal").classList.add("open"); }
   function closeAuthModal() { var m = document.getElementById("ks-auth-modal"); if (m) m.classList.remove("open"); }
 
+  // Übung anpassen: Popup mit Arbeitsgewicht, Repband und Ziel-Score –
+  // drei getrennte Blöcke mit je einem Erklärtext. Folgt dem Auth-Modal-
+  // Muster: Overlay an body, einmal erstellt, Inhalt beim Öffnen gefüllt.
+  function ensureExEditModal() {
+    if (document.getElementById("ks-exedit-modal")) return;
+    var ov = document.createElement("div");
+    ov.id = "ks-exedit-modal";
+    ov.className = "ks-modal-overlay";
+    ov.innerHTML = '<div class="ks-modal" role="dialog" aria-modal="true" aria-label="Übung anpassen">'
+      + '<div class="ks-modal-head"><span class="ks-modal-title">Übung anpassen</span>'
+      + '<button class="ks-modal-x" data-action="ex-edit-close" aria-label="Schließen">\u2715</button></div>'
+      + '<div id="ks-exedit-body"></div></div>';
+    ov.addEventListener("click", function (e) { if (e.target === ov) closeExEditModal(); });
+    document.body.appendChild(ov);
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeExEditModal(); });
+  }
+  function exEditFormHTML(e) {
+    return '<div class="exedit-group">'
+      + editNum("Arbeitsgewicht", "workWeight", e.workWeight, 0.25, e.id)
+      + '<p class="exedit-info">Läuft normalerweise von allein mit – nach jedem Training wird es auf dein höchstes gefahrenes Arbeitsgewicht gesetzt. Hier nur ändern, wenn du die Basis sofort korrigieren willst, etwa wenn ein Vorschlag zu hoch war.</p>'
+      + '</div>'
+      + '<div class="exedit-group"><div class="exedit-row2">'
+      + editNum("Repband min", "repmin", e.repRange[0], 1, e.id)
+      + editNum("Repband max", "repmax", e.repRange[1], 1, e.id)
+      + '</div>'
+      + '<p class="exedit-info">Dein Ziel-Korridor an Wiederholungen. Triffst du das obere Ende in allen Sätzen sauber, schlägt der Coach mehr Gewicht vor und setzt die Wiederholungen aufs untere Ende zurück.</p>'
+      + '</div>'
+      + '<div class="exedit-group">'
+      + editNum("Ziel-Score", "targetScore", e.targetScore, 1, e.id)
+      + '<p class="exedit-info">Wie hart die Arbeitssätze im Schnitt sein sollen (1 sehr leicht … 3 im Ziel / 2 RIR … 5 Versagen). Bleibst du leichter, wird progressiert; wird es deutlich härter, hält oder senkt der Coach.</p>'
+      + '</div>';
+  }
+  function openExEditModal(id) {
+    ensureExEditModal();
+    var e = exById(id); if (!e) return;
+    document.getElementById("ks-exedit-body").innerHTML = exEditFormHTML(e);
+    document.getElementById("ks-exedit-modal").classList.add("open");
+  }
+  function closeExEditModal() { var m = document.getElementById("ks-exedit-modal"); if (m) m.classList.remove("open"); }
+
   function render() {
     var root = document.getElementById("app");
     var phase = currentPhase(), j = activeJourney();
@@ -610,19 +650,13 @@
     html += detailChartCard(e, "score");
     html += '<div class="hint">Rote Punkte = Session mit Abweichung (Ziel verfehlt / runterkorrigiert). Über „Anheften" landet ein Diagramm oben im Dashboard.</div>';
 
-    // Einstellungen je Übung
-    html += '<div class="card"><div class="sets-title">Übung anpassen</div><div class="ex-edit">'
-      + editNum("Arbeitsgewicht", "workWeight", e.workWeight, 0.25)
-      + editNum("Repband min", "repmin", e.repRange[0], 1)
-      + editNum("Repband max", "repmax", e.repRange[1], 1)
-      + editNum("Ziel-Score", "targetScore", e.targetScore, 1)
-      + '<label class="chk"><input type="checkbox" data-exedit="active" data-id="' + e.id + '"' + (e.active ? " checked" : "") + '> aktiv</label>'
-      + '</div></div>';
+    // Einstellungen je Übung -> Popup (siehe openExEditModal)
+    html += '<button class="btn ghost ex-edit-btn" data-action="ex-edit-open" data-id="' + e.id + '">Übung anpassen</button>';
     return html;
   }
   function metric(label, val) { return '<div class="metric"><span class="m-val">' + val + '</span><span class="m-label">' + label + '</span></div>'; }
   function chartCard(title, svg) { return '<div class="card chart-card"><div class="sets-title">' + title + '</div>' + svg + '</div>'; }
-  function editNum(label, field, val, step) { return '<label class="edit-field"><span>' + label + '</span><input type="number" step="' + step + '" class="num" data-exedit="' + field + '" data-id="' + UI.detail + '" value="' + val + '"></label>'; }
+  function editNum(label, field, val, step, id) { return '<label class="edit-field"><span>' + label + '</span><input type="number" step="' + step + '" class="num" data-exedit="' + field + '" data-id="' + (id || UI.detail) + '" value="' + val + '"></label>'; }
 
   /* =========================================================
      View: Inventar
@@ -892,6 +926,8 @@
       case "menu-toggle": UI.menuOpen = !UI.menuOpen; render(); break;
       case "auth-open": openAuthModal(); break;
       case "auth-close": closeAuthModal(); break;
+      case "ex-edit-open": openExEditModal(el.getAttribute("data-id")); break;
+      case "ex-edit-close": closeExEditModal(); break;
       case "start": openStartModal(el.getAttribute("data-tpl")); break;
       case "start-skill": openSkillStartModal(el.getAttribute("data-id")); break;
       case "goto-skills": UI.tab = "skills"; UI.skillsPicker = false; UI.menuOpen = false; render(); break;
