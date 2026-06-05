@@ -799,12 +799,11 @@
       var tplSrc = jj.templateId ? JOURNEY_TEMPLATES.find(function (t) { return t.id === jj.templateId; }) : null;
       var srcLabel = tplSrc ? ' · Vorlage: ' + esc(tplSrc.name) : ' · eigene Journey';
       var head = '<div class="skill-head">'
-        + '<div class="jr-main"><span class="jr-name">' + esc(jj.name) + '</span>'
+        + '<div class="jr-main"><span class="jr-name">' + esc(jj.name) + '<button class="jr-rename" data-action="journey-rename" data-id="' + jj.id + '" title="Journey umbenennen" aria-label="Journey umbenennen"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path></svg></button></span>'
         + '<span class="jr-meta">' + jj.phases.length + ' Phasen · ' + wks + ' Wo' + srcLabel + (jj.goal ? ' · ' + esc(jj.goal) : '') + (jj.active && cur ? ' · jetzt: ' + esc(cur.name) + ' W' + wkJ : '') + '</span></div>'
         + '<div class="jr-status">' + badge + '</div>'
         + '<div class="jr-actions">'
         + '<button class="btn tiny ghost" data-action="journey-toggle" data-id="' + jj.id + '">' + (open ? "Details ▴" : "Details ▾") + '</button>'
-        + '<button class="btn tiny ghost" data-action="journey-rename" data-id="' + jj.id + '">umbenennen</button>'
         + (jj.active ? '' : '<button class="btn tiny ghost" data-action="journey-activate" data-id="' + jj.id + '">aktivieren</button>')
         + (jj.status !== "archived" ? '<button class="btn tiny ghost" data-action="journey-finish" data-id="' + jj.id + '">abschließen</button>' : '')
         + '<button class="btn tiny ghost danger" data-action="journey-del" data-id="' + jj.id + '">löschen</button>'

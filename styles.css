@@ -915,3 +915,12 @@ body{overflow-x:clip}
 .exedit-locked{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:9px 11px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2)}
 .exedit-locked .el-label{font-family:var(--mono);font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.5px}
 .exedit-locked .el-val{font-family:var(--mono);font-size:14px;color:var(--accent-2);font-weight:600}
+
+/* ============================================================
+   v0.29 Journey umbenennen als dezentes Icon neben dem Namen
+   (ersetzt den breiten Button in .jr-actions). Inline neben dem
+   Namen, gedaempft, deutlicher bei Hover/Fokus. Beruehrungsziel.
+   ============================================================ */
+.jr-name{display:inline-flex;align-items:center;gap:6px}
+.jr-rename{display:inline-flex;align-items:center;justify-content:center;padding:3px;margin:-3px 0;border:0;background:none;color:var(--faint);cursor:pointer;border-radius:6px;line-height:0}
+.jr-rename:hover,.jr-rename:focus-visible{color:var(--accent);background:var(--panel2)}
