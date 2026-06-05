@@ -368,10 +368,9 @@
     ensureExEditModal();
     var e = exById(id); if (!e) return;
     UI.exEditDraft = { id: e.id, workWeight: e.workWeight, repmin: e.repRange[0], repmax: e.repRange[1], targetScore: e.targetScore };
-    // Gleiche Quelle wie suggestForExercise: läuft eine Phase, gibt sie das
-    // Repband vor (außer bei Core). Dann ist es im Popup gesperrt.
-    var ph = currentPhase();
-    var rt = (ph && e.profile !== "core") ? (ph.repTarget || repTargetForFocus(ph.focus)) : null;
+    // Gleiche Quelle wie Vorschlag und Metrik: gibt eine Phase das Repband
+    // vor, ist es im Popup gesperrt (activeRepTarget liefert dann [min,max]).
+    var rt = activeRepTarget(e);
     document.getElementById("ks-exedit-body").innerHTML = exEditFormHTML(UI.exEditDraft, rt);
     document.getElementById("ks-exedit-modal").classList.add("open");
   }
