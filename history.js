@@ -59,14 +59,14 @@
           var exSummary = (sw.exercises || []).map(function (we) {
             var dn = (we.sets || []).filter(function (x) { return x.done; }).length;
             var unit = we.metric === "duration" ? "s" : "Wdh";
-            return esc(we.name) + " " + dn + "×" + (we.target || "") + unit;
-          }).join(" · ");
+            return '<span class="log-ex">' + esc(we.name) + " " + dn + "×" + (we.target || "") + unit + '</span>';
+          }).join("");
           return '<div class="log-item skill">'
             + '<div class="log-date">' + esc(s.date) + '</div>'
             + '<div class="log-body">'
             + '<div class="log-top"><span class="log-wo"><span class="skill-tag sm">SKILL</span> ' + esc(sname) + '</span>'
             + (resLabel ? '<span class="' + resCls + '">' + esc(resLabel) + '</span>' : '') + '</div>'
-            + '<div class="log-sub">' + esc(phLabel) + (exSummary ? ' · ' + exSummary : '') + '</div>'
+            + '<div class="log-sub"><span class="log-ex">' + esc(phLabel) + '</span>' + exSummary + '</div>'
             + (s.durationSec ? '<div class="log-meta"><span class="log-dur">Dauer ' + fmtDur(s.durationSec) + '</span></div>' : '')
             + '</div>'
             + '<button class="btn tiny ghost log-del" data-action="del-session" data-id="' + s.id + '">löschen</button>'
@@ -80,7 +80,7 @@
           + '<div class="log-body">'
           + '<div class="log-top"><span class="log-wo">Workout ' + esc(t ? t.name : "?") + '</span>'
           + (dev ? '<span class="dev-badge" title="Abweichung: geplant nicht erreicht / runterkorrigiert">Δ Abweichung</span>' : '<span class="ok-badge">im Plan</span>') + '</div>'
-          + '<div class="log-sub">' + (s.entries || []).map(function (e) { var ex = exById(e.exerciseId); return esc(ex ? ex.name : e.exerciseId) + ' ' + setSummary(e); }).join(" · ") + '</div>'
+          + '<div class="log-sub">' + (s.entries || []).map(function (e) { var ex = exById(e.exerciseId); return '<span class="log-ex">' + esc(ex ? ex.name : e.exerciseId) + ' ' + setSummary(e) + '</span>'; }).join("") + '</div>'
           + '<div class="log-meta"><span class="log-vol">Vol ' + fmtNum(Math.round(vol)) + '</span>' + (s.durationSec ? '<span class="log-dur">Dauer ' + fmtDur(s.durationSec) + '</span>' : '') + '</div>'
           + '</div>'
           + '<button class="btn tiny ghost log-del" data-action="del-session" data-id="' + s.id + '">löschen</button>'

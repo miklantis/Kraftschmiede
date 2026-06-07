@@ -974,3 +974,16 @@ body{overflow-x:clip}
 .wk-legend i{display:inline-block;width:11px;height:7px;border-radius:2px;vertical-align:1px;margin-right:5px;background:var(--line2)}
 .wk-legend i.on{background:var(--accent)}
 .wk-legend i.cur{background:repeating-linear-gradient(90deg,var(--accent) 0 3px,transparent 3px 6px)}
+
+/* ============================================================
+   v0.32 Verlauf-Liste: jede Uebung als eigenes Element (.log-ex)
+   statt durchgehendem Fliesstext. Auf dem Handy (<=560px) steht so
+   jede Uebung auf einer eigenen Zeile und bricht nicht mehr mitten
+   im Namen um. Desktop bleibt Fliesstext mit " · "-Trenner; der
+   Trenner kommt jetzt aus CSS (visuell identisch).
+   ============================================================ */
+.log-ex:not(:last-child)::after{content:" · "}
+@media(max-width:560px){
+  .log-sub .log-ex{display:block}
+  .log-sub .log-ex:not(:last-child)::after{content:none}
+}
