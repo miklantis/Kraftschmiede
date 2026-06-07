@@ -987,3 +987,18 @@ body{overflow-x:clip}
   .log-sub .log-ex{display:block}
   .log-sub .log-ex:not(:last-child)::after{content:none}
 }
+
+/* ============================================================
+   v0.33 Kalender: lange Workout-/Skill-Namen sprengten auf dem
+   Handy die schmalen Tageszellen und liessen das ganze Grid
+   horizontal ueberlaufen. Ursache: die Zellen (Grid-Items) wuchsen
+   am Inhalt. Fix: min-width:0 haelt die Zelle bei 1fr, die Pille
+   bleibt in der Zelle (max-width:100%) und lange Labels werden mit
+   Ellipse gekuerzt (z.B. "Strict Pull-Up" -> "Strict..."). Desktop
+   unveraendert, dort ist Platz genug.
+   ============================================================ */
+.cal-cell{min-width:0}
+.cal-dot{max-width:100%}
+@media(max-width:560px){
+  .cal-dot{text-overflow:ellipsis}
+}
