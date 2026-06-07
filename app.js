@@ -573,6 +573,22 @@
     var pl = currentPlacement();
     var cp = currentPhase();
     var wk = pl ? pl.weekInPhase : 1;
+    var freqT = DB.settings.weeklyFrequencyTarget || 3;
+    var wp = KS.weekProgress(DB.sessions, j.id, freqT, today());
+    var totalWeeks = (j.phases || []).reduce(function (a, p) { return a + (p.weeks || 0); }, 0);
+    var jwDisp = totalWeeks ? Math.min((pl ? pl.globalWeek : 1), totalWeeks) : (pl ? pl.globalWeek : 1);
+    var dots = '';
+    for (var di = 0; di < wp.target; di++) {
+      dots += '<span class="wk-dot' + (di < wp.units ? ' on' : '') + (wp.fulfilled ? ' full' : '') + '">' + (di < wp.units ? '\u2713' : (di + 1)) + '</span>';
+    }
+    var remain = Math.max(0, wp.target - wp.units);
+    var wkStatus = wp.fulfilled ? 'Woche erfüllt · zählt für Journey' : ('noch ' + remain + ' für diese Woche');
+    var wkBox = '<div class="wk-box' + (wp.fulfilled ? ' done' : '') + '">'
+      + '<div class="wk-box-head"><span class="wk-kw">KW ' + wp.weekNum + '</span>'
+      + '<span class="wk-jw">Journey-Woche <strong>' + jwDisp + '</strong>' + (totalWeeks ? ' / ' + totalWeeks : '') + '</span></div>'
+      + '<div class="wk-box-body"><div class="wk-dots">' + dots + '</div>'
+      + '<div class="wk-prog"><div class="wk-prog-n"><strong>' + wp.units + ' von ' + wp.target + '</strong> Einheiten</div>'
+      + '<div class="wk-prog-s">' + wkStatus + '</div></div></div></div>';
     return '<div class="card journey">'
         + '<div class="journey-head"><strong>' + esc(j.name) + '</strong>' + (j.goal ? '<span class="jgoal">' + esc(j.goal) + '</span>' : '') + '<span class="hint">Start ' + esc(j.startDate) + '</span></div>'
         + '<div class="journey-chart" id="ks-journey-chart" style="width:100%;margin:6px 0 2px;overflow-x:auto;-webkit-overflow-scrolling:touch"></div>'
@@ -581,6 +597,7 @@
         + '<div class="hint">Volumen-Empfehlung diese Woche: <strong>' + Coach.plannedSets() + ' Arbeitssätze</strong>/Übung'
         + (cp && cp.deloadWeek === wk ? ' · <span class="warn-inline">Deload-Woche</span>' : '')
         + (!recoveryGreenNow() ? ' · <span class="warn-inline">Erholungsmarker gelb/rot → konservativ</span>' : '') + '</div>'
+        + wkBox
         + (pl && pl.done ? '<div class="last-phase">Alle Phasen durchlaufen. <button class="btn tiny" data-action="journey-finish" data-id="' + j.id + '">Journey abschließen</button> <button class="btn tiny ghost" data-action="journey-picker">neue Journey starten</button></div>' : '')
         + '</div>';
   }

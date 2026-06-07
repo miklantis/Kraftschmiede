@@ -284,6 +284,30 @@
     p.globalWeek = gw;
     return p;
   }
+  // Nummer der ISO-Woche aus einem Schluessel "YYYY-Www" (z.B. 31). 0 wenn ungueltig.
+  function isoWeekNumOf(key) {
+    var m = /W(\d+)$/.exec(key || "");
+    return m ? parseInt(m[1], 10) : 0;
+  }
+  // Fortschritt der Kalenderwoche, in der dateStr liegt: gezaehlte Krafteinheiten,
+  // Frequenzziel und ob erfuellt. Reine Anzahl abgeschlossener Einheiten (kein Score),
+  // Reihenfolge egal. journeyWeek = globale Journey-Wochennummer dieser KW.
+  function weekProgress(sessions, journeyId, freqTarget, dateStr) {
+    var key = isoWeekKey(dateStr);
+    var units = 0;
+    countingSessions(sessions, journeyId).forEach(function (s) {
+      if (isoWeekKey(s.date) === key) units++;
+    });
+    var target = Math.max(1, freqTarget || 1);
+    return {
+      isoKey: key,
+      weekNum: isoWeekNumOf(key),
+      units: units,
+      target: target,
+      fulfilled: units >= target,
+      journeyWeek: journeyWeekForDate(dateStr, sessions, journeyId, target)
+    };
+  }
 
   /* =========================================================
      Skills – statische Definition (wie JOURNEY_TEMPLATES Code,
@@ -529,6 +553,8 @@
   KS.currentJourneyWeek = currentJourneyWeek;
   KS.phasePlacement = phasePlacement;
   KS.journeyPlacement = journeyPlacement;
+  KS.weekProgress = weekProgress;
+  KS.isoWeekNumOf = isoWeekNumOf;
   KS.JOURNEY_TEMPLATES = JOURNEY_TEMPLATES;
   KS.SKILLS = SKILLS;
   KS.defaultEquipment = defaultEquipment;
