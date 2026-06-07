@@ -1039,3 +1039,39 @@ body{overflow-x:clip}
 .wk-phase-meta strong{color:var(--text)}
 .wk-sep{margin:13px 0}
 .wk-prog{font-size:13px}
+
+/* ============================================================
+   v0.37 Wochenverlauf als Bloecke: "Diese Woche" und die KW-Leiste
+   verschmelzen zu EINEM Abschnitt. Jede Woche ist ein Block - KW und
+   Journey-Woche nebeneinander oben mittig, darunter die Einheiten-
+   Punkte in einer Pillen-Box mit stark gerundeten (halbkreisfoermigen)
+   Enden. Die aktuelle Woche traegt einen orangenen Rahmen; der Status
+   zeigt sich nur ueber Punktfarbe + Rahmen, keine Statuswoerter mehr.
+   Die Journey-Woche-Position wandert in den Abschnittskopf (wie bei
+   der Phase). Loest wk-box-body/wk-dots/wk-trail/wk-cell* ab.
+   ============================================================ */
+.wk-wblocks{display:flex;gap:9px;align-items:flex-start}
+.wk-wblock{flex:1;min-width:0}
+.wk-winfo{font-family:var(--mono);font-size:11px;text-align:center;color:var(--muted);margin-bottom:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wk-winfo.now{color:var(--text)}
+.wk-wlab{color:var(--faint)}
+.wk-wlab.now{color:var(--accent)}
+.wk-wlab.miss{color:var(--bad)}
+.wk-ptbox{background:var(--panel);border:1px solid var(--line2);border-radius:999px;padding:8px 6px;display:flex;gap:6px;justify-content:center}
+.wk-ptbox.cur{border:1.5px solid var(--accent)}
+.wk-pdot{box-sizing:border-box;width:15px;height:15px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;flex:0 0 auto}
+.wk-pdot.good{background:var(--good);color:#06210a}
+.wk-pdot.cur{background:var(--accent);color:#1a0d04}
+.wk-pdot.miss{background:var(--line2);color:var(--faint)}
+.wk-pdot.open{border:1.5px solid var(--line2)}
+.wk-legend i.good,.wk-legend i.miss,.wk-legend i.open{box-sizing:border-box;width:9px;height:9px;border-radius:50%;vertical-align:-1px}
+.wk-legend i.good{background:var(--good)}
+.wk-legend i.miss{background:var(--line2)}
+.wk-legend i.open{background:transparent;border:1.5px solid var(--line2)}
+@media(max-width:560px){
+  .wk-wblocks{gap:7px}
+  .wk-wblock:nth-child(n+5){display:none}
+  .wk-winfo{font-size:10px}
+  .wk-pdot{width:13px;height:13px}
+  .wk-ptbox{padding:7px 5px;gap:5px}
+}

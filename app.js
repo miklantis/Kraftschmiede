@@ -574,15 +574,8 @@
     var cp = currentPhase();
     var wk = pl ? pl.weekInPhase : 1;
     var freqT = DB.settings.weeklyFrequencyTarget || 3;
-    var wp = KS.weekProgress(DB.sessions, j.id, freqT, today());
     var totalWeeks = (j.phases || []).reduce(function (a, p) { return a + (p.weeks || 0); }, 0);
     var jwDisp = totalWeeks ? Math.min((pl ? pl.globalWeek : 1), totalWeeks) : (pl ? pl.globalWeek : 1);
-    var dots = '';
-    for (var di = 0; di < wp.target; di++) {
-      dots += '<span class="wk-dot' + (di < wp.units ? ' on' : '') + (wp.fulfilled ? ' full' : '') + '">' + (di < wp.units ? '\u2713' : (di + 1)) + '</span>';
-    }
-    var remain = Math.max(0, wp.target - wp.units);
-    var wkStatus = wp.fulfilled ? 'Woche erfüllt' : ('noch ' + remain + ' für diese Woche');
     var phaseCount = (j.phases || []).length;
     var phaseNo = 0;
     (j.phases || []).forEach(function (p, i) { if (cp && p.id === cp.id) phaseNo = i + 1; });
@@ -594,35 +587,38 @@
     var trail = KS.weekTrail(j, DB.sessions, freqT, today(), 3, 3);
     var trailInner = '';
     if (trail.length) {
-      var cells = trail.map(function (w) {
+      var blocks = trail.map(function (w) {
+        var info;
         if (w.future) {
-          return '<div class="wk-cell"><div class="wk-cbar future"></div>'
-            + '<div class="wk-ckw">' + w.weekNum + '</div><div class="wk-cjw">·</div></div>';
+          info = '<div class="wk-winfo">KW ' + w.weekNum + '</div>';
+        } else {
+          var wcls = w.current ? 'now' : (w.fulfilled ? 'ok' : 'miss');
+          info = '<div class="wk-winfo' + (w.current ? ' now' : '') + '">KW ' + w.weekNum
+            + ' · <span class="wk-wlab ' + wcls + '">W' + w.journeyWeek + '</span></div>';
         }
-        var bar = w.current ? 'cur' : (w.fulfilled ? 'on' : 'off');
-        var jwCls = w.current ? 'now' : (w.fulfilled ? 'ok' : 'miss');
-        return '<div class="wk-cell"><div class="wk-cbar ' + bar + '"></div>'
-          + '<div class="wk-ckw' + (w.current ? ' now' : '') + '">' + w.weekNum + '</div>'
-          + '<div class="wk-cjw ' + jwCls + '">W' + w.journeyWeek + '</div></div>';
+        var pdots = '';
+        for (var di = 0; di < w.target; di++) {
+          var on = di < w.units;
+          var dcls = on ? (w.fulfilled ? 'good' : (w.current ? 'cur' : 'miss')) : 'open';
+          pdots += '<span class="wk-pdot ' + dcls + '">' + (on && w.fulfilled ? '\u2713' : '') + '</span>';
+        }
+        return '<div class="wk-wblock' + (w.current ? ' cur' : '') + '">' + info
+          + '<div class="wk-ptbox' + (w.current ? ' cur' : '') + '">' + pdots + '</div></div>';
       }).join('');
       trailInner = '<div class="wk-sep"></div>'
-        + '<div class="wk-seclab wk-seclab-mb">Wochenverlauf</div>'
-        + '<div class="wk-trail"><span class="wk-trail-lab">KW</span><div class="wk-cells">' + cells + '</div></div>'
+        + '<div class="wk-sechead"><span class="wk-seclab">Wochenverlauf</span>'
+        + '<span class="wk-pos">Journey-Woche <strong>' + jwDisp + '</strong>' + (totalWeeks ? ' / ' + totalWeeks : '') + '</span></div>'
+        + '<div class="wk-wblocks">' + blocks + '</div>'
         + '<div class="wk-foot">'
         + '<span class="wk-trail-hint">Erfüllte Wochen rücken die Journey-Woche vor; nicht erfüllte werden wiederholt.</span>'
-        + '<span class="wk-legend"><span><i class="on"></i>erfüllt</span><span><i></i>verpasst</span><span><i class="cur"></i>läuft</span></span>'
+        + '<span class="wk-legend"><span><i class="good"></i>erfüllt</span><span><i class="miss"></i>verpasst</span><span><i class="open"></i>offen</span></span>'
         + '</div>';
     }
-    var statusBox = '<div class="wk-box' + (wp.fulfilled ? ' done' : '') + '">'
+    var statusBox = '<div class="wk-box">'
       + '<div class="wk-sechead"><span class="wk-seclab">Aktuelle Phase</span>'
       + '<span class="wk-pos">Phase <strong>' + phaseNo + '</strong> / ' + phaseCount + '</span></div>'
       + '<div class="wk-phase-name">' + esc((cp || {}).name || '—') + '</div>'
       + '<div class="wk-phase-meta">' + phaseMeta + '</div>'
-      + '<div class="wk-sep"></div>'
-      + '<div class="wk-sechead"><span class="wk-sechead-l"><span class="wk-seclab">Diese Woche</span><span class="wk-kw">KW ' + wp.weekNum + '</span></span>'
-      + '<span class="wk-pos">Journey-Woche <strong>' + jwDisp + '</strong>' + (totalWeeks ? ' / ' + totalWeeks : '') + '</span></div>'
-      + '<div class="wk-box-body"><div class="wk-dots">' + dots + '</div>'
-      + '<div class="wk-prog"><strong>' + wp.units + ' von ' + wp.target + '</strong> Einheiten · <span class="wk-prog-s">' + wkStatus + '</span></div></div>'
       + trailInner
       + '</div>';
     return '<div class="card journey">'
