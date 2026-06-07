@@ -317,9 +317,10 @@
   // chronologisch (aelteste zuerst). Je Woche: { isoKey, weekNum, units, target,
   // fulfilled, journeyWeek, current }. journeyWeek = erfuellte Wochen strikt davor + 1,
   // daher tragen eine verpasste Woche und ihre Wiederholung dieselbe Nummer.
-  function weekTrail(journey, sessions, freqTarget, dateStr, count) {
+  function weekTrail(journey, sessions, freqTarget, dateStr, count, fwd) {
     var target = Math.max(1, freqTarget || 1);
     var n = Math.max(1, count || 5);
+    var fwdN = Math.max(0, fwd || 0);
     var jid = journey ? journey.id : null;
     var startKey = (journey && journey.startDate) ? isoWeekKey(journey.startDate) : null;
     var curKey = isoWeekKey(dateStr);
@@ -332,6 +333,13 @@
       if (startKey && k < startKey) break;        // nicht vor Journey-Start
       if (keys.indexOf(k) < 0) keys.unshift(k);   // aelteste zuerst
       d.setDate(d.getDate() - 7);
+    }
+    // Vorschau kommender Kalenderwochen (leer, ohne Status) ans Ende anhaengen.
+    var df = new Date(dateStr + "T00:00:00");
+    for (var fi = 0; fi < fwdN; fi++) {
+      df.setDate(df.getDate() + 7);
+      var kf = isoWeekKey(ymd(df));
+      if (keys.indexOf(kf) < 0) keys.push(kf);
     }
     var counts = {};
     countingSessions(sessions, jid).forEach(function (s) {
@@ -349,7 +357,8 @@
         target: target,
         fulfilled: units >= target,
         journeyWeek: before + 1,
-        current: k === curKey
+        current: k === curKey,
+        future: k > curKey
       };
     });
   }

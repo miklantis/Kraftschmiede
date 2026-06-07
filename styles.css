@@ -1002,3 +1002,20 @@ body{overflow-x:clip}
 @media(max-width:560px){
   .cal-dot{text-overflow:ellipsis}
 }
+
+/* ============================================================
+   v0.35 Journey-Wochenbox: fasst Punkte-Box (v0.30) und KW-Leiste
+   (v0.31) zu EINEM Container zusammen. Oben die aktuelle Woche, per
+   Trenner abgesetzt der Wochenverlauf inkl. Vorschau kommender
+   Wochen, am Fuss Hinweis + Legende nebeneinander. Gruene Umrandung
+   entfaellt; Erfuellt-Status zeigt sich ueber Punkte + Statustext.
+   ============================================================ */
+.wk-box{padding:13px 15px}
+.wk-box.done{border-color:var(--line2)}
+.wk-box.done .wk-prog-s{color:var(--good)}
+.wk-sep{border-top:1px solid var(--line);margin:14px 0 0}
+.wk-vlabel{font-family:var(--mono);font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--faint);margin:12px 0 9px}
+.wk-cbar.future{background:var(--panel)}
+.wk-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:13px;padding-top:11px;border-top:1px solid var(--line)}
+.wk-foot .wk-trail-hint{margin:0;flex:1;min-width:200px}
+.wk-foot .wk-legend{margin:0}

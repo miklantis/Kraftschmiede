@@ -583,26 +583,36 @@
     }
     var remain = Math.max(0, wp.target - wp.units);
     var wkStatus = wp.fulfilled ? 'Woche erfüllt · zählt für Journey' : ('noch ' + remain + ' für diese Woche');
-    var wkBox = '<div class="wk-box' + (wp.fulfilled ? ' done' : '') + '">'
-      + '<div class="wk-box-head"><span class="wk-kw">KW ' + wp.weekNum + '</span>'
-      + '<span class="wk-jw">Journey-Woche <strong>' + jwDisp + '</strong>' + (totalWeeks ? ' / ' + totalWeeks : '') + '</span></div>'
-      + '<div class="wk-box-body"><div class="wk-dots">' + dots + '</div>'
-      + '<div class="wk-prog"><div class="wk-prog-n"><strong>' + wp.units + ' von ' + wp.target + '</strong> Einheiten</div>'
-      + '<div class="wk-prog-s">' + wkStatus + '</div></div></div></div>';
-    var trail = KS.weekTrail(j, DB.sessions, freqT, today(), 5);
-    var trailHTML = '';
+    var trail = KS.weekTrail(j, DB.sessions, freqT, today(), 3, 3);
+    var trailInner = '';
     if (trail.length) {
       var cells = trail.map(function (w) {
+        if (w.future) {
+          return '<div class="wk-cell"><div class="wk-cbar future"></div>'
+            + '<div class="wk-ckw">' + w.weekNum + '</div><div class="wk-cjw">·</div></div>';
+        }
         var bar = w.current ? 'cur' : (w.fulfilled ? 'on' : 'off');
         var jwCls = w.current ? 'now' : (w.fulfilled ? 'ok' : 'miss');
         return '<div class="wk-cell"><div class="wk-cbar ' + bar + '"></div>'
           + '<div class="wk-ckw' + (w.current ? ' now' : '') + '">' + w.weekNum + '</div>'
           + '<div class="wk-cjw ' + jwCls + '">W' + w.journeyWeek + '</div></div>';
       }).join('');
-      trailHTML = '<div class="wk-trail"><span class="wk-trail-lab">KW</span><div class="wk-cells">' + cells + '</div></div>'
-        + '<div class="wk-trail-hint">Erfüllte Wochen rücken die Journey-Woche vor; nicht erfüllte werden wiederholt.</div>'
-        + '<div class="wk-legend"><span><i class="on"></i>erfüllt</span><span><i></i>verpasst</span><span><i class="cur"></i>läuft</span></div>';
+      trailInner = '<div class="wk-sep"></div>'
+        + '<div class="wk-vlabel">Wochenverlauf</div>'
+        + '<div class="wk-trail"><span class="wk-trail-lab">KW</span><div class="wk-cells">' + cells + '</div></div>'
+        + '<div class="wk-foot">'
+        + '<span class="wk-trail-hint">Erfüllte Wochen rücken die Journey-Woche vor; nicht erfüllte werden wiederholt.</span>'
+        + '<span class="wk-legend"><span><i class="on"></i>erfüllt</span><span><i></i>verpasst</span><span><i class="cur"></i>läuft</span></span>'
+        + '</div>';
     }
+    var wkBox = '<div class="wk-box' + (wp.fulfilled ? ' done' : '') + '">'
+      + '<div class="wk-box-head"><span class="wk-kw">KW ' + wp.weekNum + '</span>'
+      + '<span class="wk-jw">Journey-Woche <strong>' + jwDisp + '</strong>' + (totalWeeks ? ' / ' + totalWeeks : '') + '</span></div>'
+      + '<div class="wk-box-body"><div class="wk-dots">' + dots + '</div>'
+      + '<div class="wk-prog"><div class="wk-prog-n"><strong>' + wp.units + ' von ' + wp.target + '</strong> Einheiten</div>'
+      + '<div class="wk-prog-s">' + wkStatus + '</div></div></div>'
+      + trailInner
+      + '</div>';
     return '<div class="card journey">'
         + '<div class="journey-head"><strong>' + esc(j.name) + '</strong>' + (j.goal ? '<span class="jgoal">' + esc(j.goal) + '</span>' : '') + '<span class="hint">Start ' + esc(j.startDate) + '</span></div>'
         + '<div class="journey-chart" id="ks-journey-chart" style="width:100%;margin:6px 0 2px;overflow-x:auto;-webkit-overflow-scrolling:touch"></div>'
@@ -612,7 +622,6 @@
         + (cp && cp.deloadWeek === wk ? ' · <span class="warn-inline">Deload-Woche</span>' : '')
         + (!recoveryGreenNow() ? ' · <span class="warn-inline">Erholungsmarker gelb/rot → konservativ</span>' : '') + '</div>'
         + wkBox
-        + trailHTML
         + (pl && pl.done ? '<div class="last-phase">Alle Phasen durchlaufen. <button class="btn tiny" data-action="journey-finish" data-id="' + j.id + '">Journey abschließen</button> <button class="btn tiny ghost" data-action="journey-picker">neue Journey starten</button></div>' : '')
         + '</div>';
   }
