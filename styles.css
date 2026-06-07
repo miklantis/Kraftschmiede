@@ -947,3 +947,30 @@ body{overflow-x:clip}
 .wk-prog-n{color:var(--text)}
 .wk-prog-s{color:var(--muted)}
 .wk-box.done .wk-prog-s{color:var(--text)}
+
+/* ============================================================
+   v0.31 Journey-KW-Leiste unter der Punkte-Box: die letzten
+   Kalenderwochen mit Status (erfuellt / verpasst / laufend) und
+   der jeweiligen globalen Journey-Woche. Verpasste Woche und ihre
+   Wiederholung tragen dieselbe Nummer. Reine Anzeige; keine
+   Engine- und keine Desktop-Layout-Aenderung.
+   ============================================================ */
+.wk-trail{display:flex;align-items:flex-end;gap:6px;margin-top:13px}
+.wk-trail-lab{font-family:var(--mono);font-size:11px;color:var(--faint);padding-bottom:20px;flex:0 0 auto}
+.wk-cells{display:flex;gap:6px;flex:1;min-width:0}
+.wk-cell{flex:1;text-align:center;min-width:0}
+.wk-cbar{height:9px;border-radius:3px;background:var(--line2)}
+.wk-cbar.on{background:var(--accent)}
+.wk-cbar.off{background:var(--line2)}
+.wk-cbar.cur{background:repeating-linear-gradient(90deg,var(--accent) 0 4px,transparent 4px 8px)}
+.wk-ckw{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px}
+.wk-ckw.now{color:var(--text)}
+.wk-cjw{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:1px}
+.wk-cjw.now{color:var(--accent)}
+.wk-cjw.miss{color:var(--bad)}
+.wk-cjw.ok{color:var(--faint)}
+.wk-trail-hint{font-size:11.5px;color:var(--muted);margin-top:9px;line-height:1.45}
+.wk-legend{display:flex;gap:14px;margin-top:9px;font-size:11px;color:var(--muted);flex-wrap:wrap}
+.wk-legend i{display:inline-block;width:11px;height:7px;border-radius:2px;vertical-align:1px;margin-right:5px;background:var(--line2)}
+.wk-legend i.on{background:var(--accent)}
+.wk-legend i.cur{background:repeating-linear-gradient(90deg,var(--accent) 0 3px,transparent 3px 6px)}

@@ -308,6 +308,51 @@
       journeyWeek: journeyWeekForDate(dateStr, sessions, journeyId, target)
     };
   }
+  // Datum -> "YYYY-MM-DD" in lokaler Zeit (fuer die Wochen-Iteration der Leiste).
+  function ymd(d) {
+    var m = d.getMonth() + 1, day = d.getDate();
+    return d.getFullYear() + "-" + (m < 10 ? "0" + m : m) + "-" + (day < 10 ? "0" + day : day);
+  }
+  // Leiste der letzten 'count' Kalenderwochen bis dateStr (nicht vor Journey-Start),
+  // chronologisch (aelteste zuerst). Je Woche: { isoKey, weekNum, units, target,
+  // fulfilled, journeyWeek, current }. journeyWeek = erfuellte Wochen strikt davor + 1,
+  // daher tragen eine verpasste Woche und ihre Wiederholung dieselbe Nummer.
+  function weekTrail(journey, sessions, freqTarget, dateStr, count) {
+    var target = Math.max(1, freqTarget || 1);
+    var n = Math.max(1, count || 5);
+    var jid = journey ? journey.id : null;
+    var startKey = (journey && journey.startDate) ? isoWeekKey(journey.startDate) : null;
+    var curKey = isoWeekKey(dateStr);
+    var keys = [];
+    var d = new Date(dateStr + "T00:00:00");
+    var guard = 0;
+    while (keys.length < n && guard < 520) {
+      guard++;
+      var k = isoWeekKey(ymd(d));
+      if (startKey && k < startKey) break;        // nicht vor Journey-Start
+      if (keys.indexOf(k) < 0) keys.unshift(k);   // aelteste zuerst
+      d.setDate(d.getDate() - 7);
+    }
+    var counts = {};
+    countingSessions(sessions, jid).forEach(function (s) {
+      var wk = isoWeekKey(s.date); counts[wk] = (counts[wk] || 0) + 1;
+    });
+    var fulKeys = Object.keys(fulfilledWeekKeys(sessions, jid, target));
+    return keys.map(function (k) {
+      var units = counts[k] || 0;
+      var before = 0;
+      for (var i = 0; i < fulKeys.length; i++) if (fulKeys[i] < k) before++;
+      return {
+        isoKey: k,
+        weekNum: isoWeekNumOf(k),
+        units: units,
+        target: target,
+        fulfilled: units >= target,
+        journeyWeek: before + 1,
+        current: k === curKey
+      };
+    });
+  }
 
   /* =========================================================
      Skills – statische Definition (wie JOURNEY_TEMPLATES Code,
@@ -555,6 +600,7 @@
   KS.journeyPlacement = journeyPlacement;
   KS.weekProgress = weekProgress;
   KS.isoWeekNumOf = isoWeekNumOf;
+  KS.weekTrail = weekTrail;
   KS.JOURNEY_TEMPLATES = JOURNEY_TEMPLATES;
   KS.SKILLS = SKILLS;
   KS.defaultEquipment = defaultEquipment;
