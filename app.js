@@ -824,7 +824,7 @@
      ========================================================= */
   function viewJourneyManager() {
     var act = activeJourney();
-    var html = journeyDashboardHTML();
+    var html = '';
     html += '<div class="section-title jl-title">Journeys<button class="btn primary addj" data-action="journey-picker">+ Neue aus Vorlage</button></div>';
     html += '<p class="hint jm-lead">Verwalte hier deine Trainingszyklen. Die aktive Journey steuert Phasen, Volumen und Wiederholungen im Training; ihr Verlauf ist im Verlauf-Tab sichtbar.</p>';
     if (!DB.journeys.length) {
@@ -855,6 +855,7 @@
         + '</div>' : '';
       return '<div class="skill-block' + (jj.active ? ' active' : '') + (jj.status === "archived" ? ' archived' : '') + (open ? ' open' : '') + '">' + head + detail + '</div>';
     }).join('') + '</div>';
+    html += journeyDashboardHTML();
     return html;
   }
 
