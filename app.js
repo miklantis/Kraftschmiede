@@ -582,7 +582,15 @@
       dots += '<span class="wk-dot' + (di < wp.units ? ' on' : '') + (wp.fulfilled ? ' full' : '') + '">' + (di < wp.units ? '\u2713' : (di + 1)) + '</span>';
     }
     var remain = Math.max(0, wp.target - wp.units);
-    var wkStatus = wp.fulfilled ? 'Woche erfüllt · zählt für Journey' : ('noch ' + remain + ' für diese Woche');
+    var wkStatus = wp.fulfilled ? 'Woche erfüllt' : ('noch ' + remain + ' für diese Woche');
+    var phaseCount = (j.phases || []).length;
+    var phaseNo = 0;
+    (j.phases || []).forEach(function (p, i) { if (cp && p.id === cp.id) phaseNo = i + 1; });
+    var phaseMeta = 'Woche <strong>' + wk + '</strong>/' + ((cp || {}).weeks || '?') + ' der Phase'
+      + (cp && cp.repTarget ? ' · Ziel ' + cp.repTarget[0] + '–' + cp.repTarget[1] + ' Wdh' : '')
+      + ' · Volumen <strong>' + Coach.plannedSets() + '</strong> Arbeitssätze/Übung'
+      + (cp && cp.deloadWeek === wk ? ' · <span class="warn-inline">Deload-Woche</span>' : '')
+      + (!recoveryGreenNow() ? ' · <span class="warn-inline">Erholung gelb/rot → konservativ</span>' : '');
     var trail = KS.weekTrail(j, DB.sessions, freqT, today(), 3, 3);
     var trailInner = '';
     if (trail.length) {
@@ -598,30 +606,29 @@
           + '<div class="wk-cjw ' + jwCls + '">W' + w.journeyWeek + '</div></div>';
       }).join('');
       trailInner = '<div class="wk-sep"></div>'
-        + '<div class="wk-vlabel">Wochenverlauf</div>'
+        + '<div class="wk-seclab wk-seclab-mb">Wochenverlauf</div>'
         + '<div class="wk-trail"><span class="wk-trail-lab">KW</span><div class="wk-cells">' + cells + '</div></div>'
         + '<div class="wk-foot">'
         + '<span class="wk-trail-hint">Erfüllte Wochen rücken die Journey-Woche vor; nicht erfüllte werden wiederholt.</span>'
         + '<span class="wk-legend"><span><i class="on"></i>erfüllt</span><span><i></i>verpasst</span><span><i class="cur"></i>läuft</span></span>'
         + '</div>';
     }
-    var wkBox = '<div class="wk-box' + (wp.fulfilled ? ' done' : '') + '">'
-      + '<div class="wk-box-head"><span class="wk-kw">KW ' + wp.weekNum + '</span>'
-      + '<span class="wk-jw">Journey-Woche <strong>' + jwDisp + '</strong>' + (totalWeeks ? ' / ' + totalWeeks : '') + '</span></div>'
+    var statusBox = '<div class="wk-box' + (wp.fulfilled ? ' done' : '') + '">'
+      + '<div class="wk-sechead"><span class="wk-seclab">Aktuelle Phase</span>'
+      + '<span class="wk-pos">Phase <strong>' + phaseNo + '</strong> / ' + phaseCount + '</span></div>'
+      + '<div class="wk-phase-name">' + esc((cp || {}).name || '—') + '</div>'
+      + '<div class="wk-phase-meta">' + phaseMeta + '</div>'
+      + '<div class="wk-sep"></div>'
+      + '<div class="wk-sechead"><span class="wk-sechead-l"><span class="wk-seclab">Diese Woche</span><span class="wk-kw">KW ' + wp.weekNum + '</span></span>'
+      + '<span class="wk-pos">Journey-Woche <strong>' + jwDisp + '</strong>' + (totalWeeks ? ' / ' + totalWeeks : '') + '</span></div>'
       + '<div class="wk-box-body"><div class="wk-dots">' + dots + '</div>'
-      + '<div class="wk-prog"><div class="wk-prog-n"><strong>' + wp.units + ' von ' + wp.target + '</strong> Einheiten</div>'
-      + '<div class="wk-prog-s">' + wkStatus + '</div></div></div>'
+      + '<div class="wk-prog"><strong>' + wp.units + ' von ' + wp.target + '</strong> Einheiten · <span class="wk-prog-s">' + wkStatus + '</span></div></div>'
       + trailInner
       + '</div>';
     return '<div class="card journey">'
         + '<div class="journey-head"><strong>' + esc(j.name) + '</strong>' + (j.goal ? '<span class="jgoal">' + esc(j.goal) + '</span>' : '') + '<span class="hint">Start ' + esc(j.startDate) + '</span></div>'
         + '<div class="journey-chart" id="ks-journey-chart" style="width:100%;margin:6px 0 2px;overflow-x:auto;-webkit-overflow-scrolling:touch"></div>'
-        + '<div class="phase-ctrl"><span>Aktuelle Phase: <strong>' + esc((cp || {}).name || "—") + '</strong>' + (cp && cp.repTarget ? ' · Ziel ' + cp.repTarget[0] + '–' + cp.repTarget[1] + ' Wdh' : '') + '</span>'
-        + '<div class="wk-ctrl">Woche <strong class="wk-val">' + wk + '</strong> / ' + ((cp || {}).weeks || "?") + '</div></div>'
-        + '<div class="hint">Volumen-Empfehlung diese Woche: <strong>' + Coach.plannedSets() + ' Arbeitssätze</strong>/Übung'
-        + (cp && cp.deloadWeek === wk ? ' · <span class="warn-inline">Deload-Woche</span>' : '')
-        + (!recoveryGreenNow() ? ' · <span class="warn-inline">Erholungsmarker gelb/rot → konservativ</span>' : '') + '</div>'
-        + wkBox
+        + statusBox
         + (pl && pl.done ? '<div class="last-phase">Alle Phasen durchlaufen. <button class="btn tiny" data-action="journey-finish" data-id="' + j.id + '">Journey abschließen</button> <button class="btn tiny ghost" data-action="journey-picker">neue Journey starten</button></div>' : '')
         + '</div>';
   }

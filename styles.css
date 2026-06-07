@@ -1019,3 +1019,23 @@ body{overflow-x:clip}
 .wk-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:13px;padding-top:11px;border-top:1px solid var(--line)}
 .wk-foot .wk-trail-hint{margin:0;flex:1;min-width:200px}
 .wk-foot .wk-legend{margin:0}
+
+/* ============================================================
+   v0.36 Journey-Status-Box: fasst Phasen-Zeile, Volumen-Hinweis,
+   Punkte-Box und KW-Leiste in EINEN Container mit drei
+   beschrifteten Abschnitten - Aktuelle Phase, Diese Woche,
+   Wochenverlauf. Jede Wochen-Zahl bekommt einen klaren Ort; die
+   lose phase-ctrl/hint-Zeile entfaellt. Loest die Anordnung aus
+   v0.30/v0.35 ab (wk-box-head/wk-jw/wk-prog-n nun ungenutzt).
+   ============================================================ */
+.wk-seclab{font-family:var(--mono);font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--faint)}
+.wk-seclab-mb{display:block;margin-bottom:10px}
+.wk-sechead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.wk-sechead-l{display:flex;align-items:center;gap:9px;min-width:0}
+.wk-pos{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.wk-pos strong{color:var(--text)}
+.wk-phase-name{font-weight:600;font-size:14px;margin-bottom:3px}
+.wk-phase-meta{font-size:12.5px;line-height:1.5;color:var(--muted)}
+.wk-phase-meta strong{color:var(--text)}
+.wk-sep{margin:13px 0}
+.wk-prog{font-size:13px}
