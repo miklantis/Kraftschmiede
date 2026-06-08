@@ -215,8 +215,16 @@
     var volLine = d3.line().x(function (d) { return x(d.g); }).y(function (d) { return yPix(ny(d.vol, vMin, vMax)); }).curve(d3.curveCatmullRom.alpha(0.5));
     var intLine = d3.line().x(function (d) { return x(d.g); }).y(function (d) { return yPix(ny(d.intens, iMin, iMax)); }).curve(d3.curveCatmullRom.alpha(0.5));
 
-    g.append("path").datum(weeks).attr("d", intLine).style("fill", "none").style("stroke", "var(--accent-2)").style("stroke-width", 1.6).style("stroke-dasharray", "5 4").style("stroke-linejoin", "round").style("stroke-linecap", "round");
-    g.append("path").datum(weeks).attr("d", volLine).style("fill", "none").style("stroke", "var(--accent)").style("stroke-width", 1.6).style("stroke-linejoin", "round").style("stroke-linecap", "round");
+    // Nur fuer die Linien: je ein flacher Stuetzpunkt an den Raendern (-0.5 / N-0.5)
+    // mit dem Wert der ersten bzw. letzten Woche, damit die Kurven ueber die volle
+    // Breite spannen. Punkte/Deload/Marker bleiben auf den echten Wochen (weeks).
+    var first = weeks[0], lastW = weeks[N - 1];
+    var weeksLine = [{ g: -0.5, vol: first.vol, intens: first.intens }]
+      .concat(weeks)
+      .concat([{ g: N - 0.5, vol: lastW.vol, intens: lastW.intens }]);
+
+    g.append("path").datum(weeksLine).attr("d", intLine).style("fill", "none").style("stroke", "var(--accent-2)").style("stroke-width", 1.6).style("stroke-dasharray", "5 4").style("stroke-linejoin", "round").style("stroke-linecap", "round");
+    g.append("path").datum(weeksLine).attr("d", volLine).style("fill", "none").style("stroke", "var(--accent)").style("stroke-width", 1.6).style("stroke-linejoin", "round").style("stroke-linecap", "round");
 
     weeks.filter(function (d) { return d.deload; }).forEach(function (d) {
       g.append("circle").attr("cx", x(d.g)).attr("cy", yPix(ny(d.vol, vMin, vMax))).attr("r", 3).style("fill", "var(--warn)");
