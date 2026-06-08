@@ -185,7 +185,10 @@
     lg.append("text").attr("x", 128).attr("y", 3.5).style("fill", "var(--muted)").style("font-family", "var(--mono)").style("font-size", "11px").text("Intensität");
 
     var g = svg.append("g").attr("transform", "translate(" + m.l + "," + m.t + ")");
-    var x = d3.scaleLinear().domain([0, Math.max(1, N - 1)]).range([0, iw]);
+    // Domain mit halber Woche Rand auf beiden Seiten: jede Phase (auch die erste)
+    // bekommt symmetrisch eine halbe Woche, kein Rand wird geklemmt. Wochen-Index g
+    // sitzt damit mittig in seinem Slot [g-0.5, g+0.5], die Phase ist sauber n-geteilt.
+    var x = d3.scaleLinear().domain([-0.5, Math.max(0.5, N - 0.5)]).range([0, iw]);
     function yPix(t01) { return ih - t01 * ih; }
 
     bands.forEach(function (b, bi) {
@@ -219,7 +222,9 @@
       g.append("circle").attr("cx", x(d.g)).attr("cy", yPix(ny(d.vol, vMin, vMax))).attr("r", 3).style("fill", "var(--warn)");
     });
 
-    var cx = x(Math.min(curG, N - 1)), atEnd = cx > iw - 30;
+    // Marker am ANFANG der laufenden Woche (curG-0.5): bei Mitte einer Phase faellt
+    // er exakt auf deren Mittellinie. Am Journey-Start sitzt er am linken Rand.
+    var cx = x(curG - 0.5), atEnd = cx > iw - 30;
     g.append("line").attr("x1", cx).attr("y1", 0).attr("x2", cx).attr("y2", ih).style("stroke", "var(--text)").style("stroke-width", 1.2);
     g.append("circle").attr("cx", cx).attr("cy", ih).attr("r", 3.5).style("fill", "var(--text)");
     g.append("text").attr("x", cx + (atEnd ? -5 : 5)).attr("y", 11).attr("text-anchor", atEnd ? "end" : "start").style("fill", "var(--text)").style("font-family", "var(--mono)").style("font-size", "10px").text("jetzt");
