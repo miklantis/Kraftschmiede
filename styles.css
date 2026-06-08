@@ -2,6 +2,7 @@
   --bg:#0c0d0f; --panel:#15171b; --panel2:#1b1e23; --line:#2a2e35; --line2:#363b44;
   --text:#e9eaec; --muted:#969ca6; --faint:#6b7280;
   --accent:#ff7a2d; --accent-d:#c85a1c; --accent-2:#54c1c8;
+  --skill:#5b9bd6; --skill-rgb:91,155,214; --skill-ink:#0a1d33;
   --good:#5ec26a; --warn:#f3b13a; --bad:#ef5b5b;
   --display:"Sora",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
   --body:"Sora",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -817,13 +818,13 @@ body{overflow-x:clip}
    ============================================================ */
 /* Trainings-Kachel */
 /* Trainings-Kachel: optisch wie Yoga (blau), 16:9-Farbverlauf statt Bild */
-.wo-card.skill-wo{border-color:rgba(84,193,200,.45)}
-.skill-wo .wo-thumb{background:linear-gradient(135deg,rgba(84,193,200,.30),rgba(84,193,200,.05))}
+.wo-card.skill-wo{border-color:rgba(var(--skill-rgb),.45)}
+.skill-wo .wo-thumb{background:linear-gradient(135deg,rgba(var(--skill-rgb),.30),rgba(var(--skill-rgb),.05))}
 .skill-wo .wo-grad{background:linear-gradient(to top,rgba(4,34,42,.92),rgba(4,34,42,.30) 46%,rgba(4,34,42,0) 78%)}
-.skill-wo .score-badge{color:var(--accent-2);border-color:rgba(84,193,200,.4);background:rgba(4,34,42,.6)}
-.skill-wo .wo-lifts{color:var(--accent-2)}
-.btn.skill-btn{border-color:rgba(84,193,200,.5);color:var(--accent-2)}
-.btn.skill-btn:hover{background:var(--accent-2);border-color:var(--accent-2);color:#04222a}
+.skill-wo .score-badge{color:var(--skill);border-color:rgba(var(--skill-rgb),.4);background:rgba(8,20,36,.6)}
+.skill-wo .wo-lifts{color:var(--skill)}
+.btn.skill-btn{border-color:rgba(var(--skill-rgb),.5);color:var(--skill)}
+.btn.skill-btn:hover{background:var(--skill);border-color:var(--skill);color:var(--skill-ink)}
 /* Skills-Tab: aktivieren-Button blau statt orange */
 .btn.skill-act.primary{background:var(--accent-2);border-color:var(--accent-2);color:#04222a}
 .btn.skill-act.primary:hover{background:#67ccd2;border-color:#67ccd2}
@@ -844,12 +845,12 @@ body{overflow-x:clip}
 
 /* ============================================================
    v0.25 – Skills im Kalender und Verlauf (type:"skill")
-   Violett zur Abgrenzung von Workout (orange) und Yoga (teal).
+   Skill-Blau (--skill) zur Abgrenzung von Workout (orange) und Yoga (teal).
    ============================================================ */
-.skill-tag{font-family:var(--mono);font-size:10px;letter-spacing:1px;background:#9b8cff;color:#140b2e;padding:3px 8px;border-radius:4px;font-weight:600}
+.skill-tag{font-family:var(--mono);font-size:10px;letter-spacing:1px;background:var(--skill);color:var(--skill-ink);padding:3px 8px;border-radius:4px;font-weight:600}
 .skill-tag.sm{font-size:9px;padding:2px 6px;margin-right:6px}
-.log-item.skill{border-left:3px solid #9b8cff}
-.cal-dot.skill{background:#9b8cff;color:#140b2e}
+.log-item.skill{border-left:3px solid var(--skill)}
+.cal-dot.skill{background:var(--skill);color:var(--skill-ink)}
 
 /* ============================================================
    v0.26 – Trainings-Kacheln: Buttons auf fixe Position unten.
@@ -1075,3 +1076,12 @@ body{overflow-x:clip}
   .wk-pdot{width:13px;height:13px}
   .wk-ptbox{padding:7px 5px;gap:5px}
 }
+
+/* ============================================================
+   v0.38 – Skill-Farbe: Lila (#9b8cff) ersetzt durch Skill-Blau
+   (--skill #5b9bd6). Yoga bleibt Teal (--accent-2), Skills nun
+   eigenes Blau – dezenter Unterschied (grünstichig vs. blau).
+   Durchgezogen: Trainings-Skill-Karte, Verlauf-Kalender (.cal-dot.skill),
+   Verlauf-Liste (.skill-tag, .log-item.skill).
+   Unberührt: Skill-Live-Screen + Skills-Tab (weiterhin --accent-2).
+   ============================================================ */
