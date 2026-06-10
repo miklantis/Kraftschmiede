@@ -242,9 +242,9 @@
       g.append("circle").attr("cx", x(d.g)).attr("cy", yPix(ny(d.vol, vMin, vMax))).attr("r", 3).style("fill", "var(--warn)");
     });
 
-    // Marker am ANFANG der laufenden Woche (curG-0.5): bei Mitte einer Phase faellt
-    // er exakt auf deren Mittellinie. Am Journey-Start sitzt er am linken Rand.
-    var cx = x(curG - 0.5), atEnd = cx > iw - 30;
+    // Marker auf dem Punkt der laufenden Woche (curG): sitzt mittig ueber der
+    // zugehoerigen Wochennummer und auf den Kurvenwerten dieser Woche.
+    var cx = x(curG), atEnd = cx > iw - 30;
     g.append("line").attr("x1", cx).attr("y1", 0).attr("x2", cx).attr("y2", ih).style("stroke", "var(--text)").style("stroke-width", 1.2);
     g.append("circle").attr("cx", cx).attr("cy", ih).attr("r", 3.5).style("fill", "var(--text)");
     g.append("text").attr("x", cx + (atEnd ? -5 : 5)).attr("y", 11).attr("text-anchor", atEnd ? "end" : "start").style("fill", "var(--text)").style("font-family", "var(--mono)").style("font-size", "10px").text("jetzt");
