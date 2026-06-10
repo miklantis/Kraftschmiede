@@ -9,12 +9,17 @@ synchronisieren.
 - `index.html` – Einstieg, laedt alle Skripte in fester Reihenfolge
 - `styles.css` – Oberflaeche (Industrial-Dark-Theme)
 - `config.js` – deine Supabase-Zugangsdaten (du traegst sie ein)
-- `engine.js` – reine Rechen-Engine (1RM, Plate-Loader, Gewichtsvorschlaege …)
-- `supabase.js` – optionale Cloud-Sync-Schicht (Anmeldung + Laden/Speichern)
-- `data.js` – Seed-Daten, Domaenen-Helfer, Journey-Vorlagen und Schema-Migration
-- `charts.js` – Diagramme (D3-Journey-Chart, Verlaufs-Charts) und Plate-Grafiken
-- `live.js` – Live-Session, Pausen-Timer, Audio/Vibration, Start-/Ende-Dialoge
-- `app.js` – App-Logik, Rendering und Verdrahtung der Module
+- `js/engine.js` – reine Rechen-Engine (1RM, Plate-Loader, Gewichtsvorschlaege …)
+- `js/supabase.js` – optionale Cloud-Sync-Schicht (Anmeldung + Laden/Speichern)
+- `js/data.js` – Seed-Daten, Domaenen-Helfer, Journey-Vorlagen und Schema-Migration
+- `js/charts.js` – Diagramme (D3-Journey-Chart, Verlaufs-Charts) und Plate-Grafiken
+- `js/live.js` – Live-Session, Pausen-Timer, Audio/Vibration, Start-/Ende-Dialoge
+- `js/yoga.js` – Yoga/Mobility-Karte und Eintrag-Popup
+- `js/history.js` – Verlauf/Historie (Kalender- und Listenansicht)
+- `js/io.js` – JSON-Import/-Export der gesamten Datenbasis
+- `js/skills.js` – Skills-Tab (Manager, Phasen, Fortschritt)
+- `js/app.js` – App-Logik, Rendering und Verdrahtung der Module
+- `tests/engine.test.js` – Unit-Tests fuer die Engine (`node tests/engine.test.js`)
 - `schema.sql` – einmalig in Supabase auszufuehren (Tabelle + Sicherheitsregeln)
 
 Ohne Cloud-Sync liegen die Daten im `localStorage` des Browsers (geraete- und

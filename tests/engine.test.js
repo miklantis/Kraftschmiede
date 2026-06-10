@@ -1,9 +1,9 @@
 /* Kraftschmiede – Engine-Test: Volumensteuerung & Deload.
-   Lauf: node engine.test.js  (keine Abhaengigkeiten).
+   Lauf: node tests/engine.test.js  (keine Abhaengigkeiten, vom Projekt-Root).
    Sichert ab, dass deloadWeek 1-basiert interpretiert wird:
    "Deload-Woche N" senkt das Volumen genau in der N-ten Woche der Phase. */
 "use strict";
-var E = require("./engine.js");
+var E = require("../js/engine.js");
 
 var fails = 0;
 function eq(got, want, msg) {

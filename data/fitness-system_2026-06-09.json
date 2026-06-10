@@ -1,0 +1,1804 @@
+{
+  "live": null,
+  "bodyLog": [
+    {
+      "date": "2026-06-01",
+      "legs": 0,
+      "pain": {
+        "flag": false,
+        "note": ""
+      },
+      "notes": "",
+      "overall": 0,
+      "readiness": 3,
+      "upper_body": 0
+    },
+    {
+      "date": "2026-06-02",
+      "legs": 0,
+      "pain": {
+        "flag": false,
+        "note": ""
+      },
+      "notes": "",
+      "overall": 0,
+      "readiness": 3,
+      "upper_body": 0
+    },
+    {
+      "date": "2026-06-03",
+      "legs": 0,
+      "pain": {
+        "flag": false,
+        "note": ""
+      },
+      "notes": "",
+      "overall": 0,
+      "readiness": 3,
+      "upper_body": 0
+    },
+    {
+      "date": "2026-06-04",
+      "legs": 0,
+      "pain": {
+        "flag": false,
+        "note": ""
+      },
+      "notes": "",
+      "overall": 1,
+      "readiness": 3,
+      "upper_body": 0
+    },
+    {
+      "date": "2026-06-07",
+      "legs": 0,
+      "pain": {
+        "flag": false,
+        "note": ""
+      },
+      "notes": "",
+      "overall": 0,
+      "readiness": 3,
+      "upper_body": 0
+    },
+    {
+      "date": "2026-06-08",
+      "legs": 0,
+      "pain": {
+        "flag": false,
+        "note": ""
+      },
+      "notes": "",
+      "overall": 0,
+      "readiness": 3,
+      "upper_body": 0
+    }
+  ],
+  "journeys": [
+    {
+      "id": "j_2026_aufbau",
+      "name": "Rückkehr 2026",
+      "active": true,
+      "phases": [
+        {
+          "id": "p0",
+          "name": "Wiedereinstieg",
+          "focus": "reentry",
+          "weeks": 2,
+          "setsEnd": 2,
+          "repTarget": [
+            5,
+            8
+          ],
+          "setsStart": 2,
+          "deloadWeek": null
+        },
+        {
+          "id": "p1",
+          "name": "Hypertrophie",
+          "focus": "hypertrophy",
+          "weeks": 5,
+          "setsEnd": 6,
+          "repTarget": [
+            8,
+            12
+          ],
+          "setsStart": 2,
+          "deloadWeek": 4
+        },
+        {
+          "id": "p2",
+          "name": "Maximalkraft",
+          "focus": "strength",
+          "weeks": 5,
+          "setsEnd": 5,
+          "repTarget": [
+            4,
+            6
+          ],
+          "setsStart": 3,
+          "deloadWeek": 4
+        },
+        {
+          "id": "p3",
+          "name": "Übergang / Test",
+          "focus": "test",
+          "weeks": 1,
+          "setsEnd": 2,
+          "repTarget": [
+            2,
+            4
+          ],
+          "setsStart": 2,
+          "deloadWeek": null
+        }
+      ],
+      "status": "active",
+      "startDate": "2026-05-31",
+      "templateId": "reentry_build"
+    }
+  ],
+  "sessions": [
+    {
+      "id": "y_20260530_303",
+      "date": "2026-05-30",
+      "type": "yoga",
+      "notes": "",
+      "status": "done",
+      "entries": [],
+      "minutes": 80
+    },
+    {
+      "gw": {
+        "done": true
+      },
+      "id": "s_20260601_343",
+      "body": {
+        "legs": 0,
+        "pain": {
+          "flag": false
+        },
+        "notes": "",
+        "overall": 0,
+        "readiness": 2,
+        "upper_body": 0
+      },
+      "date": "2026-06-01",
+      "rest": null,
+      "week": 1,
+      "status": "done",
+      "endedAt": 1780345462813,
+      "entries": [
+        {
+          "sets": [
+            {
+              "done": true,
+              "reps": 5,
+              "score": 1,
+              "failed": false,
+              "weight": 20,
+              "adjusted": false,
+              "metTarget": true,
+              "adjustNote": "",
+              "targetReps": 5,
+              "targetWeight": 20,
+              "rir": "4+",
+              "rpe": "≤6",
+              "scoreLabel": "sehr leicht"
+            },
+            {
+              "done": true,
+              "reps": 5,
+              "score": 3,
+              "failed": false,
+              "weight": 20,
+              "adjusted": false,
+              "metTarget": true,
+              "adjustNote": "",
+              "targetReps": 5,
+              "targetWeight": 20,
+              "rir": "2",
+              "rpe": "8",
+              "scoreLabel": "im Ziel"
+            }
+          ],
+          "slot": "lift1",
+          "barId": "bar_std",
+          "est1RM": 23.05,
+          "tested1RM": null,
+          "exerciseId": "back_squat",
+          "warmupSets": [],
+          "plannedSets": [
+            {
+              "reps": 5,
+              "weight": 20,
+              "targetScore": 3
+            },
+            {
+              "reps": 5,
+              "weight": 20,
+              "targetScore": 3
+            }
+          ],
+          "hadDeviation": false
+        },
+        {
+          "sets": [
+            {
+              "done": true,
+              "reps": 5,
+              "score": 1,
+              "failed": false,
+              "weight": 30,
+              "adjusted": false,
+              "metTarget": true,
+              "adjustNote": "",
+              "targetReps": 5,
+              "targetWeight": 30,
+              "rir": "4+",
+              "rpe": "≤6",
+              "scoreLabel": "sehr leicht"
+            },
+            {
+              "done": true,
+              "reps": 5,
+              "score": 1,
+              "failed": false,
+              "weight": 30,
+              "adjusted": false,
+              "metTarget": true,
+              "adjustNote": "",
+              "targetReps": 5,
+              "targetWeight": 30,
+              "rir": "4+",
+              "rpe": "≤6",
+              "scoreLabel": "sehr leicht"
+            }
+          ],
+          "slot": "lift2",
+          "barId": "bar_std",
+          "est1RM": 34.57,
+          "tested1RM": null,
+          "exerciseId": "bench_press",
+          "warmupSets": [
+            {
+              "done": true,
+              "reps": 5,
+              "type": "warmup",
+              "weight": 20
+            },
+            {
+              "done": true,
+              "reps": 2,
+              "type": "warmup",
+              "weight": 25
+            }
+          ],
+          "plannedSets": [
+            {
+              "reps": 5,
+              "weight": 30,
+              "targetScore": 3
+            },
+            {
+              "reps": 5,
+              "weight": 30,
+              "targetScore": 3
+            }
+          ],
+          "hadDeviation": false
+        },
+        {
+          "sets": [
+            {
+              "done": true,
+              "reps": 12,
+              "score": 2,
+              "failed": false,
+              "weight": 10,
+              "adjusted": true,
+              "metTarget": false,
+              "adjustNote": "Gewicht angepasst",
+              "targetReps": 12,
+              "targetWeight": 20,
+              "rir": "3",
+              "rpe": "7",
+              "scoreLabel": "leicht"
+            },
+            {
+              "done": true,
+              "reps": 12,
+              "score": 3,
+              "failed": false,
+              "weight": 10,
+              "adjusted": true,
+              "metTarget": false,
+              "adjustNote": "Gewicht angepasst",
+              "targetReps": 12,
+              "targetWeight": 20,
+              "rir": "2",
+              "rpe": "8",
+              "scoreLabel": "im Ziel"
+            },
+            {
+              "done": true,
+              "reps": 12,
+              "score": 3,
+              "failed": false,
+              "weight": 10,
+              "adjusted": true,
+              "metTarget": false,
+              "adjustNote": "Gewicht angepasst",
+              "targetReps": 12,
+              "targetWeight": 20,
+              "rir": "2",
+              "rpe": "8",
+              "scoreLabel": "im Ziel"
+            }
+          ],
+          "slot": "core",
+          "barId": null,
+          "est1RM": 14.18,
+          "tested1RM": null,
+          "exerciseId": "plate_situps",
+          "warmupSets": [],
+          "plannedSets": [
+            {
+              "reps": 12,
+              "weight": 20,
+              "targetScore": 3
+            },
+            {
+              "reps": 12,
+              "weight": 20,
+              "targetScore": 3
+            },
+            {
+              "reps": 12,
+              "weight": 20,
+              "targetScore": 3
+            }
+          ],
+          "hadDeviation": true
+        }
+      ],
+      "phaseId": "p0",
+      "activeSet": null,
+      "journeyId": "j_2026_aufbau",
+      "startedAt": 1780344102061,
+      "templateId": "t_a",
+      "durationSec": 1361,
+      "generalWarmup": {
+        "done": false,
+        "mode": "bike",
+        "minutes": 7
+      }
+    },
+    {
+      "gw": {
+        "done": true
+      },
+      "id": "s_20260603_814",
+      "body": {
+        "legs": 0,
+        "pain": {
+          "flag": false
+        },
+        "notes": "",
+        "overall": 0,
+        "readiness": 3,
+        "upper_body": 0
+      },
+      "date": "2026-06-03",
+      "rest": null,
+      "week": 1,
+      "status": "done",
+      "endedAt": 1780516137778,
+      "entries": [
+        {
+          "sets": [
+            {
+              "done": true,
+              "reps": 5,
+              "score": 3,
+              "failed": false,
+              "weight": 40,
+              "adjusted": false,
+              "metTarget": true,
+              "adjustNote": "",
+              "targetReps": 5,
+              "targetWeight": 40,
+              "rir": "2",
+              "rpe": "8",
+              "scoreLabel": "im Ziel"
+            },
+            {
+              "done": true,
+              "reps": 5,
+              "score": 3,
+              "failed": false,
+              "weight": 40,
+              "adjusted": false,
+              "metTarget": true,
+              "adjustNote": "",
+              "targetReps": 5,
+              "targetWeight": 40,
+              "rir": "2",
+              "rpe": "8",
+              "scoreLabel": "im Ziel"
+            }
+          ],
+          "barId": "bar_std",
+          "est1RM": 46.1,
+          "tested1RM": null,
+          "exerciseId": "deadlift",
+          "warmupSets": [
+            {
+              "done": true,
+              "reps": 5,
+              "type": "warmup",
+              "weight": 20
+            },
+            {
+              "done": true,
+              "reps": 3,
+              "type": "warmup",
+              "weight": 27.5
+            },
+            {
+              "done": true,
+              "reps": 2,
+              "type": "warmup",
+              "weight": 35
+            }
+          ],
+          "plannedSets": [
+            {
+              "reps": 5,
+              "weight": 40,
+              "targetScore": 3
+            },
+            {
+              "reps": 5,
+              "weight": 40,
+              "targetScore": 3
+            }
+          ],
+          "hadDeviation": false
+        },
+        {
+          "sets": [
+            {
+              "done": true,
+              "reps": 5,
+              "score": 2,
+              "failed": false,
+              "weight": 30,
+              "adjusted": false,
+              "metTarget": true,
+              "adjustNote": "",
+              "targetReps": 5,
+              "targetWeight": 30,
+              "rir": "3",
+              "rpe": "7",
+              "scoreLabel": "leicht"
+            },
+            {
+              "done": true,
+              "reps": 5,
+              "score": 2,
+              "failed": false,
+              "weight": 30,
+              "adjusted": false,
+              "metTarget": true,
+              "adjustNote": "",
+              "targetReps": 5,
+              "targetWeight": 30,
+              "rir": "3",
+              "rpe": "7",
+              "scoreLabel": "leicht"
+            }
+          ],
+          "barId": "bar_std",
+          "est1RM": 34.57,
+          "tested1RM": null,
+          "exerciseId": "bent_row",
+          "warmupSets": [
+            {
+              "done": true,
+              "reps": 5,
+              "type": "warmup",
+              "weight": 20
+            },
+            {
+              "done": true,
+              "reps": 2,
+              "type": "warmup",
+              "weight": 25
+            }
+          ],
+          "plannedSets": [
+            {
+              "reps": 5,
+              "weight": 30,
+              "targetScore": 3
+            },
+            {
+              "reps": 5,
+              "weight": 30,
+              "targetScore": 3
+            }
+          ],
+          "hadDeviation": false
+        },
+        {
+          "sets": [
+            {
+              "done": true,
+              "reps": 12,
+              "score": 2,
+              "failed": false,
+              "weight": 10,
+              "adjusted": true,
+              "metTarget": false,
+              "adjustNote": "Gewicht angepasst",
+              "targetReps": 12,
+              "targetWeight": 20,
+              "rir": "3",
+              "rpe": "7",
+              "scoreLabel": "leicht"
+            },
+            {
+              "done": true,
+              "reps": 12,
+              "score": 2,
+              "failed": false,
+              "weight": 10,
+              "adjusted": true,
+              "metTarget": false,
+              "adjustNote": "Gewicht angepasst",
+              "targetReps": 12,
+              "targetWeight": 20,
+              "rir": "3",
+              "rpe": "7",
+              "scoreLabel": "leicht"
+            },
+            {
+              "done": true,
+              "reps": 12,
+              "score": 3,
+              "failed": false,
+              "weight": 10,
+              "adjusted": true,
+              "metTarget": false,
+              "adjustNote": "Gewicht angepasst",
+              "targetReps": 12,
+              "targetWeight": 20,
+              "rir": "2",
+              "rpe": "8",
+              "scoreLabel": "im Ziel"
+            }
+          ],
+          "barId": "bar_std",
+          "est1RM": 14.18,
+          "tested1RM": null,
+          "exerciseId": "plate_twist",
+          "warmupSets": [],
+          "plannedSets": [
+            {
+              "reps": 12,
+              "weight": 20,
+              "targetScore": 3
+            },
+            {
+              "reps": 12,
+              "weight": 20,
+              "targetScore": 3
+            },
+            {
+              "reps": 12,
+              "weight": 20,
+              "targetScore": 3
+            }
+          ],
+          "hadDeviation": true
+        }
+      ],
+      "phaseId": "p0",
+      "activeSet": null,
+      "journeyId": "j_2026_aufbau",
+      "startedAt": 1780514178777,
+      "templateId": "t_b",
+      "durationSec": 1959,
+      "generalWarmup": {
+        "done": false,
+        "mode": "bike",
+        "minutes": 7
+      }
+    },
+    {
+      "gw": {
+        "done": true
+      },
+      "id": "s_20260605_154",
+      "body": {
+        "legs": 0,
+        "pain": {
+          "flag": false
+        },
+        "notes": "",
+        "overall": 1,
+        "readiness": 3,
+        "upper_body": 0
+      },
+      "date": "2026-06-05",
+      "rest": null,
+      "week": 1,
+      "status": "done",
+      "endedAt": 1780689458191,
+      "entries": [
+        {
+          "sets": [
+            {
+              "done": true,
+              "reps": 5,
+              "score": 2,
+              "failed": false,
+              "weight": 25,
+              "adjusted": false,
+              "metTarget": true,
+              "adjustNote": "",
+              "targetReps": 5,
+              "targetWeight": 25,
+              "rir": "3",
+              "rpe": "7",
+              "scoreLabel": "leicht"
+            },
+            {
+              "done": true,
+              "reps": 5,
+              "score": 2,
+              "failed": false,
+              "weight": 25,
+              "adjusted": false,
+              "metTarget": true,
+              "adjustNote": "",
+              "targetReps": 5,
+              "targetWeight": 25,
+              "rir": "3",
+              "rpe": "7",
+              "scoreLabel": "leicht"
+            }
+          ],
+          "barId": "bar_std",
+          "est1RM": 28.81,
+          "tested1RM": null,
+          "exerciseId": "push_press",
+          "warmupSets": [
+            {
+              "done": true,
+              "reps": 5,
+              "type": "warmup",
+              "weight": 20
+            },
+            {
+              "done": true,
+              "reps": 2,
+              "type": "warmup",
+              "weight": 22.5
+            }
+          ],
+          "plannedSets": [
+            {
+              "reps": 5,
+              "weight": 25,
+              "targetScore": 3
+            },
+            {
+              "reps": 5,
+              "weight": 25,
+              "targetScore": 3
+            }
+          ],
+          "hadDeviation": false
+        },
+        {
+          "sets": [
+            {
+              "done": true,
+              "reps": 5,
+              "score": 3,
+              "failed": false,
+              "weight": 20,
+              "adjusted": false,
+              "metTarget": true,
+              "adjustNote": "",
+              "targetReps": 5,
+              "targetWeight": 20,
+              "rir": "2",
+              "rpe": "8",
+              "scoreLabel": "im Ziel"
+            },
+            {
+              "done": true,
+              "reps": 5,
+              "score": 3,
+              "failed": false,
+              "weight": 20,
+              "adjusted": false,
+              "metTarget": true,
+              "adjustNote": "",
+              "targetReps": 5,
+              "targetWeight": 20,
+              "rir": "2",
+              "rpe": "8",
+              "scoreLabel": "im Ziel"
+            }
+          ],
+          "barId": "bar_mpvmvzol4us",
+          "est1RM": 23.05,
+          "tested1RM": null,
+          "exerciseId": "barbell_curl",
+          "warmupSets": [
+            {
+              "done": true,
+              "reps": 5,
+              "type": "warmup",
+              "weight": 12.5
+            },
+            {
+              "done": true,
+              "reps": 2,
+              "type": "warmup",
+              "weight": 17.5
+            }
+          ],
+          "plannedSets": [
+            {
+              "reps": 5,
+              "weight": 20,
+              "targetScore": 3
+            },
+            {
+              "reps": 5,
+              "weight": 20,
+              "targetScore": 3
+            }
+          ],
+          "hadDeviation": false
+        },
+        {
+          "sets": [
+            {
+              "done": true,
+              "reps": 5,
+              "score": 3,
+              "failed": false,
+              "weight": 12.5,
+              "adjusted": true,
+              "metTarget": false,
+              "adjustNote": "Gewicht angepasst",
+              "targetReps": 5,
+              "targetWeight": 20,
+              "rir": "2",
+              "rpe": "8",
+              "scoreLabel": "im Ziel"
+            },
+            {
+              "done": true,
+              "reps": 5,
+              "score": 3,
+              "failed": false,
+              "weight": 12.5,
+              "adjusted": true,
+              "metTarget": false,
+              "adjustNote": "Gewicht angepasst",
+              "targetReps": 5,
+              "targetWeight": 20,
+              "rir": "2",
+              "rpe": "8",
+              "scoreLabel": "im Ziel"
+            }
+          ],
+          "barId": "bar_mpvmvzol4us",
+          "est1RM": 14.41,
+          "tested1RM": null,
+          "exerciseId": "pull_over",
+          "warmupSets": [
+            {
+              "done": true,
+              "reps": 5,
+              "type": "warmup",
+              "weight": 12.5
+            },
+            {
+              "done": true,
+              "reps": 2,
+              "type": "warmup",
+              "weight": 17.5
+            }
+          ],
+          "plannedSets": [
+            {
+              "reps": 5,
+              "weight": 20,
+              "targetScore": 3
+            },
+            {
+              "reps": 5,
+              "weight": 20,
+              "targetScore": 3
+            }
+          ],
+          "hadDeviation": true
+        }
+      ],
+      "phaseId": "p0",
+      "activeSet": null,
+      "journeyId": "j_2026_aufbau",
+      "startedAt": 1780687341626,
+      "templateId": "t_e",
+      "durationSec": 2117,
+      "generalWarmup": {
+        "done": false,
+        "mode": "bike",
+        "minutes": 7
+      }
+    },
+    {
+      "id": "sk_20260605_480",
+      "date": "2026-06-05",
+      "type": "skill",
+      "status": "done",
+      "entries": [],
+      "skillWork": {
+        "phase": 0,
+        "result": "missed",
+        "skillId": "strict_pullup",
+        "exercises": [
+          {
+            "name": "Dead Hang",
+            "sets": [
+              {
+                "met": true,
+                "done": true,
+                "value": 30
+              },
+              {
+                "met": false,
+                "done": true,
+                "value": 23
+              }
+            ],
+            "tempo": null,
+            "metric": "duration",
+            "target": 30
+          },
+          {
+            "name": "Scapular Pull-Up",
+            "sets": [],
+            "tempo": null,
+            "metric": "reps",
+            "target": 5
+          }
+        ]
+      },
+      "durationSec": 204
+    },
+    {
+      "gw": {
+        "done": true
+      },
+      "id": "s_20260607_1",
+      "body": {
+        "legs": 0,
+        "pain": {
+          "flag": false
+        },
+        "notes": "",
+        "overall": 0,
+        "readiness": 3,
+        "upper_body": 0
+      },
+      "date": "2026-06-07",
+      "rest": null,
+      "week": 1,
+      "status": "done",
+      "endedAt": 1780841875701,
+      "entries": [
+        {
+          "sets": [
+            {
+              "done": true,
+              "reps": 5,
+              "score": 2,
+              "failed": false,
+              "weight": 32.5,
+              "adjusted": false,
+              "metTarget": true,
+              "adjustNote": "",
+              "targetReps": 5,
+              "targetWeight": 32.5,
+              "rir": "3",
+              "rpe": "7",
+              "scoreLabel": "leicht"
+            },
+            {
+              "done": true,
+              "reps": 5,
+              "score": 3,
+              "failed": false,
+              "weight": 32.5,
+              "adjusted": false,
+              "metTarget": true,
+              "adjustNote": "",
+              "targetReps": 5,
+              "targetWeight": 32.5,
+              "rir": "2",
+              "rpe": "8",
+              "scoreLabel": "im Ziel"
+            }
+          ],
+          "barId": "bar_std",
+          "est1RM": 37.46,
+          "tested1RM": null,
+          "exerciseId": "bench_press",
+          "warmupSets": [
+            {
+              "done": true,
+              "reps": 5,
+              "type": "warmup",
+              "weight": 20
+            },
+            {
+              "done": true,
+              "reps": 2,
+              "type": "warmup",
+              "weight": 27.5
+            }
+          ],
+          "plannedSets": [
+            {
+              "reps": 5,
+              "weight": 32.5,
+              "targetScore": 3
+            },
+            {
+              "reps": 5,
+              "weight": 32.5,
+              "targetScore": 3
+            }
+          ],
+          "hadDeviation": false
+        },
+        {
+          "sets": [
+            {
+              "done": true,
+              "reps": 5,
+              "score": 3,
+              "failed": false,
+              "weight": 32.5,
+              "adjusted": false,
+              "metTarget": true,
+              "adjustNote": "",
+              "targetReps": 5,
+              "targetWeight": 32.5,
+              "rir": "2",
+              "rpe": "8",
+              "scoreLabel": "im Ziel"
+            },
+            {
+              "done": true,
+              "reps": 5,
+              "score": 3,
+              "failed": false,
+              "weight": 32.5,
+              "adjusted": false,
+              "metTarget": true,
+              "adjustNote": "",
+              "targetReps": 5,
+              "targetWeight": 32.5,
+              "rir": "2",
+              "rpe": "8",
+              "scoreLabel": "im Ziel"
+            }
+          ],
+          "barId": "bar_std",
+          "est1RM": 37.46,
+          "tested1RM": null,
+          "exerciseId": "bent_row",
+          "warmupSets": [
+            {
+              "done": true,
+              "reps": 5,
+              "type": "warmup",
+              "weight": 20
+            },
+            {
+              "done": true,
+              "reps": 2,
+              "type": "warmup",
+              "weight": 27.5
+            }
+          ],
+          "plannedSets": [
+            {
+              "reps": 5,
+              "weight": 32.5,
+              "targetScore": 3
+            },
+            {
+              "reps": 5,
+              "weight": 32.5,
+              "targetScore": 3
+            }
+          ],
+          "hadDeviation": false
+        },
+        {
+          "sets": [
+            {
+              "done": true,
+              "reps": 10,
+              "score": 3,
+              "failed": false,
+              "weight": 10,
+              "adjusted": true,
+              "metTarget": false,
+              "adjustNote": "Gewicht angepasst",
+              "targetReps": 10,
+              "targetWeight": 20,
+              "rir": "2",
+              "rpe": "8",
+              "scoreLabel": "im Ziel"
+            },
+            {
+              "done": true,
+              "reps": 10,
+              "score": 3,
+              "failed": false,
+              "weight": 10,
+              "adjusted": true,
+              "metTarget": false,
+              "adjustNote": "Gewicht angepasst",
+              "targetReps": 10,
+              "targetWeight": 20,
+              "rir": "2",
+              "rpe": "8",
+              "scoreLabel": "im Ziel"
+            },
+            {
+              "done": true,
+              "reps": 10,
+              "score": 3,
+              "failed": false,
+              "weight": 10,
+              "adjusted": true,
+              "metTarget": false,
+              "adjustNote": "Gewicht angepasst",
+              "targetReps": 10,
+              "targetWeight": 20,
+              "rir": "2",
+              "rpe": "8",
+              "scoreLabel": "im Ziel"
+            }
+          ],
+          "barId": "bar_std",
+          "est1RM": 13.38,
+          "tested1RM": null,
+          "exerciseId": "plate_cocoon",
+          "warmupSets": [],
+          "plannedSets": [
+            {
+              "reps": 10,
+              "weight": 20,
+              "targetScore": 3
+            },
+            {
+              "reps": 10,
+              "weight": 20,
+              "targetScore": 3
+            },
+            {
+              "reps": 10,
+              "weight": 20,
+              "targetScore": 3
+            }
+          ],
+          "hadDeviation": true
+        }
+      ],
+      "phaseId": "p0",
+      "activeSet": null,
+      "journeyId": "j_2026_aufbau",
+      "startedAt": 1780839532359,
+      "templateId": "t_f",
+      "durationSec": 2343,
+      "generalWarmup": {
+        "done": false,
+        "mode": "bike",
+        "minutes": 7
+      }
+    },
+    {
+      "id": "sk_20260607_558",
+      "date": "2026-06-07",
+      "type": "skill",
+      "status": "done",
+      "entries": [],
+      "skillWork": {
+        "phase": 0,
+        "result": "missed",
+        "skillId": "strict_pullup",
+        "exercises": [
+          {
+            "name": "Dead Hang",
+            "sets": [
+              {
+                "met": true,
+                "done": true,
+                "value": 30
+              },
+              {
+                "met": false,
+                "done": true,
+                "value": 24
+              },
+              {
+                "met": false,
+                "done": true,
+                "value": 28
+              }
+            ],
+            "tempo": null,
+            "metric": "duration",
+            "target": 30
+          },
+          {
+            "name": "Scapular Pull-Up",
+            "sets": [],
+            "tempo": null,
+            "metric": "reps",
+            "target": 5
+          }
+        ]
+      },
+      "durationSec": 435
+    }
+  ],
+  "settings": {
+    "step": 2.5,
+    "unit": "kg",
+    "timers": {
+      "sound": true,
+      "vibrate": true,
+      "autoStart": true,
+      "setRestSec": 120,
+      "exerciseRestSec": 120
+    },
+    "rmFormula": "mean",
+    "recoveryWindows": {
+      "squat": 48,
+      "default": 48,
+      "deadlift": 72
+    },
+    "weeklyFrequencyTarget": 3
+  },
+  "exercises": [
+    {
+      "id": "back_squat",
+      "rm": 23.05,
+      "kind": "main",
+      "name": "Back Squat",
+      "barId": "bar_std",
+      "active": true,
+      "rmAsOf": "2026-06-01",
+      "metrics": [
+        "weight",
+        "reps",
+        "volume",
+        "score",
+        "est1RM"
+      ],
+      "profile": "strength",
+      "rmStale": false,
+      "category": "barbell",
+      "repRange": [
+        6,
+        10
+      ],
+      "equipment": "barbell",
+      "workWeight": 20,
+      "targetScore": 3,
+      "muscleGroups": [
+        "legs",
+        "glutes"
+      ],
+      "recoveryHours": 48
+    },
+    {
+      "id": "bench_press",
+      "rm": 37.46,
+      "kind": "main",
+      "name": "Bench Press",
+      "barId": "bar_std",
+      "active": true,
+      "rmAsOf": "2026-06-07",
+      "metrics": [
+        "weight",
+        "reps",
+        "volume",
+        "score",
+        "est1RM"
+      ],
+      "profile": "strength",
+      "rmStale": false,
+      "category": "barbell",
+      "repRange": [
+        8,
+        12
+      ],
+      "equipment": "barbell",
+      "workWeight": 32.5,
+      "targetScore": 3,
+      "muscleGroups": [
+        "chest",
+        "triceps",
+        "shoulders"
+      ],
+      "recoveryHours": 48
+    },
+    {
+      "id": "deadlift",
+      "rm": 46.1,
+      "kind": "main",
+      "name": "Deadlift",
+      "barId": "bar_std",
+      "active": true,
+      "rmAsOf": "2026-06-03",
+      "metrics": [
+        "weight",
+        "reps",
+        "volume",
+        "score",
+        "est1RM"
+      ],
+      "profile": "strength",
+      "rmStale": false,
+      "category": "barbell",
+      "repRange": [
+        4,
+        8
+      ],
+      "equipment": "barbell",
+      "workWeight": 40,
+      "targetScore": 3,
+      "muscleGroups": [
+        "back",
+        "legs",
+        "glutes"
+      ],
+      "recoveryHours": 72
+    },
+    {
+      "id": "bent_row",
+      "rm": 37.46,
+      "kind": "main",
+      "name": "Bent Row",
+      "barId": "bar_std",
+      "active": true,
+      "rmAsOf": "2026-06-07",
+      "metrics": [
+        "weight",
+        "reps",
+        "volume",
+        "score",
+        "est1RM"
+      ],
+      "profile": "strength",
+      "rmStale": false,
+      "category": "barbell",
+      "repRange": [
+        8,
+        12
+      ],
+      "equipment": "barbell",
+      "workWeight": 32.5,
+      "targetScore": 3,
+      "muscleGroups": [
+        "back",
+        "biceps"
+      ],
+      "recoveryHours": 48
+    },
+    {
+      "id": "push_press",
+      "rm": 28.81,
+      "kind": "main",
+      "name": "Push Press",
+      "barId": "bar_std",
+      "active": true,
+      "rmAsOf": "2026-06-05",
+      "metrics": [
+        "weight",
+        "reps",
+        "volume",
+        "score",
+        "est1RM"
+      ],
+      "profile": "strength",
+      "rmStale": false,
+      "category": "barbell",
+      "repRange": [
+        5,
+        10
+      ],
+      "equipment": "barbell",
+      "workWeight": 25,
+      "targetScore": 3,
+      "muscleGroups": [
+        "shoulders",
+        "triceps"
+      ],
+      "recoveryHours": 48
+    },
+    {
+      "id": "barbell_curl",
+      "rm": 23.05,
+      "kind": "accessory",
+      "name": "Barbell Curl",
+      "barId": "bar_std",
+      "active": true,
+      "rmAsOf": "2026-06-05",
+      "metrics": [
+        "weight",
+        "reps",
+        "volume",
+        "score",
+        "est1RM"
+      ],
+      "profile": "strength",
+      "rmStale": false,
+      "category": "barbell",
+      "repRange": [
+        8,
+        12
+      ],
+      "equipment": "barbell",
+      "workWeight": 20,
+      "targetScore": 3,
+      "muscleGroups": [
+        "biceps"
+      ],
+      "recoveryHours": 48
+    },
+    {
+      "id": "plate_situps",
+      "rm": null,
+      "kind": "core",
+      "name": "Plate Situps",
+      "barId": null,
+      "active": true,
+      "rmAsOf": null,
+      "metrics": [
+        "weight",
+        "reps",
+        "volume",
+        "score"
+      ],
+      "profile": "core",
+      "rmStale": false,
+      "category": "core",
+      "repRange": [
+        12,
+        20
+      ],
+      "equipment": "plate",
+      "workWeight": 10,
+      "targetScore": 3,
+      "muscleGroups": [
+        "core"
+      ],
+      "recoveryHours": 24
+    },
+    {
+      "id": "plate_twist",
+      "rm": null,
+      "kind": "core",
+      "name": "Plate Twist",
+      "barId": null,
+      "active": true,
+      "rmAsOf": null,
+      "metrics": [
+        "weight",
+        "reps",
+        "volume",
+        "score"
+      ],
+      "profile": "core",
+      "rmStale": false,
+      "category": "core",
+      "repRange": [
+        12,
+        20
+      ],
+      "equipment": "plate",
+      "workWeight": 10,
+      "targetScore": 3,
+      "muscleGroups": [
+        "core"
+      ],
+      "recoveryHours": 24
+    },
+    {
+      "id": "plate_cocoon",
+      "rm": null,
+      "kind": "core",
+      "name": "Plate Cocoon",
+      "barId": null,
+      "active": true,
+      "rmAsOf": null,
+      "metrics": [
+        "weight",
+        "reps",
+        "volume",
+        "score"
+      ],
+      "profile": "core",
+      "rmStale": false,
+      "category": "core",
+      "repRange": [
+        10,
+        16
+      ],
+      "equipment": "plate",
+      "workWeight": 10,
+      "targetScore": 3,
+      "muscleGroups": [
+        "core"
+      ],
+      "recoveryHours": 24
+    },
+    {
+      "id": "lunge",
+      "rm": null,
+      "kind": "main",
+      "name": "Lunge",
+      "barId": "bar_std",
+      "active": false,
+      "rmAsOf": null,
+      "metrics": [
+        "weight",
+        "reps",
+        "volume",
+        "score",
+        "est1RM"
+      ],
+      "profile": "strength",
+      "rmStale": false,
+      "category": "barbell",
+      "repRange": [
+        8,
+        12
+      ],
+      "equipment": "barbell",
+      "workWeight": 30,
+      "targetScore": 3,
+      "muscleGroups": [
+        "legs",
+        "glutes"
+      ],
+      "recoveryHours": 48
+    },
+    {
+      "id": "pull_over",
+      "rm": 14.41,
+      "kind": "accessory",
+      "name": "Pull Over",
+      "barId": "bar_short",
+      "active": true,
+      "rmAsOf": "2026-06-05",
+      "metrics": [
+        "weight",
+        "reps",
+        "volume",
+        "score",
+        "est1RM"
+      ],
+      "profile": "strength",
+      "rmStale": false,
+      "category": "barbell",
+      "repRange": [
+        8,
+        12
+      ],
+      "equipment": "barbell",
+      "workWeight": 12.5,
+      "targetScore": 3,
+      "muscleGroups": [
+        "back",
+        "chest"
+      ],
+      "recoveryHours": 48
+    }
+  ],
+  "inventory": {
+    "bars": [
+      {
+        "id": "bar_std",
+        "name": "Standart",
+        "weight": 20,
+        "default": true
+      },
+      {
+        "id": "bar_short",
+        "name": "Leicht",
+        "weight": 10,
+        "default": false
+      },
+      {
+        "id": "bar_mpvmvzol4us",
+        "name": "SZ",
+        "weight": 12.5,
+        "default": false
+      }
+    ],
+    "plates": [
+      1.25,
+      2.5,
+      5,
+      10,
+      15,
+      20,
+      25
+    ],
+    "equipment": [
+      {
+        "id": "band-heavy",
+        "label": "Band stark",
+        "active": true
+      },
+      {
+        "id": "band-medium",
+        "label": "Band mittel",
+        "active": true
+      },
+      {
+        "id": "band-light",
+        "label": "Band leicht",
+        "active": true
+      },
+      {
+        "id": "pullup-bar",
+        "label": "Klimmzugstange",
+        "active": true
+      },
+      {
+        "id": "rings",
+        "label": "Ringe",
+        "active": false
+      },
+      {
+        "id": "parallettes",
+        "label": "Parallettes",
+        "active": false
+      }
+    ]
+  },
+  "templates": [
+    {
+      "id": "t_a",
+      "name": "A",
+      "image": "Workout A.jpeg",
+      "items": [
+        {
+          "role": "primary",
+          "exerciseId": "back_squat"
+        },
+        {
+          "role": "secondary",
+          "exerciseId": "bench_press"
+        },
+        {
+          "role": "core",
+          "exerciseId": "plate_situps"
+        }
+      ]
+    },
+    {
+      "id": "t_b",
+      "name": "B",
+      "image": "Workout B.jpeg",
+      "items": [
+        {
+          "role": "primary",
+          "exerciseId": "deadlift"
+        },
+        {
+          "role": "secondary",
+          "exerciseId": "bent_row"
+        },
+        {
+          "role": "core",
+          "exerciseId": "plate_twist"
+        }
+      ]
+    },
+    {
+      "id": "t_c",
+      "name": "C",
+      "image": "Workout C.jpeg",
+      "items": [
+        {
+          "role": "primary",
+          "exerciseId": "back_squat"
+        },
+        {
+          "role": "secondary",
+          "exerciseId": "push_press"
+        },
+        {
+          "role": "core",
+          "exerciseId": "pull_over"
+        }
+      ]
+    },
+    {
+      "id": "t_d",
+      "name": "D",
+      "image": "Workout D.jpeg",
+      "items": [
+        {
+          "role": "primary",
+          "exerciseId": "deadlift"
+        },
+        {
+          "role": "secondary",
+          "exerciseId": "barbell_curl"
+        },
+        {
+          "role": "core",
+          "exerciseId": "plate_situps"
+        }
+      ]
+    },
+    {
+      "id": "t_e",
+      "name": "E",
+      "image": "Workout E.jpeg",
+      "items": [
+        {
+          "role": "primary",
+          "exerciseId": "push_press"
+        },
+        {
+          "role": "secondary",
+          "exerciseId": "barbell_curl"
+        },
+        {
+          "role": "core",
+          "exerciseId": "pull_over"
+        }
+      ]
+    },
+    {
+      "id": "t_f",
+      "name": "F",
+      "image": "Workout F.jpeg",
+      "items": [
+        {
+          "role": "primary",
+          "exerciseId": "bench_press"
+        },
+        {
+          "role": "secondary",
+          "exerciseId": "bent_row"
+        },
+        {
+          "role": "core",
+          "exerciseId": "plate_cocoon"
+        }
+      ]
+    }
+  ],
+  "migrations": {
+    "journeyWeek": true,
+    "exerciseKind": true,
+    "pulloverSlots": true,
+    "templateItems": true,
+    "journeyTemplateLink": true,
+    "journeyFieldsStripped": true
+  },
+  "schemaVersion": "0.14",
+  "skillProgress": [
+    {
+      "log": [
+        {
+          "date": "2026-06-04",
+          "type": "activate"
+        },
+        {
+          "date": "2026-06-04",
+          "type": "reset"
+        }
+      ],
+      "active": true,
+      "skillId": "strict_pullup",
+      "mastered": false,
+      "currentPhase": 0,
+      "consecutiveCount": 0
+    },
+    {
+      "log": [
+        {
+          "date": "2026-06-04",
+          "type": "activate"
+        },
+        {
+          "date": "2026-06-04",
+          "type": "reset"
+        },
+        {
+          "to": 1,
+          "date": "2026-06-04",
+          "from": 0,
+          "type": "advance"
+        },
+        {
+          "to": 0,
+          "date": "2026-06-04",
+          "from": 1,
+          "type": "regress"
+        },
+        {
+          "to": 1,
+          "date": "2026-06-04",
+          "from": 0,
+          "type": "advance"
+        },
+        {
+          "to": 2,
+          "date": "2026-06-04",
+          "from": 1,
+          "type": "advance"
+        }
+      ],
+      "active": true,
+      "skillId": "pushup",
+      "mastered": false,
+      "currentPhase": 2,
+      "consecutiveCount": 0
+    }
+  ],
+  "_scoreScale": {
+    "note": "score (1-5) ist die gepflegte Groesse; rir/rpe/scoreLabel je Satz sind daraus abgeleitet und werden beim Re-Import verworfen.",
+    "map": {
+      "1": {
+        "rir": "4+",
+        "rpe": "≤6",
+        "label": "sehr leicht"
+      },
+      "2": {
+        "rir": "3",
+        "rpe": "7",
+        "label": "leicht"
+      },
+      "3": {
+        "rir": "2",
+        "rpe": "8",
+        "label": "im Ziel"
+      },
+      "4": {
+        "rir": "1",
+        "rpe": "9",
+        "label": "im Ziel (hart)"
+      },
+      "5": {
+        "rir": "0",
+        "rpe": "10",
+        "label": "Versagen"
+      }
+    }
+  }
+}

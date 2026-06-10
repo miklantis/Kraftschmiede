@@ -13,24 +13,24 @@
 <div id="app"></div>
 
 <!-- Reihenfolge ist wichtig:
-     1) Supabase-Client (CDN)  2) config.js  3) engine.js
-     4) supabase.js (definiert window.KSSync)  5) D3 (CDN, Grafiken)
-     6) data.js (Seed/Domaene/Migration an window.KS)
-     7) charts.js (Chart-/Plate-Funktionen an window.KS)
-     8) live.js (Live-Session/Timer/Audio an window.KS)
-     9) app.js (definiert window.KS-Helfer, ruft beim Init render + KSSync auf) -->
+     1) Supabase-Client (CDN)  2) config.js  3) js/engine.js
+     4) js/supabase.js (definiert window.KSSync)  5) D3 (CDN, Grafiken)
+     6) js/data.js (Seed/Domaene/Migration an window.KS)
+     7) js/charts.js (Chart-/Plate-Funktionen an window.KS)
+     8) js/live.js (Live-Session/Timer/Audio an window.KS)
+     9) js/app.js (definiert window.KS-Helfer, ruft beim Init render + KSSync auf) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
-<script src="engine.js"></script>
-<script src="supabase.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-<script src="data.js"></script>
-<script src="charts.js"></script>
-<script src="live.js"></script>
-<script src="yoga.js"></script>
-<script src="history.js"></script>
-<script src="io.js"></script>
-<script src="skills.js"></script>
-<script src="app.js"></script>
+<script src="js/data.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/live.js"></script>
+<script src="js/yoga.js"></script>
+<script src="js/history.js"></script>
+<script src="js/io.js"></script>
+<script src="js/skills.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
