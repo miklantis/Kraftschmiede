@@ -167,7 +167,7 @@
     // Container messen, aber mindestens ~48px pro Woche, damit nichts gequetscht
     // wird. Ist die Mindestbreite groesser als der Container (Mobile), wird die
     // Grafik breiter als der Container und horizontal scrollbar. Hoehe fest.
-    var H = 230, m = { t: 38, r: 16, b: 46, l: 16 };
+    var H = 240, m = { t: 38, r: 16, b: 56, l: 16 };
     var minW = N * 48 + m.l + m.r;
     var W = Math.max(Math.round(el.clientWidth || 680), minW);
     var iw = W - m.l - m.r, ih = H - m.t - m.b;
@@ -205,12 +205,24 @@
       // Label an den Raendern verankern, damit es nicht abgeschnitten wird
       var lmid = (x0 + x1) / 2, lanchor = "middle", lx = lmid;
       if (lmid < 30) { lanchor = "start"; lx = 0; } else if (lmid > iw - 30) { lanchor = "end"; lx = iw; }
-      g.append("text").attr("x", lx).attr("y", ih + 20).attr("text-anchor", lanchor)
+      g.append("text").attr("x", lx).attr("y", ih + 34).attr("text-anchor", lanchor)
         .style("fill", "var(--muted)").style("font-family", "var(--mono)").style("font-size", "11px")
         .text(b.name);
     });
 
     g.append("line").attr("x1", 0).attr("y1", ih).attr("x2", iw).attr("y2", ih).style("stroke", "var(--line2)").style("stroke-width", 1);
+
+    // Wochenraster: pro Woche ein kurzer Tick auf der Grundlinie plus die
+    // 1-basierte Wochennummer darunter, damit sich jede Woche einzeln ablesen
+    // laesst. Deload-Wochen bekommen einen kraeftigeren Tick zur Hervorhebung.
+    weeks.forEach(function (d) {
+      var wx = x(d.g);
+      g.append("line").attr("x1", wx).attr("y1", ih).attr("x2", wx).attr("y2", ih + 5)
+        .style("stroke", d.deload ? "var(--warn)" : "var(--line2)").style("stroke-width", d.deload ? 1.6 : 1);
+      g.append("text").attr("x", wx).attr("y", ih + 16).attr("text-anchor", "middle")
+        .style("fill", "var(--faint)").style("font-family", "var(--mono)").style("font-size", "9px")
+        .text(d.g + 1);
+    });
 
     var volLine = d3.line().x(function (d) { return x(d.g); }).y(function (d) { return yPix(ny(d.vol, vMin, vMax)); }).curve(d3.curveCatmullRom.alpha(0.5));
     var intLine = d3.line().x(function (d) { return x(d.g); }).y(function (d) { return yPix(ny(d.intens, iMin, iMax)); }).curve(d3.curveCatmullRom.alpha(0.5));
