@@ -606,17 +606,11 @@
           + '<div class="wk-ptbox' + (w.current ? ' cur' : '') + '">' + pdots + '</div></div>';
       }).join('');
       trailInner = '<div class="wk-sep"></div>'
-        + '<div class="wk-sechead"><span class="wk-seclab">Wochenverlauf</span>'
-        + '<span class="wk-pos">Journey-Woche <strong>' + jwDisp + '</strong>' + (totalWeeks ? ' / ' + totalWeeks : '') + '</span></div>'
-        + '<div class="wk-wblocks">' + blocks + '</div>'
-        + '<div class="wk-foot">'
-        + '<span class="wk-trail-hint">Erfüllte Wochen rücken die Journey-Woche vor; nicht erfüllte werden wiederholt.</span>'
-        + '<span class="wk-legend"><span><i class="good"></i>erfüllt</span><span><i class="miss"></i>verpasst</span><span><i class="open"></i>offen</span></span>'
-        + '</div>';
+        + '<div class="wk-sechead"><span class="wk-seclab">Wochenverlauf</span></div>'
+        + '<div class="wk-wblocks">' + blocks + '</div>';
     }
     var statusBox = '<div class="wk-box">'
-      + '<div class="wk-sechead"><span class="wk-seclab">Aktuelle Phase</span>'
-      + '<span class="wk-pos">Phase <strong>' + phaseNo + '</strong> / ' + phaseCount + '</span></div>'
+      + '<div class="wk-sechead"><span class="wk-seclab">Aktuelle Phase</span></div>'
       + '<div class="wk-phase-name">' + esc((cp || {}).name || '—') + '</div>'
       + '<div class="wk-phase-meta">' + phaseMeta + '</div>'
       + trailInner
