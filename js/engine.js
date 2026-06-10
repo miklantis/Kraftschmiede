@@ -199,6 +199,56 @@
   }
   function avg(a) { return a.length ? a.reduce(function (x, y) { return x + y; }, 0) / a.length : 0; }
 
+  // ---------- Phasenwechsel: Arbeitsgewicht auf neue Repband-Zone (6.6) ----------
+  // Beim Wechsel des Ziel-Repbands (Phasenuebergang) wird das Arbeitsgewicht EINMALIG
+  // an die neue Intensitaetszone angepasst, statt nur in Schritten nachzulaufen. Reine
+  // Rechnung: kennt weder DB noch Phase, bekommt nur ein geschaetztes 1RM und die Zone.
+
+  // Invertierte Epley-Naeherung: Last fuer 'reps' saubere Wiederholungen bei gegebenem
+  // 1RM. Epley, weil als einzige der Formeln geschlossen invertierbar; das gepufferte,
+  // abgerundete Ergebnis macht die Wahl der Formel unkritisch. reps=1 => 1RM selbst.
+  function loadForReps(oneRMv, reps) {
+    if (!(oneRMv > 0) || !(reps > 0)) return 0;
+    if (reps <= 1) return oneRMv;
+    return oneRMv / (1 + reps / 30);
+  }
+
+  // Zielarbeitsgewicht beim Phasenwechsel.
+  //   est1RM   : geschaetztes 1RM aus der letzten sauberen Session (oder null)
+  //   repRange : [min,max] der NEUEN Phase
+  //   opts     : { bar, plates, currentWeight, bufferReps, maxUpPct }
+  // Verletzungsbewusst & asymmetrisch:
+  //   - Ankerpunkt ist das OBERE (leichtere) Zonenende plus RIR-Puffer (bufferReps,
+  //     Default 2 ~ 2 RIR) -> bewusst konservative, nie maximale Last.
+  //   - Immer auf ladbares Gewicht ABGERUNDET (zusaetzlicher Sicherheitspuffer).
+  //   - Nach UNTEN (Ziel leichter als aktuell, z.B. Kraft -> Hypertrophie) direkt auf
+  //     das Zielgewicht: die zu schwere Altlast wird sofort entschaerft.
+  //   - Nach OBEN (Ziel schwerer, z.B. Hypertrophie -> Kraft) auf das Zielgewicht, aber
+  //     prozentual gedeckelt (maxUpPct, Default 0.12) gegen eine zu hohe 1RM-Schaetzung;
+  //     den Rest holt die Doppelprogression Session fuer Session.
+  //   - Ohne 1RM bleibt das aktuelle Gewicht unangetastet (decision "hold").
+  function workWeightForPhase(est1RM, repRange, opts) {
+    opts = opts || {};
+    var bar = opts.bar || { weight: 20 };
+    var plates = opts.plates || [1.25, 2.5, 5, 10, 15, 20, 25];
+    var cur = opts.currentWeight || bar.weight;
+    var buffer = opts.bufferReps == null ? 2 : opts.bufferReps;
+    var maxUp = opts.maxUpPct == null ? 0.12 : opts.maxUpPct;
+    var range = repRange || [8, 12];
+    if (!(est1RM > 0)) {
+      return { weight: cur, decision: "hold", note: "kein 1RM – Gewicht halten" };
+    }
+    var reps = (range[1] || range[0] || 8) + buffer;          // oberes, leichteres Bandende + RIR
+    var target = nearestLoadable(loadForReps(est1RM, reps), bar.weight, plates, true); // abrunden
+    if (target >= cur) {
+      var cap = nearestLoadable(cur * (1 + maxUp), bar.weight, plates, true);
+      if (target > cap) target = cap;
+      if (target <= cur) return { weight: cur, decision: "hold", note: "Phasenwechsel: bereits passend, Gewicht halten" };
+      return { weight: target, decision: "raise", note: "Phasenwechsel: Last gepuffert auf neue Zone angehoben" };
+    }
+    return { weight: target, decision: "lower", note: "Phasenwechsel: zu schwere Last auf leichtere Zone gesenkt" };
+  }
+
   // ---------- Workout-Auswahl: Suitability (6.1) ----------
   // ctx: { now (ms), lastByExercise:{exId: ms}, soreness:{legs,upper_body,overall}, weekCounts:{exId:n}, phase, freqTarget }
   // template: { id, lift1, lift2, core }  exercise lookup via opts.exMap
@@ -386,6 +436,7 @@
     scoreInfo: scoreInfo, SCORE_MAP: SCORE_MAP,
     metTarget: metTarget, hadDeviation: hadDeviation,
     generateWarmup: generateWarmup, suggestWeight: suggestWeight,
+    loadForReps: loadForReps, workWeightForPhase: workWeightForPhase,
     suitability: suitability, mapMusclesToRegions: mapMusclesToRegions,
     volumeForWeek: volumeForWeek, rampSets: rampSets, deloadCheck: deloadCheck,
     recoveryCheck: recoveryCheck, workSets: workSets,

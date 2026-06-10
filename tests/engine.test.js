@@ -92,5 +92,39 @@ eq(advClamp.phaseIndex, 1, "skillAdvice: currentPhase ueber Ende -> clamp auf le
 eq(advClamp.mastered, true, "skillAdvice: mastered durchgereicht");
 eq(advClamp.readyToAdvance, false, "skillAdvice: mastered nicht mehr aufstiegsreif");
 
+/* loadForReps – invertierte Epley-Naeherung */
+eq(E.loadForReps(100, 1), 100, "loadForReps: 1 Wdh = 1RM");
+eq(E.loadForReps(0, 5), 0, "loadForReps: ohne 1RM = 0");
+eq(Math.round(E.loadForReps(100, 5)), 86, "loadForReps: 5 Wdh ~ 86% 1RM");
+
+/* workWeightForPhase – Phasenwechsel auf neue Repband-Zone (bar 20, Schritt 2,5) */
+var WP = { bar: { weight: 20 }, plates: [1.25, 2.5, 5, 10, 15, 20, 25] };
+function wpOpts(cur, extra) { var o = { bar: WP.bar, plates: WP.plates, currentWeight: cur }; for (var k in (extra||{})) o[k]=extra[k]; return o; }
+
+// kein 1RM -> Gewicht halten
+var wHold = E.workWeightForPhase(null, [8, 12], wpOpts(70));
+eq(wHold.decision, "hold", "Phase: ohne 1RM halten");
+eq(wHold.weight, 70, "Phase: ohne 1RM Gewicht unveraendert");
+
+// Kraft -> Hypertrophie: altes Gewicht zu schwer -> senken (direkt)
+var wLow = E.workWeightForPhase(100, [8, 12], wpOpts(85));
+eq(wLow.decision, "lower", "Phase: zu schwere Altlast wird gesenkt");
+eq(wLow.weight, 67.5, "Phase: gesenkt auf oberes Zonenende (~14 Wdh, abgerundet)");
+
+// Hypertrophie -> Kraft: leichtes Gewicht, Sprung nach oben gedeckelt
+var wCap = E.workWeightForPhase(100, [4, 6], wpOpts(60));
+eq(wCap.decision, "raise", "Phase: Aufwaertswechsel angehoben");
+eq(wCap.weight, 65, "Phase: Anhebung auf +12% gedeckelt (60 -> 65)");
+
+// Hypertrophie -> Kraft ohne Deckel-Eingriff: Zielzone unter dem Deckel
+var wUp = E.workWeightForPhase(100, [4, 6], wpOpts(75));
+eq(wUp.decision, "raise", "Phase: Aufwaertswechsel ohne Deckel");
+eq(wUp.weight, 77.5, "Phase: gepuffert auf oberes Kraft-Zonenende (~8 Wdh)");
+
+// bereits passend -> halten
+var wKeep = E.workWeightForPhase(100, [8, 12], wpOpts(67.5));
+eq(wKeep.decision, "hold", "Phase: bereits passend -> halten");
+eq(wKeep.weight, 67.5, "Phase: Gewicht bleibt");
+
 console.log(fails ? ("\n" + fails + " Test(s) fehlgeschlagen.") : "\nAlle Tests gruen.");
 process.exit(fails ? 1 : 0);
