@@ -120,7 +120,7 @@
     }
   }
   function focusLabel(f) {
-    return ({ reentry: "Wiedereinstieg", hypertrophy: "Hypertrophie", strength: "Maximalkraft", power: "Schnellkraft", endurance: "Kraftausdauer", test: "Test/Peak", maintenance: "Erhaltung" })[f] || f;
+    return ({ reentry: "Wiedereinstieg", hypertrophy: "Hypertrophie", strength: "Maximalkraft", power: "Intensivierung", endurance: "Kraftausdauer", test: "Test/Peak", maintenance: "Erhaltung" })[f] || f;
   }
 
   /* Kuratierte Journey-Vorlagen. Phasen: n=Name f=Fokus w=Wochen s0/s1=Satz-Rampe dl=Deload-Woche rt=Repband */
