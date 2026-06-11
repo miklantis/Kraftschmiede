@@ -305,10 +305,25 @@
     });
     reasons.push("Wochenbalance berücksichtigt");
 
-    // Phasen-Fit (einfach: passt Profil zur Phase)
+    // Phasen-Fit: in kraftorientierten Phasen (strength/power/test) zaehlt jeder
+    // schwere Hauptlift (kind "main") extra -> Templates mit mehr Grundübungen
+    // ranken hoeher und werden oefter empfohlen. Hoehere Frequenz pro Hauptlift
+    // ist evidenzbasiert vorteilhaft fuer Maximalkraft. Erholungsfenster (-2) und
+    // Kater-Ausschluss stehen im Score darueber und bleiben das Geländer.
+    // Uebrige Phasen (reentry/hypertrophy/endurance/maintenance) bleiben neutral.
     if (ctx.phase && ctx.phase.focus) {
-      // hier neutral; Erweiterung später
-      score += 0.5; reasons.push("Phasen-Fit +0.5");
+      var pf = ctx.phase.focus;
+      if (pf === "strength" || pf === "power" || pf === "test") {
+        var mains = 0;
+        ids.forEach(function (id) {
+          var exo = exMap[id];
+          if (exo && exo.kind === "main") mains++;
+        });
+        var pb = round2(mains * 0.6);
+        score += pb; reasons.push("Kraftphase: " + mains + " Hauptlift(s) +" + pb);
+      } else {
+        score += 0.5; reasons.push("Phasen-Fit +0.5");
+      }
     }
 
     return { score: round2(score), excluded: excluded, reasons: reasons };

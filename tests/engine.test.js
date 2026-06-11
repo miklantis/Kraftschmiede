@@ -126,5 +126,26 @@ var wKeep = E.workWeightForPhase(100, [8, 12], wpOpts(67.5));
 eq(wKeep.decision, "hold", "Phase: bereits passend -> halten");
 eq(wKeep.weight, 67.5, "Phase: Gewicht bleibt");
 
+/* ===== suitability – Phasen-Fit: Hauptlift-Gewichtung in Kraftphasen ===== */
+var suExMap = {
+  sq: { id: "sq", name: "Squat", kind: "main", muscleGroups: ["legs"], recoveryHours: 48 },
+  bp: { id: "bp", name: "Bench", kind: "main", muscleGroups: ["chest"], recoveryHours: 48 },
+  cu: { id: "cu", name: "Curl", kind: "accessory", muscleGroups: ["biceps"], recoveryHours: 48 },
+  co: { id: "co", name: "Core", kind: "core", muscleGroups: ["core"], recoveryHours: 24 }
+};
+var tplTwoMain = { id: "t2", items: [{ exerciseId: "sq" }, { exerciseId: "bp" }, { exerciseId: "co" }] };
+var tplOneMain = { id: "t1", items: [{ exerciseId: "sq" }, { exerciseId: "cu" }, { exerciseId: "co" }] };
+function suit(t, focus) {
+  return E.suitability(t, { now: Date.now(), lastByExercise: {}, soreness: {}, weekCounts: {}, phase: { focus: focus } }, { exMap: suExMap });
+}
+function diff2(a, b) { return Math.round((a - b) * 100) / 100; }
+
+eq(diff2(suit(tplTwoMain, "strength").score, suit(tplOneMain, "strength").score), 0.6,
+   "Kraftphase: 2 Hauptlifts schlagen 1 (+0.6 pro Hauptlift)");
+eq(diff2(suit(tplTwoMain, "hypertrophy").score, suit(tplOneMain, "hypertrophy").score), 0,
+   "Hypertrophie-Phase: kein Hauptlift-Bonus, Templates gleichauf");
+eq(diff2(suit(tplTwoMain, "test").score, suit(tplTwoMain, "hypertrophy").score), 0.7,
+   "Testphase: 2 Hauptlifts (+1.2) vs. neutraler Fit (+0.5), Delta 0.7");
+
 console.log(fails ? ("\n" + fails + " Test(s) fehlgeschlagen.") : "\nAlle Tests gruen.");
 process.exit(fails ? 1 : 0);
