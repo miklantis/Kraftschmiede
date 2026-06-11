@@ -404,9 +404,21 @@
       skillPhase(4, "Negativs", ["pullup-bar"], 2, [
         skEx("Negative Pull-Up", "reps", 3, 5, "5 Sek. ablassen")
       ], "Sauber und langsam ablassen, Spannung halten."),
-      skillPhase(5, "Freier Klimmzug", ["pullup-bar"], 2, [
-        skEx("Strict Pull-Up", "reps", 3, 8)
-      ])
+      skillPhase(5, "Baby-Klimmzüge", ["pullup-bar"], 2, [
+        skEx("Strict Pull-Up", "reps", 1, 3)
+      ], "Erste freie Klimmzüge — sauber aus dem Hang, ohne Schwung."),
+      skillPhase(6, "Junge Klimmzüge", ["pullup-bar"], 2, [
+        skEx("Strict Pull-Up", "reps", 3, 3)
+      ]),
+      skillPhase(7, "Meister-Klimmzüge", ["pullup-bar"], 2, [
+        skEx("Strict Pull-Up", "reps", 6, 3)
+      ]),
+      skillPhase(8, "Hero-Klimmzüge", ["pullup-bar"], 2, [
+        skEx("Strict Pull-Up", "reps", 9, 3)
+      ]),
+      skillPhase(9, "Traum-Klimmzüge", ["pullup-bar"], 2, [
+        skEx("Strict Pull-Up", "reps", 12, 3)
+      ], "12×3 strenge Klimmzüge — das Ziel.")
     ], "Strict_pull_up.jpeg"),
     skill("pushup", "Pushup", "gymnastics", [
       skillPhase(0, "Knie-Liegestütze", [], 2, [
