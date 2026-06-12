@@ -67,7 +67,8 @@
         }
       ],
       sessions: [],
-      bodyLog: []
+      bodyLog: [],
+      composition: []
     };
   }
   // Funktions-Kategorie einer Uebung (was sie ist), unabhaengig von der Position im Workout.
@@ -484,6 +485,7 @@
     db.journeys = db.journeys || [];
     db.exercises = db.exercises || [];
     db.bodyLog = db.bodyLog || [];
+    db.composition = db.composition || [];
     db.templates = db.templates || [];
     // Vorschaubild-Feld feldweise nachruesten (non-destruktiv): vorhandene image-Werte
     // bleiben unangetastet, fehlende werden bequem aus dem Namen abgeleitet.
