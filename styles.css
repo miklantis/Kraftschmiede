@@ -1090,27 +1090,29 @@ body{overflow-x:clip}
    beiden Bloecke (Messungs-Liste und Import) sich nicht beruehren. */
 .comp-import-card{margin-top:14px}
 
-/* Messungs-Item: X immer rechts am Anfang des Werteblocks halten. Werte
-   (.bl-vals) fuellen den Platz und umbrechen mehrzeilig; der Loeschen-Button
-   sitzt oben rechts daneben und kann nicht in eine eigene Zeile rutschen. */
-.comp-item{align-items:flex-start}
-.comp-item .bl-vals{flex:1 1 auto;min-width:0;line-height:1.5}
-.comp-item .danger{margin-left:0;flex:0 0 auto}
+/* Messungs-Item: festes 3-Spalten-Grid. Datum links, Werte in der Mitte
+   (umbrechen mehrzeilig bei Bedarf), Loeschen-X in fester Spalte rechts.
+   So hat das X immer denselben festen Platz und schwimmt nicht im Text. */
+.comp-item{display:grid;grid-template-columns:auto 1fr auto;align-items:start;column-gap:12px;row-gap:4px}
+.comp-item .bl-date{min-width:0}
+.comp-item .bl-vals{min-width:0;line-height:1.5;word-break:break-word}
+.comp-item .danger{margin:0}
 
-/* Koerperzustand-Item: gleiches Prinzip. Werte fuellen den Platz, die
-   optionale Notiz (.bl-note) umbricht ueber die volle Breite in eine
-   neue Zeile; das Loeschen-X bleibt oben rechts statt in eigener Zeile. */
-.body-item{align-items:flex-start}
-.body-item .bl-vals{flex:1 1 auto;min-width:0;line-height:1.5}
-.body-item .bl-note{flex:1 1 100%;order:3}
-.body-item .danger{margin-left:0;flex:0 0 auto}
+/* Koerperzustand-Item: gleiches 3-Spalten-Grid. Die optionale Notiz
+   (.bl-note) laeuft als eigene Zeile ueber alle drei Spalten unter den Werten. */
+.body-item{display:grid;grid-template-columns:auto 1fr auto;align-items:start;column-gap:12px;row-gap:4px}
+.body-item .bl-date{min-width:0}
+.body-item .bl-vals{min-width:0;line-height:1.5;word-break:break-word}
+.body-item .bl-note{grid-column:1 / -1;line-height:1.4}
+.body-item .danger{margin:0}
 
 /* ============================================================
    v0.39 – Koerpermessung (Composition): Abstand zwischen
    Messungs-Verlauf (.blog-list) und Import-Karte (.comp-import-card,
-   margin-top). Zusaetzlich .comp-item und .body-item: Werteblock
-   umbricht mehrzeilig, Loeschen-X bleibt rechts am Ende statt in
-   eigener Zeile (beide Verlaufslisten im Koerper-Tab).
+   margin-top). Zusaetzlich .comp-item und .body-item als festes
+   3-Spalten-Grid (Datum | Werte | X): Werte umbrechen mehrzeilig, das
+   Loeschen-X hat eine feste Spalte rechts und schwimmt nicht im Text.
+   Notiz im Koerperzustand laeuft als eigene Zeile ueber alle Spalten.
    Eigene Klassen statt globaler .card-/.blog-item-Aenderung.
    Unberuehrt: bestehende .card/.body-form/.blog-list/.blog-item-Regeln,
    Desktop- und Mobile-Layout sonst.
