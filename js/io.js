@@ -64,7 +64,7 @@
       KS.replaceDB(data); toast("Ersetzt."); return;
     }
     // additiv / update – Teil-JSON erlaubt
-    var sections = ["exercises", "templates", "journeys", "sessions"];
+    var sections = ["exercises", "templates", "journeys", "sessions", "composition"];
     var added = 0, updated = 0;
     sections.forEach(function (sec) {
       if (!Array.isArray(data[sec])) return;
@@ -87,6 +87,27 @@
     persist(); render(); toast(added + " hinzugefügt, " + updated + " aktualisiert.");
   }
 
+  // Eigener, schlanker Import nur fuer Composition-Fragmente (InBody-/BIA-Messungen).
+  // Erwartet { composition: [ {date, ...}, ... ] }; nimmt rein additiv eine Messung
+  // pro Datum auf, eine erneute Messung am selben Datum ueberschreibt (update by date).
+  // Bewusst ohne Ersetzen/confirm – fuegt nur hinzu, ruehrt sonst nichts an.
+  function importComposition(text) {
+    var data; try { data = JSON.parse(text); } catch (e) { alert("Ungültiges JSON: " + e.message); return; }
+    var rows = Array.isArray(data) ? data : (data && Array.isArray(data.composition) ? data.composition : null);
+    if (!rows) { alert("Kein composition-Array gefunden."); return; }
+    var DB = db();
+    DB.composition = DB.composition || [];
+    var added = 0, updated = 0;
+    rows.forEach(function (item) {
+      if (!item || !item.date) return;
+      var existing = DB.composition.find(function (x) { return x.date === item.date; });
+      if (existing) { Object.assign(existing, item); updated++; }
+      else { DB.composition.push(clone(item)); added++; }
+    });
+    DB.composition.sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+    persist(); render(); toast(added + " Messung(en) hinzugefügt, " + updated + " aktualisiert.");
+  }
+
   function doImport() {
     var mode = (document.querySelector('input[name="impmode"]:checked') || {}).value || "append";
     var ta = document.getElementById("import-text"); var fileInp = document.getElementById("import-file");
@@ -106,4 +127,5 @@
   KS.download = download;
   KS.doImport = doImport;
   KS.copyExport = copyExport;
+  KS.importComposition = importComposition;
 })();
