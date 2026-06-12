@@ -925,6 +925,13 @@
     html += '</div><div class="plate-add"><input type="number" step="0.25" class="num" id="plate-new" placeholder="z.B. 0.5"><button class="btn tiny ghost" data-action="plate-add">+ Scheibe</button></div>';
     html += '<div class="hint">Kleinster Sprung gesamt: <strong>' + fmtW(2 * E.plateGrid(DB.inventory.plates)) + '</strong></div></div>';
 
+    html += '<div class="card"><div class="sets-title">Inventar · Kettlebells (kg)</div><div class="plate-chips">';
+    (DB.inventory.kettlebells || []).slice().sort(function (a, b) { return a - b; }).forEach(function (k) {
+      html += '<span class="plate-chip">' + fmtNum(k) + ' <button data-action="kb-del" data-k="' + k + '">×</button></span>';
+    });
+    html += '</div><div class="plate-add"><input type="number" step="0.5" class="num" id="kb-new" placeholder="z.B. 14"><button class="btn tiny ghost" data-action="kb-add">+ Kettlebell</button></div>';
+    html += '<div class="hint">Einzelgewichte für Core- und Kettlebell-Übungen. Frei wählbar.</div></div>';
+
     // Inventar · Geraete (Skills). Wirkt nur als Auswahl-Tor: ein Skill ist nur
     // startbar, wenn alle in seiner aktuellen Phase geforderten Geraete aktiv sind.
     var EQ = DB.inventory.equipment || [];
@@ -1086,6 +1093,8 @@
       case "bar-del": var bi = +el.getAttribute("data-i"); if (bi === 0) { toast("Die erste Stange ist die Vorauswahl und kann nicht gelöscht werden."); } else { DB.inventory.bars.splice(bi, 1); State.persist(); render(); } break;
       case "plate-del": DB.inventory.plates = DB.inventory.plates.filter(function (p) { return p !== parseFloat(el.getAttribute("data-p")); }); State.persist(); render(); break;
       case "plate-add": addPlate(); break;
+      case "kb-del": DB.inventory.kettlebells = (DB.inventory.kettlebells || []).filter(function (k) { return k !== parseFloat(el.getAttribute("data-k")); }); State.persist(); render(); break;
+      case "kb-add": addKettlebell(); break;
       case "loader-calc": loaderCalc(); break;
       case "export": download(); break;
       case "export-copy": copyExport(); break;
@@ -1212,6 +1221,7 @@
     State.persist();
   }
   function addPlate() { var inp = document.getElementById("plate-new"); var v = parseFloat(inp.value); if (v > 0 && DB.inventory.plates.indexOf(v) < 0) { DB.inventory.plates.push(v); State.persist(); render(); } }
+  function addKettlebell() { var inp = document.getElementById("kb-new"); var v = parseFloat(inp.value); DB.inventory.kettlebells = DB.inventory.kettlebells || []; if (v > 0 && DB.inventory.kettlebells.indexOf(v) < 0) { DB.inventory.kettlebells.push(v); State.persist(); render(); } }
   function loaderCalc() {
     var tgt = parseFloat(document.getElementById("loader-target").value);
     var barId = document.getElementById("loader-bar").value; var bar = barById(barId);

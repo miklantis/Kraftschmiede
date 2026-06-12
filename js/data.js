@@ -40,9 +40,9 @@
         ex("bent_row", "Bent Row", "strength", "lift2", "bar_std", ["back", "biceps"], [8, 12], 30),
         ex("push_press", "Push Press", "strength", "lift1", "bar_std", ["shoulders", "triceps"], [5, 10], 25),
         ex("barbell_curl", "Barbell Curl", "strength", "lift2", "bar_std", ["biceps"], [8, 12], 20),
-        core("plate_situps", "Situps", [12, 20], 5),
-        core("plate_twist", "Twist", [12, 20], 5),
-        core("plate_cocoon", "Cocoon", [10, 16], 5),
+        core("plate_situps", "Core Situps", [12, 20], 5),
+        core("plate_twist", "Core Twist", [12, 20], 5),
+        core("plate_cocoon", "Core Cocoon", [10, 16], 5),
         ex("lunge", "Lunge", "strength", "lift1", "bar_std", ["legs", "glutes"], [8, 12], 30, 48, false),
         ex("pull_over", "Pull Over", "strength", "lift2", "bar_std", ["back", "chest"], [8, 12], 20, 48)
       ],
@@ -606,17 +606,23 @@
     // Kettlebell-Inventar non-destruktiv nachruesten (Schema 0.14+). Bestehende
     // Listen bleiben unberuehrt, fehlt die Liste, kommt die Standard-Reihe rein.
     if (!db.inventory.kettlebells) db.inventory.kettlebells = [4, 6, 8, 10, 12, 16, 20, 24];
-    // Einmalig: Core-Uebungen geraeteneutral benennen (Plate -> ohne Geraet), da sie
-    // mit Scheibe ODER Kettlebell ausgefuehrt werden. IDs bleiben, daher bleiben
-    // Verlauf und Template-Verknuepfungen gueltig. Greift nur, wenn noch der alte
-    // Default-Name steht (selbst gewaehlte Namen bleiben erhalten).
-    if (!db.migrations.coreNeutralNames) {
-      var coreRename = { plate_situps: ["Plate Situps", "Situps"], plate_twist: ["Plate Twist", "Twist"], plate_cocoon: ["Plate Cocoon", "Cocoon"] };
+    // Einmalig: Core-Uebungen einheitlich mit Praefix "Core" benennen, da sie
+    // geraeteneutral mit Scheibe ODER Kettlebell ausgefuehrt werden. IDs bleiben,
+    // daher bleiben Verlauf und Template-Verknuepfungen gueltig. Deckt alle alten
+    // Default-Staende ab ("Plate X" und das Zwischenstadium ohne Geraet); selbst
+    // gewaehlte Namen bleiben erhalten. Eigener Guard, damit der Schritt auch bei
+    // bereits einmal umbenannten Bestaenden (coreNeutralNames) erneut greift.
+    if (!db.migrations.coreClassPrefix) {
+      var coreRename = {
+        plate_situps: { old: ["Plate Situps", "Situps"], neu: "Core Situps" },
+        plate_twist: { old: ["Plate Twist", "Twist"], neu: "Core Twist" },
+        plate_cocoon: { old: ["Plate Cocoon", "Cocoon"], neu: "Core Cocoon" }
+      };
       db.exercises.forEach(function (e) {
         var r = coreRename[e.id];
-        if (r && e.name === r[0]) e.name = r[1];
+        if (r && r.old.indexOf(e.name) >= 0) e.name = r.neu;
       });
-      db.migrations.coreNeutralNames = true;
+      db.migrations.coreClassPrefix = true;
     }
   }
 
