@@ -798,7 +798,45 @@
         + (e.notes ? '<span class="bl-note">' + esc(e.notes) + '</span>' : '')
         + '<button class="btn tiny ghost danger" data-action="body-del" data-d="' + esc(e.date) + '">×</button></div>';
     }).join("") + '</div>';
+
+    html += bodyCompositionHTML();
     return html;
+  }
+
+  // Koerpermessungen (InBody/BIA) – read-only Verlauf + schlanker Import.
+  // Werte kommen ueber den inbody-extractor-Skill als JSON-Fragment; hier nur
+  // anzeigen und einspielen, kein Bearbeiten im UI.
+  function bodyCompositionHTML() {
+    var comp = (DB.composition || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    var h = '<div class="section-title">Körpermessung (' + comp.length + ')</div>';
+    h += '<p class="hint body-lead">InBody-/BIA-Messungen. Screenshots über den Claude-Skill in ein JSON-Fragment wandeln und unten einspielen.</p>';
+    if (!comp.length) h += '<div class="empty">Noch keine Messung. Fragment unten einfügen und importieren.</div>';
+    else h += '<div class="blog-list">' + comp.map(function (e) {
+      var parts = [];
+      if (e.weight != null) parts.push("Gewicht " + e.weight + " kg");
+      if (e.bodyFatKg != null || e.bodyFatPct != null) {
+        var fat = [];
+        if (e.bodyFatKg != null) fat.push(e.bodyFatKg + " kg");
+        if (e.bodyFatPct != null) fat.push(e.bodyFatPct + " %");
+        parts.push("Fett " + fat.join(" · "));
+      }
+      if (e.skeletalMuscleKg != null) parts.push("Muskel " + e.skeletalMuscleKg + " kg");
+      if (e.tbwKg != null) parts.push("Wasser " + e.tbwKg + " kg");
+      if (e.phaseAngle != null) parts.push("Phasenwinkel " + e.phaseAngle + "°");
+      if (e.visceralFat != null) parts.push("Viszeral " + e.visceralFat);
+      var meta = [];
+      if (e.heightCm != null) meta.push(e.heightCm + " cm");
+      if (e.age != null) meta.push(e.age + " J.");
+      return '<div class="blog-item"><span class="bl-date">' + esc(e.date) + (meta.length ? ' <span class="bl-today">' + esc(meta.join(" · ")) + '</span>' : '') + '</span>'
+        + '<span class="bl-vals">' + esc(parts.join(" · ")) + '</span>'
+        + '<button class="btn tiny ghost danger" data-action="comp-del" data-d="' + esc(e.date) + '">×</button></div>';
+    }).join("") + '</div>';
+    h += '<div class="card body-form"><div class="sets-title">Messung importieren</div>'
+      + '<textarea id="comp-import-text" class="notes" rows="5" placeholder="JSON-Fragment einfügen ( { &quot;composition&quot;: [ … ] } )"></textarea>'
+      + '<div class="hint scale-hint">Rein additiv – eine Messung pro Datum. Eine erneute Messung am selben Datum überschreibt diese.</div>'
+      + '<div class="body-actions"><button class="btn primary" data-action="comp-import">Messung importieren</button></div>'
+      + '</div>';
+    return h;
   }
   function cloneBody(e) { return { date: e.date, legs: e.legs || 0, upper_body: e.upper_body || 0, overall: e.overall || 0, pain: { flag: !!(e.pain && e.pain.flag), note: (e.pain && e.pain.note) || "" }, readiness: e.readiness || 3, notes: e.notes || "" }; }
   // Formular-Aenderung wirkt nur auf den Entwurf, ohne Re-Render (Fokus halten),
@@ -1026,6 +1064,7 @@
   function download() { return KS.download.apply(null, arguments); }
   function doImport() { return KS.doImport.apply(null, arguments); }
   function copyExport() { return KS.copyExport.apply(null, arguments); }
+  function importComposition() { return KS.importComposition.apply(null, arguments); }
 
   /* =========================================================
      Events (Delegation)
@@ -1063,6 +1102,8 @@
       case "del-session": if (confirm("Session löschen?")) { DB.sessions = DB.sessions.filter(function (s) { return s.id !== el.getAttribute("data-id"); }); State.persist(); render(); } break;
       case "body-save": saveBodyToday(); break;
       case "body-del": var bd = el.getAttribute("data-d"); DB.bodyLog = DB.bodyLog.filter(function (e) { return e.date !== bd; }); if (bd === today()) UI.bodyDraft = blankBody(); State.persist(); render(); break;
+      case "comp-import": var cta = document.getElementById("comp-import-text"); if (cta && cta.value.trim()) importComposition(cta.value); else alert("Bitte JSON-Fragment einfügen."); break;
+      case "comp-del": var cd = el.getAttribute("data-d"); if (!confirm("Messung vom " + cd + " löschen?")) break; DB.composition = (DB.composition || []).filter(function (e) { return e.date !== cd; }); State.persist(); render(); break;
       case "wo-view": UI.woView = el.getAttribute("data-v"); render(); break;
       case "cal-prev": calShift(-1); break;
       case "cal-next": calShift(1); break;
