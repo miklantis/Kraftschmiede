@@ -667,36 +667,77 @@
     persist();
   }
 
-  /* Stoppuhr fuer Dauer-Saetze: eine zur Zeit. Schreibt Sekunden in set.value,
-     piept beim Erreichen des Ziels; Wert bleibt manuell ueberschreibbar. */
-  var skWatch = { ei: -1, si: -1, t: null, base: 0, startMs: 0, beeped: false };
+  /* Stoppuhr fuer Dauer-Saetze: eine zur Zeit. Ablauf:
+     1) Vorlauf-Countdown (LEAD_SEC, rot, 5-4-3-2-1) als Zeit zum Einnehmen
+        der Position; schreibt NICHTS in set.value, das Feld zeigt nur die
+        verbleibenden Sekunden. Bei jedem Sekundenwechsel ein kurzer Klick,
+        bei 0 ein Start-Signal (Pieps + Vibration).
+     2) danach die eigentliche Stoppuhr (weiss, hochzaehlend) -> set.value,
+        piept beim Erreichen des Ziels; Wert bleibt manuell ueberschreibbar. */
+  var LEAD_SEC = 5;
+  var skWatch = { ei: -1, si: -1, t: null, base: 0, startMs: 0, beeped: false, lead: 0, lastLead: -1 };
   function updateWatchBtn(ei, si, running) {
     var b = document.querySelector('.sk-watch-btn[data-ei="' + ei + '"][data-si="' + si + '"]');
     if (b) { b.textContent = running ? "\u25A0" : "\u25B7"; b.classList.toggle("running", !!running); }
   }
+  function watchInput(ei, si) {
+    return document.querySelector('[data-skset="value"][data-ei="' + ei + '"][data-si="' + si + '"]');
+  }
   function skillWatchTick() {
     if (skWatch.ei < 0) return;
     var ex = KS.UI.live.exercises[skWatch.ei]; var st = ex.sets[skWatch.si];
+    var inp = watchInput(skWatch.ei, skWatch.si);
+    // Phase 1: Vorlauf-Countdown
+    if (skWatch.lead > 0) {
+      var leftMs = skWatch.lead * 1000 - (Date.now() - skWatch.startMs);
+      var left = Math.max(0, Math.ceil(leftMs / 1000));
+      if (left !== skWatch.lastLead) {
+        skWatch.lastLead = left;
+        if (inp) inp.value = left;
+        if (left > 0) clickTick(true); // Tick je Sekunde waehrend des Vorlaufs
+      }
+      if (leftMs <= 0) {
+        // Vorlauf vorbei -> auf Stoppuhr umschalten
+        skWatch.lead = 0; skWatch.lastLead = -1; skWatch.startMs = Date.now();
+        if (inp) inp.classList.remove("counting");
+        playBeep(); buzz(); // Start-Signal
+        if (inp) inp.value = skWatch.base;
+        st.value = skWatch.base;
+      }
+      return;
+    }
+    // Phase 2: hochzaehlende Stoppuhr
     var elapsed = skWatch.base + Math.floor((Date.now() - skWatch.startMs) / 1000);
     st.value = elapsed;
-    var inp = document.querySelector('[data-skset="value"][data-ei="' + skWatch.ei + '"][data-si="' + skWatch.si + '"]');
     if (inp) inp.value = elapsed;
     if (!skWatch.beeped && ex.target && elapsed >= ex.target) { skWatch.beeped = true; ensureAudio(); playBeep(); buzz(); }
   }
   function skillWatchStop() {
     if (skWatch.t) clearInterval(skWatch.t);
     var ei = skWatch.ei, si = skWatch.si;
-    skWatch.t = null; skWatch.beeped = false;
-    if (ei >= 0) { updateWatchBtn(ei, si, false); persist(); }
+    var inp = (ei >= 0) ? watchInput(ei, si) : null;
+    if (inp) inp.classList.remove("counting");
+    var wasLead = skWatch.lead > 0;
+    skWatch.t = null; skWatch.beeped = false; skWatch.lead = 0; skWatch.lastLead = -1;
+    if (ei >= 0) {
+      updateWatchBtn(ei, si, false);
+      // Beim Abbruch waehrend des Vorlaufs den unveraenderten Ausgangswert zeigen.
+      if (wasLead && inp) inp.value = (skWatch.base ? skWatch.base : "");
+      persist();
+    }
     skWatch.ei = -1; skWatch.si = -1;
   }
   function skillWatchToggle(ei, si) {
     if (skWatch.t && skWatch.ei === ei && skWatch.si === si) { skillWatchStop(); return; }
     if (skWatch.t) skillWatchStop();
     var st = KS.UI.live.exercises[ei].sets[si];
-    skWatch.ei = ei; skWatch.si = si; skWatch.base = Number(st.value) || 0; skWatch.startMs = Date.now(); skWatch.beeped = false;
+    skWatch.ei = ei; skWatch.si = si; skWatch.base = Number(st.value) || 0;
+    skWatch.startMs = Date.now(); skWatch.beeped = false;
+    skWatch.lead = LEAD_SEC; skWatch.lastLead = -1;
     ensureAudio();
-    skWatch.t = setInterval(skillWatchTick, 200);
+    var inp = watchInput(ei, si);
+    if (inp) { inp.classList.add("counting"); inp.value = LEAD_SEC; }
+    skWatch.t = setInterval(skillWatchTick, 100);
     updateWatchBtn(ei, si, true);
   }
 

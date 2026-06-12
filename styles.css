@@ -1115,3 +1115,13 @@ body{overflow-x:clip}
    Unberuehrt: bestehende .card/.body-form/.blog-list/.blog-item-Regeln,
    Desktop- und Mobile-Layout sonst.
    ============================================================ */
+
+/* ============================================================
+   v0.40 – Skill-Stoppuhr Vorlauf-Countdown: das Dauer-Eingabefeld
+   (.sk-valwrap .num.counting) zeigt waehrend des 5s-Vorlaufs den
+   Countdown in Rot (--bad), fett und etwas groesser, damit der
+   Wechsel zur weiss hochzaehlenden Stoppuhr klar erkennbar ist.
+   Reine Darstellungs-Klasse, von live.js getoggelt.
+   Unberuehrt: .sk-watch-btn, .sk-valwrap-Layout, Desktop/Mobile sonst.
+   ============================================================ */
+.sk-valwrap .num.counting{color:var(--bad);font-weight:700;font-size:18px}
