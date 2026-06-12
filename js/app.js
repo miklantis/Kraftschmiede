@@ -192,6 +192,10 @@
     return ph.repTarget || repTargetForFocus(ph.focus) || null;
   }
   function suggestForExercise(exo, ph) {
+    // Core ist Begleituebung und aus der Journey-Progression ausgeschlossen:
+    // kein Doppelprogressions-Vorschlag, sondern die zuletzt geschaffte Last und
+    // Wiederholungszahl als Vorbelegung (im Live-Screen frei anpassbar).
+    if (exo.profile === "core") return coreCarry(exo);
     var focus = ph ? ph.focus : null;
     var le = lastEntryForExercise(exo.id);
     var exUse = exo;
@@ -201,6 +205,20 @@
       bar: barById(exo.barId), plates: DB.inventory.plates,
       reentry: focus === "reentry"
     });
+  }
+  // Vorbelegung fuer Core: der zuletzt geleistete Arbeitssatz mit dem hoechsten
+  // Gewicht (deckt sich mit exo.workWeight) samt dessen Wiederholungen; ohne
+  // Vordaten das Startgewicht und das obere Repband-Ende. decision "carry" steht
+  // bewusst fuer "keine Wertung" – Core wird nicht hoch- oder runtergesteuert.
+  function coreCarry(exo) {
+    var range = exo.repRange || [12, 20];
+    var le = lastEntryForExercise(exo.id);
+    var ws = le && le.entry ? (le.entry.sets || []).filter(function (s) { return s.type !== "warmup"; }) : [];
+    if (ws.length) {
+      var top = ws.reduce(function (a, b) { return (b.weight || 0) >= (a.weight || 0) ? b : a; }, ws[0]);
+      return { weight: top.weight != null ? top.weight : (exo.workWeight || 0), targetReps: top.reps || range[1], decision: "carry", note: "Begleitübung – letztes Mal übernommen, frei anpassbar" };
+    }
+    return { weight: exo.workWeight || 0, targetReps: range[1], decision: "carry", note: "Begleitübung – Startwert, frei anpassbar" };
   }
   // Aufwaermsaetze fuer eine Uebung an EINER Stelle: nur Langhantel bekommt eine
   // Rampe, Deadlift weniger Volumen, erste Uebung (isFirst) gruendlicher. Genutzt
