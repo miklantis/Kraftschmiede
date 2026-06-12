@@ -793,7 +793,7 @@
     if (!log.length) html += '<div class="empty">Noch kein Eintrag. Stelle oben deine Werte ein und tippe „Eintragen".</div>';
     else html += '<div class="blog-list">' + log.map(function (e) {
       var isToday = e.date === today();
-      return '<div class="blog-item' + (isToday ? ' today' : '') + '"><span class="bl-date">' + esc(e.date) + (isToday ? ' <span class="bl-today">heute</span>' : '') + '</span>'
+      return '<div class="blog-item body-item' + (isToday ? ' today' : '') + '"><span class="bl-date">' + esc(e.date) + (isToday ? ' <span class="bl-today">heute</span>' : '') + '</span>'
         + '<span class="bl-vals">Beine ' + (e.legs || 0) + ' · OK ' + (e.upper_body || 0) + ' · Ges ' + (e.overall || 0) + ' · Rdy ' + (e.readiness || 3) + (e.pain && e.pain.flag ? ' · Schmerz' : '') + '</span>'
         + (e.notes ? '<span class="bl-note">' + esc(e.notes) + '</span>' : '')
         + '<button class="btn tiny ghost danger" data-action="body-del" data-d="' + esc(e.date) + '">×</button></div>';
@@ -811,7 +811,7 @@
     var h = '<div class="section-title">Körpermessung (' + comp.length + ')</div>';
     h += '<p class="hint body-lead">InBody-/BIA-Messungen. Screenshots über den Claude-Skill in ein JSON-Fragment wandeln und unten einspielen.</p>';
     if (!comp.length) h += '<div class="empty">Noch keine Messung. Fragment unten einfügen und importieren.</div>';
-    else h += '<div class="blog-list">' + comp.map(function (e) {
+    else h += '<div class="blog-list comp-list">' + comp.map(function (e) {
       var parts = [];
       if (e.weight != null) parts.push("Gewicht " + e.weight + " kg");
       if (e.bodyFatKg != null || e.bodyFatPct != null) {
@@ -827,7 +827,7 @@
       var meta = [];
       if (e.heightCm != null) meta.push(e.heightCm + " cm");
       if (e.age != null) meta.push(e.age + " J.");
-      return '<div class="blog-item"><span class="bl-date">' + esc(e.date) + (meta.length ? ' <span class="bl-today">' + esc(meta.join(" · ")) + '</span>' : '') + '</span>'
+      return '<div class="blog-item comp-item"><span class="bl-date">' + esc(e.date) + (meta.length ? ' <span class="bl-today">' + esc(meta.join(" · ")) + '</span>' : '') + '</span>'
         + '<span class="bl-vals">' + esc(parts.join(" · ")) + '</span>'
         + '<button class="btn tiny ghost danger" data-action="comp-del" data-d="' + esc(e.date) + '">×</button></div>';
     }).join("") + '</div>';

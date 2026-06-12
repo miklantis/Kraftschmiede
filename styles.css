@@ -1090,10 +1090,28 @@ body{overflow-x:clip}
    beiden Bloecke (Messungs-Liste und Import) sich nicht beruehren. */
 .comp-import-card{margin-top:14px}
 
+/* Messungs-Item: X immer rechts am Anfang des Werteblocks halten. Werte
+   (.bl-vals) fuellen den Platz und umbrechen mehrzeilig; der Loeschen-Button
+   sitzt oben rechts daneben und kann nicht in eine eigene Zeile rutschen. */
+.comp-item{align-items:flex-start}
+.comp-item .bl-vals{flex:1 1 auto;min-width:0;line-height:1.5}
+.comp-item .danger{margin-left:0;flex:0 0 auto}
+
+/* Koerperzustand-Item: gleiches Prinzip. Werte fuellen den Platz, die
+   optionale Notiz (.bl-note) umbricht ueber die volle Breite in eine
+   neue Zeile; das Loeschen-X bleibt oben rechts statt in eigener Zeile. */
+.body-item{align-items:flex-start}
+.body-item .bl-vals{flex:1 1 auto;min-width:0;line-height:1.5}
+.body-item .bl-note{flex:1 1 100%;order:3}
+.body-item .danger{margin-left:0;flex:0 0 auto}
+
 /* ============================================================
    v0.39 – Koerpermessung (Composition): Abstand zwischen
-   Messungs-Verlauf (.blog-list) und Import-Karte. Eigene Klasse
-   .comp-import-card mit margin-top, statt global an .card zu ruehren.
-   Unberuehrt: bestehende .card/.body-form/.blog-list-Regeln, Desktop-
-   und Mobile-Layout sonst.
+   Messungs-Verlauf (.blog-list) und Import-Karte (.comp-import-card,
+   margin-top). Zusaetzlich .comp-item und .body-item: Werteblock
+   umbricht mehrzeilig, Loeschen-X bleibt rechts am Ende statt in
+   eigener Zeile (beide Verlaufslisten im Koerper-Tab).
+   Eigene Klassen statt globaler .card-/.blog-item-Aenderung.
+   Unberuehrt: bestehende .card/.body-form/.blog-list/.blog-item-Regeln,
+   Desktop- und Mobile-Layout sonst.
    ============================================================ */
