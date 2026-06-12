@@ -1085,3 +1085,15 @@ body{overflow-x:clip}
    Verlauf-Liste (.skill-tag, .log-item.skill).
    Unberührt: Skill-Live-Screen + Skills-Tab (weiterhin --accent-2).
    ============================================================ */
+
+/* Koerpermessung: Import-Karte vom Verlauf darueber absetzen, damit die
+   beiden Bloecke (Messungs-Liste und Import) sich nicht beruehren. */
+.comp-import-card{margin-top:14px}
+
+/* ============================================================
+   v0.39 – Koerpermessung (Composition): Abstand zwischen
+   Messungs-Verlauf (.blog-list) und Import-Karte. Eigene Klasse
+   .comp-import-card mit margin-top, statt global an .card zu ruehren.
+   Unberuehrt: bestehende .card/.body-form/.blog-list-Regeln, Desktop-
+   und Mobile-Layout sonst.
+   ============================================================ */

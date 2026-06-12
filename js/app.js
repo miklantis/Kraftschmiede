@@ -831,7 +831,7 @@
         + '<span class="bl-vals">' + esc(parts.join(" · ")) + '</span>'
         + '<button class="btn tiny ghost danger" data-action="comp-del" data-d="' + esc(e.date) + '">×</button></div>';
     }).join("") + '</div>';
-    h += '<div class="card body-form"><div class="sets-title">Messung importieren</div>'
+    h += '<div class="card body-form comp-import-card"><div class="sets-title">Messung importieren</div>'
       + '<textarea id="comp-import-text" class="notes" rows="5" placeholder="JSON-Fragment einfügen ( { &quot;composition&quot;: [ … ] } )"></textarea>'
       + '<div class="hint scale-hint">Rein additiv – eine Messung pro Datum. Eine erneute Messung am selben Datum überschreibt diese.</div>'
       + '<div class="body-actions"><button class="btn primary" data-action="comp-import">Messung importieren</button></div>'
