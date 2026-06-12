@@ -792,9 +792,10 @@
     html += '<div class="section-title">Verlauf (' + log.length + ')</div>';
     if (!log.length) html += '<div class="empty">Noch kein Eintrag. Stelle oben deine Werte ein und tippe „Eintragen".</div>';
     else html += '<div class="blog-list">' + log.map(function (e) {
-      var isToday = e.date === today();
-      return '<div class="blog-item body-item' + (isToday ? ' today' : '') + '"><span class="bl-date">' + esc(e.date) + (isToday ? ' <span class="bl-today">heute</span>' : '') + '</span>'
-        + '<span class="bl-vals">Beine ' + (e.legs || 0) + ' · OK ' + (e.upper_body || 0) + ' · Ges ' + (e.overall || 0) + ' · Rdy ' + (e.readiness || 3) + (e.pain && e.pain.flag ? ' · Schmerz' : '') + '</span>'
+      var bvals = ['Beine ' + (e.legs || 0), 'OK ' + (e.upper_body || 0), 'Ges ' + (e.overall || 0), 'Rdy ' + (e.readiness || 3)];
+      if (e.pain && e.pain.flag) bvals.push('Schmerz');
+      return '<div class="blog-item body-item"><span class="bl-date">' + esc(e.date) + '</span>'
+        + '<span class="bl-vals">' + bvals.map(function (v) { return '<span class="bl-val">' + esc(v) + '</span>'; }).join("") + '</span>'
         + (e.notes ? '<span class="bl-note">' + esc(e.notes) + '</span>' : '')
         + '<button class="btn tiny ghost danger" data-action="body-del" data-d="' + esc(e.date) + '">×</button></div>';
     }).join("") + '</div>';
@@ -824,11 +825,10 @@
       if (e.tbwKg != null) parts.push("Wasser " + e.tbwKg + " kg");
       if (e.phaseAngle != null) parts.push("Phasenwinkel " + e.phaseAngle + "°");
       if (e.visceralFat != null) parts.push("Viszeral " + e.visceralFat);
-      var meta = [];
-      if (e.heightCm != null) meta.push(e.heightCm + " cm");
-      if (e.age != null) meta.push(e.age + " J.");
-      return '<div class="blog-item comp-item"><span class="bl-date">' + esc(e.date) + (meta.length ? ' <span class="bl-today">' + esc(meta.join(" · ")) + '</span>' : '') + '</span>'
-        + '<span class="bl-vals">' + esc(parts.join(" · ")) + '</span>'
+      if (e.heightCm != null) parts.push("Größe " + e.heightCm + " cm");
+      if (e.age != null) parts.push("Alter " + e.age + " J.");
+      return '<div class="blog-item comp-item"><span class="bl-date">' + esc(e.date) + '</span>'
+        + '<span class="bl-vals">' + parts.map(function (v) { return '<span class="bl-val">' + esc(v) + '</span>'; }).join("") + '</span>'
         + '<button class="btn tiny ghost danger" data-action="comp-del" data-d="' + esc(e.date) + '">×</button></div>';
     }).join("") + '</div>';
     h += '<div class="card body-form comp-import-card"><div class="sets-title">Messung importieren</div>'

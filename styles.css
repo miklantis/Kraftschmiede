@@ -1128,3 +1128,20 @@ body{overflow-x:clip}
    Unberuehrt: .sk-watch-btn, .sk-valwrap-Layout, Desktop/Mobile sonst.
    ============================================================ */
 .sk-valwrap .num.counting{color:var(--bad)}
+
+/* ============================================================
+   v0.41 – Koerper-Verlauf & -Messung: HEUTE-/Alter-Groesse-Marker
+   entfernt (app.js), Werte als einzelne .bl-val-Spans. Desktop:
+   wie bisher in einer Zeile, Werte durch " · " getrennt (::after).
+   Mobile (<=560px): jeder Wert eine eigene Zeile, Trenner aus.
+   Reine Darstellung; .bl-vals/.bl-date/.comp-item/.body-item-Grids
+   sonst unberuehrt, Desktop-Layout gleich.
+   ============================================================ */
+.bl-vals{display:inline}
+.bl-val{display:inline}
+.bl-val:not(:last-child)::after{content:" · ";color:var(--faint)}
+@media(max-width:560px){
+  .bl-vals{display:flex;flex-direction:column;gap:2px}
+  .bl-val{display:block}
+  .bl-val:not(:last-child)::after{content:none}
+}
