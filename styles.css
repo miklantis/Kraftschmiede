@@ -1121,9 +1121,10 @@ body{overflow-x:clip}
 /* ============================================================
    v0.40 – Skill-Stoppuhr Vorlauf-Countdown: das Dauer-Eingabefeld
    (.sk-valwrap .num.counting) zeigt waehrend des 5s-Vorlaufs den
-   Countdown in Rot (--bad), fett und etwas groesser, damit der
-   Wechsel zur weiss hochzaehlenden Stoppuhr klar erkennbar ist.
+   Countdown in Rot (--bad). Nur Farbe, keine Aenderung von Groesse
+   oder Gewicht, damit die Feldhoehe gleich der hochzaehlenden
+   Stoppuhr bleibt (kein Hoehensprung beim Wechsel).
    Reine Darstellungs-Klasse, von live.js getoggelt.
    Unberuehrt: .sk-watch-btn, .sk-valwrap-Layout, Desktop/Mobile sonst.
    ============================================================ */
-.sk-valwrap .num.counting{color:var(--bad);font-weight:700;font-size:18px}
+.sk-valwrap .num.counting{color:var(--bad)}
