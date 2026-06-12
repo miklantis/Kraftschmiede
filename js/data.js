@@ -30,7 +30,8 @@
           { id: "bar_std", name: "Standard", weight: 20, default: true },
           { id: "bar_short", name: "Kurz / Leicht", weight: 15, default: false }
         ],
-        plates: [1.25, 2.5, 5, 10, 15, 20, 25]
+        plates: [1.25, 2.5, 5, 10, 15, 20, 25],
+        kettlebells: [4, 6, 8, 10, 12, 16, 20, 24]
       },
       exercises: [
         ex("back_squat", "Back Squat", "strength", "lift1", "bar_std", ["legs", "glutes"], [6, 10], 40, 48),
@@ -39,9 +40,9 @@
         ex("bent_row", "Bent Row", "strength", "lift2", "bar_std", ["back", "biceps"], [8, 12], 30),
         ex("push_press", "Push Press", "strength", "lift1", "bar_std", ["shoulders", "triceps"], [5, 10], 25),
         ex("barbell_curl", "Barbell Curl", "strength", "lift2", "bar_std", ["biceps"], [8, 12], 20),
-        core("plate_situps", "Plate Situps", [12, 20], 5),
-        core("plate_twist", "Plate Twist", [12, 20], 5),
-        core("plate_cocoon", "Plate Cocoon", [10, 16], 5),
+        core("plate_situps", "Situps", [12, 20], 5),
+        core("plate_twist", "Twist", [12, 20], 5),
+        core("plate_cocoon", "Cocoon", [10, 16], 5),
         ex("lunge", "Lunge", "strength", "lift1", "bar_std", ["legs", "glutes"], [8, 12], 30, 48, false),
         ex("pull_over", "Pull Over", "strength", "lift2", "bar_std", ["back", "chest"], [8, 12], 20, 48)
       ],
@@ -601,6 +602,21 @@
         }
       });
       db.migrations.journeyTemplateLink = true;
+    }
+    // Kettlebell-Inventar non-destruktiv nachruesten (Schema 0.14+). Bestehende
+    // Listen bleiben unberuehrt, fehlt die Liste, kommt die Standard-Reihe rein.
+    if (!db.inventory.kettlebells) db.inventory.kettlebells = [4, 6, 8, 10, 12, 16, 20, 24];
+    // Einmalig: Core-Uebungen geraeteneutral benennen (Plate -> ohne Geraet), da sie
+    // mit Scheibe ODER Kettlebell ausgefuehrt werden. IDs bleiben, daher bleiben
+    // Verlauf und Template-Verknuepfungen gueltig. Greift nur, wenn noch der alte
+    // Default-Name steht (selbst gewaehlte Namen bleiben erhalten).
+    if (!db.migrations.coreNeutralNames) {
+      var coreRename = { plate_situps: ["Plate Situps", "Situps"], plate_twist: ["Plate Twist", "Twist"], plate_cocoon: ["Plate Cocoon", "Cocoon"] };
+      db.exercises.forEach(function (e) {
+        var r = coreRename[e.id];
+        if (r && e.name === r[0]) e.name = r[1];
+      });
+      db.migrations.coreNeutralNames = true;
     }
   }
 
