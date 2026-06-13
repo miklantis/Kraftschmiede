@@ -79,10 +79,28 @@
     return "main";
   }
   function kindLabel(k) { return ({ main: "Hauptübung", accessory: "Assistenz", core: "Core" })[k] || k || "–"; }
+  // Kurzbeschreibung je Übung: was sie ist, mit welcher Last/Gerät, knappe Ausführung.
+  // Eine Quelle der Wahrheit für Seed UND Migration; landet über den DB-Export auch in
+  // der Master-JSON, damit Übungen ausserhalb der App verständlich sind. Eigene oder
+  // unbekannte Übungen erhalten "" (Feld existiert, bleibt leer und ist frei befüllbar).
+  var EX_DESC = {
+    back_squat: "Tiefe Kniebeuge mit der Langhantel auf dem oberen Rücken; Hüfte und Knie gemeinsam beugen und strecken.",
+    bench_press: "Bankdrücken auf der Flachbank: Langhantel kontrolliert zur Brust senken und senkrecht nach oben drücken.",
+    deadlift: "Kreuzheben: Langhantel vom Boden mit geradem Rücken durch Hüftstreckung bis zum aufrechten Stand ziehen.",
+    bent_row: "Vorgebeugtes Langhantelrudern: Oberkörper geneigt, Hantel zum unteren Brustkorb beziehungsweise Bauch ziehen.",
+    push_press: "Schulterdrücken mit leichtem Bein-Impuls: Langhantel von den Schultern über den Kopf drücken.",
+    barbell_curl: "Langhantel-Bizepscurl im Stand: Hantel aus gestreckten Armen nach oben curlen, Oberarme bleiben fixiert.",
+    pull_over: "Überzug auf der Bank: Langhantel mit nahezu gestreckten Armen hinter den Kopf absenken und über die Brust zurückführen.",
+    lunge: "Ausfallschritt mit Langhantel auf dem Rücken: pro Wiederholung ein Bein nach vorn, hinteres Knie bis knapp über den Boden senken.",
+    plate_situps: "Situps mit Zusatzlast (Hantelscheibe oder Kettlebell) vor der Brust oder über dem Kopf gehalten.",
+    plate_twist: "Sitzende Rumpfrotation (Russian Twist): Zusatzlast (Scheibe oder Kettlebell) in beiden Händen seitlich neben der Hüfte antippen.",
+    plate_cocoon: "Aus gestreckter Rückenlage Knie und Oberkörper gleichzeitig zusammenziehen (V- beziehungsweise Crunch-artig), Zusatzlast (Scheibe oder Kettlebell) in den Händen."
+  };
   function ex(id, name, profile, slot, barId, mg, repRange, w, rec, active) {
     return {
       id: id, name: name, category: profile === "core" ? "core" : "barbell",
       profile: profile, kind: kindOf(id, profile), equipment: "barbell", barId: barId,
+      description: EX_DESC[id] || "",
       metrics: ["weight", "reps", "volume", "score", "est1RM"],
       muscleGroups: mg, repRange: repRange, targetScore: 3, workWeight: w,
       recoveryHours: rec || 48, rm: null, rmAsOf: null, rmStale: false,
@@ -92,7 +110,8 @@
   function core(id, name, repRange, w) {
     return {
       id: id, name: name, category: "core", profile: "core", kind: "core",
-      equipment: "plate", barId: null, metrics: ["weight", "reps", "volume", "score"],
+      equipment: "plate", barId: null, description: EX_DESC[id] || "",
+      metrics: ["weight", "reps", "volume", "score"],
       muscleGroups: ["core"], repRange: repRange, targetScore: 3, workWeight: w,
       recoveryHours: 24, rm: null, rmAsOf: null, rmStale: false, active: true
     };
@@ -626,6 +645,13 @@
       });
       db.migrations.coreClassPrefix = true;
     }
+    // Übungs-Kurzbeschreibung non-destruktiv nachrüsten (feldweise): fehlt das Feld,
+    // wird der bekannte Standardtext gesetzt; eigene oder unbekannte Übungen erhalten "".
+    // Vorhandene (auch selbst geänderte) Texte bleiben unberührt. Das Feld erscheint
+    // dadurch für jede Übung und wird über den DB-Export Teil der Master-JSON.
+    db.exercises.forEach(function (e) {
+      if (e.description == null) e.description = EX_DESC[e.id] || "";
+    });
   }
 
   /* Export an den geteilten Namespace. seed/migrate werden beim Init
