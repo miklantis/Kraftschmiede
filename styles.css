@@ -239,6 +239,7 @@ label.chk.bfield{flex-direction:row;align-items:center}
 .back{margin:6px 0 4px}
 .detail-head{margin:4px 0 10px}
 .detail-head .ex-tags{font-size:12px}
+.ex-desc{color:var(--muted);font-size:14px;line-height:1.5;margin:0 0 14px;padding-left:10px;border-left:2px solid var(--line2)}
 .metric-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:14px}
 .metric{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px;display:flex;flex-direction:column;gap:2px;align-items:flex-start}
 .m-val{font-size:22px;color:var(--accent);font-weight:600}

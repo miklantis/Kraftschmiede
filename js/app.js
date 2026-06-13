@@ -734,6 +734,7 @@
 
     var html = '<button class="btn ghost small back" data-action="ex-back">‹ Übungen</button>';
     html += '<div class="detail-head"><h2>' + esc(e.name) + '</h2><span class="ex-tags">' + esc(e.profile) + ' · ' + esc(kindLabel(e.kind)) + (bar ? ' · ' + esc(bar.name) + ' ' + fmtW(bar.weight) : '') + ' · ' + esc(e.muscleGroups.join(", ")) + '</span></div>';
+    if (e.description) html += '<p class="ex-desc">' + esc(e.description) + '</p>';
 
     var art = activeRepTarget(e);
     var repShown = art || e.repRange;
