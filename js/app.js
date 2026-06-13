@@ -788,7 +788,8 @@
       + '<div class="hint scale-hint">Kater 0 keine · 1 leicht · 2 deutlich · 3 stark (Region wird im Vorschlag ausgeschlossen). Readiness 1 mies … 5 top.</div>'
       + '<div class="body-actions"><button class="btn primary" data-action="body-save">' + (hasToday ? 'Aktualisieren' : 'Eintragen') + '</button></div>'
       + '</div>';
-    var log = sortedBodyLog().slice().reverse();
+    var cutoff = (function () { var d = new Date(today() + "T00:00:00"); d.setDate(d.getDate() - 6); return d.toISOString().slice(0, 10); })();
+    var log = sortedBodyLog().filter(function (e) { return e.date >= cutoff; }).reverse();
     html += '<div class="section-title">Verlauf (' + log.length + ')</div>';
     if (!log.length) html += '<div class="empty">Noch kein Eintrag. Stelle oben deine Werte ein und tippe „Eintragen".</div>';
     else html += '<div class="blog-list">' + log.map(function (e) {

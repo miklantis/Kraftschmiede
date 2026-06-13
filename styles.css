@@ -1131,9 +1131,10 @@ body{overflow-x:clip}
 
 /* ============================================================
    v0.41 – Koerper-Verlauf & -Messung: HEUTE-/Alter-Groesse-Marker
-   entfernt (app.js), Werte als einzelne .bl-val-Spans. Desktop:
-   wie bisher in einer Zeile, Werte durch " · " getrennt (::after).
-   Mobile (<=560px): jeder Wert eine eigene Zeile, Trenner aus.
+   entfernt (app.js), Werte als einzelne .bl-val-Spans. Werte stehen
+   ueberall in einer Zeile, durch " · " getrennt (::after) – auch im
+   Koerperzustand mobil. Nur die Messung (.comp-item) stapelt mobil
+   (<=560px) je Wert in eigener Zeile, da dort mehr/laengere Werte.
    Reine Darstellung; .bl-vals/.bl-date/.comp-item/.body-item-Grids
    sonst unberuehrt, Desktop-Layout gleich.
    ============================================================ */
@@ -1141,7 +1142,7 @@ body{overflow-x:clip}
 .bl-val{display:inline}
 .bl-val:not(:last-child)::after{content:" · ";color:var(--faint)}
 @media(max-width:560px){
-  .bl-vals{display:flex;flex-direction:column;gap:2px}
-  .bl-val{display:block}
-  .bl-val:not(:last-child)::after{content:none}
+  .comp-item .bl-vals{display:flex;flex-direction:column;gap:2px}
+  .comp-item .bl-val{display:block}
+  .comp-item .bl-val:not(:last-child)::after{content:none}
 }
