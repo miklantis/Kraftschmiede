@@ -9,8 +9,44 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerlaufRouteImport } from './routes/verlauf'
+import { Route as UebungenRouteImport } from './routes/uebungen'
+import { Route as SkillsRouteImport } from './routes/skills'
+import { Route as KoerperRouteImport } from './routes/koerper'
+import { Route as JourneyRouteImport } from './routes/journey'
+import { Route as EinstellungenRouteImport } from './routes/einstellungen'
 import { Route as IndexRouteImport } from './routes/index'
 
+const VerlaufRoute = VerlaufRouteImport.update({
+  id: '/verlauf',
+  path: '/verlauf',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UebungenRoute = UebungenRouteImport.update({
+  id: '/uebungen',
+  path: '/uebungen',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SkillsRoute = SkillsRouteImport.update({
+  id: '/skills',
+  path: '/skills',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KoerperRoute = KoerperRouteImport.update({
+  id: '/koerper',
+  path: '/koerper',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JourneyRoute = JourneyRouteImport.update({
+  id: '/journey',
+  path: '/journey',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EinstellungenRoute = EinstellungenRouteImport.update({
+  id: '/einstellungen',
+  path: '/einstellungen',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +55,116 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/einstellungen': typeof EinstellungenRoute
+  '/journey': typeof JourneyRoute
+  '/koerper': typeof KoerperRoute
+  '/skills': typeof SkillsRoute
+  '/uebungen': typeof UebungenRoute
+  '/verlauf': typeof VerlaufRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/einstellungen': typeof EinstellungenRoute
+  '/journey': typeof JourneyRoute
+  '/koerper': typeof KoerperRoute
+  '/skills': typeof SkillsRoute
+  '/uebungen': typeof UebungenRoute
+  '/verlauf': typeof VerlaufRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/einstellungen': typeof EinstellungenRoute
+  '/journey': typeof JourneyRoute
+  '/koerper': typeof KoerperRoute
+  '/skills': typeof SkillsRoute
+  '/uebungen': typeof UebungenRoute
+  '/verlauf': typeof VerlaufRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/einstellungen'
+    | '/journey'
+    | '/koerper'
+    | '/skills'
+    | '/uebungen'
+    | '/verlauf'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/einstellungen'
+    | '/journey'
+    | '/koerper'
+    | '/skills'
+    | '/uebungen'
+    | '/verlauf'
+  id:
+    | '__root__'
+    | '/'
+    | '/einstellungen'
+    | '/journey'
+    | '/koerper'
+    | '/skills'
+    | '/uebungen'
+    | '/verlauf'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  EinstellungenRoute: typeof EinstellungenRoute
+  JourneyRoute: typeof JourneyRoute
+  KoerperRoute: typeof KoerperRoute
+  SkillsRoute: typeof SkillsRoute
+  UebungenRoute: typeof UebungenRoute
+  VerlaufRoute: typeof VerlaufRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verlauf': {
+      id: '/verlauf'
+      path: '/verlauf'
+      fullPath: '/verlauf'
+      preLoaderRoute: typeof VerlaufRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/uebungen': {
+      id: '/uebungen'
+      path: '/uebungen'
+      fullPath: '/uebungen'
+      preLoaderRoute: typeof UebungenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/skills': {
+      id: '/skills'
+      path: '/skills'
+      fullPath: '/skills'
+      preLoaderRoute: typeof SkillsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/koerper': {
+      id: '/koerper'
+      path: '/koerper'
+      fullPath: '/koerper'
+      preLoaderRoute: typeof KoerperRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/journey': {
+      id: '/journey'
+      path: '/journey'
+      fullPath: '/journey'
+      preLoaderRoute: typeof JourneyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/einstellungen': {
+      id: '/einstellungen'
+      path: '/einstellungen'
+      fullPath: '/einstellungen'
+      preLoaderRoute: typeof EinstellungenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +177,12 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  EinstellungenRoute: EinstellungenRoute,
+  JourneyRoute: JourneyRoute,
+  KoerperRoute: KoerperRoute,
+  SkillsRoute: SkillsRoute,
+  UebungenRoute: UebungenRoute,
+  VerlaufRoute: VerlaufRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

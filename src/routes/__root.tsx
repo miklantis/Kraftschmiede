@@ -1,8 +1,9 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { AppShell } from "@/components/shell/AppShell";
 
-// Grundrahmen aller Seiten. Hier sitzt spaeter die Navigation (Phase 2).
-// Aktuell nur ein Platzhalter-Rahmen plus das Outlet fuer die jeweilige Seite.
+// Grundrahmen aller Seiten. Die AppShell (Sidebar/Bottom-Nav/Kopf) umschliesst
+// das Outlet, in dem die jeweilige Seite rendert.
 export const Route = createRootRoute({
   component: RootLayout,
 });
@@ -10,7 +11,9 @@ export const Route = createRootRoute({
 function RootLayout(): React.ReactElement {
   return (
     <>
-      <Outlet />
+      <AppShell>
+        <Outlet />
+      </AppShell>
       {import.meta.env.DEV ? (
         <TanStackRouterDevtools position="bottom-right" />
       ) : null}

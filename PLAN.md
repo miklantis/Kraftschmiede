@@ -17,7 +17,7 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
 
 ## Aktueller Stand
 
-- **Phase:** Phase 1 (globaler Look) abgeschlossen. Als Naechstes Phase 2 (Navigation/Shell).
+- **Phase:** Phase 2 (Navigation/Shell) abgeschlossen. Als Naechstes Phase 3 (Training).
 - **Erledigt:** Phase 0 abgeschlossen (Fundament, Schema/RLS, Engine, Zod-Schemas, UI-Fundament,
   Offline-Grundgeruest, Live-Deploy). Schlichter Login als Voraussetzung fuer alle
   Schreibzugriffe (E-Mail/Passwort ueber Supabase Auth, AuthProvider + useAuth, AuthGate vor
@@ -34,6 +34,16 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
   Skill/Blau, Yoga/Lila plus Ampel (gut/Warnung/Abweichung/Gefahr) als eigene Tokens; Schrift
   Inter (UI) + Spline Sans Mono (Zahlen) selbst gehostet (offline-fest); Dunkelmodus
   umschaltbar (hell/dunkel/system, gemerkt) ueber ThemeProvider + ThemeToggle.
+  Phase 2 - Navigation/Shell: durchgaengige AppShell um alle Seiten (im __root). Eine
+  gemeinsame Nav-Definition (src/lib/nav.ts) speist Sidebar (Desktop ab 960px, fix links,
+  264px) und Bottom-Nav (Mobile darunter, sechs Punkte Icon ueber Label); Aktiv-Zustand
+  ueber die Link-activeProps des Routers. Einstellungen separat ueber das Konto-Symbol
+  (Sidebar-Fuss bzw. Mobile-Kopf), nicht in der Leiste - wie V1. Theme-Umschalter ist von
+  der Startseite in Sidebar-Fuss/Mobile-Kopf gewandert (neue Icon-Variante). Sieben Routen
+  als deutsche Slugs: / = Training, /journey, /verlauf, /uebungen, /koerper, /skills,
+  /einstellungen; die sechs Seiten vorerst schlanke Platzhalter (PagePlaceholder), echter
+  Inhalt ab Phase 3. Der provisorische Startseiten-Inhalt (Konto/Abmelden, Verbindungs-
+  Diagnose, Datenstand, V1-Import) ist nach /einstellungen umgezogen.
 - **Entscheidung:** Look folgt dem V1-"Klar"-Geist, aber weisser Hintergrund und die
   Geometrie des shadcn-Stils "Luma" (radix-luma): stark gerundete Karten (rounded-4xl/32px)
   mit weicher Elevation (Schatten + feiner Ring statt hartem Rahmen), Pillen-Buttons
@@ -46,9 +56,13 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
   Sitzung (RLS), per JSON-Datei aus dem V1-Export. Vorschau vor dem Schreiben, Sperre gegen
   Doppel-Import, vorerst auf der Startseite (wandert spaeter nach Einstellungen). Aktive
   Journey ist die echte "Rueckkehr 2026".
-- **Als Naechstes:** Phase 2 - Navigation/Shell (Seitenstruktur, Sidebar Desktop + Bottom-Nav
-  Mobile, Verhalten) gemeinsam abstimmen, dann umsetzen. Der Theme-Umschalter sitzt vorlaeufig
-  auf der Startseite und wandert dann an seinen endgueltigen Platz.
+- **Entscheidung (Phase 2):** Navigation 1:1 wie V1 - sechs Hauptpunkte (Training, Journey,
+  Verlauf, Uebungen, Koerper, Skills), Einstellungen separat ueber das Konto-Symbol; Yoga
+  bleibt kein eigener Punkt (spaeter Karte im Training). Umschaltpunkt 960px. / zeigt direkt
+  Training (kein eigener Startbildschirm). Sidebar und Bottom-Nav teilen sich eine Nav-Liste,
+  damit sie nicht auseinanderlaufen.
+- **Als Naechstes:** Phase 3 - Training (Workout-Karten, Eignungs-/Erholungs-Check, Coach-
+  Anbindung) gemeinsam abstimmen, dann umsetzen.
 - **Bewusst noch nicht dabei:** JSON-Export-Haelfte und Import/Export-Politur (Phase 12),
   Abgleich alt/neu (Stichproben), vollstaendiges Konto-Panel (Phase 10), App-Huelle offline
   laden (PWA, Phase 13), sichtbare Offline-Anzeige (Phase 1/2).
@@ -99,9 +113,10 @@ alle Bloecke und wird einmal bewusst entschieden, bevor einzelne Seiten entstehe
 
 ## Phase 2 – Navigation / Shell
 
-- [ ] Konzept abgestimmt (Seitenstruktur, Sidebar/Bottom-Nav, Verhalten Mobile/Desktop)
-- [ ] Routing-Geruest steht
-- [ ] Sidebar (Desktop) + Bottom-Nav (Mobile)
+- [x] Konzept abgestimmt (Seitenstruktur, Sidebar/Bottom-Nav, Verhalten Mobile/Desktop)
+- [x] Routing-Geruest steht (7 Routen, deutsche Slugs, AppShell im __root, Platzhalter)
+- [x] Sidebar (Desktop) + Bottom-Nav (Mobile) aus gemeinsamer Nav-Definition; Einstellungen
+      ueber Konto-Symbol, Theme-Umschalter in Sidebar-Fuss/Mobile-Kopf
 
 ## Phase 3 – Training
 
@@ -198,6 +213,12 @@ alle Bloecke und wird einmal bewusst entschieden, bevor einzelne Seiten entstehe
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu, sobald sie fertig sind.
+
+- 2026-06-22 – Phase 2 (Navigation/Shell): AppShell um alle Seiten; gemeinsame Nav-Definition
+  fuer Sidebar (Desktop ab 960px) und Bottom-Nav (Mobile); sechs Hauptpunkte, Einstellungen
+  ueber Konto-Symbol; sieben Routen mit deutschen Slugs (/ = Training) als Platzhalter; Theme-
+  Umschalter in Sidebar-Fuss/Mobile-Kopf; provisorischer Startseiten-Inhalt nach /einstellungen
+  umgezogen. Typecheck/Build/Tests gruen.
 
 - 2026-06-22 - Phase 1 Feinschliff Geometrie (shadcn-Stil "Luma"): die echten Luma-Werte aus
   dem shadcn-Quellcode (radix-luma) uebernommen statt geschaetzt. Primitives umgestellt:
