@@ -17,10 +17,8 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
 
 ## Aktueller Stand
 
-- **Phase:** Phase 1 auf V1-Look umgesetzt (2026-06-22). Globaler Look folgt jetzt dem
-  V1-"Klar"-Theme statt der eigenen Luma-Interpretation; shadcn bleibt als Fundament,
-  Dunkelmodus entfernt (V1 hat keinen), Schrift Sora + Spline Sans Mono. Als Naechstes
-  Navigation/Shell mit dem V1-Look gegenpruefen, danach Phase 3 (Training).
+- **Phase:** Phase 1 (V1-Look) und Navigations-Feinschliff abgeschlossen (2026-06-22). Die
+  Shell folgt jetzt durchgehend dem V1-"Klar"-Look. Als Naechstes Phase 3 (Training).
 - **Erledigt:** Phase 0 abgeschlossen (Fundament, Schema/RLS, Engine, Zod-Schemas, UI-Fundament,
   Offline-Grundgeruest, Live-Deploy). Schlichter Login als Voraussetzung fuer alle
   Schreibzugriffe (E-Mail/Passwort ueber Supabase Auth, AuthProvider + useAuth, AuthGate vor
@@ -61,9 +59,8 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
   bleibt kein eigener Punkt (spaeter Karte im Training). Umschaltpunkt 960px. / zeigt direkt
   Training (kein eigener Startbildschirm). Sidebar und Bottom-Nav teilen sich eine Nav-Liste,
   damit sie nicht auseinanderlaufen.
-- **Als Naechstes:** Navigation/Shell (Sidebar, Bottom-Nav, Konto-Symbol) mit dem
-  V1-Look gegenpruefen und ggf. feinjustieren, danach Phase 3 - Training gemeinsam
-  abstimmen.
+- **Als Naechstes:** Phase 3 - Training (Workout-Karten, Eignungs-/Erholungs-Check,
+  Coach-Anbindung) gemeinsam abstimmen, dann umsetzen.
 - **Bewusst noch nicht dabei:** JSON-Export-Haelfte und Import/Export-Politur (Phase 12),
   Abgleich alt/neu (Stichproben), vollstaendiges Konto-Panel (Phase 10), App-Huelle offline
   laden (PWA, Phase 13), sichtbare Offline-Anzeige (Phase 1/2).
@@ -124,6 +121,8 @@ zurueckgedreht). Quelle: V1-Dateien klar-tokens.css und klar-app.css (nur lesen)
 - [x] Routing-Geruest steht (7 Routen, deutsche Slugs, AppShell im __root, Platzhalter)
 - [x] Sidebar (Desktop) + Bottom-Nav (Mobile) aus gemeinsamer Nav-Definition; Einstellungen
       ueber Konto-Symbol, Theme-Umschalter in Sidebar-Fuss/Mobile-Kopf
+- [x] Shell-Optik auf V1 angeglichen (versaler Markenname, Nav 12px-Radius + warmes Grau,
+      Bottom-Nav deckend weiss mit weichem Schatten, keine Luma-Transparenz)
 
 ## Phase 3 – Training
 
@@ -220,6 +219,16 @@ zurueckgedreht). Quelle: V1-Dateien klar-tokens.css und klar-app.css (nur lesen)
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu, sobald sie fertig sind.
+
+- 2026-06-22 - Navigation/Shell auf V1-Look feinjustiert (Stil, keine Struktur-/Funktions-
+  aenderung): Sidebar.tsx - Markenname versal mit Sperrung in V1-Grau (#5c5c61), Logo auf
+  size-9 + rounded-control (11px), Nav-Eintraege rounded-xl (12px) statt rounded-2xl, Text
+  15px, inaktiver Ink warmes Grau #6c685f (V1-Wert), Hover bg-primary/6 + Text dunkel, Aktiv
+  bg-primary/10 + Akzenttext (V1-Toenungen), Zahnrad im Fuss rounded-control statt rund.
+  BottomNav.tsx - deckend weiss (bg-card) statt halbtransparentem Weichzeichner, weicher
+  oberer Schatten (0 -6px 20px -14px rgba(20,24,40,.25), V1-Wert), inaktive Icons hellgrau
+  #b0b0b6 (V1-Wert), V1-naehere Polsterung. Struktur (sechs Punkte, Konto-Symbol, 960px)
+  unveraendert. Typecheck, Build und 109 Tests gruen.
 
 - 2026-06-22 - Phase 1 auf V1-Look umgesetzt: src/index.css komplett auf das V1-"Klar"-
   Theme umgestellt (feste Hex-Werte aus klar-tokens.css: Canvas #edeef1, Karte #fff,
