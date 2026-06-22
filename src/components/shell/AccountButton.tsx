@@ -27,9 +27,18 @@ export function AccountButton({
       <Link
         to="/einstellungen"
         aria-label="Konto und Einstellungen"
-        className="focus-visible:ring-ring/30 rounded-full outline-none focus-visible:ring-3"
+        className="focus-visible:ring-ring/30 relative inline-flex rounded-full outline-none focus-visible:ring-3"
       >
-        {avatar}
+        <span className="bg-primary text-primary-foreground flex size-10 shrink-0 items-center justify-center rounded-full text-[15px] font-semibold">
+          {initial}
+        </span>
+        <span
+          aria-hidden
+          className={cn(
+            "border-card absolute -right-px -bottom-px size-3 rounded-full border-2",
+            angemeldet ? "bg-primary" : "bg-muted-foreground",
+          )}
+        />
       </Link>
     );
   }

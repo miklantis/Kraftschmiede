@@ -1,10 +1,10 @@
 import { Sidebar } from "./Sidebar";
 import { BottomNav } from "./BottomNav";
-import { MobileHeader } from "./MobileHeader";
 
 // Durchgaengige Huelle aller Seiten. Umschaltpunkt 960px (wie V1):
 //  - ab 960px: feste Sidebar links, Inhalt mit linkem Abstand
-//  - darunter: schlanker Kopf oben, Bottom-Nav unten fixiert
+//  - darunter: kein separater Kopf mehr - der Konto-Avatar sitzt rechts im
+//    Seitenkopf (PageHeader), wie V1; unten die fixierte Bottom-Nav
 // Der wechselnde Seiteninhalt kommt als children (das Router-Outlet).
 export function AppShell({
   children,
@@ -19,12 +19,7 @@ export function AppShell({
       </div>
 
       <div className="min-[960px]:ml-[264px]">
-        {/* Mobile-Kopf: nur unter 960px */}
-        <div className="min-[960px]:hidden">
-          <MobileHeader />
-        </div>
-
-        <main className="mx-auto w-full max-w-[1180px] px-[22px] pt-2 pb-28 min-[960px]:px-[52px] min-[960px]:pt-10 min-[960px]:pb-[72px]">
+        <main className="mx-auto w-full max-w-[1180px] px-[22px] pt-[22px] pb-28 min-[960px]:px-[52px] min-[960px]:pt-10 min-[960px]:pb-[72px]">
           {children}
         </main>
       </div>
