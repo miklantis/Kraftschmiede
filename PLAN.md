@@ -17,27 +17,15 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
 
 ## Aktueller Stand
 
-- **Phase:** Phase 3 (Training - Uebersicht & Empfehlung) gebaut und gepusht; steht zum
-  Live-Test aus. Erste echte Inhaltsseite und erstes echtes Datenfundament: Daten-Hooks,
-  Coach- und Journey-Logik laufen gegen den DB-Stand. Nach erstem Live-Eindruck die globale
-  Inhaltsflaeche an V1 angeglichen (Breite 1180px statt 768px, Desktop-Raender 52/40/72px,
-  Handy 22px seitlich, Seitenkopf-Groessen wie V1: Desktop 34px / Handy 28px). Greift ueber
-  AppShell + PageHeader auf alle Seiten. Zweite Live-Runde: Titelgroesse korrigiert (war
-  versehentlich invertiert), Hero-Karte am Desktop auf V1-Hoehe (Padding 26px vertikal),
-  Klick auf aktiven Skill startet jetzt die Skill-Session (Phase-11-Platzhalter) statt zur
-  Skills-Seite zu navigieren - Paritaet zu V1. Dritte Live-Runde: Oberflaechen-Schrift von
-  Sora auf System-UI umgestellt (wie V1) - loest den "zu fett/zu gross"-Eindruck der
-  Ueberschriften, Sora baute wuchtiger; Hero-Start-Knopf auf V1-Hoehe (enge Zeilenhoehe,
-  kein Rand). Sora wird nicht mehr geladen, Spline Sans Mono (Zahlen) bleibt. Vierte
-  Live-Runde: globale Zeilenhoehe auf V1-Wert (normal statt Tailwind 1.5) - vertikale
-  Abstaende zwischen Texten waren ueberall leicht zu hoch und schoben den Inhalt nach unten;
-  betroffene Groessenklassen (text-base/sm/xs) auf feste px umgestellt, damit sie die
-  Zeilenhoehe erben. Fuenfte Live-Runde (Mobile): Konto-Avatar wie V1 in den Seitenkopf
-  geholt (rechts, zum Kopf zentriert, 40px, mit Sync-Punkt gruen/grau) statt in einen
-  separaten Kopfbalken darueber; MobileHeader entfernt; oberer Abstand mobil auf V1 (22px).
-  Sechste Live-Runde (Mobile): Bottom-Nav an V1 (Icons 27px statt 24, unterer Abstand 22px);
-  Listen-Titel am Handy 17px statt 15px (wie V1, Desktop bleibt 15px). Als Naechstes Phase 3
-  weiter live pruefen, danach Phase 4 (Verlauf).
+- **Phase:** Phase 3 (Training - Uebersicht & Empfehlung) **live getestet und freigegeben.**
+  Erste echte Inhaltsseite und erstes echtes Datenfundament (Daten-Hooks, Coach- und Journey-
+  Logik gegen den DB-Stand). Nach dem Bau folgten mehrere Schliff-Runden gegen V1 (Desktop +
+  Handy): Inhaltsbreite/Raender, Seitenkopf, Hero-Hoehe, Skill-Klick-Paritaet, System-Schrift,
+  globale Zeilenhoehe, Mobile-Avatar im Kopf, Bottom-Nav, Listen-Titel. Die dabei
+  festgezurrten globalen Layout-Regeln sind im **Look-Kanon** (Abschnitt "Globaler Look
+  zuerst") dokumentiert und gelten verbindlich fuer alle Folgeseiten - neue Seiten nutzen die
+  Bausteine (PageHeader, Section, List/ListRow, TwoColumn, AppShell) und erfinden Abstaende
+  nicht neu. Als Naechstes Phase 4 (Verlauf) - Konzept zuerst abstimmen.
 - **Erledigt:** Phase 0 abgeschlossen (Fundament, Schema/RLS, Engine, Zod-Schemas, UI-Fundament,
   Offline-Grundgeruest, Live-Deploy). Schlichter Login als Voraussetzung fuer alle
   Schreibzugriffe (E-Mail/Passwort ueber Supabase Auth, AuthProvider + useAuth, AuthGate vor
@@ -78,9 +66,9 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
   bleibt kein eigener Punkt (spaeter Karte im Training). Umschaltpunkt 960px. / zeigt direkt
   Training (kein eigener Startbildschirm). Sidebar und Bottom-Nav teilen sich eine Nav-Liste,
   damit sie nicht auseinanderlaufen.
-- **Als Naechstes:** Phase 3 live pruefen (Streifen, Hero-Score, weitere Workouts, Skills,
-  Yoga, Verhalten Mobile/Desktop). Danach Phase 4 - Verlauf (Kalender + Liste + Session-
-  Zusammenfassung + erste Charts); Konzept zuerst abstimmen.
+- **Als Naechstes:** Phase 4 - Verlauf (Kalender + Liste + Session-Zusammenfassung + erste
+  Charts); Konzept zuerst abstimmen. Neue Seiten halten sich an den Look-Kanon und die
+  vorhandenen Bausteine.
 - **Bewusst noch nicht dabei:** JSON-Export-Haelfte und Import/Export-Politur (Phase 12),
   Abgleich alt/neu (Stichproben), vollstaendiges Konto-Panel (Phase 10), App-Huelle offline
   laden (PWA, Phase 13), sichtbare Offline-Anzeige (Phase 1/2).
@@ -94,6 +82,47 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
 
 Vor den Feature-Bloecken steht die durchgaengige Gestaltung (Phase 1). Sie gilt fuer
 alle Bloecke und wird einmal bewusst entschieden, bevor einzelne Seiten entstehen.
+
+### Look-Kanon (verbindlich fuer ALLE Seiten)
+
+Beim Schliff der Training-Seite (Phase 3) wurden die globalen Layout-Regeln festgezurrt.
+Sie stecken in wiederverwendbaren Bausteinen - **neue Seiten nutzen diese Bausteine und
+erfinden Abstaende/Groessen nicht neu.** Alle Werte sind aus dem V1-"Klar"-Theme.
+
+- **Inhaltsflaeche (`AppShell`):** Container max. 1180px, zentriert. Desktop-Raender
+  52px seitlich / 40px oben / 72px unten; Handy 22px seitlich / 22px oben, unten Platz
+  fuer die Bottom-Nav. Umschaltpunkt Desktop/Mobile: 960px.
+- **Schrift:** System-UI (V1-Stack: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto)
+  fuer die Oberflaeche; Spline Sans Mono nur fuer Zahlen. Kein Sora/Inter.
+- **Zeilenhoehe:** global `normal` (rund 1.2), nicht Tailwind-Default 1.5. Groessen ueber
+  feste px (`text-[15px]`), nicht ueber `text-base/-sm/-xs` - die brachten eine eigene
+  Zeilenhoehe mit. Wo bewusst mehr Zeilenabstand noetig ist (laengerer Fliesstext), lokal
+  `leading-[1.5]` setzen.
+- **Seitenkopf (`PageHeader`):** auf JEDER Seite. Datum (13px Handy / 14px Desktop, muted)
+  ueber Titel (28px Handy / 34px Desktop, fett); Titel-Abstand zum Datum 1px. Der untere
+  Abstand gehoert zum Kopf: 16px Handy / 26px Desktop. Am Handy sitzt rechts der Konto-
+  Avatar (40px, Sync-Punkt, zum Kopf zentriert); am Desktop kein Avatar (Konto in der
+  Sidebar). Datum per `date`-Prop -> erscheint nur, wenn gesetzt.
+- **Block mit Ueberschrift (`Section`):** kleine Versal-Eyebrow (13px Handy / 12px Desktop,
+  600, uppercase, getrennt, muted) mit Abstand darunter (10px Handy / 12px Desktop). Fuer
+  alle Block-Titel wie "Heute empfohlen", "Weitere Workouts", "Aktive Skills", "Yoga".
+- **Listen (`List` + `ListRow`):** weisse Karte, Radius 18px, weicher Schatten, Zeilen mit
+  Trennlinien. Zeile: Titel (17px Handy / 15px Desktop, 600) + Unterzeile (13px, muted),
+  optional Anhaengsel rechts (Score) + Pfeil. Zeilen-Padding 14px Handy / 16px Desktop.
+  `bordered` gibt auch der ersten Zeile eine obere Linie (wenn eine Eyebrow darueber steht).
+- **Zwei Spalten (`TwoColumn`):** Desktop 1,6fr / 1fr, horizontaler Abstand 26px; Abstand
+  zwischen Bloecken innerhalb einer Spalte 28px (Desktop) / 24px (Handy); am Handy gestapelt.
+- **Karten/Radien/Schatten:** Listen-/Block-Karten 16-18px, Hero 22px, Bedienelemente 11px,
+  Pillen 20px; weiche V1-Schatten, kein harter Rahmen.
+- **Bottom-Nav (Handy):** deckend weiss, weicher oberer Schatten, Icons 27px, oben 10px /
+  unten 22px (+ Safe-Area), inaktiv #b0b0b6, aktiv Markengruen.
+- **Konto-Avatar (`AccountButton`):** "compact" = runder 40px-Avatar mit Sync-Punkt
+  (gruen angemeldet / grau getrennt) fuer den Handy-Kopf; "full" = Avatar + Name + Status
+  fuer den Sidebar-Fuss (Desktop).
+
+Wenn eine neue Seite ein Muster braucht, das es noch nicht gibt (z. B. Kalender, Chart,
+Muscle-Map), wird es als neues wiederverwendbares Primitive in `src/components/ui` angelegt
+und hier ergaenzt - nicht seitenlokal zusammengebaut.
 
 ---
 
@@ -161,7 +190,10 @@ fuehrt vorerst zu einem Platzhalter, bis Live steht.
 - [x] Liste weiterer Workouts (mit Score), aktive Skills, Yoga-Einstieg
 - [x] Eignung/Erholung + Coach-Empfehlung als reine Anzeige (kein Eingriff in die Logik)
 - [x] "Session starten" verdrahtet (vorerst Platzhalter bis Phase 11)
-- [ ] Live getestet (auf der Deploy-Seite)
+- [x] Live getestet und freigegeben (auf der Deploy-Seite). Mehrere Schliff-Runden gegen V1
+      (Desktop + Handy): Inhaltsbreite, Raender, Seitenkopf, Hero-Hoehe, Skill-Klick-Paritaet,
+      System-Schrift, Zeilenhoehe, Mobile-Avatar im Kopf, Bottom-Nav, Listen-Titel. Die dabei
+      festgezurrten globalen Regeln stehen im Look-Kanon (oben) und gelten fuer alle Folgeseiten.
 
 ## Phase 4 – Verlauf
 
