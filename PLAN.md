@@ -17,23 +17,22 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
 
 ## Aktueller Stand
 
-- **Naechste Sitzung (Einstieg):** Phase 6 (Skills) gebaut und gepusht - **wartet auf
-  Live-Test**. Skills-Tab als eine Liste aller Skills; jede Karte hat einen Schalter zum
-  Aktivieren/Deaktivieren (Fortschritt bleibt) und ist aufklappbar (Phasen mit Zielen,
-  aktuelle Phase markiert, Zaehler, Equipment-Tor als Hinweis; bei aktiven Skills die
-  Aktionen Phase zurueck/Zuruecksetzen). Kein getrennter Katalog, kein separater
-  Deaktivieren-Knopf - der Schalter macht beides. Standard-Equipment wird beim ersten
-  Start angelegt. Wenn der Test passt: Haekchen "Live getestet" setzen, dann Phase 7
-  (Yoga). Hinweis: die eigentliche Skill-Live-Session (Trainieren) ist bewusst Phase 11.
-- **Phase:** Phase 6 (Skills) **gebaut, Live-Test offen.** Vierte Inhaltsseite. Verwaltung
-  ohne Trainieren (Scope-Entscheidung: Live-Session = Phase 11). Engine/Schema/Seed waren
-  schon da; neu sind die Schreibaktionen (useSkillActions: aktivieren/deaktivieren/Phase
-  zurueck/zuruecksetzen mit Log und Zaehler-Reset), das View-Modell (useSkillsView fuehrt
-  Definitionen + Fortschritt + Equipment ueber skillAdvice zusammen), ein Accordion-
-  Primitive und die Skill-Karten. Standard-Equipment (Baender, Klimmzugstange, Ringe,
-  Parallettes) wird beim ersten Start idempotent angelegt - speist das Tor (Weg 1).
-  Der automatische Zaehler-Fortschritt nach einer Session kommt mit Phase 11; die Engine
-  kann ihn bereits (Reset bei "missed" getestet), hier greifen die manuellen Eingriffe.
+- **Naechste Sitzung (Einstieg):** Phase 6 (Skills) **abgeschlossen und freigegeben.**
+  Naechster Schritt: Phase 7 (Yoga). Erst das Konzept gemeinsam besprechen
+  (Funktionsschnitt gegen V1: Karte im Training-Tab plus Eintrag-Popup), dann bauen, dann
+  live testen. Einfach hier ansetzen. Hinweis: die Skill-Live-Session (Trainieren) bleibt
+  fuer Phase 11 vorgemerkt.
+- **Phase:** Phase 6 (Skills) **abgeschlossen.** Vierte Inhaltsseite. Verwaltung ohne
+  Trainieren (Scope-Entscheidung: Live-Session = Phase 11). Eine Liste aller Skills; jede
+  Karte mit Schalter (aktivieren/deaktivieren, Fortschritt bleibt) und aufklappbar (Phasen
+  mit Zielen, aktuelle Phase markiert, Zaehler, Equipment-Tor als Hinweis; bei aktiven
+  Skills die Aktionen Phase zurueck/Zuruecksetzen). Skill-Blau als Akzent. Engine/Schema/
+  Seed waren schon da; neu: Schreibaktionen (useSkillActions), View-Modell (useSkillsView
+  ueber skillAdvice), Accordion- und Switch-Primitive, die Skill-Karten. Standard-Equipment
+  (Baender, Klimmzugstange, Ringe, Parallettes) wird beim ersten Start idempotent angelegt -
+  speist das Tor (Weg 1). Der automatische Zaehler-Fortschritt nach einer Session kommt mit
+  Phase 11; die Engine kann ihn bereits (Reset bei "missed" getestet), hier greifen die
+  manuellen Eingriffe. Naechste Phase: 7 (Yoga).
 - **Erledigt:** Phase 0 abgeschlossen (Fundament, Schema/RLS, Engine, Zod-Schemas, UI-Fundament,
   Offline-Grundgeruest, Live-Deploy). Schlichter Login als Voraussetzung fuer alle
   Schreibzugriffe (E-Mail/Passwort ueber Supabase Auth, AuthProvider + useAuth, AuthGate vor
@@ -255,7 +254,9 @@ fuehrt vorerst zu einem Platzhalter, bis Live steht.
 - [x] Manager-Ansicht (aktivieren, Phase anpassen, Fortschritt)
 - [x] Equipment-Tor
 - [x] Konsekutiv-Logik (Zaehler-Reset bei Fehlschlag)
-- [ ] Live getestet
+- [x] Live getestet und freigegeben (Skills-Tab: eine Liste mit Schalter pro Skill,
+  aufklappbar mit Phasen/Zaehler/Equipment-Tor, Aktionen Phase zurueck/Zuruecksetzen;
+  Skill-Blau als Akzent). Hinweis: das Trainieren selbst (Skill-Live-Session) ist Phase 11.
 
 ## Phase 7 – Yoga
 
