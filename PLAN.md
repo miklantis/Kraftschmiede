@@ -17,26 +17,22 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
 
 ## Aktueller Stand
 
-- **Naechste Sitzung (Einstieg):** Phase 5 Schritt 1 (Journey-Seite + Phasen + Vorlagen-
-  Waehler) ist gebaut, live getestet und freigegeben. Jetzt Schritt 2: erst das Konzept der
-  Periodisierungskurve gemeinsam besprechen (groesserer Schritt, weil es das erste wieder-
-  verwendbare Chart-Primitive wird, das spaeter Phase 8 mitnutzt), dann bauen. Details unter
-  "Als Naechstes". Einfach hier ansetzen, der Nutzer muss nichts wiederholen.
-- **Phase:** Phase 5 (Journey) **Schritt 1 gebaut, live getestet und freigegeben.** Dritte echte
-  Inhaltsseite, strikt Paritaet zu V1 und einspaltig. Aktive-Journey-Karte (Eyebrow, Name,
-  Vorlage + Startdatum, Bearbeiten-Knopf). Phasen-Ablauf mit Status (vergangen = grauer Punkt
-  mit Haken, aktuell = gruener Punkt akzent-getoent, kuenftig = gedimmt) und den drei
-  Kennzahlen je Phase (Wiederholungsband, Satz-Rampe/Woche, Deload); Desktop als Raster bis
-  vier Spalten, Handy als Liste mit nur der aktuellen Phase aufgeklappt. Vorlagen-Waehler als
-  eigene Unterseite (/journey/waehlen) mit Zurueck-Knopf, Inline-Umbenennen der aktiven
-  Journey und Vorlagenkarten (Name, Dauer, Kurzbeschreibung, "Fuer wen", Zusammenfassung,
-  Phasen-Chips); eine Vorlage waehlen legt eine neue aktive Journey an (deaktiviert die alte,
-  Invariante genau eine aktive Journey) und fuehrt zurueck ins Training. Die Status-Logik
-  steckt in einer reinen, getesteten Aufbereitung (lib/journey.ts); Platzierung/Volumen
-  rechnen aus Phase 0. Bewusst NICHT in der Journey-UI: Aktivieren/Abschliessen einer Journey
-  (in V1 nur ueber einen ungenutzten Block erreichbar) und ein Archiv abgeschlossener
-  Journeys. Als Naechstes Schritt 2: die Periodisierungskurve (Volumen + Intensitaet,
-  Phasen-Baender, Deload-Markierung, "jetzt"-Punkt) als wiederverwendbares Chart-Fundament.
+- **Naechste Sitzung (Einstieg):** Phase 5 Schritt 2 (Periodisierungskurve) ist gebaut und
+  live ausgeliefert. Offen: Live-Test der Kurve auf der Journey-Seite (Desktop + Handy). Passt
+  sie, ist die ganze Phase 5 fertig - dann das phasenweite "Live getestet" abhaken und Phase 5
+  ins Log/abschliessen, danach Phase 6 (Skills) konzipieren. Wenn etwas zu schaerfen ist, sagt
+  es der Nutzer. Einfach hier ansetzen, der Nutzer muss nichts wiederholen.
+- **Phase:** Phase 5 (Journey) **Schritt 2 gebaut, wartet auf Live-Test; Schritt 1 bereits
+  freigegeben.** Die Periodisierungskurve (1:1 aus V1) sitzt als eigener Block "Periodisierung"
+  in einer Karte zwischen aktiver-Journey-Karte und Phasen-Ablauf. Zwei glatte Kurven ueber alle
+  Wochen (Volumen kraeftig gruen, Intensitaet feiner + gestrichelt), dahinter die Phasen als
+  zarte Baender mit Namen, Deload-Wochen orange aufleuchtend (Linie + Wochennummer), offener Ring
+  mit "jetzt"-Tooltip an der aktuellen Gesamtwoche, Wochennummern unter der Achse; auf dem Handy
+  bei vielen Wochen horizontal wischbar. D3-getrieben gebaut (wie V1), damit eine spaetere
+  Aufbau-Animation gut daraufsetzen kann. Neues, domaenenfreies Chart-Fundament
+  (components/ui/chart.tsx) kapselt die geteilte Mechanik (Breite messen, scrollen, glatte
+  Linie/Flaeche, Endpunkt-Ring, dunkler Tooltip) und wird in Phase 8 von den Uebungs-
+  Verlaufscharts mitgenutzt. Reine Datenaufbereitung getestet (lib/periodization.ts).
 - **Erledigt:** Phase 0 abgeschlossen (Fundament, Schema/RLS, Engine, Zod-Schemas, UI-Fundament,
   Offline-Grundgeruest, Live-Deploy). Schlichter Login als Voraussetzung fuer alle
   Schreibzugriffe (E-Mail/Passwort ueber Supabase Auth, AuthProvider + useAuth, AuthGate vor
@@ -77,10 +73,9 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
   bleibt kein eigener Punkt (spaeter Karte im Training). Umschaltpunkt 960px. / zeigt direkt
   Training (kein eigener Startbildschirm). Sidebar und Bottom-Nav teilen sich eine Nav-Liste,
   damit sie nicht auseinanderlaufen.
-- **Als Naechstes:** Phase 5 Schritt 2 - Periodisierungskurve (Volumen + Intensitaet ueber
-  alle Wochen, Phasen-Baender, Deload-Markierung, "jetzt"-Punkt) als wiederverwendbares
-  Chart-Fundament, das spaeter die Uebungs-Verlaufscharts (Phase 8) mitnutzen. Davor der
-  Live-Test von Schritt 1.
+- **Als Naechstes:** Live-Test der Periodisierungskurve (Desktop + Handy). Sitzt sie sauber,
+  ist Phase 5 fertig (phasenweites "Live getestet" abhaken, Log-Eintrag) und Phase 6 (Skills)
+  wird konzipiert. Bei Schliffbedarf an der Kurve zuerst nachbessern.
 - **Bewusst noch nicht dabei:** JSON-Export-Haelfte und Import/Export-Politur (Phase 12),
   Abgleich alt/neu (Stichproben), vollstaendiges Konto-Panel (Phase 10), App-Huelle offline
   laden (PWA, Phase 13), sichtbare Offline-Anzeige (Phase 1/2).
@@ -138,6 +133,12 @@ erfinden Abstaende/Groessen nicht neu.** Alle Werte sind aus dem V1-"Klar"-Theme
 - **Segment-Umschalter (`SegmentedControl`):** zwei oder mehr gleichwertige Ansichten,
   genau eine aktiv (z. B. Liste/Kalender). Generisch, ohne Domaenenbezug; Optik aus V1
   (graue Wanne, aktive Pille weiss mit weichem Schatten). (Phase 4 gebaut.)
+- **Chart-Fundament (`ChartCanvas` + Helfer in `components/ui/chart.tsx`):** domaenenfreies,
+  D3-getriebenes Verlaufschart-Geruest. Misst die verfuegbare Breite, wird bei vielen Punkten
+  horizontal scrollbar, und bringt den geteilten Stil mit (glatte Catmull-Rom-Linie, weiche
+  Flaechenfuellung, heller Endpunkt-Ring, dunkler Nub-Tooltip; CHART_FONT/CHART_MONO,
+  readToken). Die Domaene liefert nur den draw-Rueckruf und die Daten. (Phase 5 gebaut; Phase 8
+  Uebungs-Verlaufscharts nutzen es mit.)
 
 Wenn eine neue Seite ein Muster braucht, das es noch nicht gibt (z. B. Kalender, Chart,
 Muscle-Map), wird es als neues wiederverwendbares Primitive in `src/components/ui` angelegt
@@ -233,8 +234,8 @@ fuehrt vorerst zu einem Platzhalter, bis Live steht.
       Status (vergangen/aktuell/kuenftig) aus der Engine-Platzierung, Vorlagen-Waehler mit
       Anlegen und Umbenennen. Platzierung/Volumen rechnen aus Phase 0.
       **(Schritt 1 live getestet und freigegeben 2026-06-22.)**
-- [ ] Periodisierungschart (Schritt 2 – wiederverwendbares Chart-Fundament, das spaeter
-      die Uebungs-Verlaufscharts in Phase 8 mitnutzen)
+- [x] Periodisierungschart (Schritt 2 – wiederverwendbares Chart-Fundament, das spaeter
+      die Uebungs-Verlaufscharts in Phase 8 mitnutzen). **Gebaut, wartet auf Live-Test.**
 - [ ] Live getestet (Gesamttest der Phase inkl. Kurve; Schritt 1 ist bereits freigegeben)
 
 ## Phase 6 – Skills
@@ -316,6 +317,26 @@ getrennt: was hier liegt, gehoert nicht auf den Trainings-Screen.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu, sobald sie fertig sind.
+
+- 2026-06-22 - Phase 5 (Journey) Schritt 2 gebaut (wartet auf Live-Test): die
+  Periodisierungskurve, 1:1 aus V1 (charts.js drawJourneyChart). Neues, domaenenfreies
+  Chart-Fundament src/components/ui/chart.tsx (D3-getrieben, damit spaetere Aufbau-Animationen
+  per D3-Uebergaengen daraufsetzen koennen): useElementWidth (ResizeObserver) + ChartCanvas
+  (scrollbarer Rahmen, misst die Breite, bestimmt die Zeichenbreite mit Mindest-Plotbreite,
+  leert das SVG und ruft den draw-Rueckruf mit den Massen) sowie die geteilten Zeichen-Helfer
+  smoothLine/smoothArea (Catmull-Rom), appendAreaGradient, appendEndpointRing, appendTooltip
+  (dunkler Nub-Tooltip) und readToken; CHART_FONT/CHART_MONO. Phase 8 (Uebungs-Verlaufscharts)
+  nutzt dieses Fundament mit. Reine, getestete Datenaufbereitung src/lib/periodization.ts
+  (buildPeriodization: Volumen je Woche aus engine.volumeForWeek mit Satz-Rampe + Deload,
+  Intensitaet aus der Wiederholungsspanne, Phasen-Baender, geklemmter jetzt-Index, Min/Max)
+  mit 9 Tests. Journey-Komponente src/components/journey/PeriodizationChart.tsx zeichnet auf
+  dem Fundament: zwei Kurven, Phasen-Baender + Labels, Deload-Orange (Stroke-Gradient +
+  Wochennummern), jetzt-Ring + Tooltip. V1-Token-Mapping beachtet (accent->primary,
+  accent-2->intensity, warn->warning). useJourneyView liefert das fertige Kurven-Modell mit;
+  journey.tsx zeigt es als Block "Periodisierung" in einer Karte zwischen aktiver-Journey-Karte
+  und Phasen-Ablauf (nur bei vorhandenen Wochen). Neue Abhaengigkeiten: d3-shape, d3-scale,
+  d3-selection (+ Typen); landen per Route-Code-Splitting nur im Journey-Chunk. Validiert:
+  tsc gruen, vite build gruen, 154 Tests gruen (9 neue). Offen: Live-Test.
 
 - 2026-06-22 - Phase 5 (Journey) Schritt 1 live getestet und freigegeben. Journey-Seite
   (aktive-Journey-Karte, Phasen-Ablauf, Vorlagen-Waehler mit Anlegen/Umbenennen) auf der

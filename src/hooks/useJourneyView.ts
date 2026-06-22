@@ -1,6 +1,11 @@
 import { useMemo } from "react";
 import { journeyPlacement } from "@/engine";
-import { buildPhaseViews, type PhaseView } from "@/lib/journey";
+import {
+  buildPhaseViews,
+  type JourneyPhaseInput,
+  type PhaseView,
+} from "@/lib/journey";
+import { buildPeriodization, type PeriodizationData } from "@/lib/periodization";
 import { longDateYearDE, todayISO } from "@/lib/format";
 import { useActiveJourney } from "./useJourney";
 import { useSessions } from "./useSessions";
@@ -8,12 +13,14 @@ import { useSettings } from "./useSettings";
 import { useJourneyTemplates } from "./useJourneyTemplates";
 
 // Anzeigefertiges Modell der Journey-Seite. Komponenten kennen weder Supabase
-// noch die Engine – sie bekommen Name, Meta-Zeile und fertige Phasen-Modelle.
+// noch die Engine – sie bekommen Name, Meta-Zeile, fertige Phasen-Modelle und das
+// fertige Kurven-Modell (Periodisierung).
 export interface JourneyView {
   name: string;
   templateName: string | null;
   startLong: string | null;
   phases: PhaseView[];
+  periodization: PeriodizationData;
 }
 
 // Bezieht aktive Journey, Einheiten, Einstellungen und Vorlagen und setzt daraus
@@ -61,25 +68,26 @@ export function useJourneyView(): {
     const templateName =
       templates.find((t) => t.id === journey.source_template_id)?.name ?? null;
 
-    const phases = buildPhaseViews(
-      journey.phases.map((p) => ({
-        name: p.name,
-        focus: p.focus,
-        weeks: p.weeks,
-        setsStart: p.sets_start,
-        setsEnd: p.sets_end,
-        deloadWeek: p.deload_week,
-        repTargetMin: p.rep_target_min,
-        repTargetMax: p.rep_target_max,
-      })),
-      placement,
-    );
+    const phaseInputs: JourneyPhaseInput[] = journey.phases.map((p) => ({
+      name: p.name,
+      focus: p.focus,
+      weeks: p.weeks,
+      setsStart: p.sets_start,
+      setsEnd: p.sets_end,
+      deloadWeek: p.deload_week,
+      repTargetMin: p.rep_target_min,
+      repTargetMax: p.rep_target_max,
+    }));
+
+    const phases = buildPhaseViews(phaseInputs, placement);
+    const periodization = buildPeriodization(phaseInputs, placement.globalWeek);
 
     return {
       name: journey.name,
       templateName,
       startLong: journey.start_date ? longDateYearDE(journey.start_date) : null,
       phases,
+      periodization,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [

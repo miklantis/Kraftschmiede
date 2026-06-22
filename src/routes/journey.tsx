@@ -2,13 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/ui/page-header";
 import { Section } from "@/components/ui/section";
 import { ActiveJourneyCard } from "@/components/journey/ActiveJourneyCard";
+import { PeriodizationChart } from "@/components/journey/PeriodizationChart";
 import { PhaseList } from "@/components/journey/PhaseList";
 import { JourneyEmpty } from "@/components/journey/JourneyEmpty";
 import { useJourneyView } from "@/hooks/useJourneyView";
 
-// Journey: aktive Journey, Phasen-Ablauf und (spaeter) die Periodisierungskurve.
-// Reine Anzeige plus der Weg zum Vorlagen-Waehler. Einspaltig wie V1; Phasen als
-// Raster (Desktop) bzw. Liste (Mobile). Die Kurve folgt als zweiter Schritt.
+// Journey: aktive Journey, Periodisierungskurve und Phasen-Ablauf. Reine Anzeige
+// plus der Weg zum Vorlagen-Waehler. Einspaltig wie V1; Phasen als Raster (Desktop)
+// bzw. Liste (Mobile). Die Kurve sitzt zwischen aktiver Karte und Phasen.
 export const Route = createFileRoute("/journey")({
   component: JourneyPage,
 });
@@ -58,6 +59,13 @@ function JourneyPage(): React.ReactElement {
       <PageHeader title="Journey" />
       <div className="flex flex-col gap-7 min-[960px]:gap-8">
         <ActiveJourneyCard name={data.name} metaLine={metaLine} />
+        {data.periodization.weeks.length > 0 && (
+          <Section eyebrow="Periodisierung">
+            <div className="rounded-card bg-card p-2 shadow-card min-[960px]:p-3">
+              <PeriodizationChart data={data.periodization} />
+            </div>
+          </Section>
+        )}
         <Section eyebrow="Phasen · Ablauf">
           <PhaseList phases={data.phases} />
         </Section>
