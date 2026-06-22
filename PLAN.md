@@ -17,15 +17,16 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
 
 ## Aktueller Stand
 
-- **Phase:** Phase 3 (Training - Uebersicht & Empfehlung) **live getestet und freigegeben.**
-  Erste echte Inhaltsseite und erstes echtes Datenfundament (Daten-Hooks, Coach- und Journey-
-  Logik gegen den DB-Stand). Nach dem Bau folgten mehrere Schliff-Runden gegen V1 (Desktop +
-  Handy): Inhaltsbreite/Raender, Seitenkopf, Hero-Hoehe, Skill-Klick-Paritaet, System-Schrift,
-  globale Zeilenhoehe, Mobile-Avatar im Kopf, Bottom-Nav, Listen-Titel. Die dabei
-  festgezurrten globalen Layout-Regeln sind im **Look-Kanon** (Abschnitt "Globaler Look
-  zuerst") dokumentiert und gelten verbindlich fuer alle Folgeseiten - neue Seiten nutzen die
-  Bausteine (PageHeader, Section, List/ListRow, TwoColumn, AppShell) und erfinden Abstaende
-  nicht neu. Als Naechstes Phase 4 (Verlauf) - Konzept zuerst abstimmen.
+- **Phase:** Phase 4 (Verlauf) **gebaut, Live-Test offen.** Zweite echte Inhaltsseite,
+  baut auf dem Datenfundament und den Bausteinen aus Phase 3 auf. Navigierbarer
+  Monatskalender mit farbigen Tagespunkten je Einheit (Kraft gruen, Skill blau, Yoga
+  lila, Abweichung gelb) und Liste der letzten Einheiten mit aufklappbarer Session-
+  Zusammenfassung (Dauer + Zeile je Uebung) sowie Loeschen mit Rueckfrage. Desktop zeigt
+  Kalender und Liste nebeneinander (1.35/1 wie V1), Handy hat einen Umschalter Liste/
+  Kalender. Strikt Paritaet zu V1: keine Statistik-Reihe, keine Charts (V1 hatte im
+  Verlauf nie Charts - aus Plan und Masterplan entfernt, weil es nur verwirrt). Erster
+  Schreibzugriff einer Inhaltsseite (Loeschen ueber Mutations-Hook). Als Naechstes der
+  Live-Test; danach Phase 5 (Journey).
 - **Erledigt:** Phase 0 abgeschlossen (Fundament, Schema/RLS, Engine, Zod-Schemas, UI-Fundament,
   Offline-Grundgeruest, Live-Deploy). Schlichter Login als Voraussetzung fuer alle
   Schreibzugriffe (E-Mail/Passwort ueber Supabase Auth, AuthProvider + useAuth, AuthGate vor
@@ -66,9 +67,9 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
   bleibt kein eigener Punkt (spaeter Karte im Training). Umschaltpunkt 960px. / zeigt direkt
   Training (kein eigener Startbildschirm). Sidebar und Bottom-Nav teilen sich eine Nav-Liste,
   damit sie nicht auseinanderlaufen.
-- **Als Naechstes:** Phase 4 - Verlauf (Kalender + Liste + Session-Zusammenfassung + erste
-  Charts); Konzept zuerst abstimmen. Neue Seiten halten sich an den Look-Kanon und die
-  vorhandenen Bausteine.
+- **Als Naechstes:** Phase 4 (Verlauf) live testen und freigeben; danach Phase 5 - Journey
+  (Phasen, Wochen-Platzierung, Periodisierungschart); Konzept zuerst abstimmen. Neue Seiten
+  halten sich an den Look-Kanon und die vorhandenen Bausteine.
 - **Bewusst noch nicht dabei:** JSON-Export-Haelfte und Import/Export-Politur (Phase 12),
   Abgleich alt/neu (Stichproben), vollstaendiges Konto-Panel (Phase 10), App-Huelle offline
   laden (PWA, Phase 13), sichtbare Offline-Anzeige (Phase 1/2).
@@ -119,6 +120,13 @@ erfinden Abstaende/Groessen nicht neu.** Alle Werte sind aus dem V1-"Klar"-Theme
 - **Konto-Avatar (`AccountButton`):** "compact" = runder 40px-Avatar mit Sync-Punkt
   (gruen angemeldet / grau getrennt) fuer den Handy-Kopf; "full" = Avatar + Name + Status
   fuer den Sidebar-Fuss (Desktop).
+- **Kalender (`Calendar`):** generisches Monatsgitter mit Navigation (Zurueck/Vor/Heute),
+  heutiger Tag hervorgehoben; was unter der Tagesnummer steht, liefert der Aufrufer ueber
+  `renderCell(iso)`. Optik aus V1 (Zelle min 54px Handy / 72px Desktop, weiche Karte).
+  Spaeter auch fuer Journey/Koerper nutzbar (Phase 4 gebaut).
+- **Segment-Umschalter (`SegmentedControl`):** zwei oder mehr gleichwertige Ansichten,
+  genau eine aktiv (z. B. Liste/Kalender). Generisch, ohne Domaenenbezug; Optik aus V1
+  (graue Wanne, aktive Pille weiss mit weichem Schatten). (Phase 4 gebaut.)
 
 Wenn eine neue Seite ein Muster braucht, das es noch nicht gibt (z. B. Kalender, Chart,
 Muscle-Map), wird es als neues wiederverwendbares Primitive in `src/components/ui` angelegt
@@ -197,10 +205,11 @@ fuehrt vorerst zu einem Platzhalter, bis Live steht.
 
 ## Phase 4 – Verlauf
 
-- [ ] Konzept abgestimmt
-- [ ] Kalender + Listenansicht
-- [ ] Session-Zusammenfassung
-- [ ] Erste Charts
+- [x] Konzept abgestimmt (Paritaet zu V1: Kalender + Liste + aufklappbare Session-
+      Zusammenfassung + Loeschen. Keine Statistik-Reihe und keine Charts - V1 hatte im
+      Verlauf nie Charts, daher bewusst nicht dabei und aus dem Plan entfernt.)
+- [x] Kalender + Listenansicht
+- [x] Session-Zusammenfassung
 - [ ] Live getestet
 
 ## Phase 5 – Journey
@@ -289,6 +298,24 @@ getrennt: was hier liegt, gehoert nicht auf den Trainings-Screen.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu, sobald sie fertig sind.
+
+- 2026-06-22 - Phase 4 (Verlauf) gebaut (Live-Test offen). Zweite echte Inhaltsseite.
+  Reine, getestete Aufbereitungslogik src/lib/history.ts (kindOf/tagLabel/calLabel/
+  sessionTitle, Detail-Aufbereitung strengthInfo/skillInfo, buildHistoryModel - 1:1 aus
+  V1 history.js, auf das normalisierte Schema umgestellt: Abweichung = Satz mit
+  adjusted=true statt entry.hadDeviation). Daten-Hook useSessionsDetailed (sessions +
+  verschachtelte session_exercises + sets in einem Zug, nur status=done) und View-Model-
+  Hook useHistory (komponiert mit useExercises/useTemplates/useSkills zu Liste + Kalender-
+  Karte; Komponenten Supabase-frei). Erster Schreibzugriff einer Inhaltsseite:
+  useDeleteSession (Mutations-Hook; loescht die sessions-Zeile, DB kaskadiert auf
+  session_exercises/sets; invalidiert sessions + sessions-detailed). Zwei neue generische
+  Primitives (src/components/ui): Calendar (Monatsgitter, Navigation, renderCell-Prop) und
+  SegmentedControl (Liste/Kalender-Umschalter) - beide im Look-Kanon ergaenzt.
+  Verlauf-spezifisch SessionLogCard (aufklappbar: Dauer + Zeile je Uebung, Loeschen mit
+  Rueckfrage). Seite src/routes/verlauf.tsx: Desktop Kalender+Liste nebeneinander (1.35/1
+  wie V1), Handy Umschalter. Format-Helfer longDateShort/fmtKg ergaenzt. Bewusst weggelassen:
+  Statistik-Reihe und Charts (Paritaet zu V1; "erste Charts" aus Plan+Masterplan entfernt).
+  10 neue Tests; Typecheck, Build und 138 Tests gruen. Offen: Live-Test.
 
 - 2026-06-22 - Phase 3 (Training - Uebersicht & Empfehlung) gebaut. Erste echte Inhaltsseite
   und erstes echtes Datenfundament. Reine Logik (getestet): Journey-Platzierung

@@ -29,3 +29,22 @@ export function fmtNum(x: number | null | undefined): string {
 export function fmtScore(x: number | null | undefined): string {
   return fmtNum(x).replace(".", ",");
 }
+
+// Kompaktes deutsches Datum mit Wochentag, z. B. "Mo, 22. Juni" -> hier kurz
+// "Mo., 22. Juni" wie im V1-Verlauf (Wochentag + Tag + Monat, alles kurz).
+export function longDateShort(dateStr: string): string {
+  try {
+    return new Date(dateStr + "T12:00:00").toLocaleDateString("de-DE", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
+// Kilogramm mit deutschem Dezimalkomma (V1 fmtKg).
+export function fmtKg(w: number | null | undefined): string {
+  return fmtNum(w).replace(".", ",");
+}

@@ -275,7 +275,8 @@ laenger wegen Feedback-Schleifen.
   einem Platzhalter; die gefuehrte Durchfuehrung ist bewusst Phase 11. ~1–2 Tage.
 
 ### Phase 4 – Verlauf
-- Kalender + Liste + Session-Zusammenfassung, erste Charts. ~1–2 Tage.
+- Kalender + Liste + aufklappbare Session-Zusammenfassung + Loeschen. Keine Charts (V1
+  hat im Verlauf keine). ~1–2 Tage.
 
 ### Phase 5 – Journey
 - Phasen, Wochen-Platzierung, Periodisierungschart. ~2 Tage.
