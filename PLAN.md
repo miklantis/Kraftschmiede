@@ -18,12 +18,13 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
 ## Aktueller Stand
 
 - **Naechste Sitzung (Einstieg):** Phase 6 (Skills) gebaut und gepusht - **wartet auf
-  Live-Test**. Skills-Tab mit Katalog (Hinzufuegen = aktivieren) und "Meine Skills"
-  (aufklappbar: Phasen mit Zielen, aktuelle Phase markiert, Zaehler, Equipment-Tor als
-  Hinweis, Aktionen Deaktivieren/Phase zurueck/Zuruecksetzen). Standard-Equipment wird
-  beim ersten Start angelegt. Wenn der Test passt: Haekchen "Live getestet" setzen, dann
-  Phase 7 (Yoga). Hinweis: die eigentliche Skill-Live-Session (Trainieren) ist bewusst
-  Phase 11, nicht hier.
+  Live-Test**. Skills-Tab als eine Liste aller Skills; jede Karte hat einen Schalter zum
+  Aktivieren/Deaktivieren (Fortschritt bleibt) und ist aufklappbar (Phasen mit Zielen,
+  aktuelle Phase markiert, Zaehler, Equipment-Tor als Hinweis; bei aktiven Skills die
+  Aktionen Phase zurueck/Zuruecksetzen). Kein getrennter Katalog, kein separater
+  Deaktivieren-Knopf - der Schalter macht beides. Standard-Equipment wird beim ersten
+  Start angelegt. Wenn der Test passt: Haekchen "Live getestet" setzen, dann Phase 7
+  (Yoga). Hinweis: die eigentliche Skill-Live-Session (Trainieren) ist bewusst Phase 11.
 - **Phase:** Phase 6 (Skills) **gebaut, Live-Test offen.** Vierte Inhaltsseite. Verwaltung
   ohne Trainieren (Scope-Entscheidung: Live-Session = Phase 11). Engine/Schema/Seed waren
   schon da; neu sind die Schreibaktionen (useSkillActions: aktivieren/deaktivieren/Phase
@@ -140,8 +141,12 @@ erfinden Abstaende/Groessen nicht neu.** Alle Werte sind aus dem V1-"Klar"-Theme
   readToken). Die Domaene liefert nur den draw-Rueckruf und die Daten. (Phase 5 gebaut; Phase 8
   Uebungs-Verlaufscharts nutzen es mit.)
 - **Aufklappbare Karte (`AccordionItem`):** weisse Karte mit klickbarem Kopf (beliebiger
-  Inhalt) und Chevron rechts, darunter der einklappbare Bereich. Eigener Offen-Zustand je
-  Eintrag. Generisch, domaenenfrei; spaeter auch fuer Uebungen/Verlauf. (Phase 6 gebaut.)
+  Inhalt) und Chevron, darunter der einklappbare Bereich. Optionales `trailing`-Element
+  rechts neben dem Kopf (ausserhalb des Klappen-Knopfs, z. B. ein Schalter). Eigener
+  Offen-Zustand je Eintrag. Generisch; spaeter auch fuer Uebungen/Verlauf. (Phase 6 gebaut.)
+- **Schalter (`Switch`):** barrierefreier An/Aus-Schalter (role=switch), gruene Wanne an,
+  graue aus. Generisch; nutzbar fuer Skill aktivieren/deaktivieren und spaeter die
+  Einstellungen (Equipment, Theme). (Phase 6 gebaut.)
 
 Wenn eine neue Seite ein Muster braucht, das es noch nicht gibt (z. B. Kalender, Chart,
 Muscle-Map), wird es als neues wiederverwendbares Primitive in `src/components/ui` angelegt
