@@ -30,30 +30,21 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
   Optik-Korrekturen gegen V1 (Eingaben ohne sichtbaren Kasten, erledigte Saetze leicht gruen,
   aktiver Satz gruener 2px-Rahmen, runde Haken, Scheiben als V1-Pillen) hat Kadir L3 design-
   und funktionstechnisch abgenommen. Damit stehen L1-L3 der Live-Session.
-- **Phase 11 Lieferung 4 (Beenden + Speichern) gebaut (2026-06-23), live testbar.** Das
-  Ende-Popup ist jetzt scharf: „Speichern" verdichtet die laufende Einheit normalisiert in
-  den Verlauf (1:1 wie V1 finishSession) - nur abgehakte Saetze ueberleben, ungemachte und
-  Aufwaermsaetze ohne Haken verfallen, Uebungen ohne erledigten Arbeitssatz fallen ganz raus;
-  je Uebung metTarget/Abweichung, est1RM aus den sauberen Saetzen, und der Katalog wird
-  fortgeschrieben (naechstes Arbeitsgewicht = hoechstes geleistetes, bei Nicht-Koerpergewicht
-  auch rm/rm_as_of). Eingefroren werden Journey/Phase (beim Start), die globale Journey-Woche
-  und ein Body-Snapshot. „Verwerfen" raeumt nur lokal - das ist der echte Unterschied, der
-  vorher fehlte. Das Popup zeigt die V1-Vorschau: je Uebung „erledigt / gesamt" und die Saetze
-  als Chips (Wdh × kg, erledigte gruen) plus die Trainingsdauer. Offline-fest: der Schreib-
-  vorgang laeuft als pausierbare Mutation (Default registriert vor resumePausedMutations),
-  wird ohne Netz vorgemerkt und nach Reconnect/Neustart nachgeschickt. Neu/portiert: reine
-  Verdichtung lib/liveFinish.ts (buildFinishRows + liveEndSummary, getestet), die Schreib-
-  Mutation lib/finishMutation.ts (writeFinish + Default-Registrierung im queryClient), der
-  Hook useFinishSession (sammelt Settings/Sessions/Uebungen/Body, baut das Schreib-Paket).
-  LiveSession um journeyId/phaseId erweitert (im Builder gesetzt, defensiv restauriert);
-  useLiveSession save->clear umbenannt; EndModal auf die Vorschau + echtes Speichern umgebaut.
-  tsc/build/270 Tests gruen (5 neue liveFinish).
-- **Naechste Sitzung (Einstieg):** **L4 live testen und freigeben** (Speichern schreibt in den
-  Verlauf, Verwerfen nicht; Vorschau-Chips + Dauer; offline aufzeichnen und nach Reconnect
-  pruefen). Erst nach L4-Freigabe **L5 (Skill-Live)** - zuerst Konzept gegen V1 (live.js
-  buildSkillLive/finishSkillSession + skills.js): gefuehrte Skill-Einheit mit Werten je Satz,
-  Stoppuhr bei Haltezeit, Konsekutiv-Logik (Phase hoch/Reset), Skill-Start-Knopf auf der
-  Trainingsseite verdrahten. NICHT mit L5 beginnen, solange L4 nicht freigegeben ist.
+- **Phase 11 Lieferung 4 (Beenden + Speichern) live freigegeben (2026-06-23).** Speichern
+  schreibt nur die abgehakten Saetze normalisiert in den Verlauf (est1RM/Abweichung, naechstes
+  Arbeitsgewicht/rm im Katalog, Journey/Phase/Woche + Body eingefroren), Verwerfen raeumt nur
+  lokal; Ende-Popup mit V1-Vorschau (Saetze-Chips + Dauer); offline ueber pausierbare Mutation.
+  Von Kadir live abgenommen. Damit stehen L1-L4 der Live-Session.
+- **Naechste Sitzung (Einstieg):** **Phase 11 Lieferung 5 (Skill-Live)** - zuerst Konzept gegen
+  V1 abstimmen, dann bauen. Quelle: V1 live.js buildSkillLive/liveSkillSession/finishSkillSession
+  + js/skills.js + engine.skillAdvice/skillSetMet/skillSessionResult. Inhalt: gefuehrte Skill-
+  Einheit (Werte je Satz gegen das Phasen-Ziel, geschafft/nicht; bei Haltezeit die Stoppuhr mit
+  5s-Vorlauf), Konsekutiv-Logik beim Beenden (completed -> consecutiveCount hoch, ab Schwelle
+  Phase weiter bzw. gemeistert; missed -> Reset), Schreiben als skill-Einheit (session_exercises
+  ohne Katalogbezug, sets mit value/met, skill_phase/skill_result), und den Skill-Start-Knopf auf
+  der Trainingsseite verdrahten (zeigt bis dahin den Platzhalter). Engine-Teile (skillAdvice etc.)
+  liegen schon portiert vor; die Skill-Verlaufs-Anbindung an die Uebungs-Detailseite steht aus
+  Phase 8. NICHT mit L5 beginnen, bevor das Konzept besprochen ist.
 - **L4 (Beenden + Speichern) bleibt vorgemerkt** (nicht starten vor L3-Freigabe): erledigte
   Saetze normalisiert in den Verlauf schreiben (echter Unterschied Speichern/Verwerfen),
   volles Offline-Zusammenspiel. Erst Konzept gegen V1 (app.js finishSession: nur abgehakte
@@ -633,7 +624,7 @@ Fortschritt wird hier je Lieferung gefuehrt:
       Aufwaermen), Coach beim Durchfuehren (Progression), Pausen-/Rest-Timer (Satz/
       Uebung getrennt, Auto-Start) + Rest-Bar, Audio/Vibration im Ablauf, fokus-
       erhaltende Eingaben (in React ueber Komponenten-State statt V1-DOM-Patch).
-- [x] **L4 – Beenden + Speichern.** *(gebaut 2026-06-23, wartet auf Live-Test/Freigabe)*
+- [x] **L4 – Beenden + Speichern.** *(live freigegeben 2026-06-23)*
       Erledigte Saetze normalisiert in den Verlauf
       schreiben (echter Unterschied Speichern/Verwerfen); volles Offline-Zusammenspiel
       (Aufzeichnen ohne Netz, spaeter Sync).
@@ -666,6 +657,12 @@ Fortschritt wird hier je Lieferung gefuehrt:
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu, sobald sie fertig sind.
+
+- 2026-06-23 - Phase 11 Lieferung 4 (Beenden + Speichern) live getestet und FREIGEGEBEN.
+  Speichern (nur abgehakte Saetze in den Verlauf, Katalog-Fortschreibung, eingefrorene
+  Journey/Phase/Woche + Body), Verwerfen (nur lokal), die V1-Vorschau im Ende-Popup und das
+  Offline-Aufzeichnen von Kadir abgenommen. Damit stehen L1-L4 der Live-Session. Naechste
+  Lieferung: L5 (Skill-Live) - erst Konzept gegen V1. Nur Doku, kein Code.
 
 - 2026-06-23 - Phase 11 Lieferung 4 (Beenden + Speichern) gebaut, wartet auf Live-Test. Das
   Ende-Popup speichert jetzt wirklich: „Speichern" verdichtet die laufende Einheit normalisiert
