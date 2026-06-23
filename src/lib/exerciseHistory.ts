@@ -161,6 +161,15 @@ export const EX_METRIC_TITLE: Record<ExMetric, string> = {
   volume: "Wochenvolumen",
 };
 
+// Kurzbezeichnung je Metrik fuer den Pin-Titel "Übung · Metrik" (V1 EX_METRIC_SHORT).
+export const EX_METRIC_SHORT: Record<ExMetric, string> = {
+  rm: "1RM",
+  weight: "Arbeitsgewicht",
+  reps: "Wiederholungen",
+  duration: "Haltezeit",
+  volume: "Volumen",
+};
+
 // Waehlbare Metriken je Uebungstyp (V1 exMetricOptions).
 export function exMetricOptions(
   profile: string,

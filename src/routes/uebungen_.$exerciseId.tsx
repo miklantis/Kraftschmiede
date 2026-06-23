@@ -16,7 +16,7 @@ import { longDateShort } from "@/lib/format";
 // Uebungs-Detail. Eigenstaendige Vollseite (entschachtelt mit _), ersetzt die
 // Liste wie in V1. Zeigt Kopf, Statistik-Reihe, Verlaufsdiagramm, die Muscle-Map
 // (beanspruchte Muskeln), den Trainingsverlauf und "Uebung anpassen" (Popup).
-// Anheften folgt im naechsten Schritt.
+// Der Anheften-Umschalter sitzt im Kopf der Chartkarte.
 export const Route = createFileRoute("/uebungen_/$exerciseId")({
   component: ExerciseDetailPage,
 });
@@ -98,6 +98,7 @@ function ExerciseDetailPage(): React.ReactElement {
           {metricOptions.length > 0 && (
             <div className="order-2 min-w-0 min-[960px]:order-none">
               <ExerciseChartCard
+                exerciseId={exercise.id}
                 history={chartHistory}
                 options={metricOptions}
                 defaultMetric={defaultMetric}

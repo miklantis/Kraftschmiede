@@ -43,12 +43,14 @@ export interface ExerciseChartProps {
   history: readonly ExHistoryEntry[];
   metric: ExMetric;
   unit: string;
+  height?: number;
 }
 
 export function ExerciseChart({
   history,
   metric,
   unit,
+  height = 200,
 }: ExerciseChartProps): React.ReactElement {
   const isVolume = metric === "volume";
   const linePoints = isVolume
@@ -255,12 +257,12 @@ export function ExerciseChart({
     [bars, n],
   );
 
-  // Hoehe wie V1 (.ub-cc .ub-chart): 168 Handy / 200 Desktop. Eine feste Hoehe
-  // genuegt – die Karte ist auf beiden Breiten gleich hoch wie V1 im Mittel.
+  // Hoehe wie V1: Detailkarte 200, angeheftete Kachel flacher (per height-Prop:
+  // 150 Desktop / 120 Handy). Standard 200.
   if (isVolume) {
     return (
       <ChartCanvas
-        height={200}
+        height={height}
         margin={BAR_MARGIN}
         minInnerWidth={n * PER_BAR}
         draw={drawBars}
@@ -270,7 +272,7 @@ export function ExerciseChart({
   }
   return (
     <ChartCanvas
-      height={200}
+      height={height}
       margin={MARGIN}
       minInnerWidth={n * PER_POINT}
       draw={drawLine}

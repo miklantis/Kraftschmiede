@@ -17,16 +17,23 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
 
 ## Aktueller Stand
 
-- **Naechste Sitzung (Einstieg):** Phase 8 Schritt 6 (Anheften/Dashboard) - **Konzept gegen
-  V1 abgestimmt, wartet auf Sign-off, dann bauen.** V1-Befund: das "Dashboard" ist die
-  "Angeheftet"-Sektion ganz oben auf /uebungen (exPinnedHTML); Anheften-Umschalter sitzt im
-  Chartkarten-Kopf der Detailseite (data-action pin-chart, je Uebung+Metrik). Speicherung in
-  V1 bewusst geraete-lokal, NICHT in der DB, NICHT im Export, NICHT synchronisiert
-  (localStorage-Key fs_dash_v013). Keine Sortierung/kein Entfernen in der Sektion - verwaltet
-  wird ueber den Umschalter auf der Detailseite (Drag&Drop-Code in V1 betrifft nur das
-  ungenutzte alte dashboardHTML, nicht die Live-Sektion). Fuer V2 -> kleiner geraete-lokaler
-  Store (localStorage), Eintrag {exerciseId, metric}, Hook usePinnedCharts; Sektion oben auf
-  /uebungen ueber Section + bestehende ExerciseChart-Karte, Umschalter in ExerciseChartCard.
+- **Naechste Sitzung (Einstieg):** Phase 8 Schritt 6 (Anheften/Dashboard) **gebaut, live zu
+  testen.** Detailseite: im Kopf der Verlaufs-Chartkarte sitzt jetzt der Umschalter
+  "Anheften"/"Angeheftet" (kleine Pille rechts neben dem Metrik-Titel), bezogen auf die
+  gerade gewaehlte Metrik - dieselbe Uebung kann mit mehreren Metriken angeheftet sein
+  (z. B. 1RM und Volumen). /uebungen: ganz oben die Sektion "Angeheftet" mit den
+  angehefteten Charts als flache Kacheln (Titel "Übung · Metrik", Diagramm 150 Desktop / 120
+  Handy), Desktop zweispaltiges Raster, Handy Liste; leer -> Hinweistext. Kein Sortieren/
+  Entfernen in der Sektion (V1-Paritaet) - verwaltet wird ueber den Umschalter. Speicherung
+  geraete-lokal (localStorage ks_pins_v1), NICHT in DB/Export/Sync. Neu: lib/pinnedCharts.ts
+  (reine Helfer hasPin/togglePin/parsePins + Typen, 6 Tests), Store-Hook usePinnedCharts
+  (useSyncExternalStore ueber localStorage, teilt den Stand zwischen Detailseite und Liste,
+  Cross-Tab ueber storage-Event), View-Hook usePinnedView (Pins -> fertige Kacheln),
+  Komponente exercise/PinnedCharts, Breakpoint-Hook useIsDesktop (960px), EX_METRIC_SHORT in
+  exerciseHistory, height-Prop an ExerciseChart. tsc/build/201 Tests gruen.
+- **Naechster Schritt:** Skill-Uebungsverlauf-Anbindung (Skill-Saetze mit exercise_id=null
+  ueber die Skill-Definition skillId+phase+Index -> exerciseKey -> Katalog-Uebung verknuepfen),
+  dann Phase 8 als Ganzes live abnehmen.
 - **Schritt 5 ("Uebung anpassen") live getestet und freigegeben (2026-06-23).** Auf der
   Uebungs-Detailseite gibt es unten den Knopf "Uebung anpassen" (Stift) -
   Desktop unten in der rechten Spalte, mobil ganz am Ende (order-5, nach dem Verlauf), wie
@@ -42,8 +49,8 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
   (genau die drei Felder, laedt den Katalog neu), Hook useActivePhaseRepBand (Repband der
   laufenden Phase ueber journeyPlacement) und in der Engine die reinen Helfer
   repTargetForFocus + phaseRepBand (aus V1 portiert, mit Tests). tsc/build/195 Tests gruen.
-- **Naechster Schritt: (6) Anheften/Dashboard** (auch der Anheften-Knopf in der Chartkarte) -
-  Konzept liegt vor, Sign-off ausstehend; plus die Skill-Uebungsverlauf-Anbindung (Skill-Saetze mit exercise_id=null ueber die Skill-
+- **Naechster Schritt:** Skill-Uebungsverlauf-Anbindung (Skill-Saetze ueber die
+  Skill-Definition der Katalog-Uebung zuordnen), dann Phase 8 live abnehmen (Skill-Saetze mit exercise_id=null ueber die Skill-
   Definition skillId+phase+Index -> exerciseKey -> Katalog-Uebung verknuepfen; eigener Schritt).
 - **Phase 8 Schritt 4 (Generische MuscleMap) gebaut, live getestet (mit Korrekturen unten).**
   Auf der Uebungs-Detailseite steht zwischen Diagramm und Verlauf eine
@@ -393,7 +400,10 @@ DB-Tabelle exercise_muscles. Charts ueber ChartCanvas/D3 (Phase 5).
       Katalog-Uebung zuordnen)
 - [x] Generische MuscleMap-Komponente (Doku: docs/Muskel-Map.md)
 - [x] "Uebung anpassen" als Popup ueber das Overlay-Primitive
-- [ ] Anheften/Dashboard
+- [x] Anheften/Dashboard – "Angeheftet"-Sektion oben auf /uebungen + Anheften-Umschalter
+      im Kopf der Detail-Chartkarte. Speicherung geraete-lokal (localStorage), getrennt vom
+      Datenbestand, nicht synchronisiert/exportiert (V1-Verhalten). Kein Sortieren/Entfernen
+      in der Sektion (Verwaltung ueber den Umschalter), V1-Paritaet.
 - [ ] Live getestet
 
 ## Phase 9 – Koerper
@@ -454,6 +464,16 @@ getrennt: was hier liegt, gehoert nicht auf den Trainings-Screen.
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu, sobald sie fertig sind.
 
+- 2026-06-23 - Phase 8 Schritt 6 abgeschlossen (Anheften/Dashboard), wartet auf Live-Test.
+  Anheften-Umschalter im Kopf der Detail-Chartkarte (je Uebung+Metrik) + "Angeheftet"-
+  Sektion oben auf /uebungen mit flachen Chart-Kacheln (Desktop-Raster/Handy-Liste, leer ->
+  Hinweis). Speicherung geraete-lokal (localStorage ks_pins_v1), getrennt vom Datenbestand,
+  nicht synchronisiert/exportiert - V1-Verhalten (app.js DASH). Kein Sortieren/Entfernen in
+  der Sektion (Verwaltung ueber den Umschalter); der V1-Drag&Drop gehoerte zum ungenutzten
+  alten dashboardHTML. Neu: lib/pinnedCharts.ts (reine Helfer + Typen, 6 Tests), Store-Hook
+  usePinnedCharts (useSyncExternalStore, Cross-Tab via storage-Event), View-Hook
+  usePinnedView, Komponente exercise/PinnedCharts, Hook useIsDesktop (960px), EX_METRIC_SHORT,
+  height-Prop an ExerciseChart. tsc, build und 201 Tests gruen (6 neue).
 - 2026-06-23 - Phase 8 Schritt 5 live getestet und freigegeben ("Uebung anpassen").
 - 2026-06-23 - Phase 8 Schritt 5 abgeschlossen ("Uebung anpassen"), wartet auf Live-Test.
   Die Uebungs-Detailseite bekommt unten den Knopf "Uebung anpassen" (Stift), der ein Popup

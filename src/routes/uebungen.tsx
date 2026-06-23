@@ -2,7 +2,9 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/ui/page-header";
 import { Section } from "@/components/ui/section";
 import { List, ListRow } from "@/components/ui/list";
+import { PinnedCharts } from "@/components/exercise/PinnedCharts";
 import { useExercisesView } from "@/hooks/useExercisesView";
+import { usePinnedView } from "@/hooks/usePinnedView";
 
 // Uebungen – Liste. Reine Lese-/Navigationsseite: zeigt den Katalog gruppiert
 // (Hauptuebungen, Assistenz, Core, Koerpergewicht, Inaktiv/Swaps) und fuehrt per
@@ -14,6 +16,7 @@ export const Route = createFileRoute("/uebungen")({
 function UebungenPage(): React.ReactElement {
   const navigate = useNavigate();
   const { isLoading, isError, error, groups } = useExercisesView();
+  const pinned = usePinnedView();
 
   if (isLoading) {
     return (
@@ -51,6 +54,9 @@ function UebungenPage(): React.ReactElement {
   return (
     <div>
       <PageHeader title="Übungen" />
+      <div className="mb-6 min-[960px]:mb-[30px]">
+        <PinnedCharts cards={pinned.cards} unit={pinned.unit} />
+      </div>
       <div className="columns-1 [column-gap:24px] min-[960px]:columns-2">
         {groups.map((g) => (
           <Section
