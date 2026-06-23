@@ -18,8 +18,17 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
 ## Aktueller Stand
 
 - **Naechste Sitzung (Einstieg):** **Phase 9 (Koerper) als Ganzes live abnehmen.** Beide
-  Haelften stehen jetzt (Befinden + Messung). Danach Haken "Live getestet" setzen und zu
-  Phase 10 (Einstellungen) uebergehen – dort beginnt es wieder mit Konzeptabstimmung.
+  Haelften stehen jetzt (Befinden + Messung); Messung bereits live getestet/freigegeben. Nach
+  Gegencheck der MuscleMap-Korrektur (siehe unten) Haken "Live getestet" setzen und zu Phase 10
+  (Einstellungen) uebergehen – dort beginnt es wieder mit Konzeptabstimmung.
+- **Live-Korrektur Muskelkater-Figur (2026-06-23):** Ohne heutigen Kater-Eintrag blitzte kurz
+  die rohe, bunte Illustrator-SVG auf und blieb sichtbar, solange kein Werte-Update einen
+  zweiten Einfaerbe-Lauf ausloeste (der Effekt faerbt erst nach dem ersten Zeichnen). Fix im
+  gemeinsamen MuscleMap-Primitive: die bunten Klassenfarben (.st0..st14) werden beim Einbetten
+  EINMALIG auf den Silhouetten-Grauton neutralisiert, sodass nie etwas Buntes aufblitzt; die
+  echten Farben setzt weiterhin der Effekt. Betrifft auch die Uebungs-Detailseite (dort
+  derselbe, nur kuerzere Flash) – reine Verbesserung, kein Funktionswechsel. tsc/build/231
+  Tests gruen.
 - **Phase 9 Lieferung 2 (Koerpermessung) gebaut (2026-06-23), live testbar.** Rechte
   Spalte der Koerper-Seite: Mess-Karte mit Metrik-Umschalter (Gewicht/Fett/Muskel/Wasser/
   Phasenwinkel) und Verlaufslinie je Metrik (D3-Fundament aus Phase 5/8, gruene Kurve mit

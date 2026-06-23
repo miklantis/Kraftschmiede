@@ -1,7 +1,16 @@
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { MUSCLES, expand, type MuscleView } from "@/lib/muscles";
-import bodySvg from "@/assets/body-muscles.svg?raw";
+import bodySvgRaw from "@/assets/body-muscles.svg?raw";
+
+// Die Master-SVG traegt aus Illustrator bunte Klassenfarben (.st0..st14). Die
+// werden hier EINMALIG neutralisiert (alle auf den Silhouetten-Grauton), damit
+// beim allerersten Zeichnen - bevor der Einfaerbe-Effekt unten laeuft - nichts
+// Buntes aufblitzt. Ohne das blieb die rohe SVG sichtbar, solange kein Werte-
+// Update einen zweiten Effekt-Lauf ausloeste (z. B. Koerper-Seite ohne heutigen
+// Kater-Eintrag). Die echten Farben setzt weiterhin der Effekt (Silhouette =
+// base, Region = idle/colorFn). Pfaddaten bleiben unberuehrt.
+const bodySvg = bodySvgRaw.replace(/fill:\s*[^;}]+/g, "fill:#cfd3d8");
 
 // Generisches Muscle-Map-Primitive. Faerbt die Regionen der Single-Master-SVG
 // (src/assets/body-muscles.svg) anhand einer Werte-Map ein. Die Komponente
