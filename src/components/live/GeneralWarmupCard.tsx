@@ -14,7 +14,7 @@ const GW_MODES: [string, string][] = [
   ["other", "Sonstiges"],
 ];
 
-const ROW = "grid grid-cols-[28px_1fr_1fr_28px] items-center gap-2";
+const ROW = "grid grid-cols-[34px_1fr_1.4fr_30px] items-center gap-2";
 
 export function GeneralWarmupCard({
   sets,
@@ -33,13 +33,13 @@ export function GeneralWarmupCard({
 }): React.ReactElement {
   return (
     <div className="overflow-hidden rounded-[14px] bg-card shadow-card">
-      <div className="border-b border-border px-4 py-3 text-[15px] font-semibold text-foreground">
+      <div className="border-b border-border px-4 py-3 text-[18px] font-bold text-foreground">
         Aufwärmen
       </div>
       <div className="px-4 pb-4 pt-2">
         <div
           className={
-            ROW + " border-b border-border px-1.5 pb-1.5 pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground"
+            ROW + " border-b border-border px-1.5 pb-1.5 pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground [&>span]:text-center"
           }
         >
           <span>Satz</span>
@@ -56,7 +56,7 @@ export function GeneralWarmupCard({
               (ws.done ? " bg-primary/[0.07]" : "")
             }
           >
-            <span className="text-muted-foreground">S{i + 1}</span>
+            <span className="text-center text-muted-foreground">S{i + 1}</span>
             <LiveNumberInput
               value={ws.minutes}
               onCommit={(v) => onMinutes(i, v)}

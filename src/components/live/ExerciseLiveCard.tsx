@@ -15,7 +15,7 @@ import { SetCheck } from "./SetCheck";
 // werden ueber das fokus-erhaltende Live-Feld committet; Abhaken/Stange/Scheiben
 // schreiben sofort. Der aktive (naechste) Satz ist gruen hervorgehoben.
 
-const ROW = "grid grid-cols-[28px_1fr_1fr_minmax(44px,56px)_28px] items-center gap-2";
+const ROW = "grid grid-cols-[34px_1fr_1fr_minmax(46px,58px)_30px] items-center gap-2";
 const RIR_VALUES = [1, 2, 3, 4, 5];
 
 // Zeilenstil wie V1: 2px-Rahmen (transparent als Basis, damit aktiv kein Sprung),
@@ -82,7 +82,7 @@ export function ExerciseLiveCard({
     <div className="overflow-hidden rounded-[14px] bg-card shadow-card">
       <div className="flex items-center gap-2 border-b border-border px-4 py-3">
         <div className="min-w-0 flex-1">
-          <div className="text-[15px] font-semibold text-foreground">
+          <div className="text-[18px] font-bold text-foreground">
             {entry.exerciseName}
           </div>
           {entry.tag && (
@@ -127,7 +127,7 @@ export function ExerciseLiveCard({
       <div className="px-4 pb-4 pt-2">
         <div
           className={
-            ROW + " border-b border-border px-1.5 pb-1.5 pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground"
+            ROW + " border-b border-border px-1.5 pb-1.5 pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground [&>span]:text-center"
           }
         >
           <span>Satz</span>
@@ -142,7 +142,7 @@ export function ExerciseLiveCard({
           return (
             <div key={"w" + wi}>
               <div className={rowCls(act, ws.done, true)}>
-                <span className="text-muted-foreground">A{wi + 1}</span>
+                <span className="text-center text-muted-foreground">A{wi + 1}</span>
                 <LiveNumberInput
                   value={ws.reps}
                   onCommit={(v) => onWarmValue(wi, "reps", v)}
@@ -173,7 +173,7 @@ export function ExerciseLiveCard({
           return (
             <div key={"s" + si}>
               <div className={rowCls(act, st.done, false)}>
-                <span className="text-muted-foreground">S{si + 1}</span>
+                <span className="text-center text-muted-foreground">S{si + 1}</span>
                 <LiveNumberInput
                   value={st.reps}
                   onCommit={(v) => onSetValue(si, "reps", v)}
