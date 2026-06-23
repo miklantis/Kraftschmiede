@@ -17,14 +17,39 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
 
 ## Aktueller Stand
 
-- **Naechste Sitzung (Einstieg):** **Phase 11 Lieferung 3 – Gefuehrter Ablauf.** L2
-  (Sitzungsaufbau + Coach inkl. Start-Popup) ist gebaut, live getestet und **freigegeben**
-  (2026-06-23, s. Log). L3 macht die Karten interaktiv: Saetze abhaken (Aufwaermen/Arbeit/allg.
-  Aufwaermen), aktiver-Satz-Fokus, Coach beim Durchfuehren (Progression), Pausen-/Rest-Timer
-  (Satz/Uebung getrennt, Auto-Start) + Rest-Bar, Audio/Vibration im Ablauf, fokus-erhaltende
-  Eingaben (Wdh/kg/RIR), +/- Satz, Stangenwechsel, Scheiben-Schalter. Erst Konzept gegen V1
-  (live.js: toggleSetDone/onSetCompleted/startRest/refreshActive + Inline-Updates), dann bauen.
-  Wake-Lock bleibt L6.
+- **Naechste Sitzung (Einstieg):** **Phase 11 Lieferung 4 – Beenden + Speichern.** L3
+  (gefuehrter Ablauf) ist gebaut und wartet auf den Live-Test/Freigabe. L4 schreibt die
+  erledigten Saetze normalisiert in den Verlauf (echter Unterschied Speichern/Verwerfen)
+  und klaert das volle Offline-Zusammenspiel (Aufzeichnen ohne Netz, spaeter Sync). Erst
+  Konzept gegen V1 (app.js finishSession: nur abgehakte Saetze, est1RM/Score, Body-Snapshot,
+  Skill-Pfad bleibt L5), dann bauen.
+- **Phase 11 Lieferung 3 (Gefuehrter Ablauf) gebaut (2026-06-23), live testbar.** Die
+  Karten sind jetzt interaktiv statt inert: Abhaken auf drei Ebenen (allg. Aufwaermen,
+  Aufwaermsaetze A1.., Arbeitssaetze S1..) mit Klick-Ton/Vibration; genau ein aktiver
+  ("naechstes To-do") Satz ist gruen hervorgehoben (abgeleitet, nicht gespeichert -
+  Reihenfolge wie V1: pro Uebung erst Aufwaerm-, dann Arbeitssaetze, dann naechste Uebung).
+  Nach einem abgehakten Arbeitssatz startet bei Auto-Start die passende Pause (Satzpause,
+  wenn der naechste offene Satz dieselbe Uebung ist, sonst die laengere Uebungspause; vor
+  einem Aufwaermsatz keine) - unten die Pausen-Leiste mit Countdown, -15/+15, Skip; laeuft
+  sie ab, kommt einmalig Piep + Vibration und der Balken wird gruen. Werte je Satz editierbar
+  (Wdh/kg/RIR, Aufwaermen nur Wdh/kg), kg-Abweichung vom Ziel wird als "angepasst" vermerkt
+  (fuer L4), RIR 0 (Score 5) markiert "nicht geschafft". Stangenwechsel je Langhantel-Uebung,
+  Scheiben-Schalter (aus / alle Saetze / nur aktiver), +/- Satz (Arbeits- und Aufwaerm-Cardio).
+  Der eingeklappte Mini-Streifen zeigt den echten Fortschritt ("Uebung X von Y · n / m Saetze").
+  Bewusst NICHT dabei: Schreiben in den Verlauf/Speichern-vs-Verwerfen (L4), Skill-Live (L5),
+  Wake-Lock (L6); waehrend der Durchfuehrung gibt es wie in V1 KEINEN neuen Coach-Vorschlag -
+  die Vorschlaege stecken aus L2 in den Karten.
+  Der eine Unterschied zu V1: fokus-erhaltende Eingaben nicht ueber chirurgische DOM-Patches,
+  sondern ueber Komponenten-State - das Live-Feld haelt den Text lokal und committet erst beim
+  Verlassen/Enter, sodass kein Tastendruck das Panel neu zeichnet und der Cursor stehen bleibt.
+  Neu/portiert: reine Ablauf-Logik lib/liveFlow.ts (computeActive/isActive/restAfterSet/
+  progressInfo/appendedSet, DOM-frei, getestet); der Live-Store useLiveSession um die Schreib-
+  Aktionen + den fluechtigen Pausen-Zustand + den Scheiben-Modus erweitert (Prefs aus den
+  Einstellungen je Render hereingespiegelt); die Komponenten RestBar (Pausen-Leiste, tickt
+  lokal, feuert das Signal einmalig), LiveNumberInput (fokus-erhaltend), SetCheck (Haken mit
+  Zustaenden offen/aktiv/erledigt); GeneralWarmupCard/ExerciseLiveCard/LivePanel auf
+  interaktiv umgebaut; LiveEntry additiv um barId fuer den Stangenwechsel. CSS der Pausen-
+  Leiste in index.css. tsc/build/265 Tests gruen (11 neue liveFlow).
 - **Live-Korrektur Start-Popup auf V1-Paritaet (2026-06-23).** Das Start-Popup zeigte nur die
   Uebungsnamen; jetzt wie V1 (live.js buildStartInner): Untertitel „Vorschau deiner Saetze",
   je Uebung eine weisse Karte mit „N × Satz" plus den Satz-Chips (Wdh × kg, deutsches Komma),
@@ -569,7 +594,7 @@ Fortschritt wird hier je Lieferung gefuehrt:
 - [x] **L2 – Sitzungsaufbau aus Vorlage + Coach.** Echte Uebungs-/Satzkarten: Arbeits-
       und Aufwaermsaetze, Satz-Vorschlaege, Plate-Loader. Ersetzt den L1-Platzhalter
       `LiveSession.exercisesPreview` durch vollwertige Eintraege (additiv).
-- [ ] **L3 – Gefuehrter Ablauf.** Saetze abhaken (Aufwaermen, Arbeitssaetze, allg.
+- [x] **L3 – Gefuehrter Ablauf.** Saetze abhaken (Aufwaermen, Arbeitssaetze, allg.
       Aufwaermen), Coach beim Durchfuehren (Progression), Pausen-/Rest-Timer (Satz/
       Uebung getrennt, Auto-Start) + Rest-Bar, Audio/Vibration im Ablauf, fokus-
       erhaltende Eingaben (in React ueber Komponenten-State statt V1-DOM-Patch).
@@ -605,6 +630,19 @@ Fortschritt wird hier je Lieferung gefuehrt:
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu, sobald sie fertig sind.
+
+- 2026-06-23 - Phase 11 Lieferung 3 (Gefuehrter Ablauf) gebaut, wartet auf Live-Test/Freigabe.
+  Die Uebungs- und Aufwaermkarten sind interaktiv: Abhaken (allg. Aufwaermen/Aufwaermsaetze/
+  Arbeitssaetze) mit Ton+Vibration, aktiver-Satz-Hervorhebung (abgeleitet ueber computeActive),
+  Auto-Pause nach Arbeitssatz (Satz- vs. Uebungspause wie V1 onSetCompleted) mit Pausen-Leiste
+  (Countdown/-15/+15/Skip, Signal beim Ablauf), editierbare Werte (Wdh/kg/RIR; kg-Abweichung ->
+  "angepasst", Score 5 -> nicht geschafft), Stangenwechsel, Scheiben-Schalter (aus/alle/aktiv),
+  +/- Satz; Mini-Streifen zeigt echten Fortschritt. Fokus-erhaltende Eingaben ueber Komponenten-
+  State (Live-Feld committet beim Verlassen/Enter) statt V1-DOM-Patch. Kein neuer Coach-Vorschlag
+  waehrend der Durchfuehrung (V1-Paritaet). Neu: lib/liveFlow.ts (rein, getestet), RestBar,
+  LiveNumberInput, SetCheck; useLiveSession um Schreib-Aktionen + Pausen-Zustand + Scheiben-Modus
+  erweitert; LiveEntry um barId. Naechste Lieferung: L4 (Beenden + Speichern) - erst Konzept gegen
+  V1. tsc/build/265 Tests gruen (11 neue liveFlow).
 
 - 2026-06-23 - Deploy: SPA-Fallback fuer GitHub Pages ergaenzt. Direkt aufgerufene Unterseiten
   (z. B. /journey, /verlauf) oder ein Reload darauf lieferten 404, weil Pages dafuer keine

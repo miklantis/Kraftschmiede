@@ -75,6 +75,7 @@ export interface LiveEntry {
   /** Kurzkennung im Kartenkopf: "1RM 120 kg" bzw. Muskelgruppen. */
   tag: string;
   /** Stange (nur Langhantel) - aufgeloest fuer Anzeige und Scheiben-Aufteilung. */
+  barId: string | null;
   barName: string | null;
   barWeight: number | null;
   warmupSets: LiveWarmupSet[];
@@ -200,6 +201,7 @@ function parseEntries(v: unknown): LiveEntry[] {
         exerciseName: str(o.exerciseName),
         category,
         tag: str(o.tag),
+        barId: typeof o.barId === "string" ? o.barId : null,
         barName: typeof o.barName === "string" ? o.barName : null,
         barWeight: typeof o.barWeight === "number" ? o.barWeight : null,
         warmupSets,

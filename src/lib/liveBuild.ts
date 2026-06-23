@@ -143,6 +143,7 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
       exerciseName: exo.name,
       category: exo.category,
       tag: tagFor(exo, input.unit),
+      barId: bar?.id ?? null,
       barName: bar?.name ?? null,
       barWeight: bar?.weight ?? null,
       warmupSets: warm,

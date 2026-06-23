@@ -267,3 +267,35 @@ body.ks-live-collapsed main { padding-bottom: calc(150px + env(safe-area-inset-b
 .kl-ov--mob .kl-ov-end { font-size: 13px; padding: 8px 12px; border-radius: 10px; }
 .kl-ov--desk .kl-ov-end { font-size: 14px; padding: 10px 18px; border-radius: 11px; }
 .kl-ov-collapse svg { stroke: var(--muted-foreground); fill: none; }
+
+/* --- Pausen-Leiste (Lieferung 3) --- */
+/* Schwebt ueber dem Panel: Desktop zentriert (~460px), Mobile von Rand zu Rand
+   ueber der Navigation. Laeuft die Pause ab, wird der Balken gruen. */
+.kl-restbar {
+  position: fixed; z-index: 90; display: flex; align-items: center; gap: 10px;
+  background: #1c1c1e; color: #fff; border-radius: 16px; padding: 10px 12px;
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, .45);
+  left: 50%; transform: translateX(-50%); width: 460px; max-width: 92%; bottom: 26px;
+}
+.kl-restbar[data-desk] { /* nur Marker; Desktop nutzt die Default-Position */ }
+.kl-restbar:not([data-desk]) {
+  left: 14px; right: 14px; transform: none; width: auto; max-width: none;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+}
+.kl-restbar.is-done { background: var(--primary); }
+.kl-restbar-btn {
+  flex: none; border: 1px solid rgba(255, 255, 255, .25); background: rgba(255, 255, 255, .08);
+  color: #fff; font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+  padding: 8px 10px; border-radius: 10px; cursor: pointer;
+}
+.kl-restbar-mid { flex: 1; min-width: 0; text-align: center; }
+.kl-restbar-lab {
+  font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  color: rgba(255, 255, 255, .7);
+}
+.kl-restbar-time { font-size: 22px; font-weight: 700; font-family: var(--font-mono); line-height: 1.1; }
+.kl-restbar-skip {
+  flex: none; border: none; background: rgba(255, 255, 255, .16); color: #fff;
+  font-family: inherit; font-size: 13px; font-weight: 600; padding: 8px 14px;
+  border-radius: 10px; cursor: pointer;
+}
