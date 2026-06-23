@@ -472,7 +472,7 @@ DB-Tabelle exercise_muscles. Charts ueber ChartCanvas/D3 (Phase 5).
       (InBody-Skill-Format, Upsert je Datum). Normalisierung camelCase -> DB-Spalten.
 - [x] Verlaufscharts: Mess-Verlaufslinie je Metrik auf dem D3-Fundament (Phase 5/8),
       gruene Kurve mit Flaeche und Mono-Wertlabel am letzten Punkt (V1-Look).
-- [ ] Live getestet
+- [x] Live getestet
 
 ## Phase 10 – Einstellungen
 
