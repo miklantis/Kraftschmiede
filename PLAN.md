@@ -17,11 +17,20 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
 
 ## Aktueller Stand
 
-- **Naechste Sitzung (Einstieg):** **Phase 9 Lieferung 2 (Koerpermessung) bauen.** Die
-  Befinden-Haelfte steht und ist live testbar. Als Naechstes die Messung: Metrik-Chart
-  (D3 wie Phase 5/8), Read-only-Mess-Liste und die aufklappbare JSON-Import-Karte (passt
-  zum InBody-Skill), danach das Zwei-Spalten-Raster (links Befinden, rechts Messung) und
-  Live-Abnahme der ganzen Koerper-Seite.
+- **Naechste Sitzung (Einstieg):** **Phase 9 (Koerper) als Ganzes live abnehmen.** Beide
+  Haelften stehen jetzt (Befinden + Messung). Danach Haken "Live getestet" setzen und zu
+  Phase 10 (Einstellungen) uebergehen – dort beginnt es wieder mit Konzeptabstimmung.
+- **Phase 9 Lieferung 2 (Koerpermessung) gebaut (2026-06-23), live testbar.** Rechte
+  Spalte der Koerper-Seite: Mess-Karte mit Metrik-Umschalter (Gewicht/Fett/Muskel/Wasser/
+  Phasenwinkel) und Verlaufslinie je Metrik (D3-Fundament aus Phase 5/8, gruene Kurve mit
+  Flaeche + Mono-Wertlabel am letzten Punkt, V1-Look); darunter die Read-only-Mess-Liste
+  (Datum + Chips) und die aufklappbare JSON-Import-Karte (ueber das Accordion-Primitive;
+  InBody-Skill-Format oder Array, Upsert je Datum, Beispiel-Knopf). Reine Logik in
+  lib/composition.ts (Mess-Serien, Chips, JSON-Normalisierung camelCase/snake -> DB-Spalten,
+  Zusatzfelder wie id/heightCm verworfen; getestet). Hooks useComposition (lesen),
+  useImportComposition (parsen + Upsert). Neue Komponenten body/BodyMetricChart,
+  BodyMeasureCard, BodyMeasureList, BodyImportCard. Die Seite ist jetzt zweispaltig (links
+  Befinden, rechts Messung; mobil ein Stapel). tsc/build/231 Tests gruen (10 neue composition).
 - **Phase 9 Lieferung 1 (Befinden) gebaut (2026-06-23), live testbar.** Koerper-Seite zeigt
   jetzt das taegliche Befinden statt des Platzhalters: oben das Empfehlungs-Banner (Ampel
   gruen/amber/neutral aus dem heutigen Zustand), die Muskelkater-Figur (generische MuscleMap
@@ -449,8 +458,11 @@ DB-Tabelle exercise_muscles. Charts ueber ChartCanvas/D3 (Phase 5).
 - [x] Body-Log (Befinden): Empfehlungs-Banner, Muskelkater-Figur (generische MuscleMap +
       Kater-Farbskala), Eingabe-Karte (Kater/Readiness ueber das neue RatingScale-Primitive,
       Schmerz-Schalter, Notiz, Eintragen/Aktualisieren als Tages-Upsert), Verlaufsliste
-- [ ] InBody-Composition
-- [ ] Verlaufscharts
+- [x] InBody-Composition: Mess-Karte mit Metrik-Umschalter (Gewicht/Fett/Muskel/Wasser/
+      Phasenwinkel), Read-only-Mess-Liste (Chips) und aufklappbare JSON-Import-Karte
+      (InBody-Skill-Format, Upsert je Datum). Normalisierung camelCase -> DB-Spalten.
+- [x] Verlaufscharts: Mess-Verlaufslinie je Metrik auf dem D3-Fundament (Phase 5/8),
+      gruene Kurve mit Flaeche und Mono-Wertlabel am letzten Punkt (V1-Look).
 - [ ] Live getestet
 
 ## Phase 10 – Einstellungen
