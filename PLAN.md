@@ -17,10 +17,28 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
 
 ## Aktueller Stand
 
-- **Naechste Sitzung (Einstieg):** **Phase 9 (Koerper) als Ganzes live abnehmen.** Beide
-  Haelften stehen jetzt (Befinden + Messung); Messung bereits live getestet/freigegeben. Nach
-  Gegencheck der MuscleMap-Korrektur (siehe unten) Haken "Live getestet" setzen und zu Phase 10
-  (Einstellungen) uebergehen – dort beginnt es wieder mit Konzeptabstimmung.
+- **Naechste Sitzung (Einstieg):** **Phase 10 Lieferung 1 (Einstellungen-Grundgeruest) live
+  abnehmen, dann Lieferung 2 (Inventar) bauen.** Kopf/Engine/Timer/Score stehen und sind live
+  testbar (siehe unten). Offen: Inventar (Stangen/Scheiben/Kettlebells/Geraete als Chip-Editor +
+  Schreib-Hooks). Plate-Loader/Ladbarkeit bekommt KEINE eigene UI (V1-Paritaet) – der Haken wird
+  mit dem Inventar gesetzt, da dieses den schon portierten Engine-Plate-Loader fuettert.
+  Nebenher: der Flash-Fix der Muskelkater-Figur (Phase 9) ist noch nicht gegengecheckt –
+  bei Gelegenheit bestaetigen.
+- **Phase 10 Lieferung 1 (Einstellungen-Grundgeruest) gebaut (2026-06-23), live testbar.**
+  Konzept abgestimmt: iOS-Einstellungen-Anmutung (gruppierte Listen, Label links, Wert/Schalter
+  rechts), Desktop zweispaltig, Inhalt 1:1 wie V1. Die Seite ersetzt das provisorische Platzhalter-
+  Panel. Oben das Konto-/Verbindungs-Panel (Avatar, E-Mail, Sync-Status ueber den Health-Check,
+  neu pruefen, abmelden). Darunter ein zweispaltiges Raster (mobil ein Stapel): Engine & Einheiten
+  (1RM-Formel, Wochen-Frequenzziel, Schrittweite, Erholung Squat/Deadlift, Einheit), Pausen-Timer
+  (Satz-/Uebungspause, Auto-Start, Ton, Vibration), Score <-> RIR <-> RPE (Nur-Lese aus der Engine)
+  und vorlaeufig "Daten" (Datenstand + V1-Import, wandern in Phase 12). Neu und domaenenfrei: das
+  generische Auswahlfeld (components/ui/select.tsx), das Zahlenfeld mit Suffix (number-field.tsx,
+  committet beim Verlassen/Enter) und die gruppierten Listen-Reihen (setting-list.tsx:
+  SettingsGroup + SettingRow, 44px-Reihen mit Trennlinien). Schalter wiederverwendet (switch.tsx).
+  Neuer Schreib-Hook useUpdateSettings (gezieltes Update auf die eigene Zeile; jsonb-Felder
+  recovery_windows/timers werden in der Karte vollstaendig gemischt). Score-Referenz liest SCORE_MAP
+  aus der Engine, damit Skala und Anzeige nie auseinanderlaufen. Reine Anzeige/Verdrahtung, keine
+  Erweiterung ueber V1. tsc/build/231 Tests gruen (keine neuen Tests – nur UI-Verdrahtung).
 - **Live-Korrektur Muskelkater-Figur (2026-06-23):** Ohne heutigen Kater-Eintrag blitzte kurz
   die rohe, bunte Illustrator-SVG auf und blieb sichtbar, solange kein Werte-Update einen
   zweiten Einfaerbe-Lauf ausloeste (der Effekt faerbt erst nach dem ersten Zeichnen). Fix im
@@ -476,11 +494,13 @@ DB-Tabelle exercise_muscles. Charts ueber ChartCanvas/D3 (Phase 5).
 
 ## Phase 10 – Einstellungen
 
-- [ ] Konzept abgestimmt
+- [x] Konzept abgestimmt (iOS-Einstellungen-Anmutung, gruppierte Listen, Desktop zweispaltig,
+      Inhalt 1:1 wie V1; Bau in zwei Lieferungen: Grundgeruest -> Inventar)
 - [ ] Inventar (Stangen, Scheiben, Equipment)
-- [ ] Plate-Loader / Ladbarkeitspruefung
-- [ ] Settings (Frequenzziel, Gewichtsschritt, 1RM-Formel, Timer)
-- [ ] Sync-/Konto-Panel
+- [ ] Plate-Loader / Ladbarkeitspruefung (keine eigene UI – V1-Paritaet; ueber Inventar abgedeckt,
+      das den portierten Engine-Plate-Loader fuettert; Haken zusammen mit Inventar setzen)
+- [x] Settings (Frequenzziel, Gewichtsschritt, 1RM-Formel, Timer)
+- [x] Sync-/Konto-Panel
 - [ ] Live getestet
 
 ## Phase 11 – Live-Session (Kraft + Skill) — der dicke, heikle Brocken

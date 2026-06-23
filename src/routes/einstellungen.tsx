@@ -1,87 +1,71 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { supabaseConfig } from "@/lib/supabase";
-import { useAuth } from "@/lib/auth";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
+import { Section } from "@/components/ui/section";
+import { AccountCard } from "@/components/settings/AccountCard";
+import { EngineSettings } from "@/components/settings/EngineSettings";
+import { TimerSettings } from "@/components/settings/TimerSettings";
+import { ScoreReference } from "@/components/settings/ScoreReference";
 import { Datenstand } from "@/components/Datenstand";
 import { V1Import } from "@/components/V1Import";
+import { useSettings } from "@/hooks/useSettings";
 
 export const Route = createFileRoute("/einstellungen")({
   component: EinstellungenPage,
 });
 
-// Echter Verbindungstest: ruft den Health-Endpoint des Supabase-Projekts auf.
-async function checkConnection(): Promise<boolean> {
-  const response = await fetch(`${supabaseConfig.url}/auth/v1/health`, {
-    headers: { apikey: supabaseConfig.publishableKey },
-  });
-  if (!response.ok) {
-    throw new Error(`Health-Check fehlgeschlagen (Status ${response.status}).`);
-  }
-  return true;
-}
-
-// Vorlaeufige Einstellungen-Seite: haelt vorerst Konto, Darstellung, Verbindungs-
-// Diagnose, Datenstand und den V1-Import. Das vollstaendige Panel (Inventar,
-// Plate-Loader, Settings, Sync) entsteht in Phase 10, Import/Export-Politur in
-// Phase 12.
+// Einstellungen-Seite im iOS-Stil: gruppierte Listen, Beschriftung links,
+// Steuerelement rechts. Oben das Konto-/Verbindungs-Panel, darunter auf dem
+// Desktop ein zweispaltiges Raster der Bereiche (mobil ein Stapel). Inventar
+// (Stangen/Scheiben/Geraete) folgt in Lieferung 2; Export/Import-Politur in
+// Phase 12 - daher steht der V1-Import vorerst unter "Daten".
 function EinstellungenPage(): React.ReactElement {
-  const { session, signOut } = useAuth();
-  const connection = useQuery({
-    queryKey: ["verbindung"],
-    queryFn: checkConnection,
-    retry: 1,
-  });
-
-  let status: string;
-  if (connection.isPending) {
-    status = "Pruefe Verbindung zur Datenbank ...";
-  } else if (connection.isSuccess) {
-    status = "Verbindung zur Datenbank steht.";
-  } else {
-    status = "Verbindung zur Datenbank fehlgeschlagen.";
-  }
+  const settingsQuery = useSettings();
+  const settings = settingsQuery.data ?? null;
 
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold tracking-tight">Einstellungen</h1>
+    <div>
+      <PageHeader title="Einstellungen" />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Konto</CardTitle>
-          <CardDescription>
-            Angemeldet als {session?.user.email ?? "unbekannt"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-muted-foreground text-sm">{status}</span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => void connection.refetch()}
-              disabled={connection.isFetching}
-            >
-              Verbindung neu pruefen
-            </Button>
-          </div>
-          <div>
-            <Button variant="ghost" size="sm" onClick={() => void signOut()}>
-              Abmelden
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col gap-7">
+        <AccountCard />
 
-      <Datenstand />
-      <V1Import />
+        <div className="grid grid-cols-1 items-start gap-7 min-[960px]:grid-cols-2 min-[960px]:gap-x-[26px]">
+          <Section eyebrow="Engine & Einheiten">
+            {settings ? (
+              <EngineSettings settings={settings} />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {settingsQuery.isError
+                  ? "Einstellungen konnten nicht geladen werden."
+                  : "Wird geladen …"}
+              </p>
+            )}
+          </Section>
+
+          <Section eyebrow="Pausen-Timer">
+            {settings ? (
+              <TimerSettings settings={settings} />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {settingsQuery.isError
+                  ? "Einstellungen konnten nicht geladen werden."
+                  : "Wird geladen …"}
+              </p>
+            )}
+          </Section>
+
+          <Section eyebrow="Score ↔ RIR ↔ RPE">
+            <ScoreReference />
+          </Section>
+
+          <Section eyebrow="Daten">
+            <div className="flex flex-col gap-3">
+              <Datenstand />
+              <V1Import />
+            </div>
+          </Section>
+        </div>
+      </div>
     </div>
   );
 }
