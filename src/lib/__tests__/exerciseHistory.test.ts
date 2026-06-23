@@ -74,7 +74,7 @@ describe("buildExerciseHistory", () => {
     expect(h[0].reps).toBe(9); // 5 + 4, Aufwaermsatz zaehlt nicht
     expect(h[0].vol).toBe(80 * 5 + 80 * 4);
     expect(h[0].score).toBeCloseTo(3.5);
-    expect(h[0].est1RM).toBe(95);
+    expect(h[0].est1RM).toBe(92.2); // aus 80x5 geschaetzt (Mittelwert-Formel)
     expect(h[0].sets).toHaveLength(2);
   });
 
@@ -139,19 +139,20 @@ describe("exSixWeekPct", () => {
   it("rechnet die 1RM-Veraenderung ueber ~6 Wochen", () => {
     const sessions = [
       session("2026-01-01", [
-        strengthEx("squat", [{ kind: "work", weight: 80, reps: 5 }], 100),
+        strengthEx("squat", [{ kind: "work", weight: 80, reps: 5 }]),
       ]),
       session("2026-02-20", [
-        strengthEx("squat", [{ kind: "work", weight: 90, reps: 5 }], 110),
+        strengthEx("squat", [{ kind: "work", weight: 90, reps: 5 }]),
       ]),
     ];
-    expect(exSixWeekPct(buildExerciseHistory("squat", sessions))).toBe("+10%");
+    // 80x5 ~ 92.2, 90x5 ~ 103.72 -> +12 %
+    expect(exSixWeekPct(buildExerciseHistory("squat", sessions))).toBe("+12%");
   });
 
   it("liefert null bei zu wenig 1RM-Daten", () => {
     const sessions = [
       session("2026-01-01", [
-        strengthEx("squat", [{ kind: "work", weight: 80, reps: 5 }], 100),
+        strengthEx("squat", [{ kind: "work", weight: 80, reps: 5 }]),
       ]),
     ];
     expect(exSixWeekPct(buildExerciseHistory("squat", sessions))).toBeNull();

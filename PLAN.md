@@ -20,30 +20,24 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
 - **Naechste Sitzung (Einstieg):** Phase 7 (Yoga) **abgeschlossen und freigegeben.** Popup
   und Yoga-Eintrag funktionieren live; das Mobile-Gleiten des Bodenblatts ist behoben (siehe
   Log/Phase 7).
-- **ZUERST klaeren (vor dem Verlaufsdiagramm):** Der Uebungs-Verlauf hat KEINE 1RM-Werte je
-  Einheit, daher bleibt die Detail-Statistik "6 Wochen" leer und die Verlaufsliste zeigt
-  rechts den Ø-Score statt eines 1RM (Screenshot Back Squat 2026-06-23). Ursache ist eine
-  Import-Luecke, KEIN korrektes Verhalten: V1 speichert das je Einheit geschaetzte 1RM im
-  Feld `est1RM` (live.js: en.est1RM = best1RMFromSets(...)), der V1-Import (src/lib/v1import.ts
-  Z609) liest aber `field(eo, "tested1RM", "tested_1rm")` - und `tested1RM` ist in V1 immer
-  null (nur initialisiert, nie gefuellt). Dadurch geht die gesamte 1RM-Historie verloren; auch
-  der geplante 1RM-Chart waere sonst leer. Zwei Wege: (A) Importfeld auf `est1RM` als Quelle
-  korrigieren -> einmal neu importieren noetig (Altdaten); (B) das 1RM je Einheit zur Anzeige
-  aus den Arbeitssaetzen berechnen (engine best1RMFromSets + settings.rmFormula), unabhaengig
-  vom gespeicherten Wert -> fuellt sofort, kein Neuimport. Empfehlung B (mit Kadir abstimmen).
-  Erst danach das Verlaufsdiagramm bauen.
-  (1) Vorbereitung SVG + Registry **[erledigt]**, (2) Uebungsliste **[erledigt]**,
-  (3) Detailseite: Statistik + Verlaufsliste **[erledigt]** / Verlaufsdiagramm **[offen]**,
-  (4) MuscleMap-Komponente, (5) "Uebung anpassen" als Popup ueber das Overlay,
-  (6) Anheften/Dashboard. Dazu vorgemerkt: den Skill-Uebungsverlauf anbinden (Skill-Saetze
-  werden beim Import mit exercise_id=null abgelegt, daher erscheinen sie noch NICHT im
-  Verlauf der Katalog-Uebung; V1 verknuepft sie zur Laufzeit ueber die Skill-Definition
-  skillId+phase+Index -> exerciseKey -> Katalog-Uebung; das ist als eigener Schritt
-  vorgemerkt). Naechster Schritt: (3) Verlaufsdiagramm - eine Chartkarte mit Metrik-
-  Umschalter (1RM/Top-Gewicht/Wdh/Volumen bzw. Haltezeit/Wdh bei Koerpergewicht) auf dem
-  ChartCanvas/D3-Fundament aus Phase 5 (components/ui/chart.tsx). Die Verlaufsdaten je Metrik
-  liegen schon aufbereitet vor (lib/exerciseHistory.ts). Festgehalten: Muscle-Map immer beide
-  Figuren (Handy + Desktop); "Uebung anpassen" nutzt das Overlay aus Phase 7.
+- **GEKLAERT (1RM-Historie, Variante B umgesetzt):** Das je Einheit geschaetzte 1RM wird
+  jetzt – wie in V1 zur Anzeigezeit – aus den sauberen Arbeitssaetzen berechnet
+  (engine.best1RMFromSets + settings.rm_formula), nicht mehr aus dem beim Import leer
+  gebliebenen Feld `tested_1rm`. Kein Neuimport noetig, exakt V1-aequivalent (V1 speicherte
+  est1RM ebenfalls nur als berechneten Wert). Damit fuellen sich die Detail-Statistik
+  ("6 Wochen") und die 1RM-Spalte der Verlaufsliste, und der geplante 1RM-Chart hat Daten.
+  Umgesetzt: useSessionsDetailed holt zusaetzlich done/failed je Satz; HistorySet traegt
+  beide; buildExerciseHistory bekommt einen rmFormula-Parameter und rechnet est1RM ueber
+  die Engine; useExerciseDetail reicht settings.rm_formula durch. tsc/build/183 Tests gruen.
+- **Naechster Schritt: (3) Verlaufsdiagramm** - eine Chartkarte mit Metrik-Umschalter
+  (1RM/Top-Gewicht/Wdh/Volumen bzw. Haltezeit/Wdh bei Koerpergewicht) auf dem ChartCanvas/
+  D3-Fundament aus Phase 5 (components/ui/chart.tsx). Die Verlaufsdaten je Metrik liegen
+  schon aufbereitet vor (lib/exerciseHistory.ts). Danach in dieser Reihenfolge: Muscle-Map,
+  "Uebung anpassen" (Popup ueber das Overlay aus Phase 7), Anheften/Dashboard, plus die
+  Skill-Uebungsverlauf-Anbindung (Skill-Saetze werden beim Import mit exercise_id=null
+  abgelegt; V1 verknuepft sie zur Laufzeit ueber die Skill-Definition skillId+phase+Index ->
+  exerciseKey -> Katalog-Uebung; eigener Schritt). Festgehalten: Muscle-Map immer beide
+  Figuren (Handy + Desktop).
 - **Phase 8 Schritt 3 Teil 1 (Detailseite: Statistik + Verlauf) erledigt, live testbar:**
   Die Uebungs-Detailseite (uebungen_.$exerciseId) zeigt jetzt echten Inhalt statt des
   Hinweises: Kopf (Zurueck, Name, Art-Badge, Beschreibung), eine Statistik-Reihe und den
@@ -400,6 +394,20 @@ getrennt: was hier liegt, gehoert nicht auf den Trainings-Screen.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu, sobald sie fertig sind.
+
+- 2026-06-23 - Phase 8: 1RM-Historie repariert (Variante B), Voraussetzung fuer das
+  Verlaufsdiagramm. Das je Einheit geschaetzte 1RM wird jetzt zur Anzeigezeit aus den sauberen
+  Arbeitssaetzen berechnet (engine.best1RMFromSets mit settings.rm_formula), statt aus dem beim
+  V1-Import leer gebliebenen Feld tested_1rm gelesen. Hintergrund: V1 speicherte est1RM nie als
+  importierbares Rohfeld, sondern berechnete es am Sitzungsende aus denselben Saetzen - die
+  Anzeige-Berechnung ist daher exakt V1-aequivalent, nur ohne Neuimport. Aenderungen additiv:
+  useSessionsDetailed holt zusaetzlich done/failed je Satz; HistorySet traegt beide (optional);
+  buildExerciseHistory bekommt einen rmFormula-Parameter (Default "mean") und mappt die Saetze
+  auf die Engine-Form (best1RMFromSets ueberspringt Aufwaermen/nicht abgehakt/gescheitert);
+  useExerciseDetail reicht settings.rm_formula durch. Damit fuellen sich Detail-Statistik
+  ("6 Wochen") und die 1RM-Spalte der Verlaufsliste. tested_1rm bleibt als DB-Spalte erhalten
+  (kein Datenverlust, spaeter fuer echte Tests nutzbar). Zwei Tests an die berechneten Werte
+  angepasst (80x5 ~ 92.2, 6 Wochen +12 %). tsc, build und 183 Tests gruen.
 
 - 2026-06-23 - Phase 7 (Yoga) abgeschlossen: live getestet und freigegeben. Yoga ist kein
   eigener Tab, sondern eine schnell abgehakte Einheit ueber die Zeile im Training-Tab; das

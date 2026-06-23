@@ -6,6 +6,8 @@
 // die Skill-Definition kommt als eigener Schritt.
 
 import type { HistorySessionInput } from "./history";
+import { best1RMFromSets } from "@/engine/oneRM";
+import type { EngineSet, RmFormula } from "@/engine/types";
 
 export interface ExHistorySet {
   weight: number | null;
@@ -21,7 +23,7 @@ export interface ExHistoryEntry {
   vol: number; // Summe reps*weight
   sec: number; // beste Haltezeit (Sek.), 0 wenn keine Dauer
   score: number | null; // Mittel der Arbeitssatz-Scores
-  est1RM: number | null; // getestetes/geschaetztes 1RM dieser Einheit
+  est1RM: number | null; // je Einheit aus den Arbeitssaetzen geschaetztes 1RM
   dev: boolean; // Abweichung (mind. ein angepasster Satz)
   sets: ExHistorySet[];
 }
@@ -32,9 +34,14 @@ function dateMs(d: string): number {
 }
 
 // Verlauf der Uebung aus allen absolvierten Einheiten, aelteste zuerst.
+// Das 1RM je Einheit wird – wie in V1 zur Anzeigezeit – aus den sauberen
+// Arbeitssaetzen geschaetzt (engine.best1RMFromSets mit der eingestellten
+// Formel), nicht aus einem gespeicherten Feld. Das gespeicherte tested1RM
+// blieb beim V1-Import leer (V1 fuellte es nie), daher diese Berechnung.
 export function buildExerciseHistory(
   exerciseId: string,
   sessions: readonly HistorySessionInput[],
+  formula: RmFormula = "mean",
 ): ExHistoryEntry[] {
   const out: ExHistoryEntry[] = [];
 
@@ -59,6 +66,17 @@ export function buildExerciseHistory(
           ? scores.reduce((a, b) => a + b, 0) / scores.length
           : null;
 
+      // 1RM aus allen Saetzen der Uebung (best1RMFromSets ueberspringt
+      // Aufwaermen, nicht abgehakte und gescheiterte Saetze selbst).
+      const engineSets: EngineSet[] = ex.sets.map((x) => ({
+        type: x.kind === "warmup" ? "warmup" : "work",
+        done: x.done ?? true,
+        failed: x.failed ?? false,
+        weight: x.weight ?? 0,
+        reps: x.reps ?? 0,
+      }));
+      const est1RM = best1RMFromSets(engineSets, formula).value;
+
       out.push({
         date: s.date,
         topW,
@@ -66,7 +84,7 @@ export function buildExerciseHistory(
         vol,
         sec,
         score,
-        est1RM: ex.tested1RM ?? null,
+        est1RM,
         dev: work.some((x) => x.adjusted),
         sets: work.map((x) => ({
           weight: x.weight,

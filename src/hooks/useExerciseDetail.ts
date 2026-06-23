@@ -52,12 +52,13 @@ export function useExerciseDetail(exerciseId: string): ExerciseDetailView {
   const error = exercisesQ.error ?? sessionsQ.error ?? settingsQ.error;
 
   const unit = settingsQ.data?.unit ?? "kg";
+  const rmFormula = settingsQ.data?.rm_formula ?? "mean";
   const exercise =
     exercisesQ.data?.find((e) => e.id === exerciseId) ?? null;
 
   const history =
     exercise && sessionsQ.data
-      ? buildExerciseHistory(exercise.id, sessionsQ.data)
+      ? buildExerciseHistory(exercise.id, sessionsQ.data, rmFormula)
       : [];
 
   const isBodyweight = exercise?.profile === "bodyweight";

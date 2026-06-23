@@ -17,6 +17,8 @@ interface SetRowLite {
   duration_sec: number | null;
   score: number | null;
   adjusted: boolean;
+  done: boolean;
+  failed: boolean;
 }
 
 interface SessionExerciseLite {
@@ -37,7 +39,7 @@ export function useSessionsDetailed() {
       const { data, error } = await supabase
         .from("sessions")
         .select(
-          "*, session_exercises(exercise_id, name, metric, position, tested_1rm, sets(kind, reps, weight, duration_sec, score, adjusted))",
+          "*, session_exercises(exercise_id, name, metric, position, tested_1rm, sets(kind, reps, weight, duration_sec, score, adjusted, done, failed))",
         )
         .eq("status", "done")
         .order("date", { ascending: true });
@@ -69,6 +71,8 @@ export function useSessionsDetailed() {
             durationSec: s.duration_sec,
             score: s.score,
             adjusted: s.adjusted,
+            done: s.done,
+            failed: s.failed,
           })),
         })),
       }));

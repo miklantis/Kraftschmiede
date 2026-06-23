@@ -20,6 +20,8 @@ export interface HistorySet {
   durationSec: number | null;
   adjusted: boolean;
   score?: number | null;
+  done?: boolean;
+  failed?: boolean;
 }
 
 export interface HistoryExercise {
