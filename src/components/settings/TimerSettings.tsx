@@ -68,6 +68,14 @@ export function TimerSettings({
           onChange={(on) => void update({ timers: { ...t, vibrate: on } })}
         />
       </SettingRow>
+
+      <SettingRow label="Bildschirm wachhalten">
+        <Switch
+          label="Bildschirm wachhalten"
+          checked={t.wakeLock ?? false}
+          onChange={(on) => void update({ timers: { ...t, wakeLock: on } })}
+        />
+      </SettingRow>
     </SettingsGroup>
   );
 }

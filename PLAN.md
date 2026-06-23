@@ -82,11 +82,27 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
   Verlauf (Uebungs-Detailseite zeigt die Skill-Saetze) - alles offline ueber pausierbare
   Mutation. Auch der Cache-Buster steht auf v2 (alte Skill-Definitionen ohne Name/Tempo werden
   beim Laden verworfen).
-- **Naechste Sitzung (Einstieg):** **Phase 11 Lieferung 6 (Wake-Lock)** - zuerst die
-  Entscheidung weglassen vs. mitnehmen treffen (V1 hat KEINEN Wake-Lock; bei Aufnahme als
-  bewusste Erweiterung ueber V1 hinaus kurz mit Kadir abstimmen), dann ggf. bauen. Danach der
-  **Paritaetsdurchlauf Live gegen V1 + Abschluss-Test** (L1-L6 am Stueck gegen V1 pruefen),
-  dann ist Phase 11 fertig. Die Live-Session ist mit L1-L5 funktional vollstaendig.
+- **Phase 11 Lieferung 6 (Wake-Lock) gebaut (2026-06-23), live testbar.** Bewusste
+  Erweiterung ueber V1 hinaus (V1 hatte keinen Wake-Lock; mit Kadir abgestimmt). Neuer
+  Schalter „Bildschirm wachhalten" in den Einstellungen im Block Pausen-Timer (unter
+  Auto-Start/Ton/Vibration), Standard aus. Es ist eine Konto-Einstellung (gilt auf allen
+  Geraeten) und liegt im schon vorhandenen timers-jsonb - daher KEINE Schema-Migration in
+  Supabase noetig; fehlt das Feld (Altbestand), gilt es als aus. Wirkung: solange eine
+  Einheit laeuft (Kraft ODER Skill) und der Schalter an ist, bleibt der Bildschirm wach;
+  beim Beenden/Verwerfen wird die Sperre freigegeben, nach einem kurzen App-Wechsel
+  automatisch neu angefordert (der Browser gibt sie beim Verstecken von selbst frei). Auf
+  Geraeten/Browsern ohne Screen Wake Lock API (z. B. iOS Safari < 16.4) passiert nichts -
+  der Schalter ist dort wirkungslos, kein Fehler. Neu: lib/wakeLock.ts (duenner DOM-naher
+  Effekt-Baustein wie liveAudio: isWakeLockSupported/requestWakeLock/releaseWakeLock, ein
+  Modul-interner Sentinel, robuste try/catch, kein React) und der Hook useWakeLock(enabled)
+  (fordert an/gibt frei, re-acquire ueber visibilitychange). Verdrahtet in LiveLayer:
+  enabled = laufende Session && timers.wakeLock && Unterstuetzung. timersSchema additiv um
+  optionales wakeLock erweitert; TimerSettings um die Schalter-Reihe ergaenzt. tsc/build/284
+  Tests gruen (1 neuer Schema-Test: wakeLock optional + rueckwaertskompatibel).
+- **Naechste Sitzung (Einstieg):** **Phase 11 abschliessen** mit dem **Paritaetsdurchlauf
+  Live gegen V1** (L1-L6 am Stueck gegen V1 pruefen: Start, Aufbau/Coach, gefuehrter Ablauf,
+  Beenden/Speichern, Skill-Live, Wake-Lock) + Abschluss-Test. Danach ist Phase 11 fertig; es
+  folgt Phase 12 (Import/Export) - dort zuerst Konzept gegen V1.
 - **L4 (Beenden + Speichern) bleibt vorgemerkt** (nicht starten vor L3-Freigabe): erledigte
   Saetze normalisiert in den Verlauf schreiben (echter Unterschied Speichern/Verwerfen),
   volles Offline-Zusammenspiel. Erst Konzept gegen V1 (app.js finishSession: nur abgehakte
@@ -673,8 +689,13 @@ Fortschritt wird hier je Lieferung gefuehrt:
 - [x] **L5 – Skill-Live.** *(live freigegeben 2026-06-23)* Gefuehrte Skill-Einheit
       (Start-Popup, Werte/Stoppuhr mit 5s-Vorlauf, Abhaken + Satzpause, Beenden mit
       Konsekutiv-Fortschreibung); Skill-Start auf der Trainingsseite verdrahtet.
-- [ ] **L6 – Wake-Lock.** Entscheidung weglassen vs. mitnehmen faellt erst hier
-      (V1 hat KEINEN Wake-Lock).
+- [x] **L6 – Wake-Lock.** *(gebaut 2026-06-23, live testbar)* Bewusste Erweiterung
+      ueber V1 hinaus (V1 hatte keinen). Schalter „Bildschirm wachhalten" in den
+      Einstellungen im Block Pausen-Timer (unter Auto-Start/Ton/Vibration),
+      Standard aus, Konto-Einstellung (gilt auf allen Geraeten, keine DB-Migration:
+      liegt im bestehenden timers-jsonb). Greift nur bei laufender Einheit (Kraft +
+      Skill), gibt beim Beenden/Verwerfen frei, fordert nach App-Wechsel neu an;
+      No-op auf Geraeten ohne Screen Wake Lock API (z. B. iOS < 16.4).
 - [ ] Paritaetsdurchlauf Live gegen V1 + Abschluss-Test
 
 ## Phase 12 – Migration + Import/Export
@@ -700,6 +721,19 @@ Fortschritt wird hier je Lieferung gefuehrt:
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu, sobald sie fertig sind.
+
+- 2026-06-23 - Phase 11 Lieferung 6 (Wake-Lock) gebaut, wartet auf Live-Test. Bewusste
+  Erweiterung ueber V1 hinaus (V1 hatte keinen), mit Kadir abgestimmt: rein, Schalter unter
+  Einstellungen, Standard aus. Der Schalter „Bildschirm wachhalten" sitzt im Block Pausen-
+  Timer (unter Auto-Start/Ton/Vibration). Konto-Einstellung im bestehenden timers-jsonb -
+  keine DB-Migration noetig, Fehlen = aus. Wirkung nur bei laufender Einheit (Kraft + Skill):
+  Bildschirm bleibt wach, Freigabe beim Beenden/Verwerfen, Re-Acquire nach App-Wechsel ueber
+  visibilitychange. Ohne Screen Wake Lock API (z. B. iOS < 16.4) reines No-op. Neu:
+  lib/wakeLock.ts (DOM-naher Effekt-Baustein wie liveAudio, Modul-interner Sentinel, robuste
+  try/catch) + Hook useWakeLock(enabled); verdrahtet in LiveLayer (enabled = Session laeuft &&
+  Schalter an && unterstuetzt). timersSchema additiv um optionales wakeLock, TimerSettings um
+  die Schalter-Reihe. tsc/build/284 Tests gruen (1 neuer Schema-Test). Offen: Live-Test, dann
+  Paritaetsdurchlauf Live gegen V1 -> Phase 11 fertig.
 
 - 2026-06-23 - Phase 11 Lieferung 5 (Skill-Live) live getestet und FREIGEGEBEN. Gefuehrte
   Skill-Einheit gegen V1: Start aus der Trainingsseite (Start-Popup mit Ziel-Vorschau),

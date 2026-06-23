@@ -58,14 +58,18 @@ export type MuscleKategorie = z.infer<typeof muscleKategorieEnum>;
 // ---- jsonb-Wertobjekte ------------------------------------------------------
 // Kleine, attributarme Wertobjekte, die als jsonb in ihrer Tabelle liegen.
 
-// settings.timers – Pausen-/Rest-Timer-Einstellungen. Vollstaendig festgelegt
-// durch den DB-Default; daher als geschlossenes Objekt mit allen Feldern.
+// settings.timers – Pausen-/Rest-Timer-Einstellungen plus Live-Verhalten.
+// Vollstaendig festgelegt durch den DB-Default; daher als geschlossenes Objekt.
+// `wakeLock` (Bildschirm waehrend der Session wachhalten) ist bewusst optional:
+// es kam erst spaeter dazu, der DB-Default kennt es nicht, und Fehlen bedeutet
+// „aus" - so braucht es keine Schema-Migration in der Datenbank.
 export const timersSchema = z.object({
   setRestSec: z.number().int().nonnegative(),
   exerciseRestSec: z.number().int().nonnegative(),
   autoStart: z.boolean(),
   sound: z.boolean(),
   vibrate: z.boolean(),
+  wakeLock: z.boolean().optional(),
 });
 export type Timers = z.infer<typeof timersSchema>;
 

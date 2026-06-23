@@ -133,6 +133,25 @@ describe("jsonb-Wertobjekte", () => {
     expect(timersSchema.safeParse({ setRestSec: 120 }).success).toBe(false);
   });
 
+  it("timers: wakeLock optional (rueckwaertskompatibel)", () => {
+    const base = {
+      setRestSec: 120,
+      exerciseRestSec: 180,
+      autoStart: true,
+      sound: true,
+      vibrate: true,
+    };
+    // Ohne wakeLock (Altbestand) und mit wakeLock parst beides.
+    expect(timersSchema.safeParse(base).success).toBe(true);
+    expect(timersSchema.safeParse({ ...base, wakeLock: true }).success).toBe(
+      true,
+    );
+    // Falscher Typ scheitert.
+    expect(
+      timersSchema.safeParse({ ...base, wakeLock: "ja" }).success,
+    ).toBe(false);
+  });
+
   it("recovery_windows: default plus beliebige Hebungen", () => {
     expect(
       recoveryWindowsSchema.safeParse({ default: 48, squat: 48, deadlift: 72 })
