@@ -17,32 +17,28 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
 
 ## Aktueller Stand
 
-- **Phase 12 Schritt 2 (Export) gebaut (2026-06-23), live testbar.** In den Einstellungen
-  unter „Daten" sichert jetzt eine Export-Karte den kompletten Bestand als ein lesbares
-  JSON: Einheiten mit geschachtelten Uebungen (entries) und Saetzen wie in V1, dazu Uebungen,
-  Vorlagen, Journeys, Skill-Fortschritt, Composition, Einstellungen und Inventar (gebuendelt)
-  - faktisch alle 23 Tabellen samt ids/Fremdschluesseln, damit das Voll-Restore (Schritt 3)
-  spaeter sauber alles zurueckspielen kann. V1-Anreicherung uebernommen: je Satz mit Score
-  haengen rir/rpe/scoreLabel aus der Score-Skala dran (nur fuer den Export, beim Re-Import
-  verworfen), plus eine _scoreScale-Notiz. Zwei Wege wie V1: Datei `kraftschmiede_DATUM.json`
-  oder Zwischenablage. Neu und domaenenfrei: das reine, DOM-/Supabase-freie Aufbau-Modul
-  lib/exportData.ts (buildExport gruppiert/ordnet/reichert an, getestet) und der DOM-nahe
-  download-Baustein lib/download.ts (Datei-Download + Clipboard mit Fallback). Hook useExport
-  holt alle Tabellen (RLS scoped) und orchestriert. tsc/build/283 Tests gruen (7 neue
-  exportData).
+- **Phase 12 Schritt 4 (Coach-Export) gebaut (2026-06-24), live testbar.** Neben dem
+  Voll-Export sitzt in der Daten-Sektion jetzt die Karte „Fuer Coaching": ein schlankes,
+  sprechendes JSON rein fuers Gespraech mit dem Coach (nur Zwischenablage, kein Datei-
+  Download). Spanne ueber SegmentedControl waehlbar: 8/12/26 Wochen oder Alle (Standard 12).
+  Inhalt sprechend statt DB-treu: Kopf mit Score-Legende + Essenz der Einstellungen; aktive
+  Journey mit komplettem Phasenplan (Index, Fokus, Wochen, Satz-Rampe, Deload, Rep-Band) und
+  aktueller Woche/Phase (ueber die getestete Placement-Engine); Uebungskatalog sprechend
+  (Name, Rep-Band, Arbeitsgewicht, 1RM); Einheiten chronologisch mit voller Zuordnung
+  (Journey, Phase, Woche, Workout-Name) und kompakten Arbeitssatz-Strings („5×20 @S3",
+  Ziel nur bei Abweichung; Skill „30 s"/„(verfehlt)"; Yoga-Minuten; Skill-Phase/Ergebnis);
+  Skill-Fortschritt (Phase x/y + Label, gemeistert); Body-Trend und Messungen in derselben
+  Spanne. Weggelassen: alle ids/FKs, Definitions-Kataloge, Inventar, _scoreScale, das
+  Satz-Rauschen. Realdaten-Check mit Kadirs Export: 16,5 KB statt 224 KB. Neu und domaenenfrei:
+  gemeinsame Sammelabfrage lib/exportSource.ts (Voll- und Coach-Export teilen sie), reines
+  lib/coachExport.ts (buildCoachExport, getestet), Hook useCoachExport, Komponente CoachExport;
+  useExport auf die gemeinsame Quelle umgestellt. tsc/build/290 Tests gruen (7 neue coachExport).
 - **Naechster Schritt: Phase 12 Schritt 3 (Voll-Restore).** Nimmt einen eigenen V2-Export
   (NUR V2), zeigt erst eine Vorschau (Anzahl Sessions/Saetze/Journeys), ersetzt nach
   Rueckfrage den kompletten Bestand (kein Anhaengen/Aktualisieren). Reine, Zod-gepruefte
   Import-Pruefung in `src/lib/` (parst + validiert, verwirft die abgeleiteten Felder wie V1
-  stripDerived), Hook `useRestore`, Rueckfrage ueber das Overlay-Primitive. Details in der
-  Phase-12-Sektion.
-- **Neu geplant: Coach-Export (Phase 12 Schritt 4, Konzeptstand 2026-06-24).** Zweiter,
-  schlanker Export nur fuer das Gespraech mit dem Coach (nur Zwischenablage, kein
-  Wiederherstellen): laesst allen DB-Ballast weg (ids/FKs, Definitions-Kataloge, Inventar,
-  _scoreScale, Satz-Rauschen), behaelt Journey/Phasen, Uebungen sprechend, Einheiten mit
-  kompakten Satz-Strings, Skill-Fortschritt, Body-Trend. Konzeptblock steht in der
-  Phase-12-Sektion. OFFEN vor dem Bauen: Verlaufsspanne (alles vs. letzte ~12 Wochen).
-  Gebaut wird erst nach Kadirs Entscheidung dazu.
+  stripDerived), Hook `useRestore`, Rueckfrage ueber das Overlay-Primitive. Damit waere
+  Phase 12 komplett.
 
 - **Live-Korrektur Ende-Popup-Optik auf V1-Paritaet (2026-06-23).** Das Sitzungsende-Popup
   (Workout UND Skill) sah anders aus als V1; jetzt 1:1 nach klar-app.css (kl-end-/kl-summary-):
@@ -766,11 +762,13 @@ Ueberschreiben.
       zeigt erst eine Vorschau (Anzahl Sessions/Saetze/Journeys - wie der alte Migrations-
       Knopf), ersetzt nach Rueckfrage den kompletten Bestand. Kein Anhaengen, kein
       Aktualisieren. Kein erzwungenes Backup davor (Export liegt direkt daneben).
-- [ ] **Coach-Export (schlank, nur Zwischenablage).** Konzeptstand (2026-06-24), offen: die
-      Verlaufsspanne (alles vs. letzte ~12 Wochen). Zweiter Export NUR fuer das Gespraech mit
-      dem Coach (nicht zum Wiederherstellen), darum bewusst „trockenarm": weglassen, was nur
-      die DB braucht, behalten, was ein Coach zum Bewerten braucht. Details im Konzeptblock
-      unten. Eigener Knopf „Fuer Coaching kopieren" neben dem Voll-Export, kein Datei-Download.
+- [x] **Coach-Export (schlank, nur Zwischenablage).** Entscheidung (2026-06-24): Spanne =
+      letzte X Wochen (Auswahl 8/12/26/Alle, Standard 12). Wichtig war Kadir die volle
+      Nachvollziehbarkeit: jede Einheit zeigt Journey, Phase, Woche und (bei Kraft) das
+      Workout; oben der komplette Phasenplan + aktuelle Woche/Phase. Zweiter Export NUR fuer
+      das Gespraech (nicht zum Wiederherstellen), bewusst „trockenarm": laesst DB-Ballast weg.
+      Realdaten-Check: 16,5 KB statt 224 KB Voll-Export. Eigener Knopf „Fuer Coaching
+      kopieren" neben dem Voll-Export, kein Datei-Download.
 
 **Komponentenschnitt (intern, fuer den frischen Chat):** reine, getestete Export-Aufbau-
 Funktion in `src/lib/` (DOM-frei, baut das JSON aus dem Zustand, analog V1 enrichExport);
@@ -819,6 +817,10 @@ vorhandenen copyText-Baustein.
 Offen (vor dem Bauen klaeren): Verlaufsspanne - kompletter Verlauf oder nur die letzten
 ~12 Wochen / eine waehlbare Spanne, damit es bei vielen Einheiten spaeter nicht wieder gross
 wird.
+-> ENTSCHIEDEN (2026-06-24) und GEBAUT: Auswahl 8/12/26 Wochen oder Alle (Standard 12) ueber
+den SegmentedControl. Zusaetzlich betont: volle Nachvollziehbarkeit je Einheit (Journey,
+Phase, Woche, Workout). Andere Spannen-Ideen (journeyweise, zwischen Datums) bleiben als
+spaetere Option moeglich, vorerst nicht gebaut.
 
 ## Phase 13 – Politur
 
@@ -832,6 +834,13 @@ wird.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu, sobald sie fertig sind.
+
+- 2026-06-24 - Phase 12 Schritt 4 (Coach-Export) GEBAUT. Schlankes, sprechendes JSON rein
+  fuers Coaching-Gespraech, nur Zwischenablage, Spanne 8/12/26 Wochen oder Alle (Standard 12).
+  Volle Nachvollziehbarkeit je Einheit (Journey/Phase/Woche/Workout) + kompletter Phasenplan
+  im Kopf; Uebungen/Saetze sprechend, Skill-Fortschritt, Body-Trend. Realdaten: 16,5 statt
+  224 KB. Gemeinsame Sammelabfrage exportSource.ts (Voll- + Coach-Export teilen sie), reines
+  coachExport.ts (getestet), useCoachExport, Komponente CoachExport. tsc/build/290 Tests gruen.
 
 - 2026-06-24 - Coach-Export als Phase 12 Schritt 4 in den Plan aufgenommen (nur Doku,
   Konzeptstand). Zweiter, schlanker Export rein fuers Coaching-Gespraech (nur Zwischenablage),

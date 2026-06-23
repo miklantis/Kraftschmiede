@@ -13,6 +13,7 @@ import {
 import { InventoryEquipment } from "@/components/settings/InventoryEquipment";
 import { Datenstand } from "@/components/Datenstand";
 import { DataExport } from "@/components/settings/DataExport";
+import { CoachExport } from "@/components/settings/CoachExport";
 import { useSettings } from "@/hooks/useSettings";
 import {
   useBars,
@@ -92,6 +93,7 @@ function EinstellungenPage(): React.ReactElement {
             <div className="flex flex-col gap-3">
               <Datenstand />
               <DataExport />
+              <CoachExport />
             </div>
           </Section>
         </div>

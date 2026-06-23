@@ -1,109 +1,20 @@
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { useUserId } from "./useUserId";
 import {
   buildExport,
   serializeExport,
   exportFilename,
-  type RawExportData,
-  type RawSession,
-  type RawSessionExercise,
-  type RawSet,
-  type Row,
 } from "@/lib/exportData";
+import { fetchAllData } from "@/lib/exportSource";
 import { downloadTextFile, copyText } from "@/lib/download";
 
-// Holt den kompletten Bestand des Nutzers (RLS schraenkt automatisch auf die
-// eigene user_id ein) und baut daraus das lesbare Export-JSON. DOM-Seiten
-// (Datei/Zwischenablage) liegen im download-Baustein, der Aufbau im reinen
-// exportData-Modul. Der Hook orchestriert nur.
-
-async function selectAll(table: string): Promise<Row[]> {
-  const { data, error } = await supabase.from(table).select("*");
-  if (error) throw new Error(`${table}: ${error.message}`);
-  return (data ?? []) as Row[];
-}
-
-async function fetchAll(): Promise<RawExportData> {
-  const [
-    bars,
-    plates,
-    kettlebells,
-    equipment,
-    exercises,
-    exerciseMuscles,
-    templates,
-    templateExercises,
-    journeyTemplates,
-    journeyTemplatePhases,
-    skills,
-    skillPhases,
-    skillPhaseExercises,
-    skillPhaseEquipment,
-    journeys,
-    phases,
-    sessions,
-    sessionExercises,
-    sets,
-    skillProgress,
-    bodyLog,
-    composition,
-    settingsRows,
-  ] = await Promise.all([
-    selectAll("inventory_bars"),
-    selectAll("inventory_plates"),
-    selectAll("inventory_kettlebells"),
-    selectAll("inventory_equipment"),
-    selectAll("exercises"),
-    selectAll("exercise_muscles"),
-    selectAll("templates"),
-    selectAll("template_exercises"),
-    selectAll("journey_templates"),
-    selectAll("journey_template_phases"),
-    selectAll("skills"),
-    selectAll("skill_phases"),
-    selectAll("skill_phase_exercises"),
-    selectAll("skill_phase_equipment"),
-    selectAll("journeys"),
-    selectAll("phases"),
-    selectAll("sessions"),
-    selectAll("session_exercises"),
-    selectAll("sets"),
-    selectAll("skill_progress"),
-    selectAll("body_log"),
-    selectAll("composition"),
-    selectAll("settings"),
-  ]);
-
-  return {
-    bars,
-    plates,
-    kettlebells,
-    equipment,
-    exercises,
-    exerciseMuscles,
-    templates,
-    templateExercises,
-    journeyTemplates,
-    journeyTemplatePhases,
-    skills,
-    skillPhases,
-    skillPhaseExercises,
-    skillPhaseEquipment,
-    journeys,
-    phases,
-    sessions: sessions as RawSession[],
-    sessionExercises: sessionExercises as RawSessionExercise[],
-    sets: sets as RawSet[],
-    skillProgress,
-    bodyLog,
-    composition,
-    settings: settingsRows[0] ?? null,
-  };
-}
+// Voll-Export: holt den kompletten Bestand (gemeinsame Quelle fetchAllData) und
+// baut daraus das lesbare JSON. DOM-Seiten (Datei/Zwischenablage) liegen im
+// download-Baustein, der Aufbau im reinen exportData-Modul. Der Hook
+// orchestriert nur.
 
 async function buildText(): Promise<string> {
-  const raw = await fetchAll();
+  const raw = await fetchAllData();
   return serializeExport(buildExport(raw));
 }
 
