@@ -93,61 +93,72 @@ function ExerciseDetailPage(): React.ReactElement {
         </p>
       )}
 
-      {/* Mobil ein Stapel (Statistik, Diagramm, Muskeln, Verlauf); ab 960px
-          zwei Spalten wie V1: links (breiter) Diagramm + Verlauf, rechts
-          Statistik + Muskeln. Platzierung ueber col-/row-start; die Quell-
-          reihenfolge ergibt direkt die gewuenschte Mobil-Abfolge. */}
-      <div className="grid grid-cols-1 items-start gap-6 min-[960px]:grid-cols-[1.6fr_1fr] min-[960px]:gap-x-[26px] min-[960px]:gap-y-7">
-        <StatRow
-          cells={stats}
-          className="min-[960px]:col-start-2 min-[960px]:row-start-1"
-        />
-
-        {metricOptions.length > 0 && (
-          <div className="min-w-0 min-[960px]:col-start-1 min-[960px]:row-start-1">
-            <ExerciseChartCard
-              history={chartHistory}
-              options={metricOptions}
-              defaultMetric={defaultMetric}
-              unit={unit}
-            />
-          </div>
-        )}
-
-        <Section
-          eyebrow="Beanspruchte Muskeln"
-          className="min-[960px]:col-start-2 min-[960px]:row-start-2"
-        >
-          <MuscleMap values={muscleValues} className="max-w-[320px]" />
-        </Section>
-
-        <Section
-          eyebrow="Verlauf"
-          className="min-w-0 min-[960px]:col-start-1 min-[960px]:row-start-2"
-        >
-          {verlauf.length === 0 ? (
-            <p className="text-[15px] text-muted-foreground">
-              Noch keine absolvierte Session mit dieser Übung.
-            </p>
-          ) : (
-            <List bordered>
-              {verlauf.map((r, i) => (
-                <ListRow
-                  key={i}
-                  title={longDateShort(r.date)}
-                  subtitle={r.line || undefined}
-                  trailing={
-                    r.right ? (
-                      <span className="font-mono text-[14px] text-muted-foreground tabular-nums">
-                        {r.right}
-                      </span>
-                    ) : undefined
-                  }
-                />
-              ))}
-            </List>
+      {/* Mobil ein Stapel in fester Reihenfolge (Statistik, Diagramm, Muskeln,
+          Verlauf). Ab 960px zwei unabhaengig fliessende Spalten wie V1: links
+          (breiter) Diagramm + Verlauf, rechts Statistik + Muskeln. Bewusst KEIN
+          gemeinsames Zeilenraster - jede Spalte stapelt ihre Bloecke fuer sich,
+          sodass die Muskeln direkt unter der Statistik folgen (keine Luecke).
+          Mobil flachen die Spalten ueber display:contents auf, damit die
+          order-Reihenfolge im aeusseren Flex greift. */}
+      <div className="flex flex-col gap-6 min-[960px]:flex-row min-[960px]:items-start min-[960px]:gap-x-[26px]">
+        {/* Linke Spalte: Diagramm + Verlauf */}
+        <div className="contents min-w-0 min-[960px]:flex min-[960px]:flex-[1.6] min-[960px]:flex-col min-[960px]:gap-7">
+          {metricOptions.length > 0 && (
+            <div className="order-2 min-w-0 min-[960px]:order-none">
+              <ExerciseChartCard
+                history={chartHistory}
+                options={metricOptions}
+                defaultMetric={defaultMetric}
+                unit={unit}
+              />
+            </div>
           )}
-        </Section>
+
+          <Section
+            eyebrow="Verlauf"
+            className="order-4 min-w-0 min-[960px]:order-none"
+          >
+            {verlauf.length === 0 ? (
+              <p className="text-[15px] text-muted-foreground">
+                Noch keine absolvierte Session mit dieser Übung.
+              </p>
+            ) : (
+              <List bordered>
+                {verlauf.map((r, i) => (
+                  <ListRow
+                    key={i}
+                    title={longDateShort(r.date)}
+                    subtitle={r.line || undefined}
+                    trailing={
+                      r.right ? (
+                        <span className="font-mono text-[14px] text-muted-foreground tabular-nums">
+                          {r.right}
+                        </span>
+                      ) : undefined
+                    }
+                  />
+                ))}
+              </List>
+            )}
+          </Section>
+        </div>
+
+        {/* Rechte Spalte: Statistik + Muskeln */}
+        <div className="contents min-w-0 min-[960px]:flex min-[960px]:flex-1 min-[960px]:flex-col min-[960px]:gap-7">
+          <StatRow cells={stats} className="order-1 min-[960px]:order-none" />
+
+          <Section
+            eyebrow="Beanspruchte Muskeln"
+            className="order-3 min-[960px]:order-none"
+          >
+            {/* Figur nimmt ~78% der Breite (V1-Wert), zentriert - so bleibt
+                Abstand zwischen Rand und Illustration, Desktop wie Mobile. */}
+            <MuscleMap
+              values={muscleValues}
+              className="mx-auto w-[78%] max-w-[300px]"
+            />
+          </Section>
+        </div>
       </div>
     </div>
   );

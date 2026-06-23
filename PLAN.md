@@ -34,9 +34,11 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
   Markengruen - die Default-Rampe las --accent (im V2-Token-Set ein helles Grau, shadcn-
   Hover), jetzt --primary (#0c9d77, wie die Charts). (b) Muskelblock ohne Karten-
   Hintergrund/Schatten - nur Eyebrow "Beanspruchte Muskeln" + Figuren direkt auf der Seite
-  (Section statt Karte). (c) Detailseite ab 960px zweispaltig wie V1: links (1.6fr)
-  Diagramm + Verlauf, rechts (1fr) Statistik + Muskeln; mobil weiter ein Stapel
-  (Statistik, Diagramm, Muskeln, Verlauf). Platzierung ueber col-/row-start im Grid.
+  (Section statt Karte). (c) Detailseite ab 960px zweispaltig wie V1: links (1.6) Diagramm
+  + Verlauf, rechts (1) Statistik + Muskeln - als zwei unabhaengig fliessende Flex-Spalten
+  (KEIN gemeinsames Zeilenraster, sonst Luecke rechts unter der Statistik); mobil weiter
+  ein Stapel (Statistik, Diagramm, Muskeln, Verlauf) ueber display:contents + order. Die
+  Figur nimmt ~78% Breite (V1-Wert), damit Abstand zwischen Rand und Illustration bleibt.
   tsc/build/190 Tests gruen.
 - **GEKLAERT (1RM-Historie, Variante B umgesetzt):** Das je Einheit geschaetzte 1RM wird
   jetzt – wie in V1 zur Anzeigezeit – aus den sauberen Arbeitssaetzen berechnet
