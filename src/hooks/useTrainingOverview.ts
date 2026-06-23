@@ -27,6 +27,7 @@ export interface WorkoutCard {
   id: string;
   name: string;
   lifts: string;
+  exerciseNames: string[];
   score: number;
   excluded: boolean;
 }
@@ -200,6 +201,7 @@ export function useTrainingOverview(): {
         id: r.template.id,
         name: tpl?.name ?? r.template.id,
         lifts: liftsOf(r.template.exerciseIds),
+        exerciseNames: r.template.exerciseIds.map((id) => nameById[id] ?? id),
         score: r.score,
         excluded: r.excluded,
       };

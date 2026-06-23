@@ -17,17 +17,16 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
 
 ## Aktueller Stand
 
-- **Naechste Sitzung (Einstieg):** **Phase 11 (Live-Session) – der grosse, heikle Brocken.**
-  Beginnt mit Konzeptabstimmung gegen V1 (js/live.js, ~1200 Zeilen), bevor irgendetwas gebaut
-  wird. Grobe Bausteine laut Plan: Sitzungsaufbau aus Vorlage + Coach (Arbeits-/Aufwaermsaetze,
-  Plate-Loader), gefuehrter Ablauf (Saetze abhaken), Coach beim Durchfuehren, Pausen-/Rest-Timer
-  + Rest-Bar, Audio/Vibration, Overlay (Desktop)/Bottom-Sheet (Mobile) mit Ziehgeste + Wake-Lock,
-  fokus-erhaltende Inline-Updates, Start-/Ende-Dialoge, volles Offline-Zusammenspiel. Wegen der
-  Groesse zuerst Konzept/Plan zeigen und in kleine Lieferungen schneiden. Vorhandenes Fundament,
-  das hier zusammenkommt: Engine (Plate-Loader, Aufwaerm-Generator, Progression, Suitability),
-  Coach-Modul, Overlay-Primitive (Phase 7), Stepper, Timer-Einstellungen (Phase 10), Inventar.
-  Nebenher offen (Phase 9): Flash-Fix der Muskelkater-Figur ist noch nicht ausdruecklich
-  gegengecheckt – unkritisch.
+- **Naechste Sitzung (Einstieg):** **Phase 11 Lieferung 2 – Sitzungsaufbau aus Vorlage + Coach.**
+  Die Panel-Huelle steht und ist live testbar (s. Log unten). L2 fuellt den Panel-Inhalt: echte
+  Uebungs-/Satzkarten aus der Vorlage, vom Coach aufgebaut (Arbeits-/Aufwaermsaetze,
+  Satz-Vorschlaege, Plate-Loader). Dabei `LiveSession.exercisesPreview` (L1-Platzhalter) durch
+  vollwertige Eintraege ersetzen (additiv). Erst Konzept gegen V1 (js/live.js Sitzungsaufbau +
+  Coach), dann bauen. Vorhandenes Fundament: Engine (Plate-Loader, Aufwaerm-Generator,
+  Progression, Suitability), Coach-Modul, Audio-Baustein (liegt seit L1), Overlay-Primitive.
+  Offene Punkte fuers Live-Feedback aus L1: ob der eingeklappte Mini-Streifen am Handy auch per
+  Tippen (statt nur Ziehen) aufklappen soll; ob bei aufgeklapptem Sheet ein Hintergrund-
+  Scroll-Lock noetig ist. Wake-Lock-Entscheidung erst in L6.
 - **Phase 10 (Einstellungen) abgeschlossen und live freigegeben (2026-06-23).** Komplette Seite
   abgenommen: Konto-/Verbindungs-Panel, Engine & Einheiten, Pausen-Timer, Inventar (Stangen/
   Scheiben/Kettlebells/Geraete), Score-Referenz; spaltenweiser Fluss (CSS-Spalten wie V1), mobil
@@ -534,16 +533,28 @@ DB-Tabelle exercise_muscles. Charts ueber ChartCanvas/D3 (Phase 5).
 Die gefuehrte Durchfuehrung samt aller schwierigen Mechanik. Bewusst von Phase 3
 getrennt: was hier liegt, gehoert nicht auf den Trainings-Screen.
 
-- [ ] Konzept abgestimmt
-- [ ] Sitzungsaufbau aus Vorlage + Coach (Arbeitssaetze, Aufwaermsaetze, Plate-Loader)
-- [ ] Gefuehrter Ablauf: Saetze abhaken (Aufwaermen, Arbeitssaetze, allg. Aufwaermen)
-- [ ] Coach beim Durchfuehren (Aufwaerm-Generator, Satz-Vorschlaege, Progression)
-- [ ] Pausen-/Rest-Timer (Satz/Uebung getrennt, Auto-Start) + Rest-Bar
-- [ ] Audio/Vibration
-- [ ] Overlay (Desktop) / Bottom-Sheet (Mobile) mit Ein-/Ausklappen per Ziehgeste, Wake-Lock
-- [ ] Fokus-erhaltende Inline-Updates (kein Voll-Neurender beim Tippen)
-- [ ] Start-/Ende-Dialoge
-- [ ] Volles Offline-Zusammenspiel (Aufzeichnen ohne Netz, spaeter Sync)
+Wegen der Groesse in Lieferungen geschnitten (Konzept abgestimmt):
+- **L1 – Panel-Huelle + Start-/Ende-Dialoge + Toene** (erledigt, s. u.)
+- **L2 – Sitzungsaufbau aus Vorlage + Coach** (echte Uebungs-/Satzkarten)
+- **L3 – Gefuehrter Ablauf** (Saetze abhaken, Pausen-/Rest-Timer + Rest-Bar, Auto-Start)
+- **L4 – Beenden + Speichern** (erledigte Saetze normalisiert in den Verlauf schreiben)
+- **L5 – Skill-Live** (Stoppuhr/Fortschritt)
+- **L6 – Wake-Lock** (Entscheidung weglassen vs. mitnehmen faellt erst hier; V1 hat KEINEN
+  Wake-Lock)
+
+- [x] Konzept abgestimmt
+- [ ] Sitzungsaufbau aus Vorlage + Coach (Arbeitssaetze, Aufwaermsaetze, Plate-Loader) — L2
+- [ ] Gefuehrter Ablauf: Saetze abhaken (Aufwaermen, Arbeitssaetze, allg. Aufwaermen) — L3
+- [ ] Coach beim Durchfuehren (Aufwaerm-Generator, Satz-Vorschlaege, Progression) — L2/L3
+- [ ] Pausen-/Rest-Timer (Satz/Uebung getrennt, Auto-Start) + Rest-Bar — L3
+- [x] Audio/Vibration (Baustein liegt: clickTick/playBeep/buzz, settings-gesteuert; im Ablauf
+      genutzt ab L3)
+- [~] Overlay (Desktop) / Bottom-Sheet (Mobile) mit Ein-/Ausklappen per Ziehgeste — Huelle
+      steht (L1); Wake-Lock erst L6
+- [ ] Fokus-erhaltende Inline-Updates (kein Voll-Neurender beim Tippen) — L3 (in React
+      idiomatisch ueber Komponenten-State statt V1-DOM-Patch)
+- [x] Start-/Ende-Dialoge (L1; Ende beendet vorerst nur lokal, echtes Schreiben in L4)
+- [ ] Volles Offline-Zusammenspiel (Aufzeichnen ohne Netz, spaeter Sync) — L4
 - [ ] Live getestet
 
 ## Phase 12 – Migration + Import/Export
@@ -569,6 +580,27 @@ getrennt: was hier liegt, gehoert nicht auf den Trainings-Screen.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu, sobald sie fertig sind.
+
+- 2026-06-23 - Phase 11 Lieferung 1 (Live-Panel-Huelle) gebaut, wartet auf Live-Test. Die
+  gefuehrte Session ist als geraete-lokales Arbeitsobjekt angelegt (localStorage, Muster wie
+  usePinnedCharts; erst beim Beenden wird in L4 normalisiert in die DB geschrieben). Neu:
+  `lib/liveSession.ts` (Typ LiveSession + fmtDur + lokale Persistenz, 9 Tests), `lib/liveAudio.ts`
+  (clickTick/playBeep/buzz, settings-gesteuert, V1-Toene 1:1), `hooks/useLiveSession.ts`
+  (externer Store + Start-/Ende-Uebergaenge), `components/live/` (LivePanel, LiveMiniBar,
+  StartModal, EndModal, LiveLayer, useLiveClock, useGripDrag). Panel global im __root gemountet,
+  tab-uebergreifend. Verhalten 1:1 aus V1 (js/live.js): Desktop Vollbild-Overlay + freischwebende
+  Mini-Pille, Mobile EIN morphendes Bodenblatt (eingeklappt -> dunkler Mini-Streifen ueber der
+  Nav, Ziehgeste am Griff/Kopf, Reinfahr-Animation). Start-Uebergang wie V1: erst Popup raus,
+  dann Panel rein (Store-orchestriert, 320ms = Overlay-EXIT_MS). Start-/Ende-Dialoge ueber das
+  vorhandene Overlay-Primitive. Panel-Stil bewusst als klassisches CSS in index.css (Morph ueber
+  CSS-Variablen-Transform + Eltern-Zustand .is-collapsed); Token-Mapping V1->V2 dokumentiert
+  (V1 --accent Gruen -> --primary; rgba(12,157,119,X) statt --accent-rgb). BottomNav traegt jetzt
+  `.ks-botnav` (collapse-Messung + weicht bei aufgeklapptem Panel); WorkoutCard um `exerciseNames`
+  erweitert (Start-Vorschau). "Session starten" (Hero + weitere Workouts) verdrahtet -> Start-
+  Popup; Skill-Start bleibt Platzhalter bis L5, Yoga bleibt Modal. Bewusst noch NICHT drin:
+  echte Satzkarten/Coach (L2), Saetze abhaken + Rest-Timer (L3), Schreiben in den Verlauf (L4) -
+  "Speichern"/"Verwerfen" beenden in L1 die Einheit nur lokal. Validiert: tsc sauber, 240 Tests
+  gruen (+9), vite build ok.
 
 - 2026-06-23 - Phase 8 Skill-Uebungsverlauf-Anbindung abgeschlossen, wartet auf Live-Test.
   Skill-Saetze (exercise_id null) werden ueber die Skill-Definition der Katalog-Uebung

@@ -9,6 +9,7 @@ import { JourneyStrip } from "@/components/training/JourneyStrip";
 import { RecommendedWorkout } from "@/components/training/RecommendedWorkout";
 import { YogaEntryModal } from "@/components/training/YogaEntryModal";
 import { useTrainingOverview } from "@/hooks/useTrainingOverview";
+import { useLiveSession } from "@/hooks/useLiveSession";
 
 // Startroute = Training (wie V1). Reine Uebersichts-/Empfehlungsseite: zeigt an
 // und fuehrt hin, fuehrt aber nicht durch (gefuehrte Session = Phase 11).
@@ -19,7 +20,8 @@ export const Route = createFileRoute("/")({
 function TrainingPage(): React.ReactElement {
   const navigate = useNavigate();
   const { isLoading, isError, error, data } = useTrainingOverview();
-  // "Session starten" ist bis Phase 11 ein Platzhalter.
+  const { openStartWorkout } = useLiveSession();
+  // Skill-Durchfuehrung folgt in Lieferung 5; bis dahin Platzhalter-Hinweis.
   const [note, setNote] = useState<string | null>(null);
   const [yogaOpen, setYogaOpen] = useState(false);
 
@@ -45,7 +47,18 @@ function TrainingPage(): React.ReactElement {
   }
 
   const placeholder = (): void =>
-    setNote("Die geführte Session folgt in Phase 11.");
+    setNote("Die geführte Skill-Einheit folgt in Lieferung 5.");
+
+  const startWorkout = (w: {
+    id: string;
+    name: string;
+    exerciseNames: string[];
+  }): void =>
+    openStartWorkout({
+      templateId: w.id,
+      title: w.name,
+      exercisesPreview: w.exerciseNames,
+    });
 
   const mainColumn = (
     <>
@@ -56,7 +69,7 @@ function TrainingPage(): React.ReactElement {
             score={data.hero.score}
             lifts={data.hero.lifts}
             excluded={data.hero.excluded}
-            onStart={placeholder}
+            onStart={() => startWorkout(data.hero!)}
           />
         ) : (
           <p className="text-sm text-muted-foreground">
@@ -79,7 +92,7 @@ function TrainingPage(): React.ReactElement {
                 trailing={<ScoreBadge value={w.score} />}
                 chevron
                 disabled={w.excluded}
-                onClick={w.excluded ? undefined : placeholder}
+                onClick={w.excluded ? undefined : () => startWorkout(w)}
               />
             ))}
           </List>

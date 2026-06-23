@@ -9,7 +9,7 @@ import { NAV_ENTRIES } from "@/lib/nav";
 export function BottomNav(): React.ReactElement {
   return (
     <nav
-      className="bg-card border-border fixed inset-x-0 bottom-0 z-30 flex border-t px-1.5 pt-2.5 shadow-[0_-6px_20px_-14px_rgba(20,24,40,0.25)]"
+      className="ks-botnav bg-card border-border fixed inset-x-0 bottom-0 z-30 flex border-t px-1.5 pt-2.5 shadow-[0_-6px_20px_-14px_rgba(20,24,40,0.25)] transition-transform duration-[360ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
       style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 22px)" }}
     >
       {NAV_ENTRIES.map((entry) => {
