@@ -8,7 +8,9 @@ const CACHE_SCHLUESSEL = "kraftschmiede-query-cache";
 // Versionsmarke des gespeicherten Caches. Aendert sich diese Marke (z.B. bei
 // einer Schema-Aenderung), wird ein alter gespeicherter Stand beim Laden
 // automatisch verworfen, damit nichts Veraltetes haengenbleibt.
-export const CACHE_BUSTER = "v1";
+// v2: Skill-Definitionen tragen jetzt Uebungsname + Tempo (Phase 11 L5) - der
+//     alte gecachte Stand ohne diese Felder muss verworfen werden.
+export const CACHE_BUSTER = "v2";
 
 // Wie lange ein gespeicherter Stand hoechstens gueltig ist, bevor er beim
 // Laden verworfen wird. Korrespondiert mit gcTime im queryClient.
