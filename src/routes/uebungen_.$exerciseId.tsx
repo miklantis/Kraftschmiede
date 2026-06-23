@@ -152,10 +152,11 @@ function ExerciseDetailPage(): React.ReactElement {
             className="order-3 min-[960px]:order-none"
           >
             {/* Figur nimmt ~78% der Breite (V1-Wert), zentriert - so bleibt
-                Abstand zwischen Rand und Illustration, Desktop wie Mobile. */}
+                Abstand zwischen Rand und Illustration, Desktop wie Mobile.
+                mt fuer etwas mehr Luft unter der Eyebrow zum Kopf der Figur. */}
             <MuscleMap
               values={muscleValues}
-              className="mx-auto w-[78%] max-w-[300px]"
+              className="mx-auto mt-3 w-[78%] max-w-[300px]"
             />
           </Section>
         </div>
