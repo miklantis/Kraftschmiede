@@ -51,12 +51,12 @@ function EinstellungenPage(): React.ReactElement {
 
   return (
     <div>
-      <PageHeader title="Einstellungen" />
+      <PageHeader title="Einstellungen" hideAccount />
 
       <div className="flex flex-col gap-7">
         <AccountCard />
 
-        <div className="grid grid-cols-1 items-start gap-7 min-[960px]:grid-cols-2 min-[960px]:gap-x-[26px]">
+        <div className="columns-1 gap-x-[26px] [&>*]:mb-7 [&>*]:break-inside-avoid min-[960px]:columns-2">
           <Section eyebrow="Engine & Einheiten">
             {settings ? <EngineSettings settings={settings} /> : placeholder}
           </Section>

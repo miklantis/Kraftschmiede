@@ -10,10 +10,14 @@ import { AccountButton } from "@/components/shell/AccountButton";
 export function PageHeader({
   title,
   date,
+  hideAccount = false,
   className,
 }: {
   title: ReactNode;
   date?: ReactNode;
+  // Mobiles Konto-Icon oben rechts ausblenden. Sinnvoll auf der Einstellungen-
+  // Seite selbst, wo das Konto bereits ein eigener Abschnitt ist.
+  hideAccount?: boolean;
   className?: string;
 }): React.ReactElement {
   return (
@@ -33,9 +37,11 @@ export function PageHeader({
           {title}
         </h1>
       </div>
-      <div className="flex-none min-[960px]:hidden">
-        <AccountButton variant="compact" />
-      </div>
+      {!hideAccount && (
+        <div className="flex-none min-[960px]:hidden">
+          <AccountButton variant="compact" />
+        </div>
+      )}
     </header>
   );
 }

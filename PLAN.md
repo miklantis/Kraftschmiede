@@ -35,7 +35,12 @@ Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftsch
   Mutation, laedt je Aktion die passende Liste neu; Equipment-Toggle laedt zusaetzlich
   ownedEquipment fuer das Skill-Tor). Plate-Loader bleibt bewusst ohne eigene UI (V1-Paritaet);
   das Inventar fuettert den schon portierten Engine-Loader. tsc/build/231 Tests gruen.
-- **Phase 10 Lieferung 1 (Einstellungen-Grundgeruest) gebaut (2026-06-23), live testbar.**
+- **Live-Korrektur Einstellungen-Layout (2026-06-23):** (a) Die Bloecke fliessen jetzt spaltenweise
+  nacheinander (CSS column-count wie V1 kse-grid: mobil eine Spalte, ab 960px zwei, 26px Spalten-
+  abstand, Bloecke break-inside-avoid) statt im zeilenweisen Grid mit Luecken. (b) Auf der mobilen
+  Einstellungen-Seite ist das Konto-Icon oben rechts entfernt (PageHeader bekam hideAccount), weil
+  das Konto schon ein eigener Abschnitt der Seite ist. tsc/build/231 Tests gruen.
+- **Phase 10 Lieferung 1 (Einstellungen-Grundgeruest) live freigegeben (2026-06-23).**
   Konzept abgestimmt: iOS-Einstellungen-Anmutung (gruppierte Listen, Label links, Wert/Schalter
   rechts), Desktop zweispaltig, Inhalt 1:1 wie V1. Die Seite ersetzt das provisorische Platzhalter-
   Panel. Oben das Konto-/Verbindungs-Panel (Avatar, E-Mail, Sync-Status ueber den Health-Check,
