@@ -14,6 +14,7 @@ import {
 import { InventoryEquipment } from "@/components/settings/InventoryEquipment";
 import { DataExport } from "@/components/settings/DataExport";
 import { DataRestore } from "@/components/settings/DataRestore";
+import { AppReset } from "@/components/settings/AppReset";
 import { CoachExport } from "@/components/settings/CoachExport";
 import { useSettings } from "@/hooks/useSettings";
 import {
@@ -97,6 +98,9 @@ function EinstellungenPage(): React.ReactElement {
               </div>
               <div className="p-4">
                 <DataRestore />
+              </div>
+              <div className="p-4">
+                <AppReset />
               </div>
             </SettingsGroup>
           </Section>

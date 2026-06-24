@@ -180,10 +180,11 @@ Getroffen:
   Versionen newest-first, je Eintrag `version`, `date` (ISO) und `changes` (kurze deutsche
   Stichpunkte). Das Popup zeigt den neuesten Eintrag (die wartende Version). Datum im
   app-ueblichen langen Format (z. B. „24. Juni 2026") statt rein numerisch.
+- **Nach-Update-Bestaetigung:** bewusst weggelassen. Es ist ohnehin sichtbar, dass die App
+  neu geladen hat, und der Hinweis-Streifen verschwindet nach dem Uebernehmen.
 
-Noch offen (vor bzw. waehrend der jeweiligen Lieferung klaeren):
-- Ob „Was ist neu" auch **nach** dem Update kurz bestaetigt wird („Aktualisiert auf Version
-  X") – Thema des Feinschliffs (Lieferung 4).
+Offen: derzeit keine Punkte; das PWA-Vorhaben (Offline-Huelle + Update-Hinweis) ist
+umgesetzt.
 
 ---
 

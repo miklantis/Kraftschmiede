@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.1.1",
+      "date": "2026-06-24",
+      "changes": [
+        "Der Update-Hinweis erscheint nicht mehr während einer laufenden Einheit – ein Update unterbricht dein Training also nicht mehr.",
+        "Neu in den Einstellungen unter „Daten · Sicherung\": „App zurücksetzen\" holt die App frisch, falls ein Update einmal nicht ankommt. Deine Daten bleiben dabei erhalten."
+      ]
+    },
+    {
       "version": "1.1.0",
       "date": "2026-06-24",
       "changes": [

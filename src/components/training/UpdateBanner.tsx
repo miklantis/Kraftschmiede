@@ -4,21 +4,25 @@ import { Overlay } from "@/components/ui/overlay";
 import { Button } from "@/components/ui/button";
 import { useAppUpdate } from "@/hooks/useAppUpdate";
 import { useChangelog } from "@/hooks/useChangelog";
+import { useLiveSession } from "@/hooks/useLiveSession";
 import { longDateYearDE } from "@/lib/format";
 
 // Hinweis-Streifen oben auf der Trainingsseite: erscheint nur, wenn eine neue
-// Huelle wartet. Antippen oeffnet das "Was ist neu"-Popup (Overlay-Primitive):
-// Versionskennung im Kopf, Aenderungsliste, "Aktualisieren" unten. Schliessen
-// ohne Uebernehmen ueber X / Wegtippen / Escape (vom Overlay bereitgestellt).
-// "Aktualisieren" aktiviert die neue Huelle und laedt einmal neu. Optik im
-// Klar-Look wie die JourneyStrip.
+// Huelle wartet - und NICHT waehrend einer laufenden Einheit, damit ein Update
+// nie mitten ins Training draengt (Lieferung 4). Antippen oeffnet das
+// "Was ist neu"-Popup (Overlay-Primitive): Versionskennung im Kopf, scrollbare
+// Aenderungsliste, "Aktualisieren" unten fixiert. Schliessen ohne Uebernehmen
+// ueber X / Wegtippen / Escape. "Aktualisieren" aktiviert die neue Huelle und
+// laedt einmal neu. Optik im Klar-Look wie die JourneyStrip.
 export function UpdateBanner(): React.ReactElement | null {
   const { updateAvailable, applyUpdate } = useAppUpdate();
+  const { session } = useLiveSession();
   const [open, setOpen] = useState(false);
   // Changelog erst beim Oeffnen laden (kein Netz-Abruf ohne Bedarf).
   const { entry, isLoading, isError } = useChangelog(open);
 
-  if (!updateAvailable) return null;
+  // Kein Hinweis ohne wartendes Update und nicht waehrend einer laufenden Einheit.
+  if (!updateAvailable || session != null) return null;
 
   return (
     <>
@@ -43,7 +47,7 @@ export function UpdateBanner(): React.ReactElement | null {
 
       <Overlay open={open} onClose={() => setOpen(false)} title="Was ist neu">
         {entry != null && (
-          <div className="mb-[18px] text-[13px] font-medium text-muted-foreground">
+          <div className="mb-[18px] flex-none text-[13px] font-medium text-muted-foreground">
             Version {entry.version} · {longDateYearDE(entry.date)}
           </div>
         )}
@@ -60,8 +64,10 @@ export function UpdateBanner(): React.ReactElement | null {
           </p>
         )}
 
+        {/* Liste scrollt bei vielen Eintraegen innerhalb des Popups; der Knopf
+            darunter bleibt sichtbar. */}
         {entry != null && (
-          <ul className="mb-5 flex flex-col gap-2.5">
+          <ul className="mb-5 flex max-h-[45vh] flex-col gap-2.5 overflow-y-auto">
             {entry.changes.map((change, i) => (
               <li
                 key={i}
@@ -74,7 +80,7 @@ export function UpdateBanner(): React.ReactElement | null {
           </ul>
         )}
 
-        <Button size="lg" className="w-full" onClick={applyUpdate}>
+        <Button size="lg" className="w-full flex-none" onClick={applyUpdate}>
           Aktualisieren
         </Button>
       </Overlay>

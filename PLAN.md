@@ -32,31 +32,16 @@ nicht rund laeuft.
 - **Migration V1->V2 abgeschlossen.** V2 ist funktional und optisch auf V1-Paritaet, laeuft
   auf der normalisierten Datenbank und ist installierbar (Manifest/Icons/Vollbild). V2 ist
   die aktive App. Verlauf siehe `docs/archive/PLAN-Migration-V1-zu-V2.md`.
-- **Aktueller Fokus: PWA (Offline-Huelle + Update-Hinweis).** Konzept steht in
-  `docs/Konzept-PWA-Offline.md`. Die Optik/Platzierung des Hinweises (Streifen oben auf der
-  Trainingsseite, Popup auf dem `Overlay`-Primitive, scrollbare „Was ist neu"-Liste,
-  „Aktualisieren" unten) und die Versionskennung (`1.0.20`-Schema plus Datum) sind geklaert
-  und ins Konzept eingepflegt.
-- **Lieferung 1 (Offline-Huelle) gebaut und gepusht.** `vite-plugin-pwa` (Workbox) erzeugt
-  beim Build den Service Worker, der die App-Shell (HTML/JS/CSS, Icons, gebuendelte
-  Schriften) vorcacht. `registerType: 'prompt'`, also kein stilles Auto-Update. Supabase ist
-  bewusst nicht im Cache (keine runtimeCaching-Regel), die Datenlogik bleibt allein bei der
-  TanStack-Schicht.
-- **Lieferung 2 (Update-Erkennung + Hinweis) gebaut und gepusht.** Beim App-Start
-  registriert die App den Service Worker und erkennt eine wartende neue Huelle. Dann
-  erscheint oben auf der Trainingsseite (ueber Journey und Empfehlung) ein dezenter
-  Hinweis-Streifen „Neue Version verfuegbar". Geprueft wird nur beim Start, nicht periodisch.
-- **Lieferung 3 („Was ist neu") gebaut und gepusht.** Der Streifen ist jetzt antippbar und
-  oeffnet ein Popup (auf dem `Overlay`-Primitive): Versionskennung im Kopf, Aenderungsliste,
-  „Aktualisieren" unten. Die Liste kommt aus `public/changelog.json` (mit jedem Deploy
-  ausgeliefert, beim Oeffnen frisch aus dem Netz geholt, nicht im Precache). Versionsschema
-  startet bei `1.1.0` (Offline- + Update-System als Feature). Kuenftig: letzte Stelle pro
-  normaler Auslieferung hoch, mittlere bei groesseren Features.
-- **Naechster Schritt:** PWA Lieferung 4 (Feinschliff): „nicht waehrend einer laufenden
-  Einheit", Notbremse zum Deregistrieren/Cache leeren, Optik-Feinschliff (z. B.
-  „Aktualisieren" beim langen Changelog unten fixieren statt mitscrollen), evtl.
-  Nach-Update-Bestaetigung. Letzteres ist die einzige noch offene Konzept-Entscheidung
-  (Abschnitt 8).
+- **PWA (Offline-Huelle + Update-Hinweis) abgeschlossen.** Alle vier Lieferungen umgesetzt:
+  Offline-Huelle (Service Worker, Precache der App-Shell, Supabase ausgenommen),
+  Update-Erkennung beim Start, „Was ist neu"-Popup aus `public/changelog.json`, Feinschliff
+  (kein Hinweis waehrend einer laufenden Einheit, Notbremse „App zuruecksetzen" in den
+  Einstellungen, „Aktualisieren"-Knopf im Popup fixiert). Aktuelle Version 1.1.1. Details je
+  Lieferung im Log unten. Konzept: `docs/Konzept-PWA-Offline.md`.
+- **Naechster Schritt:** kein festgelegtes Vorhaben. Pflege/Bugfixing laufend; neue Features
+  nach Konzept-vor-Code. Bei jeder Auslieferung die Versionsnummer in
+  `public/changelog.json` fortschreiben (letzte Stelle pro normaler Auslieferung hoch,
+  mittlere bei groesseren Features) und einen kurzen Nutzer-Eintrag ergaenzen.
 
 ---
 
@@ -64,13 +49,14 @@ nicht rund laeuft.
 
 ### PWA – Offline-Huelle & Update-Hinweis
 
-Konzept: `docs/Konzept-PWA-Offline.md`. In kleinen, einzeln testbaren Schritten.
+Abgeschlossen (Lieferungen 1–4). Konzept: `docs/Konzept-PWA-Offline.md`. Verlauf je Lieferung
+im Log unten.
 
 - [x] Lieferung 1: Offline-Huelle (Service Worker, Precache der App-Shell, Supabase
   ausgenommen)
 - [x] Lieferung 2: Update-Erkennung + Hinweis („Neue Version" + „Aktualisieren")
 - [x] Lieferung 3: „Was ist neu" (Changelog-Datei + Anzeige im Hinweis)
-- [ ] Lieferung 4: Feinschliff (Optik, „nicht waehrend einer Einheit", Notbremse)
+- [x] Lieferung 4: Feinschliff (Optik, „nicht waehrend einer Einheit", Notbremse)
 
 ### Pflege / Bugfixing
 
@@ -84,6 +70,20 @@ gefuehrt, sobald sie auftauchen.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+- 2026-06-24 - PWA Lieferung 4 (Feinschliff), Version 1.1.1: (1) Der Update-Hinweis erscheint
+  nicht mehr waehrend einer laufenden Einheit - `UpdateBanner` blendet sich aus, wenn
+  `useLiveSession().session != null`. (2) Notbremse „App zuruecksetzen" in den Einstellungen
+  unter „Daten · Sicherung" (neue Komponente `src/components/settings/AppReset.tsx`): leert
+  Service Worker + Cache Storage und laedt frisch; ruft `resetServiceWorker()` in
+  `src/lib/pwaUpdate.ts`. Beruehrt NICHT die Nutzerdaten (IndexedDB/TanStack). (3) Im Popup
+  scrollt die Aenderungsliste intern (max-h), der „Aktualisieren"-Knopf bleibt sichtbar.
+  changelog.json um Eintrag 1.1.1 ergaenzt (Nutzer-Stichpunkte zu 1 und 2). Konzept Abschnitt
+  8: Nach-Update-Bestaetigung als getroffen (weggelassen) gefuehrt; damit ist das
+  PWA-Vorhaben komplett. Validiert: tsc ohne Fehler, Build durch (SW erzeugt, changelog.json
+  nicht precached), 297 Tests gruen. Betroffen: `src/lib/pwaUpdate.ts`,
+  `src/components/training/UpdateBanner.tsx`, `src/components/settings/AppReset.tsx`,
+  `src/routes/einstellungen.tsx`, `public/changelog.json`, `docs/Konzept-PWA-Offline.md`.
 
 - 2026-06-24 - PWA Lieferung 3 („Was ist neu"): Der Hinweis-Streifen ist jetzt antippbar und
   oeffnet ein Popup auf dem `Overlay`-Primitive - Versionskennung im Kopf (z. B. „Version
