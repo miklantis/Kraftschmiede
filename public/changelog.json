@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.1.2",
+      "date": "2026-06-24",
+      "changes": [
+        "Im „Was ist neu\"-Fenster sitzt der „Aktualisieren\"-Knopf nicht mehr so dicht am unteren Rand – etwas mehr Abstand, damit er sich leichter treffen lässt."
+      ]
+    },
+    {
       "version": "1.1.1",
       "date": "2026-06-24",
       "changes": [

@@ -80,9 +80,13 @@ export function UpdateBanner(): React.ReactElement | null {
           </ul>
         )}
 
-        <Button size="lg" className="w-full flex-none" onClick={applyUpdate}>
-          Aktualisieren
-        </Button>
+        {/* Etwas mehr Luft unter dem Knopf: das Popup ist reiner Text, da wirkt
+            der knappe Standardabstand des Overlays zu gedraengt. */}
+        <div className="flex-none pb-3.5 min-[960px]:pb-2">
+          <Button size="lg" className="w-full" onClick={applyUpdate}>
+            Aktualisieren
+          </Button>
+        </div>
       </Overlay>
     </>
   );

@@ -42,7 +42,7 @@ nicht rund laeuft.
   Offline-Huelle (Service Worker, Precache der App-Shell, Supabase ausgenommen),
   Update-Erkennung beim Start, „Was ist neu"-Popup aus `public/changelog.json`, Feinschliff
   (kein Hinweis waehrend einer laufenden Einheit, Notbremse „App zuruecksetzen" in den
-  Einstellungen, „Aktualisieren"-Knopf im Popup fixiert). Aktuelle Version 1.1.1. Details je
+  Einstellungen, „Aktualisieren"-Knopf im Popup fixiert). Aktuelle Version 1.1.2. Details je
   Lieferung im Log unten. Konzept: `docs/Konzept-PWA-Offline.md`.
 - **Naechster Schritt:** kein festgelegtes Vorhaben. Pflege/Bugfixing laufend; neue Features
   nach Konzept-vor-Code. Bei jeder Auslieferung die Versionsnummer in
@@ -74,6 +74,15 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+- 2026-06-24 - Bugfix „Was ist neu\"-Popup, Version 1.1.2: Der „Aktualisieren\"-Knopf sass auf
+  dem Handy zu dicht am unteren Rand (das Popup ist reiner Text, da wirkte der knappe
+  Standardabstand des `Overlay` gedraengt). Loesung lokal in
+  `src/components/training/UpdateBanner.tsx`: der Knopf liegt jetzt in einem Wrapper mit
+  zusaetzlichem Abstand nach unten (`pb-3.5`, Desktop `pb-2`); das gemeinsame `Overlay`-
+  Primitive bleibt unberuehrt, andere Dialoge aendern sich nicht. changelog.json um Eintrag
+  1.1.2 ergaenzt. Validiert: tsc ohne Fehler, Build durch, 297 Tests gruen. Betroffen:
+  `src/components/training/UpdateBanner.tsx`, `public/changelog.json`, `PLAN.md`.
 
 - 2026-06-24 - PWA Lieferung 4 (Feinschliff), Version 1.1.1: (1) Der Update-Hinweis erscheint
   nicht mehr waehrend einer laufenden Einheit - `UpdateBanner` blendet sich aus, wenn
