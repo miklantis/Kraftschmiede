@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils";
 // SettingsGroup ist der weisse, abgerundete Kasten (Karten-Optik aus dem Klar-
 // Theme); die Reihen darin sind durch feine Trennlinien getrennt. SettingRow ist
 // eine einzelne Reihe: Beschriftung links, Steuerelement rechts. Mit onClick wird
-// die ganze Reihe tippbar (z. B. zum Aufklappen). Mindesthoehe 44px wie auf dem
+// die ganze Reihe tippbar (z. B. zum Aufklappen). Optional eine kleine graue
+// Erklaerzeile (description) unter dem Label. Mindesthoehe 44px wie auf dem
 // iPhone. Genutzt fuer Engine/Einheiten, Pausen-Timer, Inventar und mehr.
 export function SettingsGroup({
   children,
@@ -29,18 +30,27 @@ export function SettingsGroup({
 
 export function SettingRow({
   label,
+  description,
   children,
   onClick,
   className,
 }: {
   label: ReactNode;
+  description?: ReactNode;
   children?: ReactNode;
   onClick?: () => void;
   className?: string;
 }): React.ReactElement {
   const inner = (
     <>
-      <span className="min-w-0 text-sm text-foreground">{label}</span>
+      <span className="flex min-w-0 flex-col">
+        <span className="text-sm text-foreground">{label}</span>
+        {description != null && (
+          <span className="mt-0.5 text-[13px] leading-[1.4] text-muted-foreground">
+            {description}
+          </span>
+        )}
+      </span>
       {children != null && <span className="flex-none">{children}</span>}
     </>
   );

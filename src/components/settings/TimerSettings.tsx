@@ -69,7 +69,10 @@ export function TimerSettings({
         />
       </SettingRow>
 
-      <SettingRow label="Bildschirm wachhalten">
+      <SettingRow
+        label="Bildschirm wachhalten"
+        description="Bildschirm bleibt nur während einer laufenden Einheit an."
+      >
         <Switch
           label="Bildschirm wachhalten"
           checked={t.wakeLock ?? false}

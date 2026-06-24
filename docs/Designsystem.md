@@ -76,7 +76,7 @@ Karten tragen einen sehr weichen Schatten statt eines harten Rahmens. Erhöhte E
 | **TwoColumn** | Zwei-Spalten-Layout: mobil gestapelt, ab 960px Haupt- und Seitenspalte nebeneinander. |
 | **Card** | Weiße Grundfläche mit weichem Schatten und 16px-Radius. Trägt fast allen Inhalt. |
 | **List** | Umrahmter Listen-Container mit Trennlinien zwischen den Zeilen. |
-| **SettingList** (SettingsGroup / SettingRow) | Gruppierte Listen im iOS-Einstellungen-Stil: Beschriftung links, Steuerelement rechts; Reihe optional tippbar. |
+| **SettingList** (SettingsGroup / SettingRow) | Gruppierte Listen im iOS-Einstellungen-Stil: Beschriftung links, Steuerelement rechts; Reihe optional tippbar, Label optional mit kleiner Erklärzeile (description) darunter. |
 | **Accordion** (AccordionItem) | Aufklappbare Karte mit Chevron; optional ein Element (z. B. Schalter) rechts neben dem Kopf. |
 | **BackLink** | Einheitlicher Zurück-Link oben links auf Unterseiten, überall gleich (Grün, Chevron). |
 | **Prose** | Ruhiger Erklär-/Lauftext direkt auf dem Hintergrund (ohne Karte/Rahmen): einleitender Absatz auf einer Seite, z. B. „Was ist eine Skill?" oder die Übungs-Beschreibung. |

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.4",
+      "date": "2026-06-24",
+      "changes": [
+        "Beim Timer-Schalter „Bildschirm wachhalten\" steht jetzt eine kurze Erklaerung darunter: Der Bildschirm bleibt nur waehrend einer laufenden Einheit an."
+      ]
+    },
+    {
       "version": "1.2.3",
       "date": "2026-06-24",
       "changes": [

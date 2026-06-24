@@ -48,7 +48,7 @@ nicht rund laeuft.
   nach Konzept-vor-Code. Bei jeder Auslieferung die Versionsnummer in
   `public/changelog.json` fortschreiben (letzte Stelle pro normaler Auslieferung hoch,
   mittlere bei groesseren Features) und einen kurzen Nutzer-Eintrag ergaenzen. Aktuelle
-  Version 1.2.3.
+  Version 1.2.4.
 - **Konten per Einladung (Version 1.2.0) umgesetzt.** Neue Nutzer kommen ueber eine
   Supabase-Einladung dazu: Einladung im Dashboard verschicken, Eingeladener setzt ueber den
   Link aus der Mail sein Passwort und ist sofort angemeldet. Offene Selbstregistrierung
@@ -81,6 +81,14 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+- 2026-06-24 - „Bildschirm wachhalten\" erklaert, Version 1.2.4: Das Setting war als
+  blosses Label unklar (gilt es fuer die App oder nur fuers Training?). `SettingRow`
+  (`src/components/ui/setting-list.tsx`) um einen optionalen `description`-Untertext
+  erweitert (kleine graue Zeile unter dem Label) und beim Wachhalten-Schalter in
+  `TimerSettings.tsx` genutzt: „Bildschirm bleibt nur waehrend einer laufenden Einheit an.\"
+  Der Untertext ist allgemein wiederverwendbar fuer andere Settings. Validiert: tsc ohne
+  Fehler, Build durch, 297 Tests gruen. Betroffen ausserdem `public/changelog.json`.
 
 - 2026-06-24 - Erklaertext auf der Skills-Seite, Version 1.2.3: Neue Primitive `Prose`
   (`src/components/ui/prose.tsx`) fuer ruhigen Lauftext direkt auf dem Hintergrund (ohne
