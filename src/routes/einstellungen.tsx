@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Section } from "@/components/ui/section";
 import { SettingsGroup } from "@/components/ui/setting-list";
 import { AccountCard } from "@/components/settings/AccountCard";
+import { AppVersionCard } from "@/components/settings/AppVersionCard";
 import { EngineSettings } from "@/components/settings/EngineSettings";
 import { TimerSettings } from "@/components/settings/TimerSettings";
 import { ScoreReference } from "@/components/settings/ScoreReference";
@@ -59,6 +60,8 @@ function EinstellungenPage(): React.ReactElement {
 
       <div className="flex flex-col gap-7">
         <AccountCard />
+
+        <AppVersionCard />
 
         <div className="columns-1 gap-x-[26px] [&>*]:mb-7 [&>*]:break-inside-avoid min-[960px]:columns-2">
           <Section eyebrow="Engine & Einheiten">

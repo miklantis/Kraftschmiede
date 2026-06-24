@@ -42,7 +42,7 @@ nicht rund laeuft.
   Offline-Huelle (Service Worker, Precache der App-Shell, Supabase ausgenommen),
   Update-Erkennung beim Start, „Was ist neu"-Popup aus `public/changelog.json`, Feinschliff
   (kein Hinweis waehrend einer laufenden Einheit, Notbremse „App zuruecksetzen" in den
-  Einstellungen, „Aktualisieren"-Knopf im Popup fixiert). Aktuelle Version 1.1.2. Details je
+  Einstellungen, „Aktualisieren"-Knopf im Popup fixiert). Aktuelle Version 1.1.3. Details je
   Lieferung im Log unten. Konzept: `docs/Konzept-PWA-Offline.md`.
 - **Naechster Schritt:** kein festgelegtes Vorhaben. Pflege/Bugfixing laufend; neue Features
   nach Konzept-vor-Code. Bei jeder Auslieferung die Versionsnummer in
@@ -74,6 +74,22 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+- 2026-06-24 - App-Version in den Einstellungen, Version 1.1.3: Direkt nach dem Konto-Block
+  steht jetzt ein eigener Block „App-Version\" mit Version + Datum. Quelle ist
+  `public/changelog.json` (dieselbe Datei wie „Was ist neu\", keine zweite Pflegestelle).
+  Antippen oeffnet das „Was ist neu\"-Popup; der „Aktualisieren\"-Knopf darin erscheint nur,
+  wenn gerade eine neue Huelle wartet, sonst reine Info. Komponentenschnitt: das Popup wurde
+  aus `UpdateBanner` in einen wiederverwendbaren Baustein
+  `src/components/training/WhatsNewSheet.tsx` herausgezogen (Props `open`, `onClose`,
+  `showApply`, `onApply`); `UpdateBanner` nutzt ihn jetzt (Knopf an), die neue Karte
+  `src/components/settings/AppVersionCard.tsx` ebenfalls (Knopf nur bei wartendem Update).
+  Die Karte laedt die Version ueber eine eigene gecachte Query (`fetchLatestChangelog`),
+  damit die Version dauerhaft sichtbar ist (nicht erst beim Oeffnen). Eingehaengt in
+  `src/routes/einstellungen.tsx`. changelog.json um Eintrag 1.1.3 ergaenzt. Validiert: tsc
+  ohne Fehler, Build durch, 297 Tests gruen. Betroffen: neue Dateien `WhatsNewSheet.tsx`,
+  `AppVersionCard.tsx`, dazu `src/components/training/UpdateBanner.tsx`,
+  `src/routes/einstellungen.tsx`, `public/changelog.json`, `docs/Designsystem.md`, `PLAN.md`.
 
 - 2026-06-24 - Bugfix „Was ist neu\"-Popup, Version 1.1.2: Der „Aktualisieren\"-Knopf sass auf
   dem Handy zu dicht am unteren Rand (das Popup ist reiner Text, da wirkte der knappe
