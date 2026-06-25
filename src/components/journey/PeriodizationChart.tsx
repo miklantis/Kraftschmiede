@@ -36,8 +36,12 @@ interface ExtPoint {
 
 export function PeriodizationChart({
   data,
+  showNow = true,
 }: {
   data: PeriodizationData;
+  // Blendet den "jetzt"-Marker (Ring + Tooltip) und das mittige Einscrollen aus.
+  // Im Vorlagen-Waehler gibt es kein "jetzt"; dort wird die reine Form gezeigt.
+  showNow?: boolean;
 }): React.ReactElement | null {
   const { weeks, bands, curG, vMin, vMax, iMin, iMax } = data;
   const N = weeks.length;
@@ -220,21 +224,24 @@ export function PeriodizationChart({
         .attr("stroke-linecap", "round");
 
       // "jetzt"-Marker: offener Ring auf der Volumenkurve + haengender Tooltip.
-      const cx = x(curG);
-      const cy = ny(weeks[curG].vol, vMin, vMax);
-      appendEndpointRing(g, cx, cy, ACC);
-      appendTooltip(g, {
-        cx,
-        cy,
-        innerWidth: iw,
-        text: "jetzt",
-        bg: INK,
-        fontFamily: CHART_FONT,
-        fontSize: 16,
-        width: 70,
-        height: 30,
-        minTop: -dims.margin.t + 2,
-      });
+      // Nur auf der Journey-Seite; im Vorlagen-Waehler (showNow=false) entfaellt er.
+      if (showNow) {
+        const cx = x(curG);
+        const cy = ny(weeks[curG].vol, vMin, vMax);
+        appendEndpointRing(g, cx, cy, ACC);
+        appendTooltip(g, {
+          cx,
+          cy,
+          innerWidth: iw,
+          text: "jetzt",
+          bg: INK,
+          fontFamily: CHART_FONT,
+          fontSize: 16,
+          width: 70,
+          height: 30,
+          minTop: -dims.margin.t + 2,
+        });
+      }
 
       // Phasen-Labels unter der Achse, an den Raendern verankert.
       bands.forEach((bd) => {
@@ -260,7 +267,7 @@ export function PeriodizationChart({
           .text(bd.name);
       });
     },
-    [weeks, bands, curG, vMin, vMax, iMin, iMax, N],
+    [weeks, bands, curG, vMin, vMax, iMin, iMax, N, showNow],
   );
 
   if (N === 0) return null;
@@ -274,8 +281,9 @@ export function PeriodizationChart({
       ariaLabel="Periodisierung der Journey"
       // "jetzt" liegt bei Anteil (curG + 0.5) / N der Plotbreite (Domain hat je
       // eine halbe Woche Rand). Auf dem Handy scrollt das Fundament diesen Punkt
-      // damit sanft in die Mitte.
-      focusFraction={(curG + 0.5) / N}
+      // damit sanft in die Mitte. Ohne "jetzt" (Waehler) kein Auto-Scroll: die
+      // Kurve startet links bei Woche 1.
+      focusFraction={showNow ? (curG + 0.5) / N : undefined}
     />
   );
 }

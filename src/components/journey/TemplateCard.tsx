@@ -1,4 +1,8 @@
-// Anzeige-Modell einer Vorlagenkarte (reine Strings/Flags).
+import { PeriodizationChart } from "@/components/journey/PeriodizationChart";
+import type { PeriodizationData } from "@/lib/periodization";
+
+// Anzeige-Modell einer Vorlagenkarte (reine Strings/Flags). Die Phasen werden
+// nicht mehr als Chips, sondern als Kurve gezeigt (periodization als eigene Prop).
 export interface TemplateCardModel {
   id: string;
   name: string;
@@ -6,19 +10,21 @@ export interface TemplateCardModel {
   tagline: string;
   forWhom: string;
   summary: string;
-  phaseNames: string[];
   active: boolean;
 }
 
 // Eine Vorlage im Waehler: Name, Dauer, Kurzbeschreibung, "Fuer wen",
-// Zusammenfassung, Phasen-Chips und Startknopf. Die aktive Vorlage zeigt einen
+// Zusammenfassung, die komplette Journey als Periodisierungskurve (Phasen als
+// Baender, ohne "jetzt"-Marker) und Startknopf. Die aktive Vorlage zeigt einen
 // ruhenden Status statt eines Knopfs. Optik aus V1 (jr-tpl).
 export function TemplateCard({
   model,
+  periodization,
   busy,
   onStart,
 }: {
   model: TemplateCardModel;
+  periodization: PeriodizationData;
   busy: boolean;
   onStart: () => void;
 }): React.ReactElement {
@@ -48,16 +54,9 @@ export function TemplateCard({
           {model.summary}
         </div>
       )}
-      {model.phaseNames.length > 0 && (
-        <div className="mb-3.5 flex flex-wrap gap-1.5 min-[960px]:mb-[18px]">
-          {model.phaseNames.map((p, i) => (
-            <span
-              key={i}
-              className="rounded-[7px] bg-background px-2.5 py-1 text-[11px] font-semibold text-foreground/80"
-            >
-              {p}
-            </span>
-          ))}
+      {periodization.weeks.length > 0 && (
+        <div className="mb-3.5 min-[960px]:mb-[18px]">
+          <PeriodizationChart data={periodization} showNow={false} />
         </div>
       )}
       <button

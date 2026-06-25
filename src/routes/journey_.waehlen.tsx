@@ -11,7 +11,8 @@ import {
 } from "@/hooks/useJourneyTemplates";
 import { useActiveJourney } from "@/hooks/useJourney";
 import { useJourneyActions } from "@/hooks/useJourneyActions";
-import { totalWeeks } from "@/lib/journey";
+import { totalWeeks, type JourneyPhaseInput } from "@/lib/journey";
+import { buildPeriodization, type PeriodizationData } from "@/lib/periodization";
 
 // Vorlagen-Waehler: Zurueck-Knopf, optional Namensfeld der aktiven Journey,
 // dann die Vorlagen als Karten. Eine Vorlage waehlen legt eine neue aktive
@@ -65,9 +66,26 @@ function JourneyPickerPage(): React.ReactElement {
   }
 
   const templates = templatesQ.data ?? [];
-  const models: Array<{ template: JourneyTemplateWithPhases; card: TemplateCardModel }> =
-    templates.map((t) => ({
+  const models: Array<{
+    template: JourneyTemplateWithPhases;
+    card: TemplateCardModel;
+    periodization: PeriodizationData;
+  }> = templates.map((t) => {
+    const phaseInputs: JourneyPhaseInput[] = t.phases.map((p) => ({
+      name: p.name,
+      focus: p.focus,
+      weeks: p.weeks,
+      setsStart: p.sets_start,
+      setsEnd: p.sets_end,
+      deloadWeek: p.deload_week,
+      repTargetMin: p.rep_target_min,
+      repTargetMax: p.rep_target_max,
+    }));
+    // Ohne "jetzt"-Marker ist die Gesamtwoche bedeutungslos; 1 als neutraler Wert.
+    const periodization = buildPeriodization(phaseInputs, 1);
+    return {
       template: t,
+      periodization,
       card: {
         id: t.id,
         name: t.name,
@@ -77,10 +95,10 @@ function JourneyPickerPage(): React.ReactElement {
         tagline: t.tagline ?? "",
         forWhom: t.for_whom ?? "",
         summary: t.summary ?? "",
-        phaseNames: t.phases.map((p) => p.name),
         active: active !== null && t.id === active.source_template_id,
       },
-    }));
+    };
+  });
 
   return (
     <div>
@@ -110,11 +128,12 @@ function JourneyPickerPage(): React.ReactElement {
         </p>
       )}
 
-      <div className="grid grid-cols-1 gap-[18px] min-[960px]:grid-cols-2">
-        {models.map(({ template, card }) => (
+      <div className="grid grid-cols-1 gap-[18px]">
+        {models.map(({ template, card, periodization }) => (
           <TemplateCard
             key={card.id}
             model={card}
+            periodization={periodization}
             busy={actions.isCreating}
             onStart={() => start(template)}
           />

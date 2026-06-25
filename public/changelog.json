@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.22",
+      "date": "2026-06-25",
+      "changes": [
+        "Beim Wechseln der Journey siehst du pro Vorlage jetzt die komplette Periodisierungskurve statt der bisherigen Phasen-Schlagworte: Volumen- und Intensitätsverlauf über alle Wochen, die Phasen als Bänder mit Namen, die Deload-Wochen orange. So erkennst du die Form einer Journey auf einen Blick, bevor du sie startest. Der „jetzt“-Punkt fehlt hier bewusst (es gibt im Wähler keine aktuelle Woche). Lange Journeys sind seitlich scrollbar. Jede Vorlage nimmt nun die volle Breite ein – auf dem Handy wie am Desktop."
+      ]
+    },
+    {
       "version": "1.2.21",
       "date": "2026-06-24",
       "changes": [

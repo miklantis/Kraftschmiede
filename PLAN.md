@@ -55,7 +55,7 @@ nicht rund laeuft.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
-  Nutzer-Eintrag ergaenzen. Aktuelle Version 1.2.21.
+  Nutzer-Eintrag ergaenzen. Aktuelle Version 1.2.22.
 - **Konten per Einladung (Version 1.2.0) umgesetzt und im Dashboard scharfgeschaltet.** Neue
   Nutzer kommen ueber eine Supabase-Einladung dazu: Einladung im Dashboard verschicken,
   Eingeladener setzt ueber den Link aus der Mail sein Passwort und ist sofort angemeldet. Die
@@ -99,6 +99,24 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+- 2026-06-25 - Vorlagen-Waehler: Journey als Kurve statt Phasen-Chips, Version 1.2.22: Im
+  Vorlagen-Waehler (`src/routes/journey_.waehlen.tsx`) zeigt jede Karte jetzt die komplette
+  Periodisierungskurve der Journey statt der bisherigen Phasen-Schlagwort-Chips - Volumen +
+  Intensitaet ueber alle Wochen, Phasen als Baender mit Namen, Deload-Wochen orange. Ohne
+  "jetzt"-Marker, da es im Waehler keine aktuelle Woche gibt. Wiederverwendung statt Dublette:
+  `PeriodizationChart` bekam die Prop `showNow` (Default true = Journey-Seite unveraendert);
+  bei `false` entfaellt der offene Ring + "jetzt"-Tooltip, und es wird nicht mehr auf die
+  aktuelle Woche zentriert (Kurve startet links bei Woche 1, bleibt aber bei langen Journeys
+  seitlich scrollbar - auf Handy und Desktop). Die Kurvendaten je Vorlage entstehen aus
+  denselben Bausteinen wie die aktive Journey-Kurve: Vorlagen-Phasen -> `JourneyPhaseInput`
+  -> `buildPeriodization` (Gesamtwoche 1, da ohne Marker bedeutungslos). `TemplateCard` traegt
+  die Kurve ueber die neue Prop `periodization`; `phaseNames` aus dem Karten-Modell entfernt.
+  Der Waehler ist nun einspaltig ueber die volle Breite (vorher Desktop zweispaltig). Bewusst
+  unberuehrt: Name, Dauer-Pille, Tagline, "Fuer", Zusammenfassung, Startknopf; die Journey-
+  Seite selbst (`journey.tsx`) zeigt die Kurve weiter mit "jetzt"-Marker. Validiert: tsc ohne
+  Fehler, Build durch (SW erzeugt, changelog.json nicht precached), Tests gruen. Betroffen
+  ausserdem `public/changelog.json`, `PLAN.md`.
 
 - 2026-06-24 - Yoga-Akzent von Lila auf Gruen, Version 1.2.21: Wie zuvor bei Skill, jetzt
   fuer Yoga. Token `--yoga` (`#8478c9` Lila) faerbte das Yoga-Eingabe-Pop-up
