@@ -19,7 +19,6 @@ export function BodySoreMap({
         view="both"
         colorFn={soreColor}
         idle={values ? KATER_HEX[0] : undefined}
-        regionOpacity={0.5}
         ariaLabel="Geschätzter Muskelkater"
         className="max-w-[78%]"
       />

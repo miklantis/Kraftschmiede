@@ -55,7 +55,7 @@ nicht rund laeuft.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
-  Nutzer-Eintrag ergaenzen. Aktuelle Version 1.2.28.
+  Nutzer-Eintrag ergaenzen. Aktuelle Version 1.2.29.
 - **Konten per Einladung (Version 1.2.0) umgesetzt und im Dashboard scharfgeschaltet.** Neue
   Nutzer kommen ueber eine Supabase-Einladung dazu: Einladung im Dashboard verschicken,
   Eingeladener setzt ueber den Link aus der Mail sein Passwort und ist sofort angemeldet. Die
@@ -99,6 +99,12 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+- 2026-06-26 - Kater-Einfaerbung wieder deckend, Version 1.2.29: Aufruf `regionOpacity={0.5}`
+  aus `BodySoreMap` entfernt (Ruecknahme von 1.2.26). Das Prop bleibt in `MuscleMap`
+  erhalten (ohne Vorgabe voll deckend, kein Effekt). Neue Silhouetten-SVG bleibt. Damit
+  ist die Figur wieder im Ausgangszustand vor den Anpassungen, nur mit der neuen SVG.
+  Validiert: vite build, tsc --noEmit, 309 Vitest-Tests gruen.
 
 - 2026-06-26 - Silhouette zurueck auf grau, Version 1.2.28: `BASE_DEFAULT` wieder auf
   `#cfd3d8` gesetzt (Ruecknahme von 1.2.27). Halbtransparenz und neue Silhouetten-SVG

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.29",
+      "date": "2026-06-26",
+      "changes": [
+        "Die Muskelkater-Einfärbung ist wieder voll deckend – die halbtransparente Darstellung wurde zurückgenommen."
+      ]
+    },
+    {
       "version": "1.2.28",
       "date": "2026-06-26",
       "changes": [
