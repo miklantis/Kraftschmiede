@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.36",
+      "date": "2026-06-26",
+      "changes": [
+        "Die untere Navigationsleiste auf dem Handy ist jetzt in der Akzentfarbe (Grün) gehalten: Icons weiß mit etwas Transparenz, das aktuell ausgewählte Icon voll weiß."
+      ]
+    },
+    {
       "version": "1.2.35",
       "date": "2026-06-26",
       "changes": [
