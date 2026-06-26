@@ -39,7 +39,7 @@ const VIEWBOX: Record<MuscleMapView, string> = {
   both: "165 92 1000 1304",
 };
 
-const BASE_DEFAULT = "#cfd3d8"; // Silhouette (Koerperform), haelt Kontrast zum Canvas
+const BASE_DEFAULT = "#ffffff"; // Silhouette (Koerperform), weiss
 const IDLE_DEFAULT = "#c2c6cb"; // nicht beanspruchte Regionen, leicht dunkler
 
 // --- Farb-Helfer (Default-Rampe weiss -> --accent), 1:1 aus V1 -----------------

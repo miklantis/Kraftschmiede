@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.27",
+      "date": "2026-06-26",
+      "changes": [
+        "Die Silhouette der Körperfigur ist jetzt weiß statt grau – die eingefärbten Muskeln heben sich dadurch klarer ab."
+      ]
+    },
+    {
       "version": "1.2.26",
       "date": "2026-06-26",
       "changes": [

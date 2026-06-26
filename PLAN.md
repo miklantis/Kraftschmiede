@@ -55,7 +55,7 @@ nicht rund laeuft.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
-  Nutzer-Eintrag ergaenzen. Aktuelle Version 1.2.26.
+  Nutzer-Eintrag ergaenzen. Aktuelle Version 1.2.27.
 - **Konten per Einladung (Version 1.2.0) umgesetzt und im Dashboard scharfgeschaltet.** Neue
   Nutzer kommen ueber eine Supabase-Einladung dazu: Einladung im Dashboard verschicken,
   Eingeladener setzt ueber den Link aus der Mail sein Passwort und ist sofort angemeldet. Die
@@ -99,6 +99,12 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+- 2026-06-26 - Silhouette weiss, Version 1.2.27: `BASE_DEFAULT` in `MuscleMap` von
+  `#cfd3d8` (grau) auf `#ffffff` geaendert. Gilt fuer beide Figuren (Muskelkater und
+  Beteiligung), da beide die Standard-Silhouettenfarbe nutzen. Die Erst-Neutralisierung
+  beim Einbetten (Zeile 13) bleibt grau, da der Effekt sie sofort mit Weiss ueberschreibt.
+  Validiert: vite build, tsc --noEmit, 309 Vitest-Tests gruen.
 
 - 2026-06-26 - Muskelkater-Figur: neue SVG + Halbtransparenz, Version 1.2.26: Master-Asset
   `src/assets/body-muscles.svg` durch die ueberarbeitete Datei ersetzt (Front-Silhouette jetzt
