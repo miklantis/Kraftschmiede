@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.33",
+      "date": "2026-06-26",
+      "changes": [
+        "Die haptische Tipp-Rückmeldung wurde wieder entfernt: Auf aktuellen iPhones (ab iOS 26.5) lässt Apple sie in Web-Apps nicht mehr zu, der Schalter dafür ist daher weggefallen."
+      ]
+    },
+    {
       "version": "1.2.32",
       "date": "2026-06-26",
       "changes": [

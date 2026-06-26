@@ -63,9 +63,6 @@ export type MuscleKategorie = z.infer<typeof muscleKategorieEnum>;
 // `wakeLock` (Bildschirm waehrend der Session wachhalten) ist bewusst optional:
 // es kam erst spaeter dazu, der DB-Default kennt es nicht, und Fehlen bedeutet
 // „aus" - so braucht es keine Schema-Migration in der Datenbank.
-// `haptics` (kurze taktile Rueckmeldung beim Tippen: Navigation, Satz-Haken)
-// ist ebenfalls optional und kam spaeter dazu; hier bedeutet Fehlen „an"
-// (Standardverhalten), gelesen wird daher immer als `haptics ?? true`.
 export const timersSchema = z.object({
   setRestSec: z.number().int().nonnegative(),
   exerciseRestSec: z.number().int().nonnegative(),
@@ -73,7 +70,6 @@ export const timersSchema = z.object({
   sound: z.boolean(),
   vibrate: z.boolean(),
   wakeLock: z.boolean().optional(),
-  haptics: z.boolean().optional(),
 });
 export type Timers = z.infer<typeof timersSchema>;
 

@@ -7,7 +7,6 @@ import { AccountCard } from "@/components/settings/AccountCard";
 import { AppVersionCard } from "@/components/settings/AppVersionCard";
 import { EngineSettings } from "@/components/settings/EngineSettings";
 import { TimerSettings } from "@/components/settings/TimerSettings";
-import { HapticsSetting } from "@/components/settings/HapticsSetting";
 import { ScoreReference } from "@/components/settings/ScoreReference";
 import { InventoryBars } from "@/components/settings/InventoryBars";
 import {
@@ -74,10 +73,6 @@ function EinstellungenPage(): React.ReactElement {
 
           <Section eyebrow="Pausen-Timer">
             {settings ? <TimerSettings settings={settings} /> : placeholder}
-          </Section>
-
-          <Section eyebrow="Haptik">
-            {settings ? <HapticsSetting settings={settings} /> : placeholder}
           </Section>
 
           <Section eyebrow="Inventar · Stangen">

@@ -55,7 +55,7 @@ nicht rund laeuft.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
-  Nutzer-Eintrag ergaenzen. Aktuelle Version 1.2.32.
+  Nutzer-Eintrag ergaenzen. Aktuelle Version 1.2.33.
 - **Konten per Einladung (Version 1.2.0) umgesetzt und im Dashboard scharfgeschaltet.** Neue
   Nutzer kommen ueber eine Supabase-Einladung dazu: Einladung im Dashboard verschicken,
   Eingeladener setzt ueber den Link aus der Mail sein Passwort und ist sofort angemeldet. Die
@@ -99,6 +99,19 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+- 2026-06-26 - Haptik wieder zurueckgenommen, Version 1.2.33: das in 1.2.32 eingefuehrte
+  taktile Tipp-Feedback komplett ausgebaut. Grund: der einzige Web-Weg auf iOS (der
+  Schalter-Trick mit `<input type="checkbox" switch>`) funktioniert nur bis iOS 26.4 -
+  Apple hat ihn in iOS 26.5 geschlossen; die Vibrations-API kennt iOS-Safari ohnehin nicht.
+  Damit ist Haptik auf aktuellen iPhones aus einer Web-App nicht mehr ausloesbar, ein toter
+  Schalter waere irrefuehrend. Entfernt: `src/lib/haptics.ts`, `src/hooks/useHaptics.ts`,
+  `src/components/settings/HapticsSetting.tsx`; `BottomNav`/`Sidebar` (onClick), die vier
+  `hapticTick`-Aufrufe in `useLiveSession` samt `LivePrefs.haptics`, das `haptics`-Feld im
+  `timersSchema` (`shared.ts`), die Sektion „Haptik" in `einstellungen.tsx`. `clickTick`
+  (liveAudio) hat seinen Ton-plus-Vibration-Stand von vor 1.2.32 zurueck, d. h. der Satz-
+  Haken vibriert auf Android wieder ueber den Vibrations-Schalter wie zuvor. Code exakt auf
+  den Stand vor 1.2.32 zurueckgesetzt. Validiert: `vite build`, `tsc --noEmit`, 309 Tests gruen.
 
 - 2026-06-26 - Haptik: taktile Rueckmeldung beim Tippen, Version 1.2.32: neuer duenner
   Effekt-Baustein `src/lib/haptics.ts` (`hapticTick`) in der Art von liveAudio/wakeLock -
