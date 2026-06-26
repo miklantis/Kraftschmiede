@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Settings2 } from "lucide-react";
 import { NAV_ENTRIES } from "@/lib/nav";
+import { useHaptics } from "@/hooks/useHaptics";
 import { BrandMark } from "./BrandMark";
 import { AccountButton } from "./AccountButton";
 
@@ -9,6 +10,7 @@ import { AccountButton } from "./AccountButton";
 // mit 12px-Radius und warmem Grau-Ink (#6c685f, V1-Wert), Akzent-Toenung fuer
 // Hover (.06) und Aktiv (.10) wie in V1.
 export function Sidebar(): React.ReactElement {
+  const { tick } = useHaptics();
   return (
     <aside className="bg-sidebar border-sidebar-border fixed inset-y-0 left-0 z-20 flex w-[264px] flex-col border-r">
       <div className="flex items-center gap-3 px-5 pt-6 pb-5">
@@ -28,6 +30,7 @@ export function Sidebar(): React.ReactElement {
               key={entry.to}
               to={entry.to}
               activeOptions={entry.exact ? { exact: true } : undefined}
+              onClick={tick}
               className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-[15px] font-medium text-[#6c685f] transition-colors outline-none hover:bg-primary/[0.06] hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
               activeProps={{
                 className:

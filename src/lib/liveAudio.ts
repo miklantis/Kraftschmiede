@@ -151,7 +151,10 @@ export function goalTick(prefs: AudioPrefs): void {
 
 /**
  * Kurzer UI-Klick beim Umschalten eines Erledigt-Hakens. "An" klingt heller/
- * aufsteigend, "Aus" tiefer/abfallend; dazu eine sehr kurze Vibration (Android).
+ * aufsteigend, "Aus" tiefer/abfallend. Nur der Ton: die taktile Rueckmeldung
+ * beim Abhaken laeuft seit der Haptik-Funktion zentral ueber haptics.ts
+ * (Navigation + Satz-Haken, eigener Schalter), damit es auf keinem Geraet
+ * doppelt rueckmeldet.
  */
 export function clickTick(on: boolean, prefs: AudioPrefs): void {
   if (prefs.sound) {
@@ -173,13 +176,6 @@ export function clickTick(on: boolean, prefs: AudioPrefs): void {
         o.start(t0);
         o.stop(t0 + 0.1);
       }
-    } catch {
-      // ignorieren
-    }
-  }
-  if (prefs.vibrate) {
-    try {
-      if (navigator.vibrate) navigator.vibrate(on ? 18 : 11);
     } catch {
       // ignorieren
     }

@@ -55,7 +55,7 @@ nicht rund laeuft.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
-  Nutzer-Eintrag ergaenzen. Aktuelle Version 1.2.31.
+  Nutzer-Eintrag ergaenzen. Aktuelle Version 1.2.32.
 - **Konten per Einladung (Version 1.2.0) umgesetzt und im Dashboard scharfgeschaltet.** Neue
   Nutzer kommen ueber eine Supabase-Einladung dazu: Einladung im Dashboard verschicken,
   Eingeladener setzt ueber den Link aus der Mail sein Passwort und ist sofort angemeldet. Die
@@ -99,6 +99,21 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+- 2026-06-26 - Haptik: taktile Rueckmeldung beim Tippen, Version 1.2.32: neuer duenner
+  Effekt-Baustein `src/lib/haptics.ts` (`hapticTick`) in der Art von liveAudio/wakeLock -
+  kein React, robuste try/catch, No-op wo nicht unterstuetzt. Plattform-Weiche: Android &
+  Co. ueber `navigator.vibrate(12)`, iOS Safari ueber den Schalter-Trick (verstecktes
+  `<input type="checkbox" switch>` + `label.click()`, lazy einmalig erzeugt), aelteres iOS
+  still nichts. Damit je Geraet genau ein Kanal, keine Doppel-Rueckmeldung. Neuer Hook
+  `useHaptics` (liest `timers.haptics ?? true`) an Hauptnavigation angebunden (`BottomNav`,
+  `Sidebar` onClick). Live-Session ruft `hapticTick(prefs.haptics ?? true)` an den vier
+  Satz-Haken-Stellen (`useLiveSession`); dafuer den `navigator.vibrate`-Teil aus `clickTick`
+  (liveAudio) entfernt, damit der Haken nicht doppelt rueckmeldet (Folge: der Sekunden-
+  Countdown-Tick in `SkillWatchValue` ist jetzt nur noch Ton). Neue Einstellung im jsonb
+  `timers` (`haptics?: boolean`, Fehlen = an, keine DB-Migration, Muster wie `wakeLock`),
+  Schema `shared.ts` erweitert. Eigene Einstellungs-Sektion „Haptik" (`HapticsSetting`,
+  Switch, Standard an). Validiert: `vite build`, `tsc --noEmit`, 309 Tests gruen.
 
 - 2026-06-26 - Page-Reveal echt gestaffelt + auf alle Hauptseiten ausgerollt, Version 1.2.31:
   `PageReveal` setzt die Reihenfolge jetzt nach dem Mount direkt im DOM (CSS-Variable

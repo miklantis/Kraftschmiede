@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { NAV_ENTRIES } from "@/lib/nav";
+import { useHaptics } from "@/hooks/useHaptics";
 
 // Untere Navigationsleiste fuer Mobile (unter 960px). Sichtbarkeit steuert die
 // AppShell. Nur Icons (kein Label); das Label dient als aria-label/Titel fuer
@@ -7,6 +8,7 @@ import { NAV_ENTRIES } from "@/lib/nav";
 // Optik an V1-"Klar" angeglichen: deckend weiss (bg-card, kein Weichzeichner),
 // weicher oberer Schatten, inaktive Icons in hellem Grau (#b0b0b6, V1-Wert).
 export function BottomNav(): React.ReactElement {
+  const { tick } = useHaptics();
   return (
     <nav
       className="ks-botnav bg-card border-border fixed inset-x-0 bottom-0 z-[86] flex border-t px-1.5 pt-2.5 shadow-[0_-6px_20px_-14px_rgba(20,24,40,0.25)] transition-transform duration-[360ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
@@ -21,6 +23,7 @@ export function BottomNav(): React.ReactElement {
             activeOptions={entry.exact ? { exact: true } : undefined}
             aria-label={entry.label}
             title={entry.label}
+            onClick={tick}
             className="flex flex-1 items-center justify-center py-2 text-[#b0b0b6] transition-colors"
             activeProps={{ className: "text-primary" }}
           >

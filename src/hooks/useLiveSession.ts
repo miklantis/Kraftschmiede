@@ -12,6 +12,7 @@ import {
 } from "@/lib/liveSession";
 import { appendedSet, restAfterSet } from "@/lib/liveFlow";
 import { clickTick, ensureAudio } from "@/lib/liveAudio";
+import { hapticTick } from "@/lib/haptics";
 
 // Geraete-lokaler Store der laufenden Live-Session. Bewusst KEIN TanStack-Query/
 // Supabase: die laufende Einheit ist ein Arbeitsobjekt auf diesem Geraet (genau
@@ -47,6 +48,7 @@ interface LivePrefs {
   autoStart: boolean;
   sound: boolean;
   vibrate: boolean;
+  haptics?: boolean;
 }
 
 const DEFAULT_PREFS: LivePrefs = {
@@ -55,6 +57,7 @@ const DEFAULT_PREFS: LivePrefs = {
   autoStart: true,
   sound: true,
   vibrate: true,
+  haptics: true,
 };
 
 // Modul-intern, kein Re-Render noetig: die Aktionen (Abhaken, Pause) lesen hier
@@ -327,6 +330,7 @@ function toggleWorkSet(ei: number, si: number): void {
   const nextDone = !cur.done;
   ensureAudio();
   clickTick(nextDone, audioPrefs());
+  hapticTick(prefs.haptics ?? true);
   const entries = s.entries.map((e, i) =>
     i === ei
       ? { ...e, sets: e.sets.map((x, j) => (j === si ? { ...x, done: nextDone } : x)) }
@@ -353,6 +357,7 @@ function toggleWarmSet(ei: number, wi: number): void {
   const nextDone = !cur.done;
   ensureAudio();
   clickTick(nextDone, audioPrefs());
+  hapticTick(prefs.haptics ?? true);
   patchEntry(ei, (e) => ({
     ...e,
     warmupSets: e.warmupSets.map((w, j) => (j === wi ? { ...w, done: nextDone } : w)),
@@ -368,6 +373,7 @@ function toggleGeneralWarmup(si: number): void {
   const nextDone = !cur.done;
   ensureAudio();
   clickTick(nextDone, audioPrefs());
+  hapticTick(prefs.haptics ?? true);
   const sets = s.generalWarmup.sets.map((w, j) =>
     j === si ? { ...w, done: nextDone } : w,
   );
@@ -495,6 +501,7 @@ function toggleSkillSet(ei: number, si: number): void {
   const nextDone = !cur.done;
   ensureAudio();
   clickTick(nextDone, audioPrefs());
+  hapticTick(prefs.haptics ?? true);
   const exercises = s.exercises.map((e, i) =>
     i === ei
       ? { ...e, sets: e.sets.map((x, j) => (j === si ? { ...x, done: nextDone } : x)) }

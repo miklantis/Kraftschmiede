@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.32",
+      "date": "2026-06-26",
+      "changes": [
+        "Neu: kurze haptische Rückmeldung beim Tippen – beim Wechsel zwischen den Hauptbereichen und beim Abhaken eines Satzes. Auf iPhones ab iOS 18 und auf Android-Geräten. Abschaltbar unter Einstellungen → Haptik (standardmäßig an)."
+      ]
+    },
+    {
       "version": "1.2.31",
       "date": "2026-06-26",
       "changes": [
