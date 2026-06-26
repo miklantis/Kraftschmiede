@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.26",
+      "date": "2026-06-26",
+      "changes": [
+        "Die Muskelkater-Figur wurde überarbeitet: neue, aus einem Guss gezeichnete Silhouette und die eingefärbten Muskeln sind jetzt halbtransparent dargestellt, damit sie weniger dominant wirken und die Körperform besser durchscheint."
+      ]
+    },
+    {
       "version": "1.2.25",
       "date": "2026-06-26",
       "changes": [

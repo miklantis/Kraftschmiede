@@ -55,7 +55,7 @@ nicht rund laeuft.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
-  Nutzer-Eintrag ergaenzen. Aktuelle Version 1.2.25.
+  Nutzer-Eintrag ergaenzen. Aktuelle Version 1.2.26.
 - **Konten per Einladung (Version 1.2.0) umgesetzt und im Dashboard scharfgeschaltet.** Neue
   Nutzer kommen ueber eine Supabase-Einladung dazu: Einladung im Dashboard verschicken,
   Eingeladener setzt ueber den Link aus der Mail sein Passwort und ist sofort angemeldet. Die
@@ -99,6 +99,18 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+- 2026-06-26 - Muskelkater-Figur: neue SVG + Halbtransparenz, Version 1.2.26: Master-Asset
+  `src/assets/body-muscles.svg` durch die ueberarbeitete Datei ersetzt (Front-Silhouette jetzt
+  eine einzige Flaeche statt vieler Einzel-Pfade; identische viewBox und Regions-Koordinaten,
+  alle 14 Registry-IDs + beide Silhouetten vorhanden, Crop-Werte unveraendert gueltig).
+  `MuscleMap` um optionales Prop `regionOpacity` erweitert: setzt `fill-opacity` nur auf den
+  eingefaerbten Regionen (beansprucht wie idle), nie auf der Silhouette; ohne Vorgabe voll
+  deckend wie bisher (`setFill` um opacity-Parameter ergaenzt, in Effekt-Dependencies
+  aufgenommen). `BodySoreMap` ruft die Map jetzt mit `regionOpacity={0.5}` auf, sodass die
+  Kater-Einfaerbung die graue Silhouette durchscheinen laesst und weniger dominant wirkt. Die
+  Uebungs-Detailseite (Beteiligung) bleibt unberuehrt deckend. Validiert: vite build, tsc
+  --noEmit fehlerfrei, 309 Vitest-Tests gruen.
 
 - 2026-06-26 - Bugfix Muskelkarte (Korrektur zu 1.2.24), Version 1.2.25: Eigentliche
   Ursache eingegrenzt (isoliert in jsdom/React-19 nachgestellt). Kein Remount und nicht

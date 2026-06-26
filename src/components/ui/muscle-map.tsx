@@ -83,11 +83,14 @@ function mix(a: string, b: string, t: number): string {
 // Inline-Fill auf Element UND alle enthaltenen <path> setzen. Ueberschreibt die
 // klassenbasierten Illustrator-Fuellungen der Master-SVG zuverlaessig (greift
 // auch durch die Silhouetten-Gruppen auf die Koerper-Teile durch).
-function setFill(el: Element | null, color: string): void {
+function setFill(el: Element | null, color: string, opacity?: number): void {
   if (!el) return;
+  const o = opacity == null ? "" : String(opacity);
   (el as SVGElement).style.fill = color;
+  (el as SVGElement).style.fillOpacity = o;
   el.querySelectorAll("path").forEach((p) => {
     (p as SVGPathElement).style.fill = color;
+    (p as SVGPathElement).style.fillOpacity = o;
   });
 }
 
@@ -104,6 +107,11 @@ export interface MuscleMapProps {
   base?: string;
   // Farbe nicht beanspruchter Regionen.
   idle?: string;
+  // Optionale Fuell-Deckkraft (0..1) NUR fuer eingefaerbte Regionen (beansprucht
+  // wie idle), nicht fuer die Silhouette. Ohne Vorgabe voll deckend wie bisher.
+  // Genutzt z. B. von der Muskelkater-Ansicht (0.5), damit die Einfaerbung die
+  // graue Silhouette durchscheinen laesst und weniger dominant wirkt.
+  regionOpacity?: number;
   className?: string;
   ariaLabel?: string;
 }
@@ -114,6 +122,7 @@ export function MuscleMap({
   colorFn,
   base = BASE_DEFAULT,
   idle = IDLE_DEFAULT,
+  regionOpacity,
   className,
   ariaLabel = "Beanspruchte Muskeln",
 }: MuscleMapProps): React.ReactElement {
@@ -163,12 +172,12 @@ export function MuscleMap({
       for (const m of MUSCLES) {
         const el = svg.querySelector("#" + m.id);
         const v = regionValues[m.id];
-        setFill(el, v != null && v > 0 ? paint(v) : idle);
+        setFill(el, v != null && v > 0 ? paint(v) : idle, regionOpacity);
       }
     };
 
     apply();
-  }, [values, view, colorFn, base, idle, ariaLabel]);
+  }, [values, view, colorFn, base, idle, regionOpacity, ariaLabel]);
 
   return (
     // Leerer Container; die SVG wird im Layout-Effekt einmalig eingebettet und
