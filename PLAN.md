@@ -53,7 +53,7 @@ nicht rund laeuft.
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
-  Aktuelle Version: 1.2.38.
+  Aktuelle Version: 1.2.39.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen. Aktuelle Version 1.2.33.
@@ -100,6 +100,14 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+- 2026-06-27 - Reveal-Effekt auf den Unterseiten, Version 1.2.39: Das gestaffelte
+  Einblenden beim Seitenwechsel greift jetzt auch auf Uebungs-Detail und Journey-Auswahl.
+  Das bewusst gebaute Layout der Detailseite (display:contents + order, mobil/desktop
+  unterschiedliche Reihenfolge) wurde NICHT umgebaut; stattdessen wurde der Reveal-Baustein
+  `PageReveal` um einen Modus `data-reveal-columns` erweitert: mobil folgt die Staffelung der
+  sichtbaren CSS-order der Bloecke, desktop laufen die Spalten parallel von oben nach unten.
+  Journey-Auswahl staffelt die Vorlagenkarten ueber `data-reveal-flatten`. Layout unberuehrt.
 
 - 2026-06-26 - Mobile Navi zurueck auf hellen Look, Version 1.2.38: Akzentgruener
   Hintergrund (1.2.36) wieder verworfen. `BottomNav` zurueck auf `bg-card` (hell) und obere

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.39",
+      "date": "2026-06-27",
+      "changes": [
+        "Das sanfte Einblenden beim Seitenwechsel greift jetzt auch auf den Unterseiten: Die Übungs-Detailseite und die Journey-Auswahl bauen sich beim Öffnen genauso gestaffelt von oben nach unten auf wie die Hauptseiten."
+      ]
+    },
+    {
       "version": "1.2.38",
       "date": "2026-06-26",
       "changes": [

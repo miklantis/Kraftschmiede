@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { BackLink } from "@/components/ui/back-link";
+import { PageReveal } from "@/components/ui/page-reveal";
 import {
   TemplateCard,
   type TemplateCardModel,
@@ -101,7 +102,7 @@ function JourneyPickerPage(): React.ReactElement {
   });
 
   return (
-    <div>
+    <PageReveal>
       {back}
 
       {active !== null && (
@@ -128,7 +129,7 @@ function JourneyPickerPage(): React.ReactElement {
         </p>
       )}
 
-      <div className="grid grid-cols-1 gap-[18px]">
+      <div data-reveal-flatten className="grid grid-cols-1 gap-[18px]">
         {models.map(({ template, card, periodization }) => (
           <TemplateCard
             key={card.id}
@@ -139,6 +140,6 @@ function JourneyPickerPage(): React.ReactElement {
           />
         ))}
       </div>
-    </div>
+    </PageReveal>
   );
 }
