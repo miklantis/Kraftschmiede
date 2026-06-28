@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.42",
+      "date": "2026-06-28",
+      "changes": [
+        "Wartung im Hintergrund: Das Speichern in den Verlauf (Einheit beenden, Skill beenden, Einheit nachträglich bearbeiten) läuft jetzt über einen gemeinsamen Schreibweg statt über drei getrennte. Für dich ändert sich nichts; das Speichern – auch offline und über einen App-Neustart hinweg – verhält sich genau wie bisher, ist intern aber an einer Stelle gebündelt und erstmals automatisch abgesichert."
+      ]
+    },
+    {
       "version": "1.2.41",
       "date": "2026-06-28",
       "changes": [

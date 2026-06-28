@@ -53,7 +53,7 @@ nicht rund laeuft.
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
-  Aktuelle Version: 1.2.41.
+  Aktuelle Version: 1.2.42.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -100,6 +100,36 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+- 2026-06-28 - Verlauf-Schreiben zu einem Pfad gebuendelt, Version 1.2.42
+  (Architektur-Durchsicht, Punkt 2): Die drei Verlauf-Schreiber (`finishMutation`
+  Kraft beenden, `finishSkillMutation` Skill beenden, `editMutation` Einheit
+  bearbeiten) machten fast dieselben Schritte - Einheit/Uebungen/Saetze
+  einfuegen bzw. Arbeitssaetze ersetzen, Katalog bzw. Skill-Fortschritt
+  nachziehen, dazu je verstreut die `{ error } -> throw`-Routine; keiner der drei
+  Pfade war getestet (reden direkt mit Supabase). Neue Naht
+  `src/lib/historyStore.ts`: eine schmale Schnittstelle `HistoryStore` mit zwei
+  Gesichtern - `supabaseHistoryStore` (Betrieb, Fehlerpruefung an einer Stelle
+  via `must`) und `createMemoryHistoryStore` (Test, protokolliert statt zu
+  schreiben). Neuer Schreib-Baustein `src/lib/historyWrite.ts` mit den drei
+  duennen Folgen (`writeFinishStrength`/`writeFinishSkill`/`writeEditSession`),
+  der Katalog-Patch-Regel (`exercisePatchToRecord`, 1RM nur wenn bestimmt) und
+  den Auffrisch-Schluesseln (`HISTORY_INVALIDATE`) - alles an einem Ort. Die drei
+  Mutationsdateien sind jetzt duenne Aufrufer: sie behalten Kennung
+  (`*_MUTATION_KEY`), Payload-Typen und ihre `register*`-Funktionen, rufen nur
+  noch den Baustein mit `supabaseHistoryStore` und lesen ihre Auffrisch-Schluessel
+  aus `HISTORY_INVALIDATE`. BEWUSST UNANGETASTET (Offline): die Registrierung in
+  `src/lib/queryClient.ts` - dieselben drei Aufrufe in derselben Reihenfolge vor
+  `resumePausedMutations`, dieselben Mutations-Kennungen und Payload-Formen; damit
+  ueberleben ohne Netz angefangene Speichervorgaenge den Neustart wie zuvor.
+  Modulgraph kreisfrei (Bezuege nach oben nur als reine Typen). Kein sichtbares
+  Verhalten, kein Daten-/Schema-Eingriff. Erstmals getestet: neuer
+  `src/lib/__tests__/historyWrite.test.ts` prueft die drei Folgen gegen den
+  Arbeitsspeicher-Adapter (Reihenfolge, leere Listen ueberspringen, Katalog-Patch
+  mit/ohne 1RM, Skill-Fortschritt, Yoga-Felder). Validiert: `tsc --noEmit`
+  sauber, `vite build` gruen (SW erzeugt, changelog.json nicht precached), 322
+  Tests gruen (314 + 8 neue). Betroffen ausserdem `public/changelog.json`,
+  `PLAN.md`. Punkt 3 (Supabase-Zugang der Hooks als eine Naht) bleibt offen.
 
 - 2026-06-28 - Satz-Ergebnis an einen Ort geholt, Version 1.2.41: Die Ableitung
   gespeicherter Arbeitssaetze (Satz-Zeilen, geschaetztes 1RM, „Ziel erreicht“,

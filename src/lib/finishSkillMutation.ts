@@ -1,16 +1,20 @@
-// Schreibt eine beendete Skill-Einheit normalisiert in den Verlauf und schreibt
-// den Skill-Fortschritt fort. Wie die Kraft-Mutation (finishMutation) als
-// Mutation mit registriertem Default, damit ein ohne Netz pausierter
+// Skill-Einheit beenden: wie die Kraft-Mutation (finishMutation) ein
+// registrierter Mutations-Default, damit ein ohne Netz pausierter
 // Speichervorgang den App-Neustart uebersteht und automatisch nachgeschickt
-// wird (resumePausedMutations in main.tsx).
+// wird (resumePausedMutations in main.tsx). Kennung (FINISH_SKILL_MUTATION_KEY)
+// und Registrier-Reihenfolge bleiben dafuer stabil.
+//
+// Das eigentliche Schreiben liegt im gemeinsamen Schreib-Baustein
+// (historyWrite.writeFinishSkill) ueber der Naht HistoryStore.
 
 import type { QueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
 import type {
   SessionInsert,
   SessionExerciseInsert,
   SetInsert,
 } from "@/schemas";
+import { supabaseHistoryStore } from "./historyStore";
+import { writeFinishSkill, HISTORY_INVALIDATE } from "./historyWrite";
 
 export const FINISH_SKILL_MUTATION_KEY = ["finishSkill"] as const;
 
@@ -30,44 +34,16 @@ export interface FinishSkillPayload {
   progressWrite: SkillProgressWrite | null;
 }
 
-async function writeFinishSkill(payload: FinishSkillPayload): Promise<void> {
-  const { sessionRow, exerciseRows, setRows, progressWrite } = payload;
-
-  const s = await supabase.from("sessions").insert(sessionRow);
-  if (s.error) throw new Error(s.error.message);
-
-  if (exerciseRows.length) {
-    const e = await supabase.from("session_exercises").insert(exerciseRows);
-    if (e.error) throw new Error(e.error.message);
-  }
-  if (setRows.length) {
-    const r = await supabase.from("sets").insert(setRows);
-    if (r.error) throw new Error(r.error.message);
-  }
-
-  if (progressWrite) {
-    const u = await supabase
-      .from("skill_progress")
-      .update({
-        current_phase: progressWrite.currentPhase,
-        counter: progressWrite.consecutiveCount,
-        mastered: progressWrite.mastered,
-      })
-      .eq("id", progressWrite.id);
-    if (u.error) throw new Error(u.error.message);
-  }
-}
-
 /** Default-mutationFn + Auffrischung registrieren. Greift auch fuer nach einem
  *  Neustart fortgesetzte (pausierte) Mutationen. */
 export function registerFinishSkillMutation(qc: QueryClient): void {
   qc.setMutationDefaults(FINISH_SKILL_MUTATION_KEY, {
-    mutationFn: (vars: unknown) => writeFinishSkill(vars as FinishSkillPayload),
+    mutationFn: (vars: unknown) =>
+      writeFinishSkill(supabaseHistoryStore, vars as FinishSkillPayload),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ["sessions"] });
-      void qc.invalidateQueries({ queryKey: ["sessions-detailed"] });
-      void qc.invalidateQueries({ queryKey: ["skillProgress"] });
-      void qc.invalidateQueries({ queryKey: ["trainingOverview"] });
+      for (const key of HISTORY_INVALIDATE.finishSkill) {
+        void qc.invalidateQueries({ queryKey: key });
+      }
     },
   });
 }
