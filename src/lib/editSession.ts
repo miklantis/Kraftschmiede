@@ -14,11 +14,9 @@
 // Einheit die juengste mit dieser Uebung ist, wird der Katalog (Arbeitsgewicht,
 // 1RM) fortgeschrieben; sonst bleibt die laufende Empfehlung stehen.
 
-import { best1RMFromSets } from "@/engine/oneRM";
-import { metTarget } from "@/engine/target";
-import { skillSetMet } from "@/engine/skills";
-import type { EngineSet, RmFormula } from "@/engine/types";
+import type { RmFormula } from "@/engine/types";
 import type { SetInsert } from "@/schemas";
+import { deriveWorkSets, deriveSkillSets } from "./setResult";
 import type { ExercisePatch } from "./finishMutation";
 
 /** Ein Arbeitssatz im Bearbeiten-Entwurf. target* tragen den geplanten Wert
@@ -79,19 +77,6 @@ export interface EditPayload {
   exercisePatches: ExercisePatch[];
 }
 
-function toEngineWork(s: EditDraftSet): EngineSet {
-  return {
-    type: "work",
-    done: true,
-    failed: false,
-    weight: s.weight,
-    reps: s.reps,
-    targetReps: s.targetReps,
-    targetWeight: s.targetWeight,
-    adjusted: s.adjusted,
-  };
-}
-
 export function buildEditPayload(ctx: EditContext): EditPayload {
   const { userId, rmFormula, date, newId } = ctx;
 
@@ -99,42 +84,32 @@ export function buildEditPayload(ctx: EditContext): EditPayload {
   const exercisePatches: ExercisePatch[] = [];
 
   ctx.exercises.forEach((ex) => {
-    const engine = ex.sets.map(toEngineWork);
-    const est1RM = best1RMFromSets(engine, rmFormula).value;
-
-    let pos = 0;
-    const workSetRows: Array<SetInsert & { id: string }> = ex.sets.map((s) => ({
-      id: newId(),
-      user_id: userId,
-      session_exercise_id: ex.sessionExerciseId,
-      kind: "work",
-      position: pos++,
-      reps: s.reps,
-      weight: s.weight,
-      duration_sec: null,
-      score: s.score,
-      failed: false,
-      done: true,
-      target_reps: s.targetReps,
-      target_weight: s.targetWeight,
-      target_score: null,
-      adjusted: s.adjusted,
-      adjust_note: s.adjustNote,
-      met: metTarget(toEngineWork(s)),
-    }));
+    // Arbeitssaetze + 1RM + Arbeitsgewicht aus dem gemeinsamen Satz-Ergebnis.
+    const work = deriveWorkSets(
+      ex.sets.map((s) => ({
+        reps: s.reps,
+        weight: s.weight,
+        score: s.score,
+        targetReps: s.targetReps,
+        targetWeight: s.targetWeight,
+        adjusted: s.adjusted,
+        adjustNote: s.adjustNote,
+      })),
+      { userId, sessionExerciseId: ex.sessionExerciseId, rmFormula, newId },
+    );
 
     exercises.push({
       sessionExerciseId: ex.sessionExerciseId,
-      tested1RM: est1RM,
-      workSetRows,
+      tested1RM: work.est1RM,
+      workSetRows: work.setRows,
     });
 
     // Coach nur bei der juengsten Einheit dieser Uebung fortschreiben.
     if (ex.exerciseId && ex.sets.length > 0 && ctx.isYoungest(ex.exerciseId)) {
-      const workWeight = Math.max(...ex.sets.map((s) => s.weight));
+      const workWeight = work.workWeight ?? 0;
       const patch: ExercisePatch = { id: ex.exerciseId, work_weight: workWeight };
-      if (est1RM != null && ctx.tracksRm(ex.exerciseId)) {
-        patch.rm = est1RM;
+      if (work.est1RM != null && ctx.tracksRm(ex.exerciseId)) {
+        patch.rm = work.est1RM;
         patch.rm_as_of = date;
         patch.rm_stale = false;
       }
@@ -178,30 +153,20 @@ export function buildSkillEditPayload(ctx: SkillEditContext): EditPayload {
   const { userId, newId } = ctx;
 
   const exercises: EditExerciseWrite[] = ctx.exercises.map((ex) => {
-    let pos = 0;
-    const workSetRows: Array<SetInsert & { id: string }> = ex.values.map((v) => ({
-      id: newId(),
-      user_id: userId,
-      session_exercise_id: ex.sessionExerciseId,
-      kind: "work",
-      position: pos++,
-      reps: ex.metric === "reps" ? v : null,
-      weight: null,
-      duration_sec: ex.metric === "duration" ? v : null,
-      score: null,
-      failed: false,
-      done: true,
-      target_reps: ex.metric === "reps" ? ex.target : null,
-      target_weight: null,
-      target_score: null,
-      adjusted: false,
-      adjust_note: "",
-      met: skillSetMet(ex.metric, ex.target, { value: v, done: true }),
-    }));
+    const skill = deriveSkillSets(
+      ex.values.map((v) => ({ value: v })),
+      {
+        userId,
+        sessionExerciseId: ex.sessionExerciseId,
+        metric: ex.metric,
+        target: ex.target,
+        newId,
+      },
+    );
     return {
       sessionExerciseId: ex.sessionExerciseId,
       tested1RM: null, // Skill trackt kein 1RM
-      workSetRows,
+      workSetRows: skill.setRows,
     };
   });
 

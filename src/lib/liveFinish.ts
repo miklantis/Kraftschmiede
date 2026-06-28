@@ -9,16 +9,15 @@
 //
 // Der Skill-Abschluss ist ein eigener Pfad (Lieferung 5) und nicht hier.
 
-import { best1RMFromSets } from "@/engine/oneRM";
-import { metTarget } from "@/engine/target";
-import type { EngineSet, RmFormula } from "@/engine/types";
+import type { RmFormula } from "@/engine/types";
 import type {
   BodySnapshot,
   SessionInsert,
   SessionExerciseInsert,
   SetInsert,
 } from "@/schemas";
-import type { WorkoutSession, LiveSet } from "./liveSession";
+import { deriveWorkSets } from "./setResult";
+import type { WorkoutSession } from "./liveSession";
 
 // ---- Ende-Vorschau (Popup) --------------------------------------------------
 // Pro Uebung: Name, "erledigt / gesamt" der Arbeitssaetze und je Arbeitssatz ein
@@ -86,19 +85,6 @@ export interface FinishRows {
   exerciseUpdates: ExerciseUpdate[];
 }
 
-function toEngineWork(s: LiveSet): EngineSet {
-  return {
-    type: "work",
-    done: true,
-    failed: s.failed,
-    weight: s.weight,
-    reps: s.reps,
-    targetReps: s.targetReps,
-    targetWeight: s.targetWeight,
-    adjusted: s.adjusted,
-  };
-}
-
 export function buildFinishRows(ctx: FinishContext): FinishRows {
   const { session, userId, rmFormula, body, week, date, endedAt, newId } = ctx;
   const sessionId = newId();
@@ -115,22 +101,10 @@ export function buildFinishRows(ctx: FinishContext): FinishRows {
     // Uebung ohne erledigten Arbeitssatz wird nicht gespeichert.
     if (workDone.length === 0) return;
 
-    const est1RM = best1RMFromSets(workDone.map(toEngineWork), rmFormula).value;
     const seId = newId();
 
-    exerciseRows.push({
-      id: seId,
-      user_id: userId,
-      session_id: sessionId,
-      exercise_id: en.exerciseId,
-      name: en.exerciseName,
-      bar_id: en.barId,
-      metric: null,
-      tested_1rm: est1RM,
-      suggestion: {},
-      position: position++,
-    });
-
+    // Aufwaermsaetze bleiben hier (nicht Teil des Satz-Ergebnis-Bausteins):
+    // erst die erledigten Aufwaermsaetze, dann die Arbeitssaetze dahinter.
     let sp = 0;
     warmDone.forEach((w) => {
       setRows.push({
@@ -153,32 +127,40 @@ export function buildFinishRows(ctx: FinishContext): FinishRows {
         met: null,
       });
     });
-    workDone.forEach((s) => {
-      setRows.push({
-        id: newId(),
-        user_id: userId,
-        session_exercise_id: seId,
-        kind: "work",
-        position: sp++,
+
+    // Arbeitssaetze: Zeilen + geschaetztes 1RM + naechstes Arbeitsgewicht.
+    const work = deriveWorkSets(
+      workDone.map((s) => ({
         reps: s.reps,
         weight: s.weight,
-        duration_sec: null,
         score: s.score,
-        failed: s.failed,
-        done: true,
-        target_reps: s.targetReps,
-        target_weight: s.targetWeight,
-        target_score: null,
+        targetReps: s.targetReps,
+        targetWeight: s.targetWeight,
         adjusted: s.adjusted,
-        adjust_note: s.adjustNote,
-        met: metTarget(toEngineWork(s)),
-      });
+        adjustNote: s.adjustNote,
+        failed: s.failed,
+      })),
+      { userId, sessionExerciseId: seId, rmFormula, newId, startPosition: sp },
+    );
+    work.setRows.forEach((r) => setRows.push(r));
+
+    exerciseRows.push({
+      id: seId,
+      user_id: userId,
+      session_id: sessionId,
+      exercise_id: en.exerciseId,
+      name: en.exerciseName,
+      bar_id: en.barId,
+      metric: null,
+      tested_1rm: work.est1RM,
+      suggestion: {},
+      position: position++,
     });
 
     exerciseUpdates.push({
       exerciseId: en.exerciseId,
-      workWeight: Math.max(...workDone.map((s) => s.weight)),
-      est1RM,
+      workWeight: work.workWeight ?? 0,
+      est1RM: work.est1RM,
     });
   });
 

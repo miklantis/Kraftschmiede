@@ -53,7 +53,7 @@ nicht rund laeuft.
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
-  Aktuelle Version: 1.2.40.
+  Aktuelle Version: 1.2.41.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen. Aktuelle Version 1.2.33.
@@ -100,6 +100,21 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+- 2026-06-28 - Satz-Ergebnis an einen Ort geholt, Version 1.2.41: Die Ableitung
+  gespeicherter Arbeitssaetze (Satz-Zeilen, geschaetztes 1RM, „Ziel erreicht“,
+  naechstes Arbeitsgewicht) lag dreimal fast gleich vor - beim Kraft-Beenden
+  (`liveFinish`), beim Skill-Beenden (`skillFinish`) und beim nachtraeglichen
+  Bearbeiten (`editSession`, Kraft + Skill). Neuer reiner Baustein
+  `src/lib/setResult.ts` mit `deriveWorkSets` (Kraft) und `deriveSkillSets`
+  (Skill) als zwei Spielarten desselben Bausteins; die drei Stellen rufen ihn nur
+  noch auf. Bewusst NICHT mitgewandert: Aufwaermsaetze, Einheit-Kopf und das
+  Coach-Nachziehen („nur juengste Einheit“) - die bleiben bei den Aufrufern.
+  Reines Aufraeumen, kein sichtbares Verhalten geaendert: die bestehenden Tests
+  von `liveFinish`/`skillFinish`/`editSession` pruefen die erzeugten Zeilen und
+  blieben unveraendert gruen; dazu eigener Test fuer `setResult` (314 statt 309
+  Tests). Validiert: `tsc --noEmit` sauber, `vite build` gruen, `vitest run`
+  314 gruen.
 
 - 2026-06-27 - Reveal-Timing der Unterseiten angeglichen, Version 1.2.40: Auf allen
   Hauptseiten steht der `PageHeader` ausserhalb von `PageReveal`, der Effekt beginnt also

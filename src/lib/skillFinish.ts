@@ -12,7 +12,7 @@
 // gespeichert (auch ohne erledigten Satz), damit die Position der Uebungs-
 // Detailseite (skill_phase + Position) erhalten bleibt.
 
-import { skillSessionResult, skillSetMet } from "@/engine/skills";
+import { skillSessionResult } from "@/engine/skills";
 import type {
   SkillPhaseExercise,
   SkillSet,
@@ -23,6 +23,7 @@ import type {
   SessionExerciseInsert,
   SetInsert,
 } from "@/schemas";
+import { deriveSkillSets } from "./setResult";
 import type { SkillSession, SkillLiveExercise } from "./liveSession";
 
 // ---- Ende-Vorschau (Popup) --------------------------------------------------
@@ -186,31 +187,19 @@ export function buildSkillFinishRows(ctx: SkillFinishContext): SkillFinishRows {
       position: i,
     });
 
-    let sp = 0;
-    we.sets
-      .filter((s) => s.done)
-      .forEach((s) => {
-        const met = skillSetMet(plan.metric, plan.target, { value: s.value, done: true });
-        setRows.push({
-          id: newId(),
-          user_id: userId,
-          session_exercise_id: seId,
-          kind: "work",
-          position: sp++,
-          reps: we.metric === "reps" ? (s.value ?? 0) : null,
-          weight: null,
-          duration_sec: we.metric === "duration" ? (s.value ?? 0) : null,
-          score: null,
-          failed: false,
-          done: true,
-          target_reps: we.metric === "reps" ? plan.target : null,
-          target_weight: null,
-          target_score: null,
-          adjusted: false,
-          adjust_note: "",
-          met,
-        });
-      });
+    // Nur erledigte Saetze ueberleben; Zeilen + „Ziel erreicht“ kommen aus dem
+    // gemeinsamen Satz-Ergebnis (Skill-Spielart). Ziel aus dem Plan.
+    const skill = deriveSkillSets(
+      we.sets.filter((s) => s.done).map((s) => ({ value: s.value ?? 0 })),
+      {
+        userId,
+        sessionExerciseId: seId,
+        metric: plan.metric,
+        target: plan.target,
+        newId,
+      },
+    );
+    skill.setRows.forEach((r) => setRows.push(r));
   });
 
   const sessionRow: SessionInsert & { id: string } = {
