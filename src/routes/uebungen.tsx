@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { PageReveal } from "@/components/ui/page-reveal";
 import { Section } from "@/components/ui/section";
 import { List, ListRow } from "@/components/ui/list";
+import { CoachStatusPill } from "@/components/ui/coach-status-pill";
 import { PinnedCharts } from "@/components/exercise/PinnedCharts";
 import { useExercisesView } from "@/hooks/useExercisesView";
 import { usePinnedView } from "@/hooks/usePinnedView";
@@ -74,7 +75,11 @@ function UebungenPage(): React.ReactElement {
                   <ListRow
                     key={it.id}
                     title={it.name}
-                    subtitle={it.sub}
+                    subtitle={
+                      it.coachState ? (
+                        <CoachStatusPill state={it.coachState} />
+                      ) : undefined
+                    }
                     trailing={
                       <span className="font-mono text-[14px] text-muted-foreground tabular-nums">
                         {it.meta}

@@ -8,12 +8,10 @@
 import { repTargetForFocus } from "@/engine";
 import type { SetEntry, VolumePhase } from "@/engine/types";
 import {
-  suggestForExercise,
+  suggestWithBar,
   warmupFor,
   plannedSets,
-  pickBarForTarget,
   type CoachBuildExercise,
-  type CoachSuggestion,
 } from "./coach";
 import { fmtNum } from "./format";
 import type {
@@ -62,8 +60,9 @@ export interface LiveBuildResult {
 
 // Ziel-Repband, das gerade gilt: hat die Phase ein Ziel (oder einen Fokus mit
 // Band), ueberstimmt es das Uebungs-Repband - aber nur fuer Kraftuebungen.
-function activeRepTarget(
-  exo: LiveBuildExercise,
+// Exportiert, damit die Uebungs-Statusanzeige dieselbe Regel nutzt.
+export function activeRepTarget(
+  exo: { profile: "strength" | "core" | "bodyweight" },
   phaseFocus: { focus?: string } | null,
   phaseRepTarget: [number, number] | null,
   hasPhase: boolean,
@@ -108,38 +107,13 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
     );
     const lastEntry = input.lastEntryByExercise[id] ?? null;
 
-    let bar: LiveBuildBar | null = null;
-    let sug: CoachSuggestion;
-    if (exo.category === "barbell" && input.bars.length > 0) {
-      const lightest = input.bars.reduce(
-        (a, b) => (b.weight < a.weight ? b : a),
-        input.bars[0]!,
-      );
-      const rawSug = suggestForExercise(exo, {
-        phase: input.phaseFocus,
-        lastEntry,
-        bar: { weight: lightest.weight },
-        plates: input.plates,
-        repTarget,
-      });
-      bar = pickBarForTarget(rawSug.weight, input.bars);
-      sug = suggestForExercise(exo, {
-        phase: input.phaseFocus,
-        lastEntry,
-        bar: { weight: bar.weight },
-        plates: input.plates,
-        repTarget,
-      });
-    } else {
-      // Keine Langhantel (oder kein Stangen-Inventar): wie bisher ohne Stange.
-      sug = suggestForExercise(exo, {
-        phase: input.phaseFocus,
-        lastEntry,
-        bar: undefined,
-        plates: input.plates,
-        repTarget,
-      });
-    }
+    const { suggestion: sug, bar } = suggestWithBar(exo, {
+      phaseFocus: input.phaseFocus,
+      lastEntry,
+      bars: input.bars,
+      plates: input.plates,
+      repTarget,
+    });
 
     const setN = exo.profile === "core" ? 3 : setNDefault;
     const warm = warmupFor(

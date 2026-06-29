@@ -258,6 +258,102 @@ export function pickBarForTarget<T extends { weight: number }>(
   return chosen;
 }
 
+// Vorschlag inklusive Stangenwahl - die gemeinsame Naht fuer den Live-Aufbau
+// (liveBuild) und die Uebungs-Statusanzeige (Coach-Label auf der Uebungsseite).
+// Henne-Ei wie im Aufbau: bei Langhantel erst das rohe Ziel mit der LEICHTESTEN
+// Stange bestimmen (damit die schwerste Stange den Boden nicht hochzieht), dann
+// die passende Stange waehlen (schwerste <= Ziel, sonst leichteste), dann
+// endgueltig mit dieser Stange ladbar rechnen. Ohne Langhantel/Stangen-Inventar
+// ohne Stange. Die Senk-/Halte-/Steiger-Entscheidung haengt nur am Arbeitsgewicht
+// und am letzten Eintrag, nicht an der Stange (die wirkt erst beim Ladbar-Machen).
+export interface SuggestWithBarInput<B extends { weight: number }> {
+  phaseFocus: { focus?: string } | null;
+  lastEntry: SetEntry | null;
+  bars: B[];
+  plates: number[];
+  repTarget: [number, number] | null;
+}
+
+export interface SuggestWithBarResult<B> {
+  suggestion: CoachSuggestion;
+  bar: B | null;
+}
+
+export function suggestWithBar<B extends { weight: number }>(
+  exo: CoachBuildExercise,
+  input: SuggestWithBarInput<B>,
+): SuggestWithBarResult<B> {
+  if (exo.category === "barbell" && input.bars.length > 0) {
+    const lightest = input.bars.reduce(
+      (a, b) => (b.weight < a.weight ? b : a),
+      input.bars[0]!,
+    );
+    const rawSug = suggestForExercise(exo, {
+      phase: input.phaseFocus,
+      lastEntry: input.lastEntry,
+      bar: { weight: lightest.weight },
+      plates: input.plates,
+      repTarget: input.repTarget,
+    });
+    const bar = pickBarForTarget(rawSug.weight, input.bars);
+    const suggestion = suggestForExercise(exo, {
+      phase: input.phaseFocus,
+      lastEntry: input.lastEntry,
+      bar: { weight: bar.weight },
+      plates: input.plates,
+      repTarget: input.repTarget,
+    });
+    return { suggestion, bar };
+  }
+  const suggestion = suggestForExercise(exo, {
+    phase: input.phaseFocus,
+    lastEntry: input.lastEntry,
+    bar: undefined,
+    plates: input.plates,
+    repTarget: input.repTarget,
+  });
+  return { suggestion, bar: null };
+}
+
+// ---------------------------------------------------------------------------
+// Coach-Status fuer die Uebungsseite. Uebersetzt die Coach-Entscheidung in die
+// grobe Auf/Halten/Senken-Lesart fuer Liste und Detail. Reine Abbildung, keine
+// neue Rechnung: Begleit-/Koerpergewichtsuebungen werden nicht progressiv
+// gerechnet ("carry" -> frei anpassbar); ohne Vordaten "start"; sonst aus der
+// decision (increase/increase-reps -> hoch, decrease -> runter, hold -> halten).
+// ---------------------------------------------------------------------------
+
+export type CoachState = "up" | "hold" | "down" | "carry" | "start";
+
+export interface CoachStatus {
+  state: CoachState;
+  // Die feine Engine-Entscheidung (fuer die ausfuehrliche Anzeige im Detail).
+  decision: CoachDecision;
+  weight: number;
+  targetReps: number;
+  note: string;
+}
+
+export function coachStatusFromSuggestion(
+  sug: CoachSuggestion,
+  hadPriorData: boolean,
+): CoachStatus {
+  let state: CoachState;
+  if (sug.decision === "carry") state = "carry";
+  else if (!hadPriorData) state = "start";
+  else if (sug.decision === "increase" || sug.decision === "increase-reps")
+    state = "up";
+  else if (sug.decision === "decrease") state = "down";
+  else state = "hold";
+  return {
+    state,
+    decision: sug.decision,
+    weight: sug.weight,
+    targetReps: sug.targetReps,
+    note: sug.note,
+  };
+}
+
 // Aufwaermsaetze: nur Langhantel mit Stange bekommt eine Rampe; Deadlift weniger
 // Volumen, erste Uebung (isFirst) gruendlicher. Sonst [].
 export function warmupFor(

@@ -1,6 +1,4 @@
 import { useCallback, useMemo } from "react";
-import { journeyPlacement } from "@/engine";
-import type { SetEntry, EngineSet, VolumePhase } from "@/engine/types";
 import { recoveryGreen } from "@/lib/coach";
 import { buildLiveEntries } from "@/lib/liveBuild";
 import type {
@@ -9,7 +7,8 @@ import type {
   LiveBuildResult,
 } from "@/lib/liveBuild";
 import { todayISO } from "@/lib/format";
-import type { HistorySessionInput, HistorySet } from "@/lib/history";
+import { buildLastEntries } from "@/lib/lastEntries";
+import { derivePhaseContext } from "@/lib/phaseContext";
 import { useExercises } from "./useExercises";
 import { useTemplates } from "./useTemplates";
 import { useSessions } from "./useSessions";
@@ -23,37 +22,8 @@ import { useLatestBody } from "./useBody";
 // Buendelt die Daten-Hooks, formt sie in die reine Build-Eingabe und ruft den
 // getesteten Aufbau (lib/liveBuild). Die Komponenten kennen so weder Supabase
 // noch die Engine; die Trainingsseite ruft nur buildWorkout(templateId, title).
-
-// Ein HistorySet in die Engine-Satzform bringen (fuer den Vorschlag).
-function toEngineSet(s: HistorySet): EngineSet {
-  return {
-    type: s.kind === "warmup" ? "warmup" : "work",
-    weight: s.weight ?? 0,
-    reps: s.reps ?? 0,
-    score: s.score ?? undefined,
-    failed: s.failed ?? false,
-    done: s.done ?? false,
-    targetReps: s.targetReps ?? null,
-    targetWeight: s.targetWeight ?? null,
-    adjusted: s.adjusted,
-  };
-}
-
-// Letzter Krafteintrag je Uebung: neueste Einheit zuerst durchgehen, ersten
-// Treffer je Uebung behalten (wie V1 lastEntryForExercise).
-function buildLastEntries(
-  detailed: HistorySessionInput[],
-): Record<string, SetEntry> {
-  const map: Record<string, SetEntry> = {};
-  const desc = detailed.slice().reverse();
-  for (const sess of desc) {
-    for (const ex of sess.exercises) {
-      if (!ex.exerciseId || map[ex.exerciseId]) continue;
-      map[ex.exerciseId] = { sets: ex.sets.map(toEngineSet) };
-    }
-  }
-  return map;
-}
+// Letzter Eintrag je Uebung (lib/lastEntries) und Phasen-Kontext (lib/phaseContext)
+// sind herausgezogen, damit die Uebungs-Statusanzeige dieselbe Quelle nutzt.
 
 export interface UseLiveBuilder {
   /** Alle noetigen Daten geladen. */
@@ -125,44 +95,13 @@ export function useLiveBuilder(): UseLiveBuilder {
     const unit = settingsQ.data?.unit ?? "kg";
     const freqTarget = settingsQ.data?.weekly_frequency_target || 3;
 
-    // Phasenbezug aus der trainingsgetriebenen Platzierung.
-    let phaseFocus: { focus?: string } | null = null;
-    let phaseRepTarget: [number, number] | null = null;
-    let volumePhase: VolumePhase | null = null;
-    let weekInPhase = 0;
-    let journeyId: string | null = null;
-    let phaseId: string | null = null;
-
-    const journey = journeyQ.data;
-    if (journey) {
-      journeyId = journey.id;
-      const placement = journeyPlacement(
-        { id: journey.id, phases: journey.phases },
-        (sessionsQ.data ?? []).map((s) => ({
-          date: s.date,
-          status: s.status,
-          type: s.type,
-          journeyId: s.journey_id,
-        })),
-        freqTarget,
-        todayISO(),
-      );
-      const phase = journey.phases[placement.phaseIndex] ?? null;
-      if (phase) {
-        phaseId = phase.id;
-        phaseFocus = { focus: phase.focus };
-        volumePhase = {
-          setsStart: phase.sets_start,
-          setsEnd: phase.sets_end,
-          weeks: phase.weeks,
-          deloadWeek: phase.deload_week,
-        };
-        weekInPhase = Math.max(0, placement.weekInPhase - 1);
-        if (phase.rep_target_min != null && phase.rep_target_max != null) {
-          phaseRepTarget = [phase.rep_target_min, phase.rep_target_max];
-        }
-      }
-    }
+    // Phasenbezug aus der trainingsgetriebenen Platzierung (lib/phaseContext).
+    const ph = derivePhaseContext(
+      journeyQ.data ?? null,
+      sessionsQ.data ?? [],
+      freqTarget,
+      todayISO(),
+    );
 
     return {
       exercisesById,
@@ -171,12 +110,7 @@ export function useLiveBuilder(): UseLiveBuilder {
       lastEntryByExercise,
       green,
       unit,
-      phaseFocus,
-      phaseRepTarget,
-      volumePhase,
-      weekInPhase,
-      journeyId,
-      phaseId,
+      ...ph,
     };
   }, [
     exercisesQ.data,

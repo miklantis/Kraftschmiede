@@ -3,8 +3,10 @@ import { useExerciseMuscles } from "./useExerciseMuscles";
 import { useSessionsDetailed } from "./useSessionsDetailed";
 import { useSettings } from "./useSettings";
 import { useSkills } from "./useSkills";
+import { useCoachStatuses } from "./useCoachStatuses";
 import { skillSeeds } from "@/seed/definitions";
 import { muscleValuesFromRows } from "@/lib/muscles";
+import type { CoachStatus } from "@/lib/coach";
 import {
   buildExerciseHistory,
   exBestSet,
@@ -41,6 +43,9 @@ export interface ExerciseDetailView {
   unit: string;
   // Region->Intensitaet (0..1) fuer die MuscleMap; leer = nur graue Silhouette.
   muscleValues: Record<string, number>;
+  // Coach-Lesart fuer die naechste Einheit dieser Uebung (null = noch nicht
+  // berechnet oder keine Uebung).
+  coach: CoachStatus | null;
 }
 
 // Beste-Satz-Zeile einer Einheit: hoechstes Gewicht, dann meiste Wiederholungen.
@@ -80,6 +85,7 @@ export function useExerciseDetail(exerciseId: string): ExerciseDetailView {
   const sessionsQ = useSessionsDetailed();
   const settingsQ = useSettings();
   const skillsQ = useSkills();
+  const coachStatuses = useCoachStatuses();
 
   const isLoading =
     exercisesQ.isLoading ||
@@ -219,5 +225,6 @@ export function useExerciseDetail(exerciseId: string): ExerciseDetailView {
     defaultMetric,
     unit,
     muscleValues,
+    coach: exercise ? (coachStatuses.byExercise[exercise.id] ?? null) : null,
   };
 }

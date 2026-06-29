@@ -104,6 +104,7 @@ Karten tragen einen sehr weichen Schatten statt eines harten Rahmens. Erhöhte E
 |---|---|
 | **StatRow** | Statistik-Reihe: mehrere Zellen mit großem Wert und kleinem Label; ein Wert per accent hervorhebbar. |
 | **ScoreBadge** | Coach-Score als Mono-Zahl; Variante row (klein, in Listen) und hero (groß, in der Empfehlungskarte). |
+| **CoachStatusPill** | Kleine Pille mit der groben Coach-Lesart für die nächste Einheit einer Übung: Steigern (Akzentgrün), Halten, Senken (ruhig gedeckt, keine Alarmfarbe), dazu „Frei“ (Begleitübung) und „Start“ (keine Vordaten). In der Übungsliste (statt der Muskelzeile) und im Coach-Block der Detailseite. |
 | **ProgressDots** | Punktreihe für Fortschritt (z. B. Einheiten der Woche): gefüllt in Akzentfarbe, Rest gedeckt. |
 | **Chart** | Generisches Verlaufschart-Fundament (D3): misst die Breite, wird am Handy scrollbar, zeichnet einheitlich (glatte Linie, weiche Fläche, Tooltip). |
 | **Calendar** | Generisches Monatsgitter; was in einer Tageszelle steht, liefert der Aufrufer (renderCell). |

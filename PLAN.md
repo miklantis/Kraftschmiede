@@ -53,7 +53,7 @@ nicht rund laeuft.
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
-  Aktuelle Version: 1.2.43.
+  Aktuelle Version: 1.2.44.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -100,6 +100,21 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+- 2026-06-29 - Uebungsseite: Coach-Status je Uebung, Version 1.2.44: In der Liste steht
+  unter jedem Namen statt der Muskelgruppen eine Pille mit der groben Coach-Lesart fuer die
+  naechste Einheit (Steigern/Halten/Senken, dazu "Frei" fuer Begleituebungen und "Start"
+  ohne Vordaten); rechts bleibt 1RM/Arbeitsgewicht. Im Detail oben ein Coach-Block mit
+  derselben Pille, dem vorgeschlagenen naechsten Satz (Gewicht x Wdh) und der Begruendung
+  als Klartext. Komponentenschnitt: neue Primitive `CoachStatusPill`, neuer gemeinsamer Hook
+  `useCoachStatuses` (Liste + Detail). Die heikle Stangenwahl samt Vorschlag ist als
+  gemeinsame Naht `suggestWithBar` in `src/lib/coach.ts` gebuendelt; der letzte Eintrag je
+  Uebung (`src/lib/lastEntries.ts`) und der Phasen-Kontext (`src/lib/phaseContext.ts`) sind
+  als reine Helfer herausgezogen. So nutzen Pille, Detail und der Live-Aufbau dieselbe Quelle
+  und die Pille zeigt exakt den Live-Vorschlag; `liveBuild`/`useLiveBuilder` verhalten sich
+  unveraendert (durch liveBuild-Tests bestaetigt). Rein additive Anzeige - kein Eingriff in
+  Engine-Werte, Daten oder den Offline-Schreibweg. Neue Tests fuer `suggestWithBar` und das
+  Status-Mapping. Validierung: vite build, tsc --noEmit, vitest (334) gruen.
 
 - 2026-06-29 - Bugfix Stangenwahl im Coach-Vorschlag, Version 1.2.43: Bei leichten
   Langhanteluebungen klebte die Vorbelegung an der schwersten Stange (beim Nutzer 20).

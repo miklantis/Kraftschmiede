@@ -4,12 +4,15 @@
 import type { ExerciseRow } from "@/schemas";
 import { fmtWeight } from "@/lib/format";
 import { kindLabel } from "@/lib/labels";
+import type { CoachState } from "@/lib/coach";
 
 export interface ExerciseRowModel {
   id: string;
   name: string;
-  sub: string;
   meta: string;
+  // Grobe Coach-Lesart (Steigern/Halten/Senken/Frei/Start) - nur fuer aktive
+  // Uebungen gesetzt; fehlt, solange der Status noch nicht berechnet ist.
+  coachState?: CoachState;
 }
 
 export interface ExerciseGroup {
@@ -49,6 +52,7 @@ export function exerciseRowSub(e: ExerciseRow): string {
 export function groupExercises(
   exercises: readonly ExerciseRow[],
   unit: string,
+  statuses?: Record<string, CoachState>,
 ): ExerciseGroup[] {
   const main: ExerciseRow[] = [];
   const assist: ExerciseRow[] = [];
@@ -79,8 +83,8 @@ export function groupExercises(
       items: list.map((e) => ({
         id: e.id,
         name: e.name,
-        sub: exerciseRowSub(e),
         meta: exerciseRowMeta(e, unit),
+        coachState: e.active ? statuses?.[e.id] : undefined,
       })),
     }));
 }

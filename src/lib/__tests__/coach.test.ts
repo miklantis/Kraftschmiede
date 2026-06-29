@@ -96,10 +96,13 @@ describe("rankWorkouts", () => {
 import {
   coreCarry,
   suggestForExercise,
+  suggestWithBar,
+  coachStatusFromSuggestion,
   warmupFor,
   plannedSets,
   pickBarForTarget,
   type CoachBuildExercise,
+  type CoachSuggestion,
 } from "../coach";
 import type { SetEntry } from "@/engine/types";
 
@@ -229,5 +232,68 @@ describe("pickBarForTarget", () => {
   it("trifft eine Stange auf den Cent genau", () => {
     expect(pickBarForTarget(20, bars).id).toBe("b20");
     expect(pickBarForTarget(10, bars).id).toBe("b10");
+  });
+});
+
+describe("suggestWithBar", () => {
+  it("waehlt bei Langhantel die schwerste Stange <= Ziel und gibt den Vorschlag", () => {
+    const r = suggestWithBar(STRENGTH, {
+      phaseFocus: { focus: "hypertrophy" },
+      lastEntry: null,
+      bars: [
+        { id: "b20", name: "20er", weight: 20 },
+        { id: "b12", name: "12,5er", weight: 12.5 },
+      ],
+      plates: [1.25, 2.5, 5, 10, 20],
+      repTarget: null,
+    });
+    expect(r.bar?.id).toBe("b20"); // 20 <= 60, schwerste passende
+    expect(r.suggestion.weight).toBe(60);
+    expect(r.suggestion.decision).toBe("hold"); // keine Vordaten
+  });
+
+  it("gibt fuer Nicht-Langhantel keine Stange und leitet auf carry um", () => {
+    const r = suggestWithBar(CORE, {
+      phaseFocus: null,
+      lastEntry: null,
+      bars: [{ id: "b20", name: "20er", weight: 20 }],
+      plates: [2.5],
+      repTarget: null,
+    });
+    expect(r.bar).toBeNull();
+    expect(r.suggestion.decision).toBe("carry");
+  });
+});
+
+describe("coachStatusFromSuggestion", () => {
+  const sug = (decision: CoachSuggestion["decision"]): CoachSuggestion => ({
+    weight: 60,
+    targetReps: 10,
+    decision,
+    note: "",
+  });
+
+  it("bildet die Engine-Entscheidung auf die grobe Lesart ab", () => {
+    expect(coachStatusFromSuggestion(sug("increase"), true).state).toBe("up");
+    expect(coachStatusFromSuggestion(sug("increase-reps"), true).state).toBe("up");
+    expect(coachStatusFromSuggestion(sug("hold"), true).state).toBe("hold");
+    expect(coachStatusFromSuggestion(sug("decrease"), true).state).toBe("down");
+  });
+
+  it("zeigt Begleituebungen als carry, unabhaengig von Vordaten", () => {
+    expect(coachStatusFromSuggestion(sug("carry"), true).state).toBe("carry");
+    expect(coachStatusFromSuggestion(sug("carry"), false).state).toBe("carry");
+  });
+
+  it("ohne Vordaten -> Start (vor der Auf/Halten/Senken-Wertung)", () => {
+    expect(coachStatusFromSuggestion(sug("hold"), false).state).toBe("start");
+    expect(coachStatusFromSuggestion(sug("increase"), false).state).toBe("start");
+  });
+
+  it("reicht Gewicht, Ziel-Wdh und Entscheidung durch", () => {
+    const s = coachStatusFromSuggestion(sug("increase"), true);
+    expect(s.weight).toBe(60);
+    expect(s.targetReps).toBe(10);
+    expect(s.decision).toBe("increase");
   });
 });

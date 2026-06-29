@@ -6,6 +6,7 @@ import { BackLink } from "@/components/ui/back-link";
 import { Prose } from "@/components/ui/prose";
 import { Section } from "@/components/ui/section";
 import { List, ListRow } from "@/components/ui/list";
+import { CoachStatusPill } from "@/components/ui/coach-status-pill";
 import { StatRow } from "@/components/ui/stat-row";
 import { MuscleMap } from "@/components/ui/muscle-map";
 import { PageReveal } from "@/components/ui/page-reveal";
@@ -13,7 +14,7 @@ import { ExerciseChartCard } from "@/components/exercise/ExerciseChartCard";
 import { ExerciseEditModal } from "@/components/exercise/ExerciseEditModal";
 import { useExerciseDetail } from "@/hooks/useExerciseDetail";
 import { exerciseRowSub } from "@/lib/exercises";
-import { longDateShort } from "@/lib/format";
+import { longDateShort, fmtWeight } from "@/lib/format";
 
 // Uebungs-Detail. Eigenstaendige Vollseite (entschachtelt mit _), ersetzt die
 // Liste wie in V1. Zeigt Kopf, Statistik-Reihe, Verlaufsdiagramm, die Muscle-Map
@@ -38,6 +39,7 @@ function ExerciseDetailPage(): React.ReactElement {
     defaultMetric,
     unit,
     muscleValues,
+    coach,
   } = useExerciseDetail(exerciseId);
 
   if (isLoading) {
@@ -82,6 +84,24 @@ function ExerciseDetailPage(): React.ReactElement {
         </span>
       </div>
       {exercise.description && <Prose>{exercise.description}</Prose>}
+
+      {coach && (
+        <Section eyebrow="Coach" className="mb-5 min-[960px]:mb-6">
+          <div className="rounded-[18px] bg-card p-4 shadow-card min-[960px]:p-5">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <CoachStatusPill state={coach.state} />
+              {coach.state !== "carry" && (
+                <span className="font-mono text-[15px] font-semibold text-foreground tabular-nums">
+                  {fmtWeight(coach.weight, unit)} × {coach.targetReps}
+                </span>
+              )}
+            </div>
+            <p className="mt-2.5 text-[14px] leading-snug text-muted-foreground">
+              {coach.note}
+            </p>
+          </div>
+        </Section>
+      )}
 
       <PageReveal>
         {/* Mobil ein Stapel in fester Reihenfolge (Statistik, Diagramm, Muskeln,
