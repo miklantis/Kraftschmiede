@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.46",
+      "date": "2026-06-29",
+      "changes": [
+        "Einstellungen am Desktop aufgeräumt: Die Blöcke „Daten · Coaching“ und „App-Version“ stehen jetzt über die volle Breite unter dem zweispaltigen Raster. Der App-Block schließt damit direkt an das Coaching-Panel an, statt durch die unterschiedlich langen Spalten eingerückt zu wirken. Am Handy ändert sich nichts – dort sind die Blöcke wie bisher gestapelt."
+      ]
+    },
+    {
       "version": "1.2.45",
       "date": "2026-06-29",
       "changes": [
