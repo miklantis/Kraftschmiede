@@ -1,24 +1,18 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { Info, ChevronRight } from "lucide-react";
 import { fetchLatestChangelog } from "@/lib/changelog";
 import { longDateYearDE } from "@/lib/format";
-import { useAppUpdate } from "@/hooks/useAppUpdate";
-import { WhatsNewSheet } from "@/components/training/WhatsNewSheet";
 
-// Versions-Panel auf der Einstellungen-Seite, direkt nach dem Konto-Block.
-// Zeigt die aktuelle App-Version samt Datum (Quelle: public/changelog.json -
-// dieselbe Datei wie "Was ist neu", keine zweite Pflegestelle). Antippen
-// oeffnet das WhatsNewSheet. Der "Aktualisieren"-Knopf darin erscheint nur,
-// wenn gerade eine neue Huelle wartet; sonst ist das Popup reine Info.
+// Versions-Panel auf der Einstellungen-Seite, ganz am Seitenende. Zeigt die
+// aktuelle App-Version samt Datum (Quelle: public/changelog.json). Antippen
+// fuehrt auf die Versionsverlauf-Unterseite (alle Versionen mit Aenderungen).
+// Das "Was ist neu"-Popup bleibt bestehen, wird aber nur noch beim App-Start
+// als Update-Hinweis gebraucht - nicht mehr von hier aus geoeffnet.
 //
-// Eigene Query (gecacht, beim Mount geladen) statt useChangelog: dort ist
-// gcTime 0 und das Laden an "Popup offen" gekoppelt - hier soll die Version
-// dagegen dauerhaft sichtbar sein.
+// Eigene Query (gecacht, beim Mount geladen): die Version soll hier dauerhaft
+// sichtbar sein.
 export function AppVersionCard(): React.ReactElement {
-  const [open, setOpen] = useState(false);
-  const { updateAvailable, applyUpdate } = useAppUpdate();
-
   const { data: entry } = useQuery({
     queryKey: ["app-version"],
     queryFn: fetchLatestChangelog,
@@ -33,9 +27,8 @@ export function AppVersionCard(): React.ReactElement {
 
   return (
     <div className="rounded-card bg-card shadow-card">
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
+      <Link
+        to="/einstellungen/version"
         className="flex w-full items-center gap-3 p-4 text-left transition-[filter] hover:brightness-[0.99]"
       >
         <span className="flex size-11 flex-none items-center justify-center rounded-full bg-primary/12 text-primary">
@@ -50,17 +43,7 @@ export function AppVersionCard(): React.ReactElement {
           </span>
         </span>
         <ChevronRight className="ml-auto size-[18px] flex-none text-[#a0a0a5]" />
-      </button>
-
-      <WhatsNewSheet
-        open={open}
-        onClose={() => setOpen(false)}
-        showApply={updateAvailable}
-        onApply={() => {
-          setOpen(false);
-          applyUpdate();
-        }}
-      />
+      </Link>
     </div>
   );
 }

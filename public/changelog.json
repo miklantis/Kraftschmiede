@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.45",
+      "date": "2026-06-29",
+      "changes": [
+        "Der App-Version-Block in den Einstellungen führt jetzt auf eine eigene Seite „Versionsverlauf“ statt ein Popup zu öffnen. Dort findest du alle Versionen mit ihren Änderungen als schlichte Textliste, neueste oben. Über „Einstellungen“ oben links kommst du zurück. Der Update-Hinweis beim App-Start bleibt unverändert."
+      ]
+    },
+    {
       "version": "1.2.44",
       "date": "2026-06-29",
       "changes": [

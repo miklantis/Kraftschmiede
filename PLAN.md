@@ -53,7 +53,7 @@ nicht rund laeuft.
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
-  Aktuelle Version: 1.2.44.
+  Aktuelle Version: 1.2.45.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -100,6 +100,15 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+- 2026-06-29 - Versionsverlauf als Unterseite, Version 1.2.45: Der App-Version-Block in den
+  Einstellungen fuehrt jetzt auf eine eigenstaendige Vollseite (Route `einstellungen_.version`)
+  statt das WhatsNewSheet-Popup zu oeffnen. Die Seite zeigt alle Versionen aus changelog.json
+  (newest-first) mit ihren Aenderungen als schlichten Text ohne Karten/Hintergruende, oben ein
+  BackLink zu den Einstellungen. Neue Ladefunktion `fetchChangelogVersions` (alle Versionen);
+  `fetchLatestChangelog` baut darauf auf. WhatsNewSheet/useChangelog bleiben unberuehrt - sie
+  treiben weiter den Update-Hinweis beim App-Start (UpdateBanner). Der App-Version-Block selbst
+  bleibt optisch und in Position unveraendert (war bereits einspaltig ueber volle Breite).
 
 - 2026-06-29 - Uebungsseite: Coach-Status je Uebung, Version 1.2.44: In der Liste steht
   unter jedem Namen statt der Muskelgruppen eine Pille mit der groben Coach-Lesart fuer die
