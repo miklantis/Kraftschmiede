@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.47",
+      "date": "2026-06-29",
+      "changes": [
+        "Einstellungen am Desktop vereinheitlicht: Alle Blöcke – auch „Daten · Coaching“ und „App-Version“ – liegen jetzt im selben zweispaltigen Raster und nehmen je die halbe Breite ein. Kein Block läuft mehr über die volle Breite. Am Handy bleibt der gewohnte Stapel."
+      ]
+    },
+    {
       "version": "1.2.46",
       "date": "2026-06-29",
       "changes": [

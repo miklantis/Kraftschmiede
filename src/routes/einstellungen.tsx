@@ -32,12 +32,11 @@ export const Route = createFileRoute("/einstellungen")({
 
 // Einstellungen-Seite im iOS-Stil: gruppierte Listen, Beschriftung links,
 // Steuerelement rechts. Oben das Konto-/Verbindungs-Panel, darunter auf dem
-// Desktop ein zweispaltiges Raster der Bereiche (mobil ein Stapel): Engine,
-// Timer, Inventar (Stangen/Scheiben/Kettlebells/Geraete), Score und
-// "Daten: Sicherung". Darunter ueber die volle Breite (ausserhalb des Rasters)
-// "Daten: Coaching" und der App-Version-Block - so schliesst der App-Block
-// luckenlos an Coaching an, statt durch unterschiedlich lange Rasterspalten
-// eingerueckt zu wirken.
+// Desktop ein durchgaengig zweispaltiges Raster aller Bereiche (mobil ein
+// Stapel): Engine, Timer, Inventar (Stangen/Scheiben/Kettlebells/Geraete),
+// Score, "Daten: Sicherung", "Daten: Coaching" und der App-Version-Block.
+// Kein Block nimmt am Desktop die volle Breite ein - alle liegen halbbreit
+// im selben Raster.
 // Plate-Loader bekommt keine eigene UI - das Inventar fuettert den schon
 // portierten Engine-Loader.
 function EinstellungenPage(): React.ReactElement {
@@ -112,19 +111,19 @@ function EinstellungenPage(): React.ReactElement {
               </div>
             </SettingsGroup>
           </Section>
+
+          <Section eyebrow="Daten · Coaching">
+            <SettingsGroup>
+              <div className="p-4">
+                <CoachExport />
+              </div>
+            </SettingsGroup>
+          </Section>
+
+          <Section eyebrow="App">
+            <AppVersionCard />
+          </Section>
         </div>
-
-        <Section eyebrow="Daten · Coaching">
-          <SettingsGroup>
-            <div className="p-4">
-              <CoachExport />
-            </div>
-          </SettingsGroup>
-        </Section>
-
-        <Section eyebrow="App">
-          <AppVersionCard />
-        </Section>
       </PageReveal>
     </div>
   );
