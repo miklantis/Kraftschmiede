@@ -98,6 +98,7 @@ import {
   suggestForExercise,
   warmupFor,
   plannedSets,
+  pickBarForTarget,
   type CoachBuildExercise,
 } from "../coach";
 import type { SetEntry } from "@/engine/types";
@@ -195,5 +196,38 @@ describe("plannedSets", () => {
     const phase = { setsStart: 2, setsEnd: 4, weeks: 4, deloadWeek: null };
     expect(plannedSets(phase, 0, true)).toBe(2);
     expect(plannedSets(phase, 3, true)).toBe(4);
+  });
+});
+
+describe("pickBarForTarget", () => {
+  const bars = [
+    { id: "b20", weight: 20 },
+    { id: "b125", weight: 12.5 },
+    { id: "b10", weight: 10 },
+  ];
+
+  it("nimmt die schwerste Stange <= Zielgewicht", () => {
+    expect(pickBarForTarget(17.5, bars).id).toBe("b125");
+    expect(pickBarForTarget(25, bars).id).toBe("b20");
+    expect(pickBarForTarget(12.5, bars).id).toBe("b125");
+  });
+
+  it("nimmt bei Ziel unter der leichtesten Stange die leichteste", () => {
+    expect(pickBarForTarget(8, bars).id).toBe("b10");
+    expect(pickBarForTarget(0, bars).id).toBe("b10");
+  });
+
+  it("ignoriert die Reihenfolge der Eingabe (sortiert selbst)", () => {
+    const shuffled = [
+      { id: "b10", weight: 10 },
+      { id: "b20", weight: 20 },
+      { id: "b125", weight: 12.5 },
+    ];
+    expect(pickBarForTarget(15, shuffled).id).toBe("b125");
+  });
+
+  it("trifft eine Stange auf den Cent genau", () => {
+    expect(pickBarForTarget(20, bars).id).toBe("b20");
+    expect(pickBarForTarget(10, bars).id).toBe("b10");
   });
 });

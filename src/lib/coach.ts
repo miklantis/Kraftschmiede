@@ -240,6 +240,24 @@ export function suggestForExercise(
   });
 }
 
+// Stangenwahl fuer den Vorschlag: die schwerste Stange, die noch <= Zielgewicht
+// ist; liegt das Ziel unter der leichtesten, die leichteste. Scheiben kommen oben
+// drauf. Generisch ueber alles mit `weight`, damit der Aufbau seine eigene
+// Stangen-Form behalten kann (keine Abhaengigkeit zurueck auf liveBuild). Der
+// Aufrufer stellt sicher, dass die Liste nicht leer ist.
+export function pickBarForTarget<T extends { weight: number }>(
+  target: number,
+  bars: T[],
+): T {
+  const sorted = bars.slice().sort((a, b) => a.weight - b.weight);
+  let chosen = sorted[0]!;
+  for (const b of sorted) {
+    if (b.weight <= target + 1e-9) chosen = b;
+    else break;
+  }
+  return chosen;
+}
+
 // Aufwaermsaetze: nur Langhantel mit Stange bekommt eine Rampe; Deadlift weniger
 // Volumen, erste Uebung (isFirst) gruendlicher. Sonst [].
 export function warmupFor(

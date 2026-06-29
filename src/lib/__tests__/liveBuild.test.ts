@@ -88,4 +88,65 @@ describe("buildLiveEntries", () => {
     const r = buildLiveEntries(input({ exerciseIds: ["squat", "fehlt"] }));
     expect(r.entries.map((e) => e.exerciseId)).toEqual(["squat"]);
   });
+
+  it("waehlt fuer eine leichte Uebung eine leichtere Stange und sinkt unter die schwerste", () => {
+    // Curl: zuletzt verfehlt (Versagen, harter Score) -> der Coach will senken.
+    // Inventar hat die 20er VORNE (wie beim Bug ausloesenden Nutzer); trotzdem soll
+    // die Vorbelegung auf der 12,5er landen, nicht an der 20er kleben.
+    const curl: LiveBuildExercise = {
+      id: "curl",
+      key: "curl",
+      name: "Curl",
+      profile: "strength",
+      category: "barbell",
+      repRange: [12, 20],
+      workWeight: 20,
+      targetScore: 3,
+      barId: null,
+      rm: null,
+      muscleGroups: ["Arme"],
+    };
+    const r = buildLiveEntries(
+      input({
+        exerciseIds: ["curl"],
+        exercisesById: { curl },
+        bars: [
+          { id: "b20", name: "Olympia", weight: 20 },
+          { id: "b125", name: "12,5er", weight: 12.5 },
+          { id: "b10", name: "10er", weight: 10 },
+        ],
+        lastEntryByExercise: {
+          curl: {
+            sets: [
+              {
+                type: "work",
+                weight: 20,
+                reps: 8,
+                score: 5,
+                failed: true,
+                done: true,
+                targetReps: 12,
+                targetWeight: 20,
+              },
+            ],
+          },
+        },
+      }),
+    );
+    const c = r.entries.find((e) => e.exerciseId === "curl")!;
+    // Senken auf 17,5 -> schwerste Stange <= 17,5 ist die 12,5er, Scheiben oben drauf.
+    expect(c.barWeight).toBe(12.5);
+    expect(c.barName).toBe("12,5er");
+    expect(c.sets[0]?.weight).toBe(17.5);
+    expect(c.sets[0]?.weight).toBeLessThan(20);
+    // Aufwaermrampe startet jetzt mit der leeren 12,5er, nicht mit 20.
+    expect(c.warmupSets[0]?.weight).toBe(12.5);
+  });
+
+  it("behaelt bei nur einer Stange das bisherige Verhalten (kein Regress)", () => {
+    const r = buildLiveEntries(input());
+    const sq = r.entries.find((e) => e.exerciseId === "squat")!;
+    expect(sq.barWeight).toBe(20);
+    expect(sq.sets[0]?.weight).toBe(60);
+  });
 });

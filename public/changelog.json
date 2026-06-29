@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.43",
+      "date": "2026-06-29",
+      "changes": [
+        "Stangen-Vorschlag korrigiert: Bei leichten Langhantelübungen schlägt der Coach jetzt eine passende leichtere Stange vor, statt immer an der schwersten Stange zu kleben. Er wählt die schwerste Stange, die noch unter dem Zielgewicht liegt, und legt die Scheiben oben drauf. Damit greift ein „runter\" nach einer verfehlten Einheit wirklich – eine leichte Übung kann nun unter das Gewicht der schwersten Stange. Die Stange in der laufenden Einheit kannst du wie immer frei umstellen; die vorgeschlagene Stange einer Übung kann sich zwischen Einheiten ändern, wenn sich das Zielgewicht ändert."
+      ]
+    },
+    {
       "version": "1.2.42",
       "date": "2026-06-28",
       "changes": [

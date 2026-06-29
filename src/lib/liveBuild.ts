@@ -11,7 +11,9 @@ import {
   suggestForExercise,
   warmupFor,
   plannedSets,
+  pickBarForTarget,
   type CoachBuildExercise,
+  type CoachSuggestion,
 } from "./coach";
 import { fmtNum } from "./format";
 import type {
@@ -77,7 +79,6 @@ function tagFor(exo: LiveBuildExercise, unit: string): string {
 }
 
 export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
-  const firstBar = input.bars[0] ?? null;
   const hasPhase = input.volumePhase != null;
   // Empfohlene Arbeitssatzzahl der Woche (Core ist fix 3, s. u.).
   const setNDefault = plannedSets(
@@ -91,28 +92,54 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
     const exo = input.exercisesById[id];
     if (!exo) return;
 
-    // Stange: nur Langhantel bekommt eine; sonst keine (kein Aufwaermen/Scheiben).
-    let bar: LiveBuildBar | null = null;
-    if (exo.category === "barbell") {
-      bar =
-        firstBar ??
-        (exo.barId ? (input.bars.find((b) => b.id === exo.barId) ?? null) : null);
-    }
-    const barWeightObj = bar ? { weight: bar.weight } : undefined;
-
+    // Stange + Vorschlag. Henne-Ei: Die Senk-/Halte-/Steiger-Entscheidung haengt
+    // nur am Arbeitsgewicht und am letzten Eintrag, nicht an der Stange (die wirkt
+    // erst beim Ladbar-Machen). Darum bei Langhantel in drei Schritten: (1) rohes
+    // Zielgewicht mit der LEICHTESTEN Stange bestimmen, damit die schwerste Stange
+    // den Boden nicht hochzieht; (2) die passende Stange dazu waehlen - die
+    // schwerste, die noch <= Ziel ist, sonst die leichteste; (3) mit dieser Stange
+    // endgueltig rechnen (Gewicht ladbar + Aufwaermrampe). So klebt eine leichte
+    // Uebung nicht mehr am Gewicht der schwersten Stange.
     const repTarget = activeRepTarget(
       exo,
       input.phaseFocus,
       input.phaseRepTarget,
       hasPhase,
     );
-    const sug = suggestForExercise(exo, {
-      phase: input.phaseFocus,
-      lastEntry: input.lastEntryByExercise[id] ?? null,
-      bar: barWeightObj,
-      plates: input.plates,
-      repTarget,
-    });
+    const lastEntry = input.lastEntryByExercise[id] ?? null;
+
+    let bar: LiveBuildBar | null = null;
+    let sug: CoachSuggestion;
+    if (exo.category === "barbell" && input.bars.length > 0) {
+      const lightest = input.bars.reduce(
+        (a, b) => (b.weight < a.weight ? b : a),
+        input.bars[0]!,
+      );
+      const rawSug = suggestForExercise(exo, {
+        phase: input.phaseFocus,
+        lastEntry,
+        bar: { weight: lightest.weight },
+        plates: input.plates,
+        repTarget,
+      });
+      bar = pickBarForTarget(rawSug.weight, input.bars);
+      sug = suggestForExercise(exo, {
+        phase: input.phaseFocus,
+        lastEntry,
+        bar: { weight: bar.weight },
+        plates: input.plates,
+        repTarget,
+      });
+    } else {
+      // Keine Langhantel (oder kein Stangen-Inventar): wie bisher ohne Stange.
+      sug = suggestForExercise(exo, {
+        phase: input.phaseFocus,
+        lastEntry,
+        bar: undefined,
+        plates: input.plates,
+        repTarget,
+      });
+    }
 
     const setN = exo.profile === "core" ? 3 : setNDefault;
     const warm = warmupFor(

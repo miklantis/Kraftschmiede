@@ -53,7 +53,7 @@ nicht rund laeuft.
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
-  Aktuelle Version: 1.2.42.
+  Aktuelle Version: 1.2.43.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -100,6 +100,29 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+- 2026-06-29 - Bugfix Stangenwahl im Coach-Vorschlag, Version 1.2.43: Bei leichten
+  Langhanteluebungen klebte die Vorbelegung an der schwersten Stange (beim Nutzer 20).
+  Ursache (im Code bestaetigt): in `src/lib/liveBuild.ts` gewann `firstBar` (Stange mit
+  niedrigster position) immer, sobald irgendeine Stange existierte - die uebungseigene
+  `barId` wurde nie erreicht; zugleich zieht `nearestLoadable` (`src/engine/plates.ts`)
+  jedes Ziel unter Stangengewicht wieder auf die Stange hoch, sodass ein "senken" der
+  Doppelprogression keinen Spielraum nach unten hatte. Fix in der Aufbau-Naht (Engine
+  unberuehrt): die Senk-/Halte-/Steiger-Entscheidung haengt nur am Arbeitsgewicht, nicht
+  an der Stange - darum jetzt drei Schritte je Langhanteluebung: (1) rohes Zielgewicht mit
+  der LEICHTESTEN Stange bestimmen, (2) Stange dazu waehlen ueber den neuen reinen,
+  generischen Helfer `pickBarForTarget` in `src/lib/coach.ts` (schwerste Stange <= Ziel,
+  sonst die leichteste), (3) mit dieser Stange endgueltig ladbar rechnen (Gewicht +
+  Aufwaermrampe). `suggestWeight` bekommt weiter genau eine Stange; der Boden ist nun die
+  leichteste Stange im Inventar statt fix 20. ENTSCHIEDEN mit Nutzer (Variante A): `barId`
+  spielt fuer den Vorschlag keine Rolle mehr - die Stange folgt rein dem Zielgewicht; die
+  manuelle Live-Stangenwahl bleibt unberuehrt fuer Ausnahmen. Akzeptiert: die
+  vorgeschlagene Stange einer Uebung kann zwischen Einheiten wechseln, wenn sich das
+  Zielgewicht aendert. Tests: neuer Fall in `liveBuild.test.ts` (leichte Uebung sinkt mit
+  Mehr-Stangen-Inventar auf 12,5er/17,5 obwohl die 20er vorne im Inventar steht, dazu
+  Ein-Stangen-Regress) und vier `pickBarForTarget`-Faelle in `coach.test.ts`. Validiert:
+  `vite build` gruen (SW erzeugt, changelog.json nicht precached), `tsc --noEmit` sauber,
+  `vitest run` 328 gruen (322 + 6). Betroffen ausserdem `public/changelog.json`, `PLAN.md`.
 
 - 2026-06-28 - Verlauf-Schreiben zu einem Pfad gebuendelt, Version 1.2.42
   (Architektur-Durchsicht, Punkt 2): Die drei Verlauf-Schreiber (`finishMutation`
