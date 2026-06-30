@@ -1,8 +1,7 @@
 # Kraftschmiede V2 – Designsystem
 
 Dieses Dokument ist der Überblick über die wiederverwendbaren Bausteine der App: welche
-es gibt, wofür der jeweilige da ist und wann man welchen nimmt. Es ergänzt den
-`Masterplan-V2.md` (Architektur) um die menschenlesbare Sicht auf die Oberfläche.
+es gibt, wofür der jeweilige da ist und wann man welchen nimmt. Es ergänzt `Architektur.md` um die menschenlesbare Sicht auf die Oberfläche.
 
 Es ersetzt keinen Code – es ist die Inhaltsangabe dazu. Wer ein neues Feature baut (Mensch
 oder KI), sieht hier auf einen Blick, was schon existiert, statt es ein zweites Mal zu

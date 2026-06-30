@@ -1,23 +1,18 @@
-# Kraftschmiede V2
+# Kraftschmiede
 
-Trainings-App als moderne Web-App: React 19, TypeScript, Vite, TanStack Router/Query,
-Tailwind, shadcn/ui, Supabase (relationale Datenbank statt Blob).
-
-V2 hat die urspruengliche [Kraftschmiede](https://github.com/miklantis/Kraftschmiede) (V1)
-abgeloest: funktional und optisch auf V1-Paritaet, auf einer normalisierten Datenbank und
-installierbar (PWA-Basis). V1 laeuft nicht mehr produktiv; das V1-Repo bleibt als read-only
-Referenz fuer Engine-/Coach-Logik erhalten.
+Persoenlicher Kraft-Trainingscoach als installierbare Web-App (PWA): React 19, TypeScript,
+Vite, TanStack Router/Query, Tailwind, shadcn/ui, Supabase (normalisierte relationale
+Datenbank). Laeuft nach dem ersten Laden offline; neue Versionen werden ueber einen
+bewussten Update-Hinweis uebernommen.
 
 ## Doku
 
-- **[PLAN.md](./PLAN.md)** – Schritt-Checkliste und aktueller Projektstand
-- **[docs/Masterplan-V2.md](./docs/Masterplan-V2.md)** – Gesamtkonzept, Schema, Architektur
-- **[docs/Designsystem.md](./docs/Designsystem.md)** – Überblick über die wiederverwendbaren UI-Bausteine und Design-Tokens
-- **[docs/Konzept-PWA-Offline.md](./docs/Konzept-PWA-Offline.md)** – Konzept Offline-Huelle + Update-Hinweis
+- **[PLAN.md](./PLAN.md)** – laufende und offene Vorhaben, aktueller Stand, Log
+- **[docs/Architektur.md](./docs/Architektur.md)** – Datenbank-Schema, Architektur-Leitplanken, Entscheidungen
+- **[docs/Designsystem.md](./docs/Designsystem.md)** – wiederverwendbare UI-Bausteine und Design-Tokens
 - **[docs/Muskel-Map.md](./docs/Muskel-Map.md)** – Konzept der generischen Muscle-Map-Komponente
-- **[docs/archive/PLAN-Migration-V1-zu-V2.md](./docs/archive/PLAN-Migration-V1-zu-V2.md)** – Migrationsverlauf (Historie, abgeschlossen)
+- **[docs/archive/](./docs/archive/)** – abgeschlossene Konzepte als Referenz (Offline-Huelle, Einheit bearbeiten)
 
 ## Stand
 
-Migration V1->V2 abgeschlossen, V2 ist die aktive App. Aktueller Fokus: PWA
-(Offline-Huelle + Update-Hinweis). Siehe PLAN.md.
+Aktive App im laufenden Betrieb. Fortschritt und naechste Schritte siehe PLAN.md.

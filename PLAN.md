@@ -18,34 +18,26 @@ testbaren Schritten. Bei jeder Auslieferung die Version in `public/changelog.jso
 fortschreiben (siehe „Aktueller Stand").
 
 Inhaltliche Quellen:
-- `docs/Masterplan-V2.md` – Gesamtkonzept (Schema, Architektur).
+- `docs/Architektur.md` – Datenbank-Schema, Architektur-Leitplanken, getroffene
+  Entscheidungen.
 - `docs/Designsystem.md` – Ueberblick ueber die wiederverwendbaren UI-Bausteine und
   Design-Tokens. Bei neuen Primitives hier eine Zeile ergaenzen.
-- `docs/Konzept-PWA-Offline.md` – Konzept des umgesetzten Offline-/Update-Vorhabens
-  (abgeschlossen; als Referenz erhalten).
-- `docs/Konzept-Einheit-bearbeiten.md` – Konzept des laufenden Vorhabens „Einheit bearbeiten"
-  (Verlauf, Schritt 2). Abgestimmt, noch nicht umgesetzt.
-- `docs/archive/PLAN-Migration-V1-zu-V2.md` – kompletter Migrationsverlauf V1->V2 (Historie,
-  abgeschlossen). Bei Bedarf zum Nachschlagen, sonst nicht mehr aktiv gepflegt.
-
-Referenz-App (nur lesen, niemals aendern): https://github.com/miklantis/Kraftschmiede
-V1 ist abgeloest und laeuft nicht mehr produktiv. Das Repo bleibt als read-only Referenz,
-vor allem um bei Bedarf Engine-/Coach-Logik nachzuschlagen, falls in V2 im Betrieb etwas
-nicht rund laeuft.
+- `docs/Muskel-Map.md` – Konzept der generischen Muscle-Map-Komponente.
+- `docs/archive/` – abgeschlossene Konzepte als Referenz (Offline-Huelle, Einheit
+  bearbeiten).
 
 ---
 
 ## Aktueller Stand
 
-- **Migration V1->V2 abgeschlossen.** V2 ist funktional und optisch auf V1-Paritaet, laeuft
-  auf der normalisierten Datenbank und ist installierbar (Manifest/Icons/Vollbild). V2 ist
-  die aktive App. Verlauf siehe `docs/archive/PLAN-Migration-V1-zu-V2.md`.
+- **App im laufenden Betrieb.** Funktional vollstaendig, laeuft auf der normalisierten
+  Datenbank und ist installierbar (Manifest/Icons/Vollbild).
 - **PWA (Offline-Huelle + Update-Hinweis) abgeschlossen.** Alle vier Lieferungen umgesetzt:
   Offline-Huelle (Service Worker, Precache der App-Shell, Supabase ausgenommen),
   Update-Erkennung beim Start, „Was ist neu"-Popup aus `public/changelog.json`, Feinschliff
   (kein Hinweis waehrend einer laufenden Einheit, Notbremse „App zuruecksetzen" in den
   Einstellungen, „Aktualisieren"-Knopf im Popup fixiert). Details je
-  Lieferung im Log unten. Konzept: `docs/Konzept-PWA-Offline.md`.
+  Lieferung im Log unten. Konzept: `docs/archive/Konzept-PWA-Offline.md`.
 - **Vorhaben „Einheit bearbeiten" abgeschlossen (Schritt 2 komplett).** Kraft- (1.2.12),
   Skill- (1.2.15) und Yoga-Einheiten (1.2.16) lassen sich im Verlauf nachtraeglich korrigieren
   ueber ein Bearbeiten-Panel im Live-Look (Live-Karten wiederverwendet), offline-fest
@@ -83,11 +75,11 @@ gefuehrt, sobald sie auftauchen.
 Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 
 - PWA – Offline-Huelle & Update-Hinweis (Lieferungen 1–4, ab Version 1.1.0).
-  Konzept: `docs/Konzept-PWA-Offline.md`.
+  Konzept: `docs/archive/Konzept-PWA-Offline.md`.
 - Verlauf – Satz-Darstellung & Einheit bearbeiten. Schritt 1 (satzweise Anzeige, ab 1.2.9)
   und Schritt 2 (Einheit bearbeiten: Kraft 1.2.12, Skill 1.2.15, Yoga 1.2.16). Bearbeiten-Panel
   im Live-Look (Karten wiederverwendet), offline-festes Zurueckschreiben, Coach nur bei der
-  juengsten Kraft-Einheit, Skill-Phase unberuehrt. Konzept: `docs/Konzept-Einheit-bearbeiten.md`.
+  juengsten Kraft-Einheit, Skill-Phase unberuehrt. Konzept: `docs/archive/Konzept-Einheit-bearbeiten.md`.
 
 - Journey-Kurve – „jetzt“ automatisch mittig (Version 1.2.19). Ist die Periodisierungskurve
   auf dem Handy seitlich scrollbar (lange Journey), gleitet sie beim Oeffnen sanft so, dass
@@ -100,6 +92,14 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-06-30 — Doku aufgeraeumt (kein App-Code).
+Migrationshistorie docs/archive/PLAN-Migration-V1-zu-V2.md geloescht (Backup existiert).
+Masterplan-V2.md zu docs/Architektur.md entkernt: Schema, Architektur-Leitplanken,
+Entscheidungen und Risiken bleiben; Migrations- und Phasenplan-Teile entfernt, V1-Vergleiche
+geglaettet. Abgeschlossene Konzepte (PWA-Offline, Einheit-bearbeiten) nach docs/archive/
+verschoben. README neu (ohne V1/Migrationssprech). Doku-Verweise in PLAN.md und
+Designsystem.md auf die neue Struktur gezogen. Log-Eintraege bleiben historisch unveraendert.
 
 2026-06-30 — Repo/Adresse umbenannt von Kraftschmiede-v2 auf Kraftschmiede (1.2.48).
 V1 ist abgeloest: V1-Repo geloescht, V1-Supabase (Projekt Fitness, eu-north-1) pausiert,
