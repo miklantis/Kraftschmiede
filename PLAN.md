@@ -46,7 +46,7 @@ Inhaltliche Quellen:
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
-  Aktuelle Version: 1.2.51.
+  Aktuelle Version: 1.2.48.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -93,10 +93,6 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
-
-- 2026-06-30, 1.2.51: App-Icons (512/192/apple-touch) – Motiv dezent verkleinert (seitlicher
-  Rand ~14% -> ~22%), behebt zu enges Symbol im Mac-Dock der als Chrome-App installierten PWA.
-  Reine Bilddateien, kein Code/Manifest beruehrt.
 
 2026-06-30 — Doku aufgeraeumt (kein App-Code).
 Migrationshistorie docs/archive/PLAN-Migration-V1-zu-V2.md geloescht (Backup existiert).

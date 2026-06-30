@@ -1,13 +1,6 @@
 {
   "versions": [
     {
-      "version": "1.2.51",
-      "date": "2026-06-30",
-      "changes": [
-        "App-Symbol etwas verkleinert: Das Unendlichkeitszeichen hat jetzt rundum mehr Luft, vor allem an den Seiten. Auf dem Mac-Dock (als Chrome-App installiert) klebte es vorher zu nah am rechten und linken Rand. Auf iPhone und im Browser-Tab sieht es weiterhin gut aus, nur minimal kompakter."
-      ]
-    },
-    {
       "version": "1.2.50",
       "date": "2026-06-30",
       "changes": [
