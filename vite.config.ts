@@ -6,9 +6,9 @@ import { VitePWA } from "vite-plugin-pwa";
 import { fileURLToPath, URL } from "node:url";
 
 // base ist auf den Repo-Namen gesetzt, weil die App unter
-// https://miklantis.github.io/Kraftschmiede-v2/ ausgeliefert wird (Projekt-Pages).
+// https://miklantis.github.io/Kraftschmiede/ ausgeliefert wird (Projekt-Pages).
 export default defineConfig({
-  base: "/Kraftschmiede-v2/",
+  base: "/Kraftschmiede/",
   // Reihenfolge wichtig: Router-Plugin vor dem React-Plugin.
   plugins: [
     tanstackRouter({ target: "react", autoCodeSplitting: true }),
@@ -40,7 +40,7 @@ export default defineConfig({
         // Deep-Links offline: Navigationsanfragen liefern die gecachte App-Huelle
         // unter der base aus. Koexistiert mit dem dist/404.html-Fallback der
         // GitHub-Pages-Auslieferung (greift nur online).
-        navigateFallback: "/Kraftschmiede-v2/index.html",
+        navigateFallback: "/Kraftschmiede/index.html",
         // Veraltete Precaches beim Aktivieren einer neuen Huelle aufraeumen.
         cleanupOutdatedCaches: true,
         // Bewusst KEINE runtimeCaching-Regel: Supabase-Aufrufe (Daten) gehen

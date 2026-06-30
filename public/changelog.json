@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.48",
+      "date": "2026-06-30",
+      "changes": [
+        "Die App liegt jetzt unter der Adresse miklantis.github.io/Kraftschmiede statt unter dem alten /Kraftschmiede-v2-Pfad. Hintergrund: Version 1 ist abgelöst, das Projekt heißt nur noch Kraftschmiede. Für dich ändert sich nichts an den Funktionen – nur die Adresse ist kürzer. Falls du die App über ein altes Lesezeichen mit -v2 im Pfad öffnest, lege sie bitte einmal neu von der neuen Adresse aus an."
+      ]
+    },
+    {
       "version": "1.2.47",
       "date": "2026-06-29",
       "changes": [

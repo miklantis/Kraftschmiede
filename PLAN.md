@@ -53,7 +53,7 @@ nicht rund laeuft.
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
-  Aktuelle Version: 1.2.47.
+  Aktuelle Version: 1.2.48.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -100,6 +100,14 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-06-30 — Repo/Adresse umbenannt von Kraftschmiede-v2 auf Kraftschmiede (1.2.48).
+V1 ist abgeloest: V1-Repo geloescht, V1-Supabase (Projekt Fitness, eu-north-1) pausiert,
+Code-Backup als ZIP gesichert. base-Pfad in vite.config.ts und navigateFallback von
+/Kraftschmiede-v2/ auf /Kraftschmiede/ umgestellt, Titel in index.html und Kommentar in
+main.tsx angepasst, Supabase-URLs in dieser Datei nachgezogen. Interne Schema-/Cache-Marker
+(CACHE_BUSTER, EXPORT_SCHEMA_VERSION v2) bewusst unberuehrt. Supabase Site-/Redirect-URL im
+Dashboard muss separat auf die neue Adresse umgestellt werden.
 
 - 2026-06-29 - Einstellungen-Layout: alle Bloecke halbbreit im Raster, Version 1.2.47:
   "Daten · Coaching" und der App-Version-Block wieder in den `columns-2`-Container gelegt, so
@@ -547,8 +555,8 @@ Hier kommen abgeschlossene Bloecke mit Datum dazu.
 - 2026-06-24 - Konten per Einladung im Supabase-Dashboard scharfgeschaltet (kein Code, keine
   Auslieferung): Im Projekt kraftschmiede-v2 (eu-west-1) unter Authentication die offene
   Selbstregistrierung abgeschaltet („Allow new users to sign up" aus); unter URL Configuration
-  die Site URL auf `https://miklantis.github.io/Kraftschmiede-v2/?einladung` und die
-  Redirect-Liste auf `https://miklantis.github.io/Kraftschmiede-v2/**` gesetzt. Damit wird der
+  die Site URL auf `https://miklantis.github.io/Kraftschmiede/?einladung` und die
+  Redirect-Liste auf `https://miklantis.github.io/Kraftschmiede/**` gesetzt. Damit wird der
   Link aus der Einladungs-Mail in der App als Einladung erkannt (Marker `?einladung`) und der
   „Passwort festlegen"-Screen erscheint. Bestehende Konten melden sich normal an, Einladen
   ueber das Dashboard bleibt moeglich; „Confirm email" bewusst an gelassen (bei Einladungen

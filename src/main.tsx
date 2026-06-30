@@ -21,7 +21,7 @@ import "./index.css";
 initPwaUpdate();
 
 // Router aus dem generierten Routenbaum. basepath folgt dem Vite-base,
-// damit Routing lokal (/) und auf GitHub Pages (/Kraftschmiede-v2/) gleich funktioniert.
+// damit Routing lokal (/) und auf GitHub Pages (/Kraftschmiede/) gleich funktioniert.
 const router = createRouter({
   routeTree,
   basepath: import.meta.env.BASE_URL,
