@@ -29,3 +29,7 @@ Jedes ADR folgt demselben Aufbau:
 - [ADR-0007 – base-Pfad und SPA-Fallback für GitHub Pages](./0007-base-pfad-spa-fallback.md)
 - [ADR-0008 – Bewusster Update-Hinweis statt stillem Auto-Update](./0008-bewusster-update-hinweis.md)
 - [ADR-0009 – Mutationsreihenfolge vor resumePausedMutations](./0009-mutationsreihenfolge.md)
+- [ADR-0010 – MuscleMap: SVG imperativ einbetten](./0010-musclemap-imperative-svg.md)
+- [ADR-0011 – Keine Haptik in der Web-App auf aktuellen iPhones](./0011-keine-haptik-ios.md)
+- [ADR-0012 – Update-Übernahme über controllerchange](./0012-update-uebernahme-controllerchange.md)
+- [ADR-0013 – Deploy-Concurrency mit cancel-in-progress](./0013-deploy-concurrency.md)

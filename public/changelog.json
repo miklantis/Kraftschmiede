@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.50",
+      "date": "2026-06-30",
+      "changes": [
+        "Nur Doku, keine Änderung an der App: Der interne Entwicklungs-Verlauf wurde verschlankt. Ältere technische Log-Einträge liegen jetzt in einem Archiv, die wiederkehrenden Lehren als eigene Notizen. Für dich als Nutzer ändert sich nichts; dein Versionsverlauf in der App bleibt vollständig."
+      ]
+    },
+    {
       "version": "1.2.49",
       "date": "2026-06-30",
       "changes": [
