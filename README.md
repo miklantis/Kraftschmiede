@@ -7,11 +7,17 @@ bewussten Update-Hinweis uebernommen.
 
 ## Doku
 
+So ist die Doku organisiert: **Architektur** beschreibt den Ist-Zustand (wie das System
+gebaut ist), die **ADRs** das Warum (je eine getroffene Entscheidung), das
+**Designsystem** die wiederverwendbaren Bausteine. **PLAN.md** führt allein den
+Fortschritt.
+
 - **[PLAN.md](./PLAN.md)** – laufende und offene Vorhaben, aktueller Stand, Log
-- **[docs/Architektur.md](./docs/Architektur.md)** – Datenbank-Schema, Architektur-Leitplanken, Entscheidungen
+- **[docs/Architektur.md](./docs/Architektur.md)** – Datenbank-Schema, Architektur-Leitplanken, Ist-Zustand
+- **[docs/adr/](./docs/adr/README.md)** – Architektur-Entscheidungen (ADRs): je Entscheidung eine kleine Datei mit Kontext und Begründung
 - **[docs/Designsystem.md](./docs/Designsystem.md)** – wiederverwendbare UI-Bausteine und Design-Tokens
 - **[docs/Muskel-Map.md](./docs/Muskel-Map.md)** – Konzept der generischen Muscle-Map-Komponente
-- **[docs/archive/](./docs/archive/)** – abgeschlossene Konzepte als Referenz (Offline-Huelle, Einheit bearbeiten)
+- **[docs/archive/](./docs/archive/)** – abgeschlossene Konzepte als Referenz (Offline-Hülle, Einheit bearbeiten)
 
 ## Stand
 

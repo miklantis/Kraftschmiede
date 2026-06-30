@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.49",
+      "date": "2026-06-30",
+      "changes": [
+        "Nur Doku, keine Änderung an der App: Die Projektdokumentation wurde professionell neu geordnet. Die getroffenen Architektur-Entscheidungen liegen jetzt als einzelne, nachvollziehbare Notizen in einem eigenen Bereich; die Architektur-Übersicht beschreibt nur noch den aktuellen Stand. Für dich als Nutzer ändert sich nichts."
+      ]
+    },
+    {
       "version": "1.2.48",
       "date": "2026-06-30",
       "changes": [

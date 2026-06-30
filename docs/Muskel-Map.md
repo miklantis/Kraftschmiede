@@ -1,5 +1,7 @@
 # Muskel-Map – Umsetzungsdokument
 
+> Doku-Typ: Erklärung/Konzept. Zum Verstehen, wie die Muscle-Map gedacht ist und schrittweise entsteht.
+
 Status: Arbeitsdokument, schrittweise. Lade dieses Dokument zusammen mit der
 Master-SVG (`Body_muscles.svg`) hoch, wenn wir mit einer Phase starten.
 
@@ -273,7 +275,7 @@ in `MUSCLE_LOAD` (Start `1.0 / 0.55 / 0.25`).
 
 Stand der React/TypeScript-Umsetzung in Kraftschmiede V2. Ersetzt die V1-Mechanik
 aus den Abschnitten 3-6 (window.KS, js/muscles.js, klar-app.css, isDeskView);
-Ziele und Datenmodell (Abschnitte 1-4, 7) gelten unveraendert.
+Ziele und Datenmodell (Abschnitte 1-4, 7) gelten unverändert.
 
 ### Dateien
 
@@ -286,17 +288,17 @@ Ziele und Datenmodell (Abschnitte 1-4, 7) gelten unveraendert.
   `kategorieToValue`, `regionsForGroup/Section`.
 - **Komponente** `src/components/ui/muscle-map.tsx` – generisches UI-Primitive.
 - **Daten-Hook** `src/hooks/useExerciseMuscles.ts` – laedt die Tabelle
-  `exercise_muscles` (alle Zeilen des Nutzers), Filter je Uebung im View-Hook.
+  `exercise_muscles` (alle Zeilen des Nutzers), Filter je Übung im View-Hook.
 
 ### Komponenten-Vertrag
 
-Reine Darstellung, kennt keine Domaene und keine feste Farbe.
+Reine Darstellung, kennt keine Domäne und keine feste Farbe.
 
 | Prop      | Bedeutung                                                            |
 | --------- | -------------------------------------------------------------------- |
 | `values`  | Region-, Gruppen- oder Sektions-Keys -> Intensitaet 0..1 (via `expand`). |
 | `view`    | `"both"` (Standard), `"front"` oder `"back"`. Kein Umschalter.       |
-| `colorFn` | `(v) => Farbe` fuer beanspruchte Regionen. Standard: Rampe weiss -> `--primary`. |
+| `colorFn` | `(v) => Farbe` für beanspruchte Regionen. Standard: Rampe weiß -> `--primary`. |
 | `base`    | Silhouetten-Farbe (Standard hellgrau).                               |
 | `idle`    | Farbe nicht beanspruchter Regionen (Standard etwas dunkler).         |
 
@@ -309,7 +311,7 @@ Leere Werte-Map -> nur die graue Silhouette (kein Fehler).
   Detailseite ebenfalls mit `view: "both"` auf; der Toggle aus dem Entwurf wurde nie
   genutzt).
 - **Einbetten statt Fetch.** Die SVG kommt als gebuendelter String ins DOM
-  (`dangerouslySetInnerHTML`), die Faerbung laeuft in einem Effekt (Inline-`fill` auf
+  (`dangerouslySetInnerHTML`), die Färbung läuft in einem Effekt (Inline-`fill` auf
   Element + alle `<path>`, ueberschreibt die Illustrator-Klassenfarben, greift durch
   die Silhouetten-Gruppen auf die Koerper-Teile durch).
 
@@ -321,7 +323,7 @@ Wie in Abschnitt 5.2/5.3 beschrieben: Silhouette = `base`, beanspruchte Region =
 
 ### Wiederverwendung Koerper-Seite (Phase 9)
 
-Dieselbe Komponente mit anderer `colorFn` (und ggf. `idle`) fuer Muskelkater-Shading;
+Dieselbe Komponente mit anderer `colorFn` (und ggf. `idle`) für Muskelkater-Shading;
 die Werte-Map kommt dann aus dem Erholungs-/Belastungszustand statt aus
-`exercise_muscles`. Kein Neubau noetig – das ist der Grund fuer den injizierbaren
+`exercise_muscles`. Kein Neubau nötig – das ist der Grund für den injizierbaren
 `colorFn`-Vertrag.

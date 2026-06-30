@@ -1,5 +1,7 @@
 # Kraftschmiede V2 – Designsystem
 
+> Doku-Typ: Referenz. Zum Nachschlagen, welche Bausteine existieren und wann man welchen nimmt.
+
 Dieses Dokument ist der Überblick über die wiederverwendbaren Bausteine der App: welche
 es gibt, wofür der jeweilige da ist und wann man welchen nimmt. Es ergänzt `Architektur.md` um die menschenlesbare Sicht auf die Oberfläche.
 
