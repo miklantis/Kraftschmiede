@@ -72,7 +72,8 @@ Recovery-Fenster, Timer).
   rm/rm_as_of/rm_stale (zwischengespeichertes 1RM für den Coach), active, position
 - **exercise_muscles** – feine Regionen-Map: exercise_id (FK), region_id (Code-/SVG-Region),
   kategorie (primär/sekundär/stabilisierend)
-- **templates** – key, name, image, position
+- **templates** – key, name, image, active (Soft-Archiv), position. Namen pro Nutzer
+  eindeutig über alle Workouts inkl. archivierter (`templates_unique_user_name`)
 - **template_exercises** – template_id (FK), exercise_id (FK), role (primary/secondary/core),
   position
 - **journey_templates** – key, name, tagline, for_whom, summary, position
@@ -96,6 +97,9 @@ Begründung in ADR-0003.
   `user_id where active` -> genau eine aktive Journey pro Nutzer (ADR-0004)
 - **phases** – journey_id (FK), name, focus, weeks, sets_start, sets_end, deload_week
   (nullable), rep_target_min/max, position
+- **journey_workouts** – ordnet Workouts der Journey zu: journey_id (FK), template_id (FK),
+  `unique(user_id, journey_id, template_id)`. Reine Ja/Nein-Menge, bewusst ohne position
+  (die Empfehlungsreihenfolge bestimmt der Coach); ON DELETE CASCADE über beide FKs
 - **sessions** – date, type (strength/yoga/skill), status (live/done), journey_id,
   phase_id, template_id, skill_id (alle FK, nullable), week (eingefrorene Journey-Woche),
   duration_sec, minutes (yoga), notes, started_at, body (jsonb Befinden-Snapshot),

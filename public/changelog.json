@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.0",
+      "date": "2026-07-01",
+      "changes": [
+        "Startschuss für das Vorhaben „Workouts bearbeiten & einer Journey zuordnen“. Diese Version legt im Hintergrund den Unterbau dafür (Datenbank und interne Struktur) – sichtbar ändert sich noch nichts. Die bearbeitbaren Workouts und die Journey-Zuordnung kommen in den nächsten Versionen."
+      ]
+    },
+    {
       "version": "1.2.62",
       "date": "2026-07-01",
       "changes": [

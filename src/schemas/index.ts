@@ -9,6 +9,7 @@ export * from "./shared";
 export * from "./inventory";
 export * from "./exercises";
 export * from "./templates";
+export * from "./journeyWorkouts";
 export * from "./journeyTemplates";
 export * from "./skills";
 export * from "./journeys";
