@@ -95,6 +95,24 @@ Schritten; die Empfehlung aendert ihr Verhalten erst mit Lieferung 5.
 - [ ] Lieferung 5 (1.3.x): Trainingsempfehlung auf die Zuordnung einschraenken (Rueckfall auf
   Bibliothek nur bei leerer Zuweisung; bei „alles ausgeschlossen“ bleibt es in der Journey)
 
+### Typ-Felder am Uebungskatalog aufraeumen (Konzept besprochen, Version offen)
+
+Konzept: `docs/Konzept-Typfelder-Aufraeumen.md`. Die zwei redundanten Typ-Felder `category`
+und `kind` am Uebungskatalog entfernen. Am Code gegengeprueft: `category` verzweigt real nur
+auf „ist Langhantel", `kind` traegt real nur „main vs. accessory" (zwei der vier Werte sind
+Ballast); `equipment` an der Uebung wird bislang nirgends gelesen. Zielbild: `equipment ===
+'barbell'` uebernimmt die Langhantel-Rolle von `category`, ein neues Enum `tier`
+(`main`/`accessory`, erweiterbar) ersetzt `kind`. `profile` und `bar_id` bleiben, der
+Coach-Rechenkern bleibt unangetastet. Migration befuellt die neuen Werte deterministisch aus
+den getrauten Altwerten und verifiziert die Barbell-Zuordnung, bevor `category` faellt.
+Offen: konkrete Versionsnummer und Reihenfolge relativ zum Workouts-Vorhaben (unabhaengig).
+
+- [ ] Lieferung 1: SQL-Migration + Schema (Enums umstellen), Alt- und Neuform ueberlappend
+- [ ] Lieferung 2: Lesestellen umhaengen (equipment==="barbell" in coach/ExerciseLiveCard/
+  Mapper, `kind` -> `tier` in exercises/suitability, `tierLabel`)
+- [ ] Lieferung 3: `category`/`kind` aus Export/Restore + Live-Eintrag entfernen,
+  Export-Schema-Marker hochziehen, danach alte Spalten in der DB loeschen
+
 ---
 
 ## Abgeschlossene Vorhaben
