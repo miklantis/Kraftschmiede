@@ -106,7 +106,7 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
   Langhantel-Rolle, neues Enum `tier` (`main`/`accessory`) die Uebungsart; Restore
   toleriert Altbackups (Schema-Marker v3). DB-Spalten via Migrationen 0002/0003
   umgestellt und geloescht. Coach-Rechenkern unangetastet. Konzept:
-  `docs/Konzept-Typfelder-Aufraeumen.md`.
+  `docs/archive/Konzept-Typfelder-Aufraeumen.md`.
 
 - PWA – Offline-Huelle & Update-Hinweis (Lieferungen 1–4, ab Version 1.1.0).
   Konzept: `docs/archive/Konzept-PWA-Offline.md`.

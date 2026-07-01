@@ -6,12 +6,12 @@ klar benanntes Feld überführen. Der globale Look bleibt; der **Coach-Rechenker
 unangetastet** (kein verändertes Empfehlungsverhalten).
 
 Dieses Vorhaben ist das im Workouts-Konzept angekündigte „eigene, separate Konzept" zum
-Aufräumen dieser Felder (siehe [`Konzept-Workouts-und-Journey-Zuordnung.md`](./Konzept-Workouts-und-Journey-Zuordnung.md),
+Aufräumen dieser Felder (siehe [`Konzept-Workouts-und-Journey-Zuordnung.md`](../Konzept-Workouts-und-Journey-Zuordnung.md),
 Abschnitt Ausgangslage).
 
-Verweise: Ist-Zustand in [`Architektur.md`](./Architektur.md), Schema in
+Verweise: Ist-Zustand in [`Architektur.md`](../Architektur.md), Schema in
 `supabase/migrations/0001_initial_schema.sql`, Offline-Mutationsreihenfolge in
-[`adr/0009-mutationsreihenfolge.md`](./adr/0009-mutationsreihenfolge.md).
+[`adr/0009-mutationsreihenfolge.md`](../adr/0009-mutationsreihenfolge.md).
 
 ---
 
