@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.13",
+      "date": "2026-07-01",
+      "changes": [
+        "Skills sind ab sofort immer aktiv – der An/Aus-Schalter auf der Skills-Seite entfällt. Jeder Skill zeigt direkt seine aktuelle Phase, den Zähler und die manuellen Aktionen (Phase zurück, Zurücksetzen). Auf der Trainingsseite erscheinen dadurch immer alle Skills; keiner lässt sich mehr ausblenden. Dein bisheriger Fortschritt bleibt erhalten."
+      ]
+    },
+    {
       "version": "1.3.12",
       "date": "2026-07-01",
       "changes": [

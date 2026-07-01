@@ -40,8 +40,8 @@ export interface HistoryStore {
   setTested1RM(sessionExerciseId: string, value: number | null): Promise<void>;
   /** Katalog-Zeile fortschreiben (Arbeitsgewicht, optional 1RM). */
   updateExercise(id: string, patch: Record<string, unknown>): Promise<void>;
-  /** Skill-Fortschritt fortschreiben. */
-  updateSkillProgress(write: SkillProgressWrite): Promise<void>;
+  /** Skill-Fortschritt schreiben: anlegen (isNew) oder fortschreiben. */
+  writeSkillProgress(write: SkillProgressWrite): Promise<void>;
 }
 
 // --- Echter Speicher (Betrieb): Supabase ---
@@ -86,7 +86,22 @@ export const supabaseHistoryStore: HistoryStore = {
   async updateExercise(id, patch) {
     must(await supabase.from("exercises").update(patch).eq("id", id));
   },
-  async updateSkillProgress(write) {
+  async writeSkillProgress(write) {
+    if (write.isNew) {
+      must(
+        await supabase.from("skill_progress").insert({
+          id: write.id,
+          user_id: write.userId,
+          skill_id: write.skillId,
+          active: true,
+          current_phase: write.currentPhase,
+          counter: write.consecutiveCount,
+          mastered: write.mastered,
+          log: [],
+        }),
+      );
+      return;
+    }
     must(
       await supabase
         .from("skill_progress")
@@ -152,7 +167,7 @@ export function createMemoryHistoryStore(): {
     async updateExercise(id, patch) {
       log.exercisePatches.push({ id, patch });
     },
-    async updateSkillProgress(write) {
+    async writeSkillProgress(write) {
       log.skillProgress.push(write);
     },
   };

@@ -18,10 +18,15 @@ import { writeFinishSkill, HISTORY_INVALIDATE } from "./historyWrite";
 
 export const FINISH_SKILL_MUTATION_KEY = ["finishSkill"] as const;
 
-/** Fortschritts-Update der skill_progress-Zeile (id schon bekannt). Null, wenn
- *  keine Zeile existiert (sollte bei aktivem Skill nicht vorkommen). */
+/** Fortschritts-Schreiben der skill_progress-Zeile. `isNew=true` legt die Zeile
+ *  an (erste abgeschlossene Einheit eines noch nie trainierten Skills), sonst
+ *  wird die bestehende Zeile (per id) fortgeschrieben. Fuer den Insert braucht
+ *  es user_id und skill_id; die id ist dann clientseitig vergeben. */
 export interface SkillProgressWrite {
   id: string;
+  isNew?: boolean;
+  userId?: string;
+  skillId?: string;
   currentPhase: number;
   consecutiveCount: number;
   mastered: boolean;

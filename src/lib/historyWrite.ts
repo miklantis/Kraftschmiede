@@ -60,7 +60,7 @@ export async function writeFinishSkill(
     await store.insertSets(payload.setRows);
   }
   if (payload.progressWrite) {
-    await store.updateSkillProgress(payload.progressWrite);
+    await store.writeSkillProgress(payload.progressWrite);
   }
 }
 

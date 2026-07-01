@@ -8,9 +8,9 @@ import { useSkillsView } from "@/hooks/useSkillsView";
 import { useSkillActions } from "@/hooks/useSkillActions";
 
 // Skills: Verwaltung (kein Trainieren - das kommt mit der Live-Session in
-// Phase 11). Eine Liste aller Skills; jede Karte hat einen Schalter zum
-// Aktivieren/Deaktivieren und ist aufklappbar (Phasen, Zaehler, Equipment-Tor,
-// bei aktiven Skills die manuellen Aktionen). Einspaltig wie Journey.
+// Phase 11). Eine Liste aller Skills; jeder Skill ist immer aktiv und
+// aufklappbar (Phasen, Zaehler, Equipment-Tor, manuelle Aktionen). Einspaltig
+// wie Journey.
 export const Route = createFileRoute("/skills")({
   component: SkillsPage,
 });
@@ -57,11 +57,6 @@ function SkillsPage(): React.ReactElement {
                 key={s.skillId}
                 model={s}
                 busy={actions.isBusy}
-                onToggle={(next) =>
-                  void (next
-                    ? actions.activate(s.skillId)
-                    : actions.deactivate(s.skillId))
-                }
                 onRegress={() => void actions.regress(s.skillId)}
                 onReset={() => void actions.reset(s.skillId)}
               />

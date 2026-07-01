@@ -4,15 +4,13 @@ import { todayISO } from "@/lib/format";
 import { useUserId } from "./useUserId";
 import type { SkillProgressRow, SkillLog } from "@/schemas";
 
-// Schreibaktionen der Skills-Seite. Aktivieren/Deaktivieren aendern nur den
-// active-Schalter (Fortschritt bleibt erhalten und ist fortsetzbar). Phase
-// zurueck und Zuruecksetzen sind die manuellen Eingriffe in den Fortschritt;
-// beide setzen den Konsekutiv-Zaehler auf 0 und heben "gemeistert" auf. Das
-// automatische Fortschreiben nach einer Session kommt erst mit der Live-Session
-// (Phase 11). Jede Aktion laedt Fortschritt + Uebersicht neu.
+// Manuelle Eingriffe der Skills-Seite in den Fortschritt: Phase zurueck und
+// Zuruecksetzen. Beide setzen den Konsekutiv-Zaehler auf 0 und heben
+// "gemeistert" auf. Jeder Skill ist immer aktiv (kein Aktiv-Schalter mehr); die
+// Fortschritts-Zeile wird bei der ersten abgeschlossenen Skill-Einheit angelegt
+// (useFinishSkill). Das automatische Fortschreiben nach einer Session kommt aus
+// der Live-Session. Jede Aktion laedt Fortschritt + Uebersicht neu.
 export function useSkillActions(): {
-  activate: (skillId: string) => Promise<void>;
-  deactivate: (skillId: string) => Promise<void>;
   regress: (skillId: string) => Promise<void>;
   reset: (skillId: string) => Promise<void>;
   isBusy: boolean;
@@ -45,47 +43,6 @@ export function useSkillActions(): {
     const prev = (prog?.log ?? []) as SkillLog;
     return [...prev, { date: todayISO(), ...entry }];
   }
-
-  const activateM = useMutation({
-    mutationFn: async (skillId: string): Promise<void> => {
-      if (userId === null) throw new Error("Nicht angemeldet.");
-      const prog = await loadProgress(skillId);
-      const log = appendLog(prog, { type: "activate" });
-      if (prog) {
-        const { error } = await supabase
-          .from("skill_progress")
-          .update({ active: true, log })
-          .eq("id", prog.id);
-        if (error) throw new Error(error.message);
-      } else {
-        const { error } = await supabase.from("skill_progress").insert({
-          user_id: userId,
-          skill_id: skillId,
-          active: true,
-          current_phase: 0,
-          counter: 0,
-          mastered: false,
-          log,
-        });
-        if (error) throw new Error(error.message);
-      }
-    },
-    onSuccess: invalidate,
-  });
-
-  const deactivateM = useMutation({
-    mutationFn: async (skillId: string): Promise<void> => {
-      const prog = await loadProgress(skillId);
-      if (!prog) return;
-      const log = appendLog(prog, { type: "deactivate" });
-      const { error } = await supabase
-        .from("skill_progress")
-        .update({ active: false, log })
-        .eq("id", prog.id);
-      if (error) throw new Error(error.message);
-    },
-    onSuccess: invalidate,
-  });
 
   const regressM = useMutation({
     mutationFn: async (skillId: string): Promise<void> => {
@@ -131,19 +88,9 @@ export function useSkillActions(): {
   });
 
   return {
-    activate: (id) => activateM.mutateAsync(id),
-    deactivate: (id) => deactivateM.mutateAsync(id),
     regress: (id) => regressM.mutateAsync(id),
     reset: (id) => resetM.mutateAsync(id),
-    isBusy:
-      activateM.isPending ||
-      deactivateM.isPending ||
-      regressM.isPending ||
-      resetM.isPending,
-    error:
-      activateM.error ??
-      deactivateM.error ??
-      regressM.error ??
-      resetM.error,
+    isBusy: regressM.isPending || resetM.isPending,
+    error: regressM.error ?? resetM.error,
   };
 }

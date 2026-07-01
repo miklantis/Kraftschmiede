@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.12.
+  Konzept-vor-Code. Aktuelle Version: 1.3.13.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -116,6 +116,21 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Skills immer aktiv, Aktiv-Schalter entfernt (Version 1.3.13). Der An/Aus-Schalter
+je Skill auf der Skills-Seite ist weg; jeder Skill gilt dauerhaft als aktiv. SkillCard rendert
+immer die aktive Darstellung (Phase, Zaehler, manuelle Aktionen Phase zurueck/Zuruecksetzen),
+das Switch-Primitive bleibt (nur die Nutzung in der Skill-Karte faellt weg). useSkillsView:
+Felder active/hasProgress raus, kein Pausiert-Zweig mehr. useSkillActions: activate/deactivate
+entfernt, nur regress/reset bleiben. useTrainingOverview zeigt jetzt ALLE Skill-Definitionen
+(gemergt mit Fortschritt, sonst Startwerte Phase 1) statt nur progress.filter(active). Luecke
+geschlossen: da bisher „Aktivieren“ die skill_progress-Zeile anlegte, legt jetzt die erste
+abgeschlossene Skill-Einheit sie an – SkillProgressWrite um isNew/userId/skillId erweitert,
+HistoryStore.updateSkillProgress -> writeSkillProgress (Insert bei isNew mit active=true/log=[],
+sonst Update), useFinishSkill baucht immer ein progressWrite. Kein DB-Migrat: die Spalte
+skill_progress.active bleibt liegen und wird dauerhaft als „an“ behandelt (Insert setzt sie
+true). Coach-Rechenkern unangetastet. Validierung gruen: vite build, tsc --noEmit, vitest run
+(367 Tests).
 
 2026-07-01 — Journey-Chip als Icon statt Text (Version 1.3.12). Neuer wiederverwendbarer
 `JourneyChip` (`src/components/ui/journey-chip.tsx`): zeigt das Journey-Karten-Icon (Lucide `Map`,

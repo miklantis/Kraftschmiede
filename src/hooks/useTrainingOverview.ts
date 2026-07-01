@@ -281,37 +281,38 @@ export function useTrainingOverview(): {
       .filter((r) => r.template.id !== heroRank?.template.id)
       .map(cardFor);
 
-    // Aktive Skills mit Phasen-/Equipment-Hinweis.
-    const skillCards: SkillCard[] = progress
-      .filter((p) => p.active)
-      .map((p) => {
-        const def = skills.find((s) => s.id === p.skill_id);
-        if (!def) return null;
-        const adv = skillAdvice(
-          def,
-          {
-            currentPhase: p.current_phase,
-            consecutiveCount: p.counter,
-            mastered: p.mastered,
-          },
-          ownedKeys,
-        );
-        const ph = def.phases[adv.phaseIndex];
-        const subtitle =
-          "Phase " +
-          (adv.phaseIndex + 1) +
-          " / " +
-          def.phases.length +
-          (ph ? " · " + ph.label : "") +
-          (adv.equipmentMissing ? " · Gerät fehlt" : "");
-        return {
-          id: def.id,
-          name: def.name,
-          subtitle,
-          gated: adv.equipmentMissing,
-        };
-      })
-      .filter((c): c is SkillCard => c !== null);
+    // Alle Skills sind immer aktiv (kein Aktiv-Schalter mehr); jeder Skill
+    // erscheint mit Phasen-/Equipment-Hinweis. Fortschritt wird gemergt, wenn
+    // vorhanden – sonst Startwerte (Phase 1).
+    const progBySkill = new Map(progress.map((p) => [p.skill_id, p]));
+    const skillCards: SkillCard[] = skills.map((def) => {
+      const p = progBySkill.get(def.id);
+      const adv = skillAdvice(
+        def,
+        p
+          ? {
+              currentPhase: p.current_phase,
+              consecutiveCount: p.counter,
+              mastered: p.mastered,
+            }
+          : undefined,
+        ownedKeys,
+      );
+      const ph = def.phases[adv.phaseIndex];
+      const subtitle =
+        "Phase " +
+        (adv.phaseIndex + 1) +
+        " / " +
+        def.phases.length +
+        (ph ? " · " + ph.label : "") +
+        (adv.equipmentMissing ? " · Gerät fehlt" : "");
+      return {
+        id: def.id,
+        name: def.name,
+        subtitle,
+        gated: adv.equipmentMissing,
+      };
+    });
 
     // Letzte Yoga-Einheit.
     const yogaSessions = sessions

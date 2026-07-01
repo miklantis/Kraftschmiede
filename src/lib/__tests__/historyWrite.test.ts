@@ -63,7 +63,7 @@ describe("writeFinishStrength", () => {
 });
 
 describe("writeFinishSkill", () => {
-  it("fuegt ein und zieht den Skill-Fortschritt nach", async () => {
+  it("fuegt ein und zieht den bestehenden Skill-Fortschritt nach", async () => {
     const { store, log } = createMemoryHistoryStore();
     const payload: FinishSkillPayload = {
       sessionRow: { id: "s1", user_id: "u1", date: "2026-06-20", type: "skill" },
@@ -73,6 +73,7 @@ describe("writeFinishSkill", () => {
       ],
       progressWrite: {
         id: "p1",
+        isNew: false,
         currentPhase: 2,
         consecutiveCount: 1,
         mastered: false,
@@ -83,15 +84,24 @@ describe("writeFinishSkill", () => {
     expect(log.skillProgress).toEqual([payload.progressWrite]);
   });
 
-  it("laesst den Fortschritt unberuehrt, wenn keine Zeile vorliegt", async () => {
+  it("legt die Fortschritts-Zeile an, wenn noch keine existiert", async () => {
     const { store, log } = createMemoryHistoryStore();
-    await writeFinishSkill(store, {
+    const payload: FinishSkillPayload = {
       sessionRow: { id: "s1", user_id: "u1", date: "2026-06-20", type: "skill" },
       exerciseRows: [],
       setRows: [],
-      progressWrite: null,
-    });
-    expect(log.skillProgress).toHaveLength(0);
+      progressWrite: {
+        id: "p-new",
+        isNew: true,
+        userId: "u1",
+        skillId: "sk1",
+        currentPhase: 0,
+        consecutiveCount: 1,
+        mastered: false,
+      },
+    };
+    await writeFinishSkill(store, payload);
+    expect(log.skillProgress).toEqual([payload.progressWrite]);
   });
 });
 

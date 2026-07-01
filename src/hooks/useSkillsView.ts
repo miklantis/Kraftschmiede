@@ -13,17 +13,15 @@ export interface SkillPhaseView {
   equipmentMissing: boolean;
 }
 
-// Ein Skill als Karte: aktiv-Schalter, aktuelle Phase, Zaehler, Equipment-Tor
-// und (wenn aktiv) die manuellen Aktionen. Auch deaktivierte Skills behalten
-// ihren Fortschritt, daher sind die Phasen-/Zaehler-Felder immer gefuellt.
+// Ein Skill als Karte: aktuelle Phase, Zaehler, Equipment-Tor und die manuellen
+// Aktionen. Jeder Skill ist immer aktiv (kein Aktiv-Schalter mehr); die
+// Phasen-/Zaehler-Felder sind daher stets gefuellt.
 export interface SkillCardView {
   skillId: string;
   name: string;
-  active: boolean;
   phaseLabel: string;
   phaseIndex: number;
   phaseCount: number;
-  hasProgress: boolean; // schon einmal aktiviert / trainiert
   counterText: string;
   mastered: boolean;
   startable: boolean;
@@ -102,11 +100,9 @@ export function useSkillsView(): SkillsView {
     return {
       skillId: s.id,
       name: s.name,
-      active: prog?.active === true,
       phaseLabel: s.phases[idx]?.label ?? "",
       phaseIndex: idx,
       phaseCount: s.phases.length,
-      hasProgress: prog !== undefined && (prog.current_phase > 0 || prog.counter > 0 || prog.mastered),
       counterText,
       mastered: adv.mastered,
       startable: !adv.equipmentMissing,

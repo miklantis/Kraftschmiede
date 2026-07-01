@@ -70,11 +70,20 @@ export function useFinishSkill(): UseFinishSkill {
         progressWrite: row
           ? {
               id: row.id,
+              isNew: false,
               currentPhase: rows.progressPatch.currentPhase,
               consecutiveCount: rows.progressPatch.consecutiveCount,
               mastered: rows.progressPatch.mastered,
             }
-          : null,
+          : {
+              id: crypto.randomUUID(),
+              isNew: true,
+              userId,
+              skillId: session.skillId,
+              currentPhase: rows.progressPatch.currentPhase,
+              consecutiveCount: rows.progressPatch.consecutiveCount,
+              mastered: rows.progressPatch.mastered,
+            },
       });
     },
     [userId, skillsQ.data, progressQ.data, mutation],
