@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.14.
+  Konzept-vor-Code. Aktuelle Version: 1.3.15.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -116,6 +116,11 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Journey-Chip an Journey-Block angeglichen (Version 1.3.15). In
+src/components/ui/journey-chip.tsx die Toenung von bg-primary/10 auf bg-primary/12 und die
+Icon-Farbe vom fest verdrahteten #0a7d5e auf text-primary (--primary, #0c9d77) umgestellt –
+damit identisch zum Symbolfeld im JourneyStrip. Reiner Optik-Patch, keine Logikaenderung.
 
 2026-07-01 — Hauptnavigation neu geordnet (Version 1.3.14). Reihenfolge in NAV_ENTRIES
 (src/lib/nav.ts) angepasst: Training, Journey, Workouts, Skills, Uebungen, Koerper. Skills von
