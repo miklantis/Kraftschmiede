@@ -161,13 +161,13 @@ export function useExerciseDetail(exerciseId: string): ExerciseDetailView {
       stats = [
         {
           value: exercise.rm != null ? fmtWeight(exercise.rm, unit) : "–",
-          label: "geschätztes 1RM",
+          label: "1RM",
         },
         {
           value: best ? `${fmtNum(best.weight)}×${best.reps}` : "–",
           label: "bestes Set",
         },
-        { value: pct ?? "–", label: "6 Wochen", accent: pct != null },
+        { value: pct ?? "–", label: "in 6 Wo.", accent: pct != null },
       ];
     }
   }

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.51",
+      "date": "2026-07-01",
+      "changes": [
+        "Übungsdetail aufgeräumt: Coach-Empfehlung und die Kennzahlen (geschätztes 1RM, bestes Set, 1RM-Veränderung der letzten 6 Wochen) stehen jetzt zusammen in einem Block statt in zwei getrennten Kästen. Die Zahlen laufen in einer Reihe, die Muskel-Figur rückt nach oben. Kürzere Beschriftungen: „1RM“ und „in 6 Wo.“."
+      ]
+    },
+    {
       "version": "1.2.50",
       "date": "2026-06-30",
       "changes": [

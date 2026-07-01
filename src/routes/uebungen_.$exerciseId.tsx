@@ -7,7 +7,6 @@ import { Prose } from "@/components/ui/prose";
 import { Section } from "@/components/ui/section";
 import { List, ListRow } from "@/components/ui/list";
 import { CoachStatusPill } from "@/components/ui/coach-status-pill";
-import { StatRow } from "@/components/ui/stat-row";
 import { MuscleMap } from "@/components/ui/muscle-map";
 import { PageReveal } from "@/components/ui/page-reveal";
 import { ExerciseChartCard } from "@/components/exercise/ExerciseChartCard";
@@ -15,6 +14,7 @@ import { ExerciseEditModal } from "@/components/exercise/ExerciseEditModal";
 import { useExerciseDetail } from "@/hooks/useExerciseDetail";
 import { exerciseRowSub } from "@/lib/exercises";
 import { longDateShort, fmtWeight } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 // Uebungs-Detail. Eigenstaendige Vollseite (entschachtelt mit _), ersetzt die
 // Liste wie in V1. Zeigt Kopf, Statistik-Reihe, Verlaufsdiagramm, die Muscle-Map
@@ -85,20 +85,46 @@ function ExerciseDetailPage(): React.ReactElement {
       </div>
       {exercise.description && <Prose>{exercise.description}</Prose>}
 
-      {coach && (
+      {(coach || stats.length > 0) && (
         <Section eyebrow="Coach" className="mb-5 min-[960px]:mb-6">
           <div className="rounded-[18px] bg-card p-4 shadow-card min-[960px]:p-5">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <CoachStatusPill state={coach.state} />
-              {coach.state !== "carry" && (
-                <span className="font-mono text-[15px] font-semibold text-foreground tabular-nums">
-                  {fmtWeight(coach.weight, unit)} × {coach.targetReps}
-                </span>
-              )}
-            </div>
-            <p className="mt-2.5 text-[14px] leading-snug text-muted-foreground">
-              {coach.note}
-            </p>
+            {coach && (
+              <>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <CoachStatusPill state={coach.state} />
+                  {coach.state !== "carry" && (
+                    <span className="font-mono text-[15px] font-semibold text-foreground tabular-nums">
+                      {fmtWeight(coach.weight, unit)} × {coach.targetReps}
+                    </span>
+                  )}
+                </div>
+                <p className="mt-2.5 text-[14px] leading-snug text-muted-foreground">
+                  {coach.note}
+                </p>
+              </>
+            )}
+            {stats.length > 0 && (
+              <div
+                className={cn(
+                  "flex flex-wrap items-baseline gap-x-[22px] gap-y-2 text-[15px] text-muted-foreground",
+                  coach && "mt-3.5 border-t border-border pt-3.5",
+                )}
+              >
+                {stats.map((c, i) => (
+                  <span key={i}>
+                    <span
+                      className={cn(
+                        "font-semibold tabular-nums",
+                        c.accent ? "text-primary" : "text-foreground",
+                      )}
+                    >
+                      {c.value}
+                    </span>{" "}
+                    {c.label}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </Section>
       )}
@@ -159,10 +185,9 @@ function ExerciseDetailPage(): React.ReactElement {
           </Section>
         </div>
 
-        {/* Rechte Spalte: Statistik + Muskeln */}
+        {/* Rechte Spalte: Muskeln + Uebung anpassen (Statistik wanderte in den
+            Coach-Block oben). */}
         <div className="contents min-w-0 min-[960px]:flex min-[960px]:flex-1 min-[960px]:flex-col min-[960px]:gap-7">
-          <StatRow cells={stats} className="order-1 min-[960px]:order-none" />
-
           <Section
             eyebrow="Beanspruchte Muskeln"
             className="order-3 min-[960px]:order-none"
