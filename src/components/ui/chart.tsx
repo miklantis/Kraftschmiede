@@ -231,6 +231,15 @@ export function ChartCanvas({
   const cw = useElementWidth(containerRef);
   const { t, r, b, l } = margin;
 
+  // Scrollbar nur, wenn die Zeichnung breiter ist als der verfuegbare Platz
+  // (Handy, lange Kurve). Passt alles ins Bild (Desktop, wenige Punkte), bleibt
+  // der Rahmen unscrollbar: ueberstehendes wird beschnitten statt scrollbar.
+  // Verhindert, dass beim Ziehen am Fenster kurzzeitig eine Scrollbar aufblitzt,
+  // waehrend Rahmenbreite und SVG-Breite einen Frame auseinanderlaufen. Kleine
+  // Toleranz gegen Rundungsflackern an der Grenze.
+  const drawWidth = Math.max(cw, (minInnerWidth ?? 0) + l + r);
+  const needsScroll = cw > 0 && drawWidth - cw > 0.5;
+
   useEffect(() => {
     const node = svgRef.current;
     if (!node || cw <= 0) return;
@@ -272,7 +281,12 @@ export function ChartCanvas({
   return (
     <div
       ref={containerRef}
-      className={cn("overflow-x-auto [-webkit-overflow-scrolling:touch]", className)}
+      className={cn(
+        needsScroll
+          ? "overflow-x-auto [-webkit-overflow-scrolling:touch]"
+          : "overflow-x-clip",
+        className,
+      )}
     >
       <svg ref={svgRef} />
     </div>

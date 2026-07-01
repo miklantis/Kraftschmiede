@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.54",
+      "date": "2026-07-01",
+      "changes": [
+        "Auf der Übungen-Seite tauchte bei den angehefteten Diagrammen manchmal kurz eine waagerechte Bildlaufleiste auf und verschwand wieder, wenn man am Computer das Fenster kleiner oder größer zog. Die Diagramme sind jetzt nur noch dann scrollbar, wenn wirklich etwas außerhalb des Bildes liegt (etwa am Handy bei langem Verlauf). Passt alles in die Karte, bleibt es ruhig."
+      ]
+    },
+    {
       "version": "1.2.53",
       "date": "2026-07-01",
       "changes": [

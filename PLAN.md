@@ -46,7 +46,7 @@ Inhaltliche Quellen:
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
-  Aktuelle Version: 1.2.53.
+  Aktuelle Version: 1.2.54.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -110,6 +110,16 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Chart-Rahmen scrollt nur bei echtem Ueberlauf (Version 1.2.54).
+In ChartCanvas (components/ui/chart.tsx) den Rahmen von fixem overflow-x-auto
+auf bedarfsabhaengig umgestellt: needsScroll = Zeichenbreite > Containerbreite
+(kleine Toleranz), sonst overflow-x-clip. Behebt das kurzzeitige Aufblitzen
+einer waagerechten Scrollbar bei den angehefteten Uebungs-Charts, wenn am
+Desktop das Fenster resized wird (Rahmen- und SVG-Breite liefen einen Frame
+auseinander). Handy-Scrollfall (lange Kurve, minInnerWidth) unveraendert. Reiner
+Layout-Fix, keine Logik beruehrt. Geaendert: components/ui/chart.tsx,
+changelog.json.
 
 2026-07-01 — Verlauf-Band auf oberes Spaltenraster ausgerichtet (Version 1.2.53).
 Das Verlauf-Gitter in HistorySection.tsx von 1.35fr/1fr auf 1.6fr/1fr umgestellt,
