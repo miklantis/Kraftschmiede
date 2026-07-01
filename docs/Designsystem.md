@@ -124,7 +124,8 @@ oben auf:
 - `live` – Live-Session (Kraft und Skill) während des Trainings
 - `journey` – Journey / Periodisierung
 - `skills` – Skill-Fortschritt
-- `exercise` – Übungen
+- `exercise` – Übungen; darunter `ExercisePicker` (Auswähler über den Katalog, baut auf `Overlay` auf, gruppiert + Suche + Mehrfachauswahl – auch außerhalb der Workouts nutzbar)
+- `workout` – Workout-Editor (`WorkoutEditor`: Name, geordnete Übungsliste mit Rolle/Reihenfolge, Live-Journey-Fähigkeit, bewusstes Speichern)
 - `body` – Körper (Messwerte, Readiness, InBody)
 - `history` – Verlauf
 - `settings` – Einstellungen

@@ -16,10 +16,12 @@ import { Route as KoerperRouteImport } from './routes/koerper'
 import { Route as JourneyRouteImport } from './routes/journey'
 import { Route as EinstellungenRouteImport } from './routes/einstellungen'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WorkoutsNeuRouteImport } from './routes/workouts_.neu'
 import { Route as WorkoutsTemplateIdRouteImport } from './routes/workouts_.$templateId'
 import { Route as UebungenExerciseIdRouteImport } from './routes/uebungen_.$exerciseId'
 import { Route as JourneyWaehlenRouteImport } from './routes/journey_.waehlen'
 import { Route as EinstellungenVersionRouteImport } from './routes/einstellungen_.version'
+import { Route as WorkoutsTemplateIdBearbeitenRouteImport } from './routes/workouts_.$templateId_.bearbeiten'
 
 const WorkoutsRoute = WorkoutsRouteImport.update({
   id: '/workouts',
@@ -56,6 +58,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkoutsNeuRoute = WorkoutsNeuRouteImport.update({
+  id: '/workouts_/neu',
+  path: '/workouts/neu',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WorkoutsTemplateIdRoute = WorkoutsTemplateIdRouteImport.update({
   id: '/workouts_/$templateId',
   path: '/workouts/$templateId',
@@ -76,6 +83,12 @@ const EinstellungenVersionRoute = EinstellungenVersionRouteImport.update({
   path: '/einstellungen/version',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkoutsTemplateIdBearbeitenRoute =
+  WorkoutsTemplateIdBearbeitenRouteImport.update({
+    id: '/workouts_/$templateId_/bearbeiten',
+    path: '/workouts/$templateId/bearbeiten',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -89,6 +102,8 @@ export interface FileRoutesByFullPath {
   '/journey/waehlen': typeof JourneyWaehlenRoute
   '/uebungen/$exerciseId': typeof UebungenExerciseIdRoute
   '/workouts/$templateId': typeof WorkoutsTemplateIdRoute
+  '/workouts/neu': typeof WorkoutsNeuRoute
+  '/workouts/$templateId/bearbeiten': typeof WorkoutsTemplateIdBearbeitenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -102,6 +117,8 @@ export interface FileRoutesByTo {
   '/journey/waehlen': typeof JourneyWaehlenRoute
   '/uebungen/$exerciseId': typeof UebungenExerciseIdRoute
   '/workouts/$templateId': typeof WorkoutsTemplateIdRoute
+  '/workouts/neu': typeof WorkoutsNeuRoute
+  '/workouts/$templateId/bearbeiten': typeof WorkoutsTemplateIdBearbeitenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,6 +133,8 @@ export interface FileRoutesById {
   '/journey_/waehlen': typeof JourneyWaehlenRoute
   '/uebungen_/$exerciseId': typeof UebungenExerciseIdRoute
   '/workouts_/$templateId': typeof WorkoutsTemplateIdRoute
+  '/workouts_/neu': typeof WorkoutsNeuRoute
+  '/workouts_/$templateId_/bearbeiten': typeof WorkoutsTemplateIdBearbeitenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,6 +150,8 @@ export interface FileRouteTypes {
     | '/journey/waehlen'
     | '/uebungen/$exerciseId'
     | '/workouts/$templateId'
+    | '/workouts/neu'
+    | '/workouts/$templateId/bearbeiten'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -144,6 +165,8 @@ export interface FileRouteTypes {
     | '/journey/waehlen'
     | '/uebungen/$exerciseId'
     | '/workouts/$templateId'
+    | '/workouts/neu'
+    | '/workouts/$templateId/bearbeiten'
   id:
     | '__root__'
     | '/'
@@ -157,6 +180,8 @@ export interface FileRouteTypes {
     | '/journey_/waehlen'
     | '/uebungen_/$exerciseId'
     | '/workouts_/$templateId'
+    | '/workouts_/neu'
+    | '/workouts_/$templateId_/bearbeiten'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -171,6 +196,8 @@ export interface RootRouteChildren {
   JourneyWaehlenRoute: typeof JourneyWaehlenRoute
   UebungenExerciseIdRoute: typeof UebungenExerciseIdRoute
   WorkoutsTemplateIdRoute: typeof WorkoutsTemplateIdRoute
+  WorkoutsNeuRoute: typeof WorkoutsNeuRoute
+  WorkoutsTemplateIdBearbeitenRoute: typeof WorkoutsTemplateIdBearbeitenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -224,6 +251,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/workouts_/neu': {
+      id: '/workouts_/neu'
+      path: '/workouts/neu'
+      fullPath: '/workouts/neu'
+      preLoaderRoute: typeof WorkoutsNeuRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/workouts_/$templateId': {
       id: '/workouts_/$templateId'
       path: '/workouts/$templateId'
@@ -252,6 +286,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EinstellungenVersionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/workouts_/$templateId_/bearbeiten': {
+      id: '/workouts_/$templateId_/bearbeiten'
+      path: '/workouts/$templateId/bearbeiten'
+      fullPath: '/workouts/$templateId/bearbeiten'
+      preLoaderRoute: typeof WorkoutsTemplateIdBearbeitenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -267,6 +308,8 @@ const rootRouteChildren: RootRouteChildren = {
   JourneyWaehlenRoute: JourneyWaehlenRoute,
   UebungenExerciseIdRoute: UebungenExerciseIdRoute,
   WorkoutsTemplateIdRoute: WorkoutsTemplateIdRoute,
+  WorkoutsNeuRoute: WorkoutsNeuRoute,
+  WorkoutsTemplateIdBearbeitenRoute: WorkoutsTemplateIdBearbeitenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

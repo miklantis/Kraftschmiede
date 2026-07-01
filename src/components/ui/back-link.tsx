@@ -8,17 +8,21 @@ import { cn } from "@/lib/utils";
 export interface BackLinkProps {
   to: LinkProps["to"];
   label: string;
+  /** Optionale Route-Params, falls das Ziel einen Parameter hat (z. B. Workout-Detail). */
+  params?: LinkProps["params"];
   className?: string;
 }
 
 export function BackLink({
   to,
   label,
+  params,
   className,
 }: BackLinkProps): React.ReactElement {
   return (
     <Link
       to={to}
+      params={params}
       className={cn(
         "mb-4 inline-flex items-center gap-1.5 text-[15px] font-semibold text-primary",
         className,

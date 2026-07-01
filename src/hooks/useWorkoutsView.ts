@@ -1,6 +1,7 @@
 import { useTemplates } from "./useTemplates";
 import { useExercises } from "./useExercises";
 import {
+  buildArchivedList,
   buildWorkoutList,
   type WorkoutExerciseInfo,
   type WorkoutInput,
@@ -12,12 +13,14 @@ export interface WorkoutsView {
   isError: boolean;
   error: unknown;
   workouts: WorkoutRowModel[];
+  archived: WorkoutRowModel[];
 }
 
 // Ansichtsmodell der Workouts-Bibliothek: aktive Workouts (useTemplates) mit
-// Kurzform ihrer Uebungen und abgeleiteter Journey-Faehigkeit. Die Uebungsnamen
-// und -profile kommen aus dem Katalog (useExercises). Reine Aufbereitung liegt
-// in lib/workouts.ts.
+// Kurzform ihrer Uebungen und abgeleiteter Journey-Faehigkeit, dazu die
+// archivierten fuer den ausklappbaren Archiv-Abschnitt. Die Uebungsnamen und
+// -profile kommen aus dem Katalog (useExercises). Reine Aufbereitung liegt in
+// lib/workouts.ts.
 export function useWorkoutsView(): WorkoutsView {
   const templatesQ = useTemplates();
   const exercisesQ = useExercises();
@@ -31,10 +34,13 @@ export function useWorkoutsView(): WorkoutsView {
     lookup[e.id] = { name: e.name, profile: e.profile };
   }
 
-  const workouts =
-    templatesQ.data && exercisesQ.data
-      ? buildWorkoutList(templatesQ.data as WorkoutInput[], lookup)
-      : [];
+  const ready = templatesQ.data && exercisesQ.data;
+  const workouts = ready
+    ? buildWorkoutList(templatesQ.data as WorkoutInput[], lookup)
+    : [];
+  const archived = ready
+    ? buildArchivedList(templatesQ.data as WorkoutInput[], lookup)
+    : [];
 
-  return { isLoading, isError, error, workouts };
+  return { isLoading, isError, error, workouts, archived };
 }

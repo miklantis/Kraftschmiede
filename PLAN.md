@@ -46,13 +46,15 @@ Inhaltliche Quellen:
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Vorhaben „Workouts editierbar & Journey-Zuordnung" (Version 1.3) begonnen.** Lieferung 1
-  (1.3.0, Unterbau) und Lieferung 2 (1.3.1, Workouts-Seite lesend) umgesetzt: neuer
-  Hauptnav-Punkt „Workouts", Bibliothek der aktiven Workouts (Name, Uebungen in Kurzform,
-  Hinweis „journey-faehig"), lesende Detailseite mit nach Rolle gruppierten Uebungen. Als
-  Naechstes Lieferung 3 (Workout-Editor: anlegen/bearbeiten/archivieren/reaktivieren).
+  (1.3.0, Unterbau), Lieferung 2 (1.3.1, Workouts-Seite lesend) und Lieferung 3 (1.3.2,
+  Editor) umgesetzt: neuer Hauptnav-Punkt „Workouts", Bibliothek der aktiven Workouts mit
+  „Neues Workout" und ausklappbarem Archiv (Reaktivieren), lesende Detailseite mit
+  „Bearbeiten", und der Editor (Name, Uebungen aus dem Katalog per Auswaehler, Rolle
+  Haupt/Assistenz/Core, Reihenfolge, Entfernen, Live-Journey-Faehigkeit, bewusstes Speichern;
+  offline-fest). Als Naechstes Lieferung 4 (Journey-Zuordnung der aktiven Journey).
   Konzept: `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben ausser 1.3.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.1.
+  Konzept-vor-Code. Aktuelle Version: 1.3.2.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -94,7 +96,7 @@ Schritten; die Empfehlung aendert ihr Verhalten erst mit Lieferung 5.
 - [x] Lieferung 1 (1.3.0): Migration `journey_workouts` + `templates.active`
   + `unique(user_id, name)` + Schema + Lese-Hooks (inkl. `role` in `useTemplates`)
 - [x] Lieferung 2 (1.3.x): Workouts-Seite (lesend) + neuer Nav-Punkt
-- [ ] Lieferung 3 (1.3.x): Workout-Editor (anlegen/bearbeiten/archivieren/reaktivieren,
+- [x] Lieferung 3 (1.3.x): Workout-Editor (anlegen/bearbeiten/archivieren/reaktivieren,
   Gueltigkeit: Name eindeutig + min. eine Uebung, bewusstes Speichern)
 - [ ] Lieferung 4 (1.3.x): Journey-Zuordnung der aktiven Journey (Toggles, Uebernahme beim
   Journey-Wechsel)
@@ -132,6 +134,28 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 3 / Workout-Editor (Version 1.3.2).
+Workouts sind editierbar: neue Routen workouts_.neu.tsx (/workouts/neu) und
+workouts_.$templateId_.bearbeiten.tsx (/workouts/$templateId/bearbeiten), beide rendern die
+neue Feature-Komponente components/workout/WorkoutEditor.tsx. Der Editor haelt einen lokalen
+Entwurf (Name + geordnete Uebungsliste mit Rolle), zeigt die Journey-Faehigkeit live und
+speichert erst per Knopf. Bibliotheksseite (routes/workouts.tsx) um „Neues Workout" und einen
+ausklappbaren Abschnitt „Archivierte" (Reaktivieren) erweitert; Detailseite
+(workouts_.$templateId.tsx) um „Bearbeiten". Reine Regellogik in lib/workoutEditor.ts
+(Journey-Faehigkeit, Namens-/Speicherbarkeit, Hinzufuegen/Entfernen/Rolle/Verschieben) mit
+16 Tests; Datenzugriff in Hooks gekapselt: useWorkoutEditor (Entwurfszustand),
+useTemplateActions (Speichern/Archivieren/Reaktivieren). Speichern laeuft ueber den neuen
+registrierten Mutations-Default lib/templateActions.ts (Kennung ["templateAction"], in
+queryClient.ts nach den bestehenden und vor einer kuenftigen Journey-Zuordnung registriert –
+ADR-0009) mit clientseitigen IDs; Bearbeiten ersetzt die Uebungsliste sauber
+(Loeschen + Neu-Einfuegen), unbedenklich da template_exercises nur das Rezept ist. Neuer
+Auswaehler components/exercise/ExercisePicker.tsx (Overlay, gruppierter Katalog, Suche,
+Mehrfachauswahl). BackLink um optionale Params erweitert (Ruecksprung auf die Detailseite).
+Archivieren setzt nur templates.active=false (journey_workouts bleiben, kommen beim
+Reaktivieren von allein zurueck). Empfehlung rankt weiter alle Workouts (Einschraenkung erst
+Lieferung 5); Coach-Rechenkern unangetastet. Kein neues DB-Migrat (nutzt 0004). Validierung
+gruen: vite build, tsc --noEmit, vitest run (357 Tests).
 
 2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 2 / Workouts-Seite lesend
 (Version 1.3.1). Neuer Hauptnav-Punkt „Workouts" (ClipboardList) zwischen Journey und

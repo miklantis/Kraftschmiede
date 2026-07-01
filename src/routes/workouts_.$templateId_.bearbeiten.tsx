@@ -1,0 +1,13 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { WorkoutEditor } from "@/components/workout/WorkoutEditor";
+
+// Bestehendes Workout bearbeiten. Eigenstaendige Vollseite (entschachtelt mit _),
+// erreichbar ueber "Bearbeiten" auf der lesenden Detailseite.
+export const Route = createFileRoute("/workouts_/$templateId_/bearbeiten")({
+  component: EditWorkoutPage,
+});
+
+function EditWorkoutPage(): React.ReactElement {
+  const { templateId } = Route.useParams();
+  return <WorkoutEditor templateId={templateId} />;
+}

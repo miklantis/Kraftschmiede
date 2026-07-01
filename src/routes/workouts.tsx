@@ -1,20 +1,27 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ChevronDown, ChevronRight, Plus } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { PageReveal } from "@/components/ui/page-reveal";
 import { Section } from "@/components/ui/section";
 import { List, ListRow } from "@/components/ui/list";
+import { Button } from "@/components/ui/button";
 import { useWorkoutsView } from "@/hooks/useWorkoutsView";
+import { useTemplateActions } from "@/hooks/useTemplateActions";
 
-// Workouts – Bibliothek (lesend). Zeigt die aktiven Workouts als Liste: Name,
-// enthaltene Uebungen in Kurzform, Hinweis "journey-faehig". Tippen fuehrt auf
-// die Detailseite. Anlegen/Bearbeiten/Archivieren folgt in Lieferung 3.
+// Workouts – Bibliothek. Zeigt die aktiven Workouts als Liste (Name, Uebungen
+// in Kurzform, Hinweis "journey-faehig"); tippen fuehrt auf die lesende
+// Detailseite. Oben "Neues Workout" (Editor), unten ein ausklappbarer
+// Archiv-Abschnitt mit Reaktivieren.
 export const Route = createFileRoute("/workouts")({
   component: WorkoutsPage,
 });
 
 function WorkoutsPage(): React.ReactElement {
   const navigate = useNavigate();
-  const { isLoading, isError, error, workouts } = useWorkoutsView();
+  const { isLoading, isError, error, workouts, archived } = useWorkoutsView();
+  const { reactivateWorkout, isSaving } = useTemplateActions();
+  const [showArchived, setShowArchived] = useState(false);
 
   if (isLoading) {
     return (
@@ -37,47 +44,90 @@ function WorkoutsPage(): React.ReactElement {
     );
   }
 
-  if (workouts.length === 0) {
-    return (
-      <div>
-        <PageHeader title="Workouts" />
-        <p className="text-sm text-muted-foreground">
-          Noch keine Workouts vorhanden.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div>
       <PageHeader title="Workouts" />
       <PageReveal>
+        <Button asChild variant="outline" className="mb-5 w-full">
+          <Link to="/workouts/neu">
+            <Plus className="size-[18px]" />
+            Neues Workout
+          </Link>
+        </Button>
+
         <Section>
-          <List bordered>
-            {workouts.map((w) => (
-              <ListRow
-                key={w.id}
-                title={w.name}
-                subtitle={w.summary || "Keine Übungen"}
-                trailing={
-                  w.journeyCapable ? (
-                    <span className="rounded-[20px] bg-foreground px-2.5 py-1 text-[12px] font-medium text-background">
-                      journey-fähig
-                    </span>
-                  ) : undefined
-                }
-                chevron
-                ariaLabel={w.name + " öffnen"}
-                onClick={() =>
-                  void navigate({
-                    to: "/workouts/$templateId",
-                    params: { templateId: w.id },
-                  })
-                }
-              />
-            ))}
-          </List>
+          {workouts.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Noch keine aktiven Workouts. Lege oben ein neues an.
+            </p>
+          ) : (
+            <List bordered>
+              {workouts.map((w) => (
+                <ListRow
+                  key={w.id}
+                  title={w.name}
+                  subtitle={w.summary || "Keine Übungen"}
+                  trailing={
+                    w.journeyCapable ? (
+                      <span className="rounded-[20px] bg-foreground px-2.5 py-1 text-[12px] font-medium text-background">
+                        journey-fähig
+                      </span>
+                    ) : undefined
+                  }
+                  chevron
+                  ariaLabel={w.name + " öffnen"}
+                  onClick={() =>
+                    void navigate({
+                      to: "/workouts/$templateId",
+                      params: { templateId: w.id },
+                    })
+                  }
+                />
+              ))}
+            </List>
+          )}
         </Section>
+
+        {archived.length > 0 && (
+          <div className="mt-6">
+            <button
+              type="button"
+              onClick={() => setShowArchived((v) => !v)}
+              className="flex w-full items-center gap-1.5 text-[13px] font-semibold text-muted-foreground"
+            >
+              {showArchived ? (
+                <ChevronDown className="size-4" />
+              ) : (
+                <ChevronRight className="size-4" />
+              )}
+              Archivierte ({archived.length})
+            </button>
+
+            {showArchived && (
+              <div className="mt-3">
+                <List bordered>
+                  {archived.map((w) => (
+                    <ListRow
+                      key={w.id}
+                      title={w.name}
+                      subtitle={w.summary || "Keine Übungen"}
+                      trailing={
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={isSaving}
+                          onClick={() => void reactivateWorkout(w.id)}
+                        >
+                          Reaktivieren
+                        </Button>
+                      }
+                    />
+                  ))}
+                </List>
+              </div>
+            )}
+          </div>
+        )}
       </PageReveal>
     </div>
   );

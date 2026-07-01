@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/ui/page-header";
 import { BackLink } from "@/components/ui/back-link";
+import { Button } from "@/components/ui/button";
 import { PageReveal } from "@/components/ui/page-reveal";
 import { Section } from "@/components/ui/section";
 import { List, ListRow } from "@/components/ui/list";
@@ -64,6 +65,14 @@ function WorkoutDetailPage(): React.ReactElement {
             nicht journey-fähig
           </span>
         )}
+        <Button asChild variant="outline" size="sm" className="ml-auto">
+          <Link
+            to="/workouts/$templateId/bearbeiten"
+            params={{ templateId }}
+          >
+            Bearbeiten
+          </Link>
+        </Button>
       </div>
 
       <PageReveal>

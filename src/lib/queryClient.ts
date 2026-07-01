@@ -2,6 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { registerFinishMutation } from "./finishMutation";
 import { registerFinishSkillMutation } from "./finishSkillMutation";
 import { registerEditMutation } from "./editMutation";
+import { registerTemplateMutation } from "./templateActions";
 
 // Wie lange ein nicht mehr aktiv genutzter Eintrag im Speicher gehalten wird.
 // Muss mindestens so lang sein wie die Lebensdauer des gespeicherten Caches
@@ -34,3 +35,7 @@ export const queryClient = new QueryClient({
 registerFinishMutation(queryClient);
 registerFinishSkillMutation(queryClient);
 registerEditMutation(queryClient);
+// Workout-Aktionen (Speichern/Archivieren/Reaktivieren). Bewusst nach den
+// bestehenden und vor einer kuenftigen Journey-Zuordnung (Lieferung 4), damit
+// ein offline neu angelegtes Workout vor seiner Zuordnung nachgereicht wird.
+registerTemplateMutation(queryClient);

@@ -80,19 +80,30 @@ export function workoutSummary(w: WorkoutInput, lookup: Lookup): string {
     .join(" · ");
 }
 
+// Ein Workout in ein Zeilenmodell abbilden (Kurzform + Journey-Faehigkeit).
+function toRowModel(w: WorkoutInput, lookup: Lookup): WorkoutRowModel {
+  return {
+    id: w.id,
+    name: w.name,
+    summary: workoutSummary(w, lookup),
+    journeyCapable: isJourneyCapable(w, lookup),
+  };
+}
+
 // Liste der aktiven Workouts als Zeilenmodelle, Reihenfolge unveraendert.
 export function buildWorkoutList(
   workouts: WorkoutInput[],
   lookup: Lookup,
 ): WorkoutRowModel[] {
-  return workouts
-    .filter((w) => w.active)
-    .map((w) => ({
-      id: w.id,
-      name: w.name,
-      summary: workoutSummary(w, lookup),
-      journeyCapable: isJourneyCapable(w, lookup),
-    }));
+  return workouts.filter((w) => w.active).map((w) => toRowModel(w, lookup));
+}
+
+// Liste der archivierten Workouts (fuer den ausklappbaren Archiv-Abschnitt).
+export function buildArchivedList(
+  workouts: WorkoutInput[],
+  lookup: Lookup,
+): WorkoutRowModel[] {
+  return workouts.filter((w) => !w.active).map((w) => toRowModel(w, lookup));
 }
 
 // Detailansicht eines Workouts: nach Rolle gruppiert (Haupt -> Assistenz -> Core),
