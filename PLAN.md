@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   offline-fest). Als Naechstes Lieferung 4 (Journey-Zuordnung der aktiven Journey).
   Konzept: `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben ausser 1.3.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.4.
+  Konzept-vor-Code. Aktuelle Version: 1.3.5.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -134,6 +134,12 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Workout-Editor: Rolle als Dropdown (Version 1.3.5). Die vollbreite
+Segmentleiste je Uebung (Haupt/Assistenz/Core) durch das generische Select-Primitive ersetzt,
+kompakt in der Kopfzeile neben dem Uebungsnamen (Icons auf size-9 angeglichen). Die Rolle ist
+reines Anzeigeraster und tritt so dezenter auf. Nur components/workout/WorkoutEditor.tsx.
+Validierung gruen: vite build, tsc --noEmit, vitest run.
 
 2026-07-01 — Workout-Detail: Bearbeiten-Knopf am Handy (Version 1.3.4). Die Chip/Bearbeiten-
 Zeile in workouts_.$templateId.tsx am Handy von flex-wrap (Knopf via ml-auto rechts, gedraengt

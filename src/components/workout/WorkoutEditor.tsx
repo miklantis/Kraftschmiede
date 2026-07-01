@@ -4,7 +4,7 @@ import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 import { BackLink } from "@/components/ui/back-link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
-import { SegmentedControl } from "@/components/ui/segmented";
+import { Select } from "@/components/ui/select";
 import { ExercisePicker } from "@/components/exercise/ExercisePicker";
 import { useWorkoutEditor } from "@/hooks/useWorkoutEditor";
 import type { TemplateRole } from "@/schemas";
@@ -139,16 +139,23 @@ export function WorkoutEditor({
               key={row.exerciseId}
               className="rounded-[14px] bg-card px-3.5 py-3 shadow-card"
             >
-              <div className="mb-2.5 flex items-center gap-2">
-                <span className="flex-1 text-[15px] font-semibold text-foreground">
+              <div className="flex items-center gap-2">
+                <span className="min-w-0 flex-1 truncate text-[15px] font-semibold text-foreground">
                   {row.name}
                 </span>
+                <Select
+                  options={ROLE_OPTIONS}
+                  value={row.role}
+                  onChange={(v) => ed.setRole(row.exerciseId, v as TemplateRole)}
+                  ariaLabel="Rolle im Workout"
+                  className="flex-none"
+                />
                 <button
                   type="button"
                   aria-label="Nach oben"
                   disabled={i === 0}
                   onClick={() => ed.moveUp(i)}
-                  className="flex size-8 flex-none items-center justify-center rounded-[10px] border border-border bg-card text-foreground transition-[filter] hover:brightness-95 disabled:opacity-30"
+                  className="flex size-9 flex-none items-center justify-center rounded-[10px] border border-border bg-card text-foreground transition-[filter] hover:brightness-95 disabled:opacity-30"
                 >
                   <ChevronUp className="size-[18px]" />
                 </button>
@@ -157,7 +164,7 @@ export function WorkoutEditor({
                   aria-label="Nach unten"
                   disabled={i === ed.rows.length - 1}
                   onClick={() => ed.moveDown(i)}
-                  className="flex size-8 flex-none items-center justify-center rounded-[10px] border border-border bg-card text-foreground transition-[filter] hover:brightness-95 disabled:opacity-30"
+                  className="flex size-9 flex-none items-center justify-center rounded-[10px] border border-border bg-card text-foreground transition-[filter] hover:brightness-95 disabled:opacity-30"
                 >
                   <ChevronDown className="size-[18px]" />
                 </button>
@@ -165,16 +172,11 @@ export function WorkoutEditor({
                   type="button"
                   aria-label="Übung entfernen"
                   onClick={() => ed.removeExercise(row.exerciseId)}
-                  className="flex size-8 flex-none items-center justify-center rounded-[10px] border border-danger/40 bg-card text-danger transition-colors hover:bg-danger/10"
+                  className="flex size-9 flex-none items-center justify-center rounded-[10px] border border-danger/40 bg-card text-danger transition-colors hover:bg-danger/10"
                 >
                   <Trash2 className="size-[16px]" />
                 </button>
               </div>
-              <SegmentedControl
-                options={ROLE_OPTIONS}
-                value={row.role}
-                onChange={(v) => ed.setRole(row.exerciseId, v)}
-              />
             </div>
           ))}
         </div>

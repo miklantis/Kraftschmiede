@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.5",
+      "date": "2026-07-01",
+      "changes": [
+        "Im Workout-Editor ist die Rolle einer Übung (Haupt/Assistenz/Core) jetzt ein kleines Dropdown neben dem Übungsnamen statt der breiten Auswahlleiste. Die Rolle ordnet nur die Anzeige und tritt dadurch dezenter auf."
+      ]
+    },
+    {
       "version": "1.3.4",
       "date": "2026-07-01",
       "changes": [
