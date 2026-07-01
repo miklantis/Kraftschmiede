@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.6",
+      "date": "2026-07-01",
+      "changes": [
+        "Auf der Journey-Seite gibt es jetzt den Abschnitt „Workouts in dieser Journey“: Dort weist du der aktiven Journey per Schalter die Workouts zu, die zu ihr gehören sollen. Angeboten werden nur journey-fähige Workouts (mindestens eine Kraftübung). Jeder Schalter speichert sofort. Die Trainingsempfehlung nutzt die Zuordnung noch nicht – das folgt im nächsten Schritt."
+      ]
+    },
+    {
       "version": "1.3.5",
       "date": "2026-07-01",
       "changes": [

@@ -46,15 +46,18 @@ Inhaltliche Quellen:
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Vorhaben „Workouts editierbar & Journey-Zuordnung" (Version 1.3) begonnen.** Lieferung 1
-  (1.3.0, Unterbau), Lieferung 2 (1.3.1, Workouts-Seite lesend) und Lieferung 3 (1.3.2,
-  Editor) umgesetzt: neuer Hauptnav-Punkt „Workouts", Bibliothek der aktiven Workouts mit
-  „Neues Workout" und ausklappbarem Archiv (Reaktivieren), lesende Detailseite mit
-  „Bearbeiten", und der Editor (Name, Uebungen aus dem Katalog per Auswaehler, Rolle
-  Haupt/Assistenz/Core, Reihenfolge, Entfernen, Live-Journey-Faehigkeit, bewusstes Speichern;
-  offline-fest). Als Naechstes Lieferung 4 (Journey-Zuordnung der aktiven Journey).
-  Konzept: `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
+  (1.3.0, Unterbau), Lieferung 2 (1.3.1, Workouts-Seite lesend), Lieferung 3 (1.3.2,
+  Editor) und Lieferung 4a (1.3.6, Journey-Zuordnung per Schalter) umgesetzt: neuer
+  Hauptnav-Punkt „Workouts", Bibliothek der aktiven Workouts mit „Neues Workout" und
+  ausklappbarem Archiv (Reaktivieren), lesende Detailseite mit „Bearbeiten", der Editor
+  (Name, Uebungen aus dem Katalog per Auswaehler, Rolle Haupt/Assistenz/Core, Reihenfolge,
+  Entfernen, Live-Journey-Faehigkeit, bewusstes Speichern; offline-fest), und auf der
+  Journey-Seite der Abschnitt „Workouts in dieser Journey" (An/Aus-Schalter je zuweisbarem
+  Workout, sofort speichernd, offline-fest, optimistisch). Als Naechstes Lieferung 4b
+  (Uebernahme der Zuordnung beim Journey-Wechsel), danach Lieferung 5 (Empfehlung auf die
+  Zuordnung einschraenken). Konzept: `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben ausser 1.3.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.5.
+  Konzept-vor-Code. Aktuelle Version: 1.3.6.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -98,8 +101,11 @@ Schritten; die Empfehlung aendert ihr Verhalten erst mit Lieferung 5.
 - [x] Lieferung 2 (1.3.x): Workouts-Seite (lesend) + neuer Nav-Punkt
 - [x] Lieferung 3 (1.3.x): Workout-Editor (anlegen/bearbeiten/archivieren/reaktivieren,
   Gueltigkeit: Name eindeutig + min. eine Uebung, bewusstes Speichern)
-- [ ] Lieferung 4 (1.3.x): Journey-Zuordnung der aktiven Journey (Toggles, Uebernahme beim
-  Journey-Wechsel)
+- [x] Lieferung 4a (1.3.6): Journey-Zuordnung der aktiven Journey (Abschnitt „Workouts in
+  dieser Journey" auf der Journey-Seite, An/Aus-Schalter je zuweisbarem Workout, sofort
+  speichernd, offline-fest)
+- [ ] Lieferung 4b (1.3.x): Uebernahme der Zuordnung beim Journey-Wechsel (einmaliges
+  Angebot, die Zuweisung der zuvor aktiven Journey zu uebernehmen)
 - [ ] Lieferung 5 (1.3.x): Trainingsempfehlung auf die Zuordnung einschraenken (Rueckfall auf
   Bibliothek nur bei leerer Zuweisung; bei „alles ausgeschlossen“ bleibt es in der Journey)
 
@@ -134,6 +140,24 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 4a / Journey-Zuordnung per Schalter
+(Version 1.3.6). Auf der Journey-Seite neuer Abschnitt „Workouts in dieser Journey"
+(components/journey/JourneyWorkoutsSection.tsx, in journey.tsx am Ende der aktiven Journey
+eingehaengt): An/Aus-Schalter je zuweisbarem Workout, angeboten werden nur aktive und
+journey-faehige (mind. eine strength-Uebung). Jeder Schalter speichert sofort und
+optimistisch (Cache-Write, springt auch offline um). Datenzugriff gekapselt: neuer Lese-Hook
+useJourneyWorkouts (Menge der zugewiesenen template_id je Journey, queryKey
+[\"journeyWorkouts\", userId, journeyId]) und Aktions-Hook useJourneyWorkoutActions (toggle
+= assign/unassign). Schreibvorgang ueber den neuen registrierten Mutations-Default
+lib/journeyWorkoutActions.ts (Kennung [\"journeyWorkoutAction\"], in queryClient.ts NACH den
+Workout-Aktionen registriert – ADR-0009, damit ein offline neu angelegtes Workout vor seiner
+Zuordnung landet); Insert mit clientseitiger Id, Unassign per Delete ueber
+journey_id+template_id (idempotent). Reine Aufbereitung buildJourneyAssignment in
+lib/workouts.ts (aktiv + journey-faehig, Reihenfolge unveraendert, assigned-Flag) mit drei
+neuen Tests. Empfehlung nutzt die Zuordnung noch nicht (Einschraenkung erst Lieferung 5);
+Coach-Rechenkern unangetastet. Kein neues DB-Migrat (nutzt journey_workouts aus 1.3.0).
+Validierung gruen: vite build, tsc --noEmit, vitest run.
 
 2026-07-01 — Workout-Editor: Rolle als Dropdown (Version 1.3.5). Die vollbreite
 Segmentleiste je Uebung (Haupt/Assistenz/Core) durch das generische Select-Primitive ersetzt,

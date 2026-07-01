@@ -4,6 +4,7 @@ import {
   workoutSummary,
   buildWorkoutList,
   buildWorkoutDetail,
+  buildJourneyAssignment,
   type WorkoutInput,
 } from "@/lib/workouts";
 
@@ -83,5 +84,51 @@ describe("buildWorkoutDetail", () => {
     expect(d.groups.map((g) => g.role)).toEqual(["primary", "core"]);
     expect(d.groups[0].exercises).toEqual(["Kniebeuge"]);
     expect(d.journeyCapable).toBe(true);
+  });
+});
+
+describe("buildJourneyAssignment", () => {
+  const strengthWk = (id: string, name: string, active = true): WorkoutInput =>
+    wk({
+      id,
+      name,
+      active,
+      exercises: [{ exerciseId: "squat", role: "primary", position: 0 }],
+    });
+
+  it("nimmt nur aktive und journey-faehige Workouts auf", () => {
+    const rows = buildJourneyAssignment(
+      [
+        strengthWk("a", "Kraft aktiv"),
+        strengthWk("b", "Kraft archiv", false),
+        wk({
+          id: "c",
+          name: "Nur Core",
+          exercises: [{ exerciseId: "plank", role: "core", position: 0 }],
+        }),
+      ],
+      lookup,
+      new Set<string>(),
+    );
+    expect(rows.map((r) => r.id)).toEqual(["a"]);
+  });
+
+  it("markiert zugewiesene Workouts", () => {
+    const rows = buildJourneyAssignment(
+      [strengthWk("a", "A"), strengthWk("b", "B")],
+      lookup,
+      new Set(["b"]),
+    );
+    expect(rows.find((r) => r.id === "a")?.assigned).toBe(false);
+    expect(rows.find((r) => r.id === "b")?.assigned).toBe(true);
+  });
+
+  it("behaelt die Reihenfolge der Eingabe", () => {
+    const rows = buildJourneyAssignment(
+      [strengthWk("x", "X"), strengthWk("y", "Y"), strengthWk("z", "Z")],
+      lookup,
+      new Set<string>(),
+    );
+    expect(rows.map((r) => r.id)).toEqual(["x", "y", "z"]);
   });
 });

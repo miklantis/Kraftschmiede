@@ -6,6 +6,7 @@ import { ActiveJourneyCard } from "@/components/journey/ActiveJourneyCard";
 import { PeriodizationChart } from "@/components/journey/PeriodizationChart";
 import { PhaseList } from "@/components/journey/PhaseList";
 import { JourneyEmpty } from "@/components/journey/JourneyEmpty";
+import { JourneyWorkoutsSection } from "@/components/journey/JourneyWorkoutsSection";
 import { useJourneyView } from "@/hooks/useJourneyView";
 
 // Journey: aktive Journey, Periodisierungskurve und Phasen-Ablauf. Reine Anzeige
@@ -68,6 +69,7 @@ function JourneyPage(): React.ReactElement {
         <Section eyebrow="Phasen · Ablauf">
           <PhaseList phases={data.phases} />
         </Section>
+        <JourneyWorkoutsSection />
       </PageReveal>
     </div>
   );

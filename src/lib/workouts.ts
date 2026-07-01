@@ -106,6 +106,38 @@ export function buildArchivedList(
   return workouts.filter((w) => !w.active).map((w) => toRowModel(w, lookup));
 }
 
+// Ein zuweisbares Workout auf der Journey-Seite: aktiv und journey-faehig, mit
+// dem Schalterzustand (der aktiven Journey zugewiesen ja/nein).
+export interface JourneyAssignmentRow {
+  id: string;
+  name: string;
+  /** Enthaltene Uebungen in Kurzform. */
+  summary: string;
+  /** Aktuell der Journey zugewiesen (Eintrag in journey_workouts). */
+  assigned: boolean;
+}
+
+// Liste der zuweisbaren Workouts fuer die aktive Journey: nur aktive und
+// journey-faehige (mind. eine strength-Uebung), Reihenfolge unveraendert (kommt
+// bereits nach templates.position). assigned kennzeichnet die aktuell
+// zugewiesenen. Archivierte oder nicht journey-faehige Workouts erscheinen hier
+// bewusst nicht (Konzept 5.3); eine bestehende Zuordnung eines spaeter nicht
+// mehr journey-faehigen Workouts bleibt in der DB und wird beim Lesen gefiltert.
+export function buildJourneyAssignment(
+  workouts: WorkoutInput[],
+  lookup: Lookup,
+  assignedIds: ReadonlySet<string>,
+): JourneyAssignmentRow[] {
+  return workouts
+    .filter((w) => w.active && isJourneyCapable(w, lookup))
+    .map((w) => ({
+      id: w.id,
+      name: w.name,
+      summary: workoutSummary(w, lookup),
+      assigned: assignedIds.has(w.id),
+    }));
+}
+
 // Detailansicht eines Workouts: nach Rolle gruppiert (Haupt -> Assistenz -> Core),
 // innerhalb der Gruppe in Reihenfolge. Leere Gruppen entfallen.
 export function buildWorkoutDetail(

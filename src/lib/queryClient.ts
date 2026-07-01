@@ -3,6 +3,7 @@ import { registerFinishMutation } from "./finishMutation";
 import { registerFinishSkillMutation } from "./finishSkillMutation";
 import { registerEditMutation } from "./editMutation";
 import { registerTemplateMutation } from "./templateActions";
+import { registerJourneyWorkoutMutation } from "./journeyWorkoutActions";
 
 // Wie lange ein nicht mehr aktiv genutzter Eintrag im Speicher gehalten wird.
 // Muss mindestens so lang sein wie die Lebensdauer des gespeicherten Caches
@@ -39,3 +40,6 @@ registerEditMutation(queryClient);
 // bestehenden und vor einer kuenftigen Journey-Zuordnung (Lieferung 4), damit
 // ein offline neu angelegtes Workout vor seiner Zuordnung nachgereicht wird.
 registerTemplateMutation(queryClient);
+// Journey-Zuordnung (Lieferung 4). Bewusst NACH den Workout-Aktionen (ADR-0009),
+// damit ein offline neu angelegtes Workout vor seiner Zuordnung nachgereicht wird.
+registerJourneyWorkoutMutation(queryClient);
