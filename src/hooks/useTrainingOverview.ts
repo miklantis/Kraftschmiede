@@ -11,11 +11,13 @@ import {
   type DoneSessionEntry,
 } from "@/lib/coach";
 import { focusLabel } from "@/lib/labels";
+import { selectRecommendationTemplates } from "@/lib/workouts";
 import { longDateDE, todayISO } from "@/lib/format";
 import { useExercises } from "./useExercises";
 import { useTemplates } from "./useTemplates";
 import { useSessions } from "./useSessions";
 import { useActiveJourney } from "./useJourney";
+import { useJourneyWorkouts } from "./useJourneyWorkouts";
 import { useSkills, useSkillProgress } from "./useSkills";
 import { useSettings } from "./useSettings";
 import { useOwnedEquipmentKeys } from "./useInventory";
@@ -49,6 +51,9 @@ export interface TrainingOverview {
   } | null;
   hero: WorkoutCard | null;
   others: WorkoutCard[];
+  /** Empfehlung faellt mangels nutzbarer Journey-Zuweisung auf die ganze
+   *  Bibliothek zurueck – dezenter Hinweis auf der Trainingsseite. */
+  libraryFallbackHint: boolean;
   skills: SkillCard[];
   yogaSubtitle: string;
 }
@@ -66,6 +71,7 @@ export function useTrainingOverview(): {
   const templatesQ = useTemplates();
   const sessionsQ = useSessions();
   const journeyQ = useActiveJourney();
+  const journeyWorkoutsQ = useJourneyWorkouts(journeyQ.data?.id ?? null);
   const skillsQ = useSkills();
   const progressQ = useSkillProgress();
   const settingsQ = useSettings();
@@ -77,6 +83,7 @@ export function useTrainingOverview(): {
     templatesQ,
     sessionsQ,
     journeyQ,
+    journeyWorkoutsQ,
     skillsQ,
     progressQ,
     settingsQ,
@@ -95,6 +102,7 @@ export function useTrainingOverview(): {
     const templates = templatesQ.data ?? [];
     const sessions = sessionsQ.data ?? [];
     const journey = journeyQ.data ?? null;
+    const assignedIds = journeyWorkoutsQ.data ?? [];
     const skills = skillsQ.data ?? [];
     const progress = progressQ.data ?? [];
     const settings = settingsQ.data ?? null;
@@ -177,7 +185,29 @@ export function useTrainingOverview(): {
       };
     }
 
-    // Coach-Ranking der Workouts.
+    // Konzept 5.4: der Coach bewertet nur die zugewiesenen Workouts der aktiven
+    // Journey; ohne nutzbare Zuweisung faellt es auf die ganze Bibliothek zurueck
+    // (mit Hinweis). Der Rechenkern bleibt unangetastet – wir reichen nur die
+    // ausgewaehlte Teilmenge herein. Journey-Faehigkeit braucht das Profil je
+    // Uebung; dafuer ein schlankes Nachschlagewerk.
+    const profileLookup: Record<string, { name: string; profile: string }> = {};
+    exercises.forEach((e) => {
+      profileLookup[e.id] = { name: e.name, profile: e.profile };
+    });
+    const selection = selectRecommendationTemplates(
+      templates.map((t) => ({
+        id: t.id,
+        name: t.name,
+        active: t.active,
+        exercises: t.exercises,
+      })),
+      profileLookup,
+      journey !== null,
+      new Set(assignedIds),
+    );
+    const selectedIds = new Set(selection.ids);
+
+    // Coach-Ranking der ausgewaehlten Workouts.
     const ctx = buildSuitabilityCtx({
       now: Date.now(),
       done,
@@ -192,7 +222,9 @@ export function useTrainingOverview(): {
       freqTarget,
     });
     const ranked = rankWorkouts(
-      templates.map((t) => ({ id: t.id, exerciseIds: t.exerciseIds })),
+      templates
+        .filter((t) => selectedIds.has(t.id))
+        .map((t) => ({ id: t.id, exerciseIds: t.exerciseIds })),
       ctx,
       exMap,
     );
@@ -259,6 +291,7 @@ export function useTrainingOverview(): {
       journey: journeyView,
       hero,
       others,
+      libraryFallbackHint: selection.libraryFallback,
       skills: skillCards,
       yogaSubtitle,
     };
@@ -270,6 +303,7 @@ export function useTrainingOverview(): {
     templatesQ.data,
     sessionsQ.data,
     journeyQ.data,
+    journeyWorkoutsQ.data,
     skillsQ.data,
     progressQ.data,
     settingsQ.data,

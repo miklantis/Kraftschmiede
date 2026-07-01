@@ -45,20 +45,16 @@ Inhaltliche Quellen:
   zurueckgeschrieben. Coach zieht nur bei der juengsten Kraft-Einheit nach; Skill-Phase bleibt
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
-- **Vorhaben „Workouts editierbar & Journey-Zuordnung" (Version 1.3) begonnen.** Lieferung 1
-  (1.3.0, Unterbau), Lieferung 2 (1.3.1, Workouts-Seite lesend), Lieferung 3 (1.3.2,
-  Editor) und Lieferung 4a (1.3.6, Journey-Zuordnung per Schalter) umgesetzt: neuer
-  Hauptnav-Punkt „Workouts", Bibliothek der aktiven Workouts mit „Neues Workout" und
-  ausklappbarem Archiv (Reaktivieren), lesende Detailseite mit „Bearbeiten", der Editor
-  (Name, Uebungen aus dem Katalog per Auswaehler, Rolle Haupt/Assistenz/Core, Reihenfolge,
-  Entfernen, Live-Journey-Faehigkeit, bewusstes Speichern; offline-fest), auf der
-  Journey-Seite der Abschnitt „Workouts in dieser Journey" (An/Aus-Schalter je zuweisbarem
-  Workout, sofort speichernd, offline-fest, optimistisch), und beim Journey-Wechsel ein
-  einmaliges Rueckfrage-Angebot, die Zuordnung der zuvor aktiven Journey zu uebernehmen
-  (nur weiterhin zuweisbare Workouts). Als Naechstes Lieferung 5 (Empfehlung auf die
-  Zuordnung einschraenken). Konzept: `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
-- **Kein offenes Bau-Vorhaben ausser 1.3.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.9.
+- **Vorhaben „Workouts editierbar & Journey-Zuordnung" (Version 1.3) abgeschlossen.** Alle
+  fuenf Lieferungen umgesetzt: Unterbau (1.3.0), Workouts-Seite lesend (1.3.1), Editor (1.3.2),
+  Journey-Zuordnung per Schalter (1.3.6), Uebernahme beim Journey-Wechsel (1.3.7) und die
+  Einschraenkung der Empfehlung auf die Zuordnung (1.3.10). Die Trainingsempfehlung bewertet
+  jetzt nur noch die der aktiven Journey zugewiesenen Workouts; ohne nutzbare Zuweisung
+  Rueckfall auf die ganze Bibliothek mit dezentem Hinweis, bei „alles heute ausgeschlossen"
+  kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
+  `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
+- **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
+  Konzept-vor-Code. Aktuelle Version: 1.3.10.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -81,41 +77,19 @@ gefuehrt, sobald sie auftauchen.
 
 - (noch keine offenen Punkte)
 
-### Workouts editierbar & Journey-Zuordnung (Version 1.3, Konzept besprochen, 1.3.0 freigegeben)
-
-Konzept: `docs/Konzept-Workouts-und-Journey-Zuordnung.md` (auf den besprochenen Stand
-fortgeschrieben). Grundlegende Anpassung: Workouts (Vorlagen) werden bearbeitbar (neue
-Workouts-Seite + Editor), und Workouts lassen sich der aktiven Journey zuordnen. Der
-Charakter wird aus den Uebungen abgeleitet: **journey-faehig, wenn mindestens eine Uebung
-das Profil `strength` hat** (Equipment egal). Die Periodisierung bleibt **profilbasiert wie
-heute** (strength progressiv, core/bodyweight mitgefuehrt) – der Coach-Rechenkern bleibt
-unangetastet. Die Rolle (primary/secondary/core) dient nur noch als Ordnungs-/Anzeigeraster.
-Der Coach empfiehlt bei aktiver Journey aus deren zugewiesenen Workouts, sonst aus der ganzen
-Bibliothek; jedes Workout bleibt frei startbar. Skills bleiben getrennt.
-
-Versionierung: Lieferung 1 ist **1.3.0** (mittlere Stelle, **freigegeben**), die weiteren
-Lieferungen laufen als 1.3.1, 1.3.2 … (Patch-Stelle). Bau in kleinen, einzeln testbaren
-Schritten; die Empfehlung aendert ihr Verhalten erst mit Lieferung 5.
-
-- [x] Lieferung 1 (1.3.0): Migration `journey_workouts` + `templates.active`
-  + `unique(user_id, name)` + Schema + Lese-Hooks (inkl. `role` in `useTemplates`)
-- [x] Lieferung 2 (1.3.x): Workouts-Seite (lesend) + neuer Nav-Punkt
-- [x] Lieferung 3 (1.3.x): Workout-Editor (anlegen/bearbeiten/archivieren/reaktivieren,
-  Gueltigkeit: Name eindeutig + min. eine Uebung, bewusstes Speichern)
-- [x] Lieferung 4a (1.3.6): Journey-Zuordnung der aktiven Journey (Abschnitt „Workouts in
-  dieser Journey" auf der Journey-Seite, An/Aus-Schalter je zuweisbarem Workout, sofort
-  speichernd, offline-fest)
-- [x] Lieferung 4b (1.3.7): Uebernahme der Zuordnung beim Journey-Wechsel (einmaliges
-  Rueckfrage-Overlay nach der Vorlagenwahl; uebernommen werden nur weiterhin zuweisbare
-  Workouts, „Leer starten“ beginnt ohne Zuordnung)
-- [ ] Lieferung 5 (1.3.x): Trainingsempfehlung auf die Zuordnung einschraenken (Rueckfall auf
-  Bibliothek nur bei leerer Zuweisung; bei „alles ausgeschlossen“ bleibt es in der Journey)
-
 ---
 
 ## Abgeschlossene Vorhaben
 
 Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
+
+- Workouts editierbar & Journey-Zuordnung (Lieferungen 1-5, Versionen 1.3.0-1.3.10).
+  Workouts sind ueber eine eigene Seite anleg-, bearbeit- und archivierbar; sie lassen sich
+  der aktiven Journey per Schalter zuordnen (Uebernahme beim Journey-Wechsel), und die
+  Trainingsempfehlung beschraenkt sich auf die Zuordnung (Rueckfall auf die ganze Bibliothek
+  nur bei leerer/nicht nutzbarer Zuweisung, kein Rueckfall bei „alles heute ausgeschlossen“).
+  Journey-Faehigkeit = mind. eine strength-Uebung; Rolle nur Ordnungsraster;
+  Coach-Rechenkern unangetastet. Konzept: `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 
 - Typ-Felder am Uebungskatalog aufgeraeumt (Lieferungen 1-3, Versionen 1.2.58-1.2.60).
   Redundante Felder `category`/`kind` entfernt: `equipment === "barbell"` traegt die
@@ -142,6 +116,21 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 5 / Empfehlung auf die Zuordnung
+einschraenken (Version 1.3.10). Die Trainingsempfehlung bewertet jetzt nur noch die der
+aktiven Journey zugewiesenen Workouts. Neue reine Auswahlregel selectRecommendationTemplates
+in lib/workouts.ts (keine aktive Journey -> ganze Bibliothek, nur aktive; aktive Journey mit
+nutzbarer Zuweisung -> nur diese Teilmenge, kein Rueckfall auch wenn heute alles
+ausgeschlossen; aktive Journey ohne nutzbare Zuweisung -> Rueckfall auf die ganze Bibliothek
+mit Hinweis) mit fuenf Tests; „nutzbar“ = aktiv + journey-faehig + zugewiesen. useTrainingOverview
+liest zusaetzlich useJourneyWorkouts, waehlt die Teilmenge und reicht nur diese an rankWorkouts
+(Coach-Rechenkern unangetastet); neues Anzeigefeld libraryFallbackHint. routes/index.tsx zeigt
+bei Rueckfall den dezenten Hinweis „Keine Workouts dieser Journey zugewiesen – Empfehlung aus
+der ganzen Bibliothek“ unter dem Hero. Nebeneffekt-Korrektur: der Bibliotheks-Rueckfall
+beruecksichtigt nur aktive Workouts (archivierte fielen vorher faelschlich mit ins Ranking).
+Kein neues DB-Migrat. Damit ist Vorhaben 1.3 komplett. Validierung gruen: vite build,
+tsc --noEmit, vitest run.
 
 2026-07-01 — Bugfix-Nachzug: kaputter Cache-Stand verworfen + Absicherung (Version 1.3.9).
 Der unter 1.3.8 behobene Set-Fehler hinterliess bei bereits geladenen Clients einen defekten

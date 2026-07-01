@@ -6,6 +6,7 @@ import {
   buildWorkoutDetail,
   buildJourneyAssignment,
   filterCopyableAssignments,
+  selectRecommendationTemplates,
   type WorkoutInput,
 } from "@/lib/workouts";
 
@@ -168,5 +169,79 @@ describe("filterCopyableAssignments", () => {
       new Set(["a"]),
     );
     expect(copyable).toEqual(["a"]);
+  });
+});
+
+describe("selectRecommendationTemplates", () => {
+  const strengthWk = (id: string, active = true): WorkoutInput =>
+    wk({
+      id,
+      name: id,
+      active,
+      exercises: [{ exerciseId: "squat", role: "primary", position: 0 }],
+    });
+  // reines Koerpergewicht/Core -> nicht journey-faehig
+  const coreWk = (id: string, active = true): WorkoutInput =>
+    wk({
+      id,
+      name: id,
+      active,
+      exercises: [{ exerciseId: "plank", role: "core", position: 0 }],
+    });
+
+  it("ohne aktive Journey: ganze Bibliothek, nur aktive, kein Hinweis", () => {
+    const sel = selectRecommendationTemplates(
+      [strengthWk("a"), coreWk("b"), strengthWk("c", false)],
+      lookup,
+      false,
+      new Set(),
+    );
+    expect(sel.ids).toEqual(["a", "b"]);
+    expect(sel.libraryFallback).toBe(false);
+  });
+
+  it("aktive Journey mit Zuweisung: nur die zugewiesenen, journey-faehigen", () => {
+    const sel = selectRecommendationTemplates(
+      [strengthWk("a"), strengthWk("b"), strengthWk("c")],
+      lookup,
+      true,
+      new Set(["a", "c"]),
+    );
+    expect(sel.ids).toEqual(["a", "c"]);
+    expect(sel.libraryFallback).toBe(false);
+  });
+
+  it("aktive Journey, leere Zuweisung: Rueckfall auf Bibliothek mit Hinweis", () => {
+    const sel = selectRecommendationTemplates(
+      [strengthWk("a"), strengthWk("b")],
+      lookup,
+      true,
+      new Set(),
+    );
+    expect(sel.ids).toEqual(["a", "b"]);
+    expect(sel.libraryFallback).toBe(true);
+  });
+
+  it("aktive Journey, zugewiesenes Workout nicht mehr journey-faehig: Rueckfall", () => {
+    // "a" ist zugewiesen, aber nur noch Core -> nicht nutzbar -> Rueckfall.
+    const sel = selectRecommendationTemplates(
+      [coreWk("a"), strengthWk("b")],
+      lookup,
+      true,
+      new Set(["a"]),
+    );
+    expect(sel.ids).toEqual(["a", "b"]);
+    expect(sel.libraryFallback).toBe(true);
+  });
+
+  it("aktive Journey, zugewiesenes Workout archiviert: Rueckfall", () => {
+    const sel = selectRecommendationTemplates(
+      [strengthWk("a", false), strengthWk("b")],
+      lookup,
+      true,
+      new Set(["a"]),
+    );
+    expect(sel.ids).toEqual(["b"]);
+    expect(sel.libraryFallback).toBe(true);
   });
 });

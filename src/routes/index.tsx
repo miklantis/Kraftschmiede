@@ -104,6 +104,12 @@ function TrainingPage(): React.ReactElement {
             Noch keine Workout-Vorlagen vorhanden.
           </p>
         )}
+        {data.libraryFallbackHint && (
+          <p className="mt-3 text-[13px] text-muted-foreground">
+            Keine Workouts dieser Journey zugewiesen – Empfehlung aus der ganzen
+            Bibliothek.
+          </p>
+        )}
         {note != null && (
           <p className="mt-3 text-[13px] text-muted-foreground">{note}</p>
         )}

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.10",
+      "date": "2026-07-01",
+      "changes": [
+        "Die Trainingsempfehlung richtet sich jetzt nach den Workouts, die du deiner aktiven Journey zugewiesen hast: empfohlen wird nur noch aus dieser Auswahl. Sind für die Journey keine Workouts zugewiesen (oder keine mehr nutzbar), wird aus der ganzen Bibliothek empfohlen und ein kurzer Hinweis eingeblendet. Ohne aktive Journey bleibt es bei der ganzen Bibliothek. Jedes Workout lässt sich weiterhin frei über die Workouts-Seite starten."
+      ]
+    },
+    {
       "version": "1.3.9",
       "date": "2026-07-01",
       "changes": [

@@ -158,6 +158,43 @@ export function filterCopyableAssignments(
     .map((w) => w.id);
 }
 
+// Auswahl der Workouts, die der Coach fuer die Empfehlung bewerten soll
+// (Konzept 5.4). Der Rechenkern bleibt unangetastet – hier faellt nur die
+// Entscheidung, WELCHE Menge er sieht:
+//  - keine aktive Journey  -> ganze Bibliothek (nur aktive Workouts), kein Hinweis
+//  - aktive Journey mit nutzbarer Zuweisung -> nur diese Teilmenge (aktiv +
+//    journey-faehig + zugewiesen); kein Rueckfall, selbst wenn heute alle
+//    ausgeschlossen sind
+//  - aktive Journey ohne nutzbare Zuweisung -> Rueckfall auf die ganze
+//    Bibliothek, mit dezentem Hinweis (libraryFallback = true)
+// Archivierte Workouts zaehlen nie zur "ganzen Bibliothek".
+export interface RecommendationSelection {
+  /** Ids der zu bewertenden Workouts. */
+  ids: string[];
+  /** true, wenn wegen leerer/nicht nutzbarer Journey-Zuweisung auf die ganze
+   *  Bibliothek zurueckgefallen wird (Hinweis anzeigen). */
+  libraryFallback: boolean;
+}
+
+export function selectRecommendationTemplates(
+  workouts: WorkoutInput[],
+  lookup: Lookup,
+  hasActiveJourney: boolean,
+  assignedIds: ReadonlySet<string>,
+): RecommendationSelection {
+  const active = workouts.filter((w) => w.active);
+  if (!hasActiveJourney) {
+    return { ids: active.map((w) => w.id), libraryFallback: false };
+  }
+  const assignedAssignable = active.filter(
+    (w) => isJourneyCapable(w, lookup) && assignedIds.has(w.id),
+  );
+  if (assignedAssignable.length === 0) {
+    return { ids: active.map((w) => w.id), libraryFallback: true };
+  }
+  return { ids: assignedAssignable.map((w) => w.id), libraryFallback: false };
+}
+
 // Detailansicht eines Workouts: nach Rolle gruppiert (Haupt -> Assistenz -> Core),
 // innerhalb der Gruppe in Reihenfolge. Leere Gruppen entfallen.
 export function buildWorkoutDetail(
