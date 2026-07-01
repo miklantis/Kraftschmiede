@@ -17,11 +17,19 @@ Offline-Mutationsreihenfolge in
 
 ## 1. Ausgangslage (geprüft im Code)
 
-- **Übungen** bilden einen Katalog und sind einzeln editierbar. Jede Übung trägt Typen:
-  Kategorie (`barbell` / `core` / `bodyweight`) und Profil (`strength` / `core` /
-  `bodyweight`). Das **Profil** ist im Coach der entscheidende Schalter: `strength` wird
-  progressiv gerechnet (Doppelprogression, Phasen-Repband), `core`/`bodyweight` werden ohne
-  Progression „mitgeführt“ (`coreCarry`). Die Kategorie steuert nur die Stangenwahl.
+- **Übungen** bilden einen Katalog. Sie sind **nicht frei editierbar**: anpassbar sind
+  genau drei Felder pro Übung (Arbeitsgewicht, Ziel-Score und – wenn nicht durch die aktive
+  Phase gesperrt – das Repband). **Anlegen, Umbenennen oder ein Wechsel von Profil/Kategorie
+  ist nicht vorgesehen; das bleibt in diesem Vorhaben unverändert.**
+- Jede Übung trägt mehrere Typ-Felder. Der im Coach entscheidende Schalter ist das
+  **Profil** (`strength` / `core` / `bodyweight`): `strength` wird progressiv gerechnet
+  (Doppelprogression, Phasen-Repband), `core`/`bodyweight` werden ohne Progression
+  „mitgeführt“ (`coreCarry`). Die weiteren Typ-Felder `category` (`barbell`/`core`/`bodyweight`)
+  und `kind` (`main`/`accessory`/`core`/`bodyweight`) sind hier **bewusst nicht relevant**:
+  `category` steuert im Code faktisch nur die Langhantel-Mechanik (Stange/Scheiben/Aufwärmrampe),
+  die Werte `core`/`bodyweight` duplizieren das Profil; `kind` wird nirgends gelesen. Das
+  Aufräumen dieser beiden Felder ist ein **eigenes, separates Konzept** und nicht Teil dieses
+  Vorhabens – dieses hier entscheidet allein über das Profil.
 - **Workouts** liegen als `templates` samt Zuordnung Übung→Workout (`template_exercises`
   mit Rolle `primary` / `secondary` / `core` und Reihenfolge) in der Datenbank – stammen
   aus dem einmaligen V1-Import, **haben aber keine Oberfläche**: nicht ansehbar, nicht
