@@ -58,7 +58,7 @@ Inhaltliche Quellen:
   (nur weiterhin zuweisbare Workouts). Als Naechstes Lieferung 5 (Empfehlung auf die
   Zuordnung einschraenken). Konzept: `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben ausser 1.3.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.7.
+  Konzept-vor-Code. Aktuelle Version: 1.3.8.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -142,6 +142,17 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Bugfix: Journey-Seite stuerzte nach Rehydrieren ab (Version 1.3.8).
+useJourneyWorkouts legte die Zuordnung als Set im Query-Cache ab; der Offline-Persister
+(createAsyncStoragePersister, JSON) macht daraus beim Speichern {}, sodass nach dem Laden
+aus IndexedDB assignedQ.data.has kein Function mehr war („n.has is not a function",
+ErrorBoundary auf /journey). Hook gibt jetzt ein string[] zurueck; die Konsumenten bilden
+das Set lokal (JourneyWorkoutsSection: new Set(assignedQ.data) frisch je Render;
+useJourneyWorkoutActions: optimistischer setQueryData nun auf Array). buildJourneyAssignment
+und filterCopyableAssignments bleiben unveraendert (nehmen weiterhin ein frisch gebautes
+Set). Reine Datenschicht-Korrektur, kein Verhalten geaendert. Validierung gruen: vite build,
+tsc --noEmit, vitest run.
 
 2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 4b / Uebernahme beim Journey-Wechsel
 (Version 1.3.7). Startet man eine neue Journey und die zuvor aktive hatte zugewiesene

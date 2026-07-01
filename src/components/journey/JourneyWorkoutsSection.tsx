@@ -40,7 +40,7 @@ export function JourneyWorkoutsSection(): React.ReactElement | null {
     ? buildJourneyAssignment(
         templatesQ.data as WorkoutInput[],
         lookup,
-        assignedQ.data as Set<string>,
+        new Set(assignedQ.data ?? []),
       )
     : [];
 

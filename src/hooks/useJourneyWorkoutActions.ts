@@ -32,14 +32,16 @@ export function useJourneyWorkoutActions(): UseJourneyWorkoutActions {
     (journeyId: string, templateId: string, next: boolean): Promise<void> => {
       if (!userId) return Promise.reject(new Error("Nicht angemeldet."));
 
-      // Optimistisch: den Schalter sofort spiegeln (auch offline).
-      qc.setQueryData<Set<string>>(
+      // Optimistisch: den Schalter sofort spiegeln (auch offline). Als Array
+      // gehalten, damit der JSON-serialisierte Offline-Cache heil bleibt.
+      qc.setQueryData<string[]>(
         ["journeyWorkouts", userId, journeyId],
         (old) => {
-          const set = new Set(old ?? []);
-          if (next) set.add(templateId);
-          else set.delete(templateId);
-          return set;
+          const list = old ?? [];
+          if (next) {
+            return list.includes(templateId) ? list : [...list, templateId];
+          }
+          return list.filter((id) => id !== templateId);
         },
       );
 
