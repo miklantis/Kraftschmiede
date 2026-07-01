@@ -118,8 +118,9 @@ export function HistorySection(): React.ReactElement {
         />
       </div>
 
-      {/* Kalender links (etwas breiter), Liste rechts; am Handy je nach Umschalter. */}
-      <div className="grid grid-cols-1 gap-6 min-[960px]:grid-cols-[1.35fr_1fr] min-[960px]:items-start min-[960px]:gap-[26px]">
+      {/* Kalender links (breiter), Liste rechts; gleiches 1,6/1-Raster wie der
+          obere Block, damit die Spaltenkante fluchtet. Am Handy je nach Umschalter. */}
+      <div className="grid grid-cols-1 gap-6 min-[960px]:grid-cols-[1.6fr_1fr] min-[960px]:items-start min-[960px]:gap-[26px]">
         <div
           data-reveal-group
           className={

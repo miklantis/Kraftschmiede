@@ -46,7 +46,7 @@ Inhaltliche Quellen:
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
-  Aktuelle Version: 1.2.52.
+  Aktuelle Version: 1.2.53.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -93,6 +93,14 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Verlauf-Band auf oberes Spaltenraster ausgerichtet (Version 1.2.53).
+Das Verlauf-Gitter in HistorySection.tsx von 1.35fr/1fr auf 1.6fr/1fr umgestellt,
+damit die Spaltenkante (Kalender links, Liste rechts) am Desktop mit dem oberen
+TwoColumn-Block (1.6fr/1fr, gleicher 26px-Spaltenabstand) fluchtet. Korrigiert die
+Konzept-Entscheidung von 1.2.52 (eigenes, engeres Verhaeltnis). Reine Layout-
+Korrektur, keine Logik beruehrt. Geaendert: components/history/HistorySection.tsx,
+changelog.json.
 
 2026-07-01 — Verlauf-Seite aufgeloest, Inhalt unter Training (Version 1.2.52).
 Die Route /verlauf entfaellt; der Verlauf-Punkt faellt aus der Hauptnavigation
