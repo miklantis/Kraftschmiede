@@ -16,6 +16,7 @@ function ex(overrides: Partial<ExerciseRow>): ExerciseRow {
     category: "barbell",
     profile: "strength",
     kind: "main",
+    tier: "main",
     equipment: "barbell",
     bar_id: null,
     description: "",

@@ -23,6 +23,7 @@ describe("Lese-Form (Row) verlangt alle Spalten", () => {
     category: "barbell",
     profile: "strength",
     kind: "main",
+    tier: "main",
     equipment: "barbell",
     bar_id: null,
     description: "",

@@ -46,7 +46,7 @@ Inhaltliche Quellen:
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
-  Aktuelle Version: 1.2.57.
+  Aktuelle Version: 1.2.58.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -95,7 +95,7 @@ Schritten; die Empfehlung aendert ihr Verhalten erst mit Lieferung 5.
 - [ ] Lieferung 5 (1.3.x): Trainingsempfehlung auf die Zuordnung einschraenken (Rueckfall auf
   Bibliothek nur bei leerer Zuweisung; bei „alles ausgeschlossen“ bleibt es in der Journey)
 
-### Typ-Felder am Uebungskatalog aufraeumen (Konzept besprochen, Version offen)
+### Typ-Felder am Uebungskatalog aufraeumen (Konzept besprochen, Version 1.2.58 ff.)
 
 Konzept: `docs/Konzept-Typfelder-Aufraeumen.md`. Die zwei redundanten Typ-Felder `category`
 und `kind` am Uebungskatalog entfernen. Am Code gegengeprueft: `category` verzweigt real nur
@@ -105,9 +105,9 @@ Ballast); `equipment` an der Uebung wird bislang nirgends gelesen. Zielbild: `eq
 (`main`/`accessory`, erweiterbar) ersetzt `kind`. `profile` und `bar_id` bleiben, der
 Coach-Rechenkern bleibt unangetastet. Migration befuellt die neuen Werte deterministisch aus
 den getrauten Altwerten und verifiziert die Barbell-Zuordnung, bevor `category` faellt.
-Offen: konkrete Versionsnummer und Reihenfolge relativ zum Workouts-Vorhaben (unabhaengig).
+Versionierung: eigenstaendige Patch-Lieferungen 1.2.58/59/60; unabhaengig vom Workouts-Vorhaben, kann davor oder danach laufen.
 
-- [ ] Lieferung 1: SQL-Migration + Schema (Enums umstellen), Alt- und Neuform ueberlappend
+- [x] Lieferung 1 (1.2.58): SQL-Migration + Schema (Enums umstellen), Alt- und Neuform ueberlappend
 - [ ] Lieferung 2: Lesestellen umhaengen (equipment==="barbell" in coach/ExerciseLiveCard/
   Mapper, `kind` -> `tier` in exercises/suitability, `tierLabel`)
 - [ ] Lieferung 3: `category`/`kind` aus Export/Restore + Live-Eintrag entfernen,
@@ -137,6 +137,13 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Typfelder aufraeumen, Lieferung 1 (Version 1.2.58). Neue Spalte `tier`
+(main/accessory) am Uebungskatalog angelegt und aus `kind` befuellt; `equipment` an der
+Barbell-Wahrheit von `category` ausgerichtet (Migration 0002, mit Verifikation vor dem
+Weitermachen). Zod-Schema traegt `tier` zusaetzlich – Alt- und Neuform ueberlappend, noch
+keine Lesestelle umgehaengt, kein sichtbares Verhalten geaendert. Coach-Rechenkern
+unangetastet. Validierung gruen.
 
 2026-07-01 — Verlauf-Liste: Startzahl auf 5 (Version 1.2.57). PAGE_SIZE in
 HistorySection von 10 auf 5 gesenkt; „Mehr laden" legt entsprechend je 5 weitere

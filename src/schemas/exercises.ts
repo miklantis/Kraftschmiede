@@ -12,6 +12,8 @@ export const exerciseKindEnum = z.enum([
   "core",
   "bodyweight",
 ]);
+// Neu (Lieferung 1): ersetzt kind. Bewusst erweiterbar (spaeter z. B. isolation/prehab).
+export const exerciseTierEnum = z.enum(["main", "accessory"]);
 export const exerciseEquipmentEnum = z.enum([
   "barbell",
   "plate",
@@ -29,6 +31,7 @@ export const exerciseRow = z.object({
   category: exerciseCategoryEnum,
   profile: exerciseProfileEnum,
   kind: exerciseKindEnum,
+  tier: exerciseTierEnum,
   equipment: exerciseEquipmentEnum,
   bar_id: uuid.nullable(),
   description: z.string(),
@@ -52,6 +55,7 @@ export const exerciseInsert = exerciseRow.omit({ id: true }).partial({
   category: true,
   profile: true,
   kind: true,
+  tier: true,
   equipment: true,
   bar_id: true,
   description: true,
