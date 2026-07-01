@@ -190,7 +190,7 @@ export function LivePanel(): React.ReactElement | null {
     vibrate: timers?.vibrate ?? true,
   };
   const isSkill = s.kind === "skill";
-  const title = (isSkill ? "Skill " : "Workout ") + s.title;
+  const title = isSkill ? "Skill " + s.title : s.title;
   const prog = s.kind === "skill" ? skillProgressInfo(s.exercises) : progressInfo(s.entries);
   const exCount = s.kind === "skill" ? s.exercises.length : s.entries.length;
   const subtitle = exCount > 0 ? prog.curLabel + " · " + prog.progress : "läuft";

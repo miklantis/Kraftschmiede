@@ -150,7 +150,7 @@ export function EndModal(): React.ReactElement {
     <Overlay
       open={open}
       onClose={live.closeEnd}
-      title={s ? (isSkill ? "Skill " : "Workout ") + s.title + " beenden" : undefined}
+      title={s ? (isSkill ? "Skill " + s.title : s.title) + " beenden" : undefined}
       headerTrailing={open ? <ClockChip clock={clock} /> : undefined}
     >
       {s && (s.kind === "skill" ? <SkillEnd s={s} /> : <WorkoutEnd s={s} />)}

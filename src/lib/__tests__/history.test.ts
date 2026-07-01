@@ -65,7 +65,7 @@ describe("Klassifikation", () => {
 
 describe("Titel und Kalender-Label", () => {
   it("Workout-Titel aus Vorlagenname", () => {
-    expect(sessionTitle(strength(), lk)).toBe("Workout Ganzkörper A");
+    expect(sessionTitle(strength(), lk)).toBe("Ganzkörper A");
     expect(calLabel(strength(), lk)).toBe("Ganzkörper A");
   });
 

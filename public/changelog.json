@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.3",
+      "date": "2026-07-01",
+      "changes": [
+        "Workout-Namen werden jetzt überall einheitlich angezeigt. Bisher stand auf der Trainingsseite und beim Starten/Beenden „Workout A“, während die Workouts-Seite nur „A“ zeigte. Ab sofort ist der Name des Workouts die vollständige Bezeichnung – auf allen Seiten gleich. Die bestehenden Workouts wurden dafür einmalig auf „Workout A“, „Workout B“ usw. umbenannt; neu angelegte tragen genau den Namen, den du im Editor eingibst."
+      ]
+    },
+    {
       "version": "1.3.2",
       "date": "2026-07-01",
       "changes": [

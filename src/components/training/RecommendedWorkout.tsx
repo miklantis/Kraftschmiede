@@ -32,7 +32,7 @@ export function RecommendedWorkout({
             Empfohlen für heute
           </div>
           <div className="text-[22px] font-bold text-foreground min-[960px]:mt-[3px] min-[960px]:text-[30px] min-[960px]:tracking-[-0.4px]">
-            Workout {name}
+            {name}
           </div>
         </div>
         <div className="flex-none text-right">

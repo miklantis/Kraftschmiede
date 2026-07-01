@@ -131,7 +131,7 @@ export function sessionTitle(
   if (s.type === "skill")
     return (s.skillId && lk.skillName(s.skillId)) || "Skill";
   const name = s.templateId && lk.templateName(s.templateId);
-  return "Workout " + (name || "?");
+  return name || "Workout";
 }
 
 // --- Detail-Aufbereitung --------------------------------------------------

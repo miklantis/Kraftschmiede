@@ -152,7 +152,7 @@ export function StartModal(): React.ReactElement {
     <Overlay
       open={p != null}
       onClose={live.cancelStart}
-      title={p ? (isSkill ? "Skill " : "Workout ") + p.title + " starten" : undefined}
+      title={p ? (isSkill ? "Skill " + p.title : p.title) + " starten" : undefined}
     >
       {p && (
         <>

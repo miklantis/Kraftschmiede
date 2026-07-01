@@ -115,7 +115,7 @@ function TrainingPage(): React.ReactElement {
             {data.others.map((w) => (
               <ListRow
                 key={w.id}
-                title={"Workout " + w.name}
+                title={w.name}
                 subtitle={w.lifts}
                 trailing={<ScoreBadge value={w.score} />}
                 chevron

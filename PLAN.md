@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   offline-fest). Als Naechstes Lieferung 4 (Journey-Zuordnung der aktiven Journey).
   Konzept: `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben ausser 1.3.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.2.
+  Konzept-vor-Code. Aktuelle Version: 1.3.3.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -134,6 +134,18 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Workout-Namen als volle Wahrheit (Version 1.3.3). Das Anzeige-Praefix
+"Workout " (Relikt aus der Zeit einbuchstabiger Namen) an allen Stellen entfernt:
+RecommendedWorkout (Hero), routes/index.tsx (Weitere Workouts), live/StartModal,
+live/LivePanel, live/EndModal (Workout-Zweig; Skill-Praefix bleibt) und
+lib/history.ts sessionTitle (gibt jetzt den Template-Namen roh, Fallback "Workout").
+Die neuen Workouts-Seiten (Bibliothek/Detail/Editor) zeigten den Namen schon roh und
+sind damit ab jetzt konsistent. Datenkorrektur per Migration 0005_workout_namen.sql:
+einbuchstabige Alt-Namen einmalig auf "Workout "||name gehoben (char_length=1, idempotent,
+Unique-Index bleibt gewahrt) – im Supabase-Dashboard auszufuehren. history-Test auf den
+rohen Template-Namen angepasst. Coach-Rechenkern unberuehrt. Validierung gruen: vite build,
+tsc --noEmit, vitest run.
 
 2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 3 / Workout-Editor (Version 1.3.2).
 Workouts sind editierbar: neue Routen workouts_.neu.tsx (/workouts/neu) und
