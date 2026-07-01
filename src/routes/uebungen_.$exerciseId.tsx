@@ -79,13 +79,13 @@ function ExerciseDetailPage(): React.ReactElement {
       <BackLink to="/uebungen" label="Übungen" />
       <PageHeader title={exercise.name} className="mb-3 min-[960px]:mb-4" />
       <div className="-mt-2 mb-4 flex flex-wrap items-center gap-2">
-        <span className="rounded-[20px] bg-muted px-2.5 py-1 text-[13px] font-medium text-muted-foreground">
+        <span className="rounded-[20px] bg-foreground px-2.5 py-1 text-[13px] font-medium text-background">
           {profileLabel(exercise.profile)}
         </span>
-        <span className="rounded-[20px] bg-muted px-2.5 py-1 text-[13px] font-medium text-muted-foreground">
+        <span className="rounded-[20px] bg-foreground px-2.5 py-1 text-[13px] font-medium text-background">
           {equipmentLabel(exercise.equipment)}
         </span>
-        <span className="rounded-[20px] bg-muted px-2.5 py-1 text-[13px] font-medium text-muted-foreground">
+        <span className="rounded-[20px] bg-foreground px-2.5 py-1 text-[13px] font-medium text-background">
           {tierLabel(exercise.tier)}
         </span>
       </div>

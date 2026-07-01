@@ -46,7 +46,7 @@ Inhaltliche Quellen:
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
-  Aktuelle Version: 1.2.61.
+  Aktuelle Version: 1.2.62.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -126,6 +126,10 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Info-Chips dunkel (Version 1.2.62). Die drei Chips auf der Uebungs-Detailseite
+von bg-muted/text-muted-foreground auf bg-foreground/text-background umgestellt (dunkler
+Grund, heller Text) fuer bessere Lesbarkeit. Nur Klassen, Theme-Tokens. Validierung gruen.
 
 2026-07-01 — Uebungs-Detailseite: Info-Chips (Version 1.2.61). Unter dem Namen stehen
 statt der Muskelgruppen-Zeile drei Chips (Profil, Geraet, Art) im vorhandenen Chip-Stil,

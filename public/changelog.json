@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.62",
+      "date": "2026-07-01",
+      "changes": [
+        "Die neuen Info-Chips auf der Übungs-Detailseite (Profil, Gerät, Art) haben jetzt einen dunklen Hintergrund mit hellem Text – dadurch heben sie sich klarer vom Rest ab."
+      ]
+    },
+    {
       "version": "1.2.61",
       "date": "2026-07-01",
       "changes": [
