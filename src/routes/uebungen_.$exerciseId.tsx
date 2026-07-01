@@ -12,7 +12,7 @@ import { PageReveal } from "@/components/ui/page-reveal";
 import { ExerciseChartCard } from "@/components/exercise/ExerciseChartCard";
 import { ExerciseEditModal } from "@/components/exercise/ExerciseEditModal";
 import { useExerciseDetail } from "@/hooks/useExerciseDetail";
-import { exerciseRowSub } from "@/lib/exercises";
+import { profileLabel, equipmentLabel, tierLabel } from "@/lib/labels";
 import { longDateShort, fmtWeight } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -80,7 +80,13 @@ function ExerciseDetailPage(): React.ReactElement {
       <PageHeader title={exercise.name} className="mb-3 min-[960px]:mb-4" />
       <div className="-mt-2 mb-4 flex flex-wrap items-center gap-2">
         <span className="rounded-[20px] bg-muted px-2.5 py-1 text-[13px] font-medium text-muted-foreground">
-          {exerciseRowSub(exercise)}
+          {profileLabel(exercise.profile)}
+        </span>
+        <span className="rounded-[20px] bg-muted px-2.5 py-1 text-[13px] font-medium text-muted-foreground">
+          {equipmentLabel(exercise.equipment)}
+        </span>
+        <span className="rounded-[20px] bg-muted px-2.5 py-1 text-[13px] font-medium text-muted-foreground">
+          {tierLabel(exercise.tier)}
         </span>
       </div>
       {exercise.description && <Prose>{exercise.description}</Prose>}

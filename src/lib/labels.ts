@@ -32,3 +32,27 @@ export function tierLabel(tier: string | null | undefined): string {
   if (!tier) return "–";
   return TIER_LABELS[tier] ?? tier;
 }
+
+// Anzeigename des Uebungs-Profils (Progressionsart).
+const PROFILE_LABELS: Record<string, string> = {
+  strength: "Kraft",
+  core: "Core",
+  bodyweight: "Körpergewicht",
+};
+export function profileLabel(profile: string | null | undefined): string {
+  if (!profile) return "–";
+  return PROFILE_LABELS[profile] ?? profile;
+}
+
+// Anzeigename des Geraets einer Uebung.
+const EQUIPMENT_LABELS: Record<string, string> = {
+  barbell: "Langhantel",
+  plate: "Hantelscheibe",
+  bar: "Stange",
+  band: "Band",
+  bodyweight: "Körpergewicht",
+};
+export function equipmentLabel(equipment: string | null | undefined): string {
+  if (!equipment) return "–";
+  return EQUIPMENT_LABELS[equipment] ?? equipment;
+}

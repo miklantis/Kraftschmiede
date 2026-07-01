@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.61",
+      "date": "2026-07-01",
+      "changes": [
+        "Auf der Detailseite einer Übung stehen unter dem Namen jetzt drei kompakte Chips – Profil, Gerät und Art der Übung (z. B. Kraft · Langhantel · Hauptübung) – statt der bisherigen Muskelgruppen-Zeile. Die beanspruchten Muskeln findest du weiterhin in der Muskel-Grafik darunter."
+      ]
+    },
+    {
       "version": "1.2.60",
       "date": "2026-07-01",
       "changes": [
