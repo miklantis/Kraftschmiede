@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.56",
+      "date": "2026-07-01",
+      "changes": [
+        "Verlauf auf der Trainingsseite aufgeräumt: Am Handy stehen Kalender und Liste jetzt untereinander statt hinter einem Umschalter – erst der Kalender, darunter die letzten Einheiten, genau wie am Computer. Die Liste zeigt zunächst die zehn jüngsten Einheiten; über „Mehr laden“ blendest du jeweils zehn weitere ein. Der Kalender zeigt weiterhin alle Einträge des Monats."
+      ]
+    },
+    {
       "version": "1.2.55",
       "date": "2026-07-01",
       "changes": [

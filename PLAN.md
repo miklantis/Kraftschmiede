@@ -46,7 +46,7 @@ Inhaltliche Quellen:
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
-  Aktuelle Version: 1.2.55.
+  Aktuelle Version: 1.2.56.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -110,6 +110,15 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Verlauf-Block: Handy gestapelt statt Umschalter, Liste mit „Mehr
+laden" (Version 1.2.56). HistorySection (components/history/HistorySection.tsx):
+SegmentedControl-Umschalter entfernt, Kalender oben / Liste darunter jetzt auf
+Handy wie Desktop gleich gestapelt (beide mit Ueberschrift). Liste zeigt zunaechst
+PAGE_SIZE=10 juengste Einheiten, „Mehr laden" (Button outline, volle Breite) legt
+je 10 weitere frei – reine Anzeige, Daten liegen bereits vor; Kalender unveraendert
+(alle Monatspunkte). Nur diese eine Datei geaendert; useHistory/Datenschicht
+unberuehrt. Validierung: vite build, tsc --noEmit, vitest run gruen.
 
 2026-07-01 — Trainingsseite Desktop: ein Zweispalter statt zwei (Version 1.2.55).
 Links alle Trainingsbloecke gestapelt (Heute empfohlen, Weitere Workouts, Aktive
