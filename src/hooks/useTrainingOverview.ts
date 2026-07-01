@@ -11,7 +11,10 @@ import {
   type DoneSessionEntry,
 } from "@/lib/coach";
 import { focusLabel } from "@/lib/labels";
-import { selectRecommendationTemplates } from "@/lib/workouts";
+import {
+  isJourneyCapable,
+  selectRecommendationTemplates,
+} from "@/lib/workouts";
 import { longDateDE, todayISO } from "@/lib/format";
 import { useExercises } from "./useExercises";
 import { useTemplates } from "./useTemplates";
@@ -32,6 +35,9 @@ export interface WorkoutCard {
   exerciseNames: string[];
   score: number;
   excluded: boolean;
+  /** Ist der aktiven Journey zugewiesen (nutzbar) – steuert Chip + Score in der
+   *  Liste „Weitere Workouts“. */
+  inJourney: boolean;
 }
 
 export interface SkillCard {
@@ -185,10 +191,10 @@ export function useTrainingOverview(): {
       };
     }
 
-    // Konzept 5.4: der Coach bewertet nur die zugewiesenen Workouts der aktiven
-    // Journey; ohne nutzbare Zuweisung faellt es auf die ganze Bibliothek zurueck
-    // (mit Hinweis). Der Rechenkern bleibt unangetastet – wir reichen nur die
-    // ausgewaehlte Teilmenge herein. Journey-Faehigkeit braucht das Profil je
+    // Konzept 5.4 + Verfeinerung: „Heute empfohlen“ (Hero) kommt aus der
+    // Journey-Zuweisung (Rueckfall auf die Bibliothek bei leerer Zuweisung, mit
+    // Hinweis); „Weitere Workouts“ zeigt dagegen alle aktiven Workouts, damit
+    // jedes frei startbar bleibt. Journey-Faehigkeit braucht das Profil je
     // Uebung; dafuer ein schlankes Nachschlagewerk.
     const profileLookup: Record<string, { name: string; profile: string }> = {};
     exercises.forEach((e) => {
@@ -207,7 +213,30 @@ export function useTrainingOverview(): {
     );
     const selectedIds = new Set(selection.ids);
 
-    // Coach-Ranking der ausgewaehlten Workouts.
+    // Menge der Workouts, die der aktiven Journey zugewiesen und dort nutzbar
+    // sind (aktiv + journey-faehig). Nur diese bekommen in „Weitere Workouts“
+    // den Journey-Chip und ihren Score; ohne aktive Journey ist die Menge leer.
+    const assignedSet = new Set(assignedIds);
+    const assignedUsableIds = new Set(
+      templates
+        .filter(
+          (t) =>
+            t.active &&
+            assignedSet.has(t.id) &&
+            isJourneyCapable(
+              {
+                id: t.id,
+                name: t.name,
+                active: t.active,
+                exercises: t.exercises,
+              },
+              profileLookup,
+            ),
+        )
+        .map((t) => t.id),
+    );
+
+    // Coach-Kontext.
     const ctx = buildSuitabilityCtx({
       now: Date.now(),
       done,
@@ -221,9 +250,15 @@ export function useTrainingOverview(): {
       phase: phaseFocus,
       freqTarget,
     });
+
+    // Coach-Ranking ALLER aktiven Workouts nach Eignung. Der Hero kommt aus der
+    // Journey-Auswahl (selectedIds; Konzept 5.4); die uebrigen aktiven Workouts
+    // erscheinen als „Weitere“ – unabhaengig von der Zuordnung, damit jedes
+    // Workout direkt startbar bleibt. Ausschluss (Kater=3) dimmt und sperrt den
+    // Start bei allen gleichermassen.
     const ranked = rankWorkouts(
       templates
-        .filter((t) => selectedIds.has(t.id))
+        .filter((t) => t.active)
         .map((t) => ({ id: t.id, exerciseIds: t.exerciseIds })),
       ctx,
       exMap,
@@ -237,10 +272,14 @@ export function useTrainingOverview(): {
         exerciseNames: r.template.exerciseIds.map((id) => nameById[id] ?? id),
         score: r.score,
         excluded: r.excluded,
+        inJourney: assignedUsableIds.has(r.template.id),
       };
     };
-    const hero = ranked.length ? cardFor(ranked[0]) : null;
-    const others = ranked.slice(1).map(cardFor);
+    const heroRank = ranked.find((r) => selectedIds.has(r.template.id)) ?? null;
+    const hero = heroRank ? cardFor(heroRank) : null;
+    const others = ranked
+      .filter((r) => r.template.id !== heroRank?.template.id)
+      .map(cardFor);
 
     // Aktive Skills mit Phasen-/Equipment-Hinweis.
     const skillCards: SkillCard[] = progress

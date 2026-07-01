@@ -123,7 +123,16 @@ function TrainingPage(): React.ReactElement {
                 key={w.id}
                 title={w.name}
                 subtitle={w.lifts}
-                trailing={<ScoreBadge value={w.score} />}
+                trailing={
+                  w.inJourney ? (
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-[20px] bg-foreground px-2.5 py-1 text-[12px] font-medium text-background">
+                        Journey
+                      </span>
+                      <ScoreBadge value={w.score} />
+                    </div>
+                  ) : undefined
+                }
                 chevron
                 disabled={w.excluded}
                 onClick={w.excluded ? undefined : () => startWorkout(w)}

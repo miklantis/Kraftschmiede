@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.10.
+  Konzept-vor-Code. Aktuelle Version: 1.3.11.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -116,6 +116,18 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — „Weitere Workouts“ zeigt alle aktiven Workouts (Version 1.3.11). Verfeinerung der
+Empfehlung: der Hero „Heute empfohlen“ kommt weiterhin aus der Journey-Zuweisung (Konzept 5.4),
+aber die Liste „Weitere Workouts“ listet jetzt ALLE aktiven Workouts (ausser dem Hero), nach
+Eignung sortiert, damit jedes frei startbar bleibt. Der aktiven Journey zugewiesene, nutzbare
+Workouts (aktiv + journey-faehig) tragen dort einen Journey-Chip und ihren Score; nicht
+zugewiesene erscheinen schlicht ohne Chip/Score. Die Kater=3-Startsperre (Ausschluss) gilt
+unveraendert fuer alle Zeilen gleichermassen (Kater=2 bleibt wie bisher nur -2 auf den Score und
+startbar). useTrainingOverview rankt jetzt alle aktiven Workouts und waehlt den Hero per
+selectedIds daraus; neues Kartenfeld inJourney (aus assignedUsableIds). routes/index.tsx zeigt
+Chip+Score nur bei inJourney. Coach-Rechenkern unangetastet, kein DB-Migrat. Validierung gruen:
+vite build, tsc --noEmit, vitest run.
 
 2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 5 / Empfehlung auf die Zuordnung
 einschraenken (Version 1.3.10). Die Trainingsempfehlung bewertet jetzt nur noch die der

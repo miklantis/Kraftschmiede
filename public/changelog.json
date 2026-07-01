@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.11",
+      "date": "2026-07-01",
+      "changes": [
+        "„Weitere Workouts“ auf der Trainingsseite zeigt jetzt alle deine aktiven Workouts – auch solche, die keiner Journey zugewiesen sind –, sodass du jederzeit jedes Workout direkt starten kannst. Die der aktiven Journey zugewiesenen Workouts sind mit einem Journey-Hinweis und ihrer Bewertung gekennzeichnet; die übrigen erscheinen schlicht als startbare Optionen. „Heute empfohlen“ bleibt auf die Journey-Auswahl beschränkt."
+      ]
+    },
+    {
       "version": "1.3.10",
       "date": "2026-07-01",
       "changes": [
