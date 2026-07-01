@@ -10,6 +10,7 @@ import { JourneyStrip } from "@/components/training/JourneyStrip";
 import { UpdateBanner } from "@/components/training/UpdateBanner";
 import { RecommendedWorkout } from "@/components/training/RecommendedWorkout";
 import { YogaEntryModal } from "@/components/training/YogaEntryModal";
+import { HistorySection } from "@/components/history/HistorySection";
 import { useTrainingOverview } from "@/hooks/useTrainingOverview";
 import { useLiveSession } from "@/hooks/useLiveSession";
 import { useLiveBuilder } from "@/hooks/useLiveBuilder";
@@ -181,6 +182,7 @@ function TrainingPage(): React.ReactElement {
           />
         )}
         <TwoColumn main={mainColumn} side={sideColumn} />
+        <HistorySection />
       </PageReveal>
       <YogaEntryModal open={yogaOpen} onClose={() => setYogaOpen(false)} />
     </div>

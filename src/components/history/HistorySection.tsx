@@ -1,8 +1,5 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { PageHeader } from "@/components/ui/page-header";
 import { Section } from "@/components/ui/section";
-import { PageReveal } from "@/components/ui/page-reveal";
 import { SegmentedControl } from "@/components/ui/segmented";
 import {
   Calendar,
@@ -16,13 +13,17 @@ import { useHistory } from "@/hooks/useHistory";
 import { useDeleteSession } from "@/hooks/useDeleteSession";
 import type { HistoryKind } from "@/lib/history";
 
-// Verlauf: navigierbarer Monatskalender und Liste der letzten Einheiten mit
-// aufklappbarer Zusammenfassung. Desktop zeigt beides nebeneinander (Kalender
-// etwas breiter, 1.35/1 wie V1); Mobile hat einen Umschalter und zeigt eine
-// Ansicht. Keine Statistik-Reihe, keine Charts (Parität zu V1).
-export const Route = createFileRoute("/verlauf")({
-  component: VerlaufPage,
-});
+// Verlauf-Band der Trainingsseite: navigierbarer Monatskalender und Liste der
+// letzten Einheiten mit aufklappbarer Zusammenfassung und Bearbeiten-Panel.
+// Fruehere eigene Seite (/verlauf); jetzt unter Training als eigenstaendiger,
+// wiederverwendbarer Block. Desktop zeigt beides nebeneinander (Kalender links
+// und etwas breiter, Liste rechts); Mobile hat einen Umschalter und zeigt eine
+// Ansicht. Bringt seine Datenanbindung selbst mit; die Trainingsseite bindet
+// den Block nur ein. Keine Statistik-Reihe, keine Charts (Paritaet zu V1).
+//
+// Der Block gibt zwei DOM-Elemente auf oberster Ebene aus (Umschalter, dann das
+// Zwei-Spalten-Gitter mit je einer als `data-reveal-group` markierten Spalte),
+// damit die PageReveal-Staffelung der Trainingsseite unveraendert greift.
 
 // Farb-/Hintergrundklassen der Kalenderpunkte je Typ (Optik aus V1 cal-dot).
 const CAL_DOT: Record<HistoryKind, string> = {
@@ -35,8 +36,8 @@ const CAL_DOT: Record<HistoryKind, string> = {
 const EYEBROW =
   "mb-2.5 text-[13px] font-semibold tracking-[0.6px] text-muted-foreground uppercase min-[960px]:mb-3 min-[960px]:text-[12px] min-[960px]:tracking-[0.7px]";
 
-function VerlaufPage(): React.ReactElement {
-  const { isLoading, isError, error, data } = useHistory();
+export function HistorySection(): React.ReactElement {
+  const { isLoading, isError, data } = useHistory();
   const del = useDeleteSession();
   const [month, setMonth] = useState<CalendarMonth>(currentMonth);
   const [view, setView] = useState<"list" | "calendar">("list");
@@ -44,22 +45,19 @@ function VerlaufPage(): React.ReactElement {
 
   if (isLoading) {
     return (
-      <div>
-        <PageHeader title="Verlauf" />
+      <Section eyebrow="Verlauf">
         <p className="text-sm text-muted-foreground">Wird geladen …</p>
-      </div>
+      </Section>
     );
   }
 
   if (isError || !data) {
     return (
-      <div>
-        <PageHeader title="Verlauf" />
+      <Section eyebrow="Verlauf">
         <p className="text-sm text-danger">
-          Daten konnten nicht geladen werden
-          {error instanceof Error ? ": " + error.message : "."}
+          Der Verlauf konnte nicht geladen werden.
         </p>
-      </div>
+      </Section>
     );
   }
 
@@ -107,41 +105,38 @@ function VerlaufPage(): React.ReactElement {
     );
 
   return (
-    <div>
-      <PageHeader title="Verlauf" />
+    <>
+      {/* Umschalter nur am Handy. */}
+      <div className="min-[960px]:hidden">
+        <SegmentedControl
+          value={view}
+          onChange={setView}
+          options={[
+            { value: "list", label: "Liste" },
+            { value: "calendar", label: "Kalender" },
+          ]}
+        />
+      </div>
 
-      <PageReveal>
-        {/* Umschalter nur am Handy. */}
-        <div className="mb-3.5 min-[960px]:hidden">
-          <SegmentedControl
-            value={view}
-            onChange={setView}
-            options={[
-              { value: "list", label: "Liste" },
-              { value: "calendar", label: "Kalender" },
-            ]}
-          />
+      {/* Kalender links (etwas breiter), Liste rechts; am Handy je nach Umschalter. */}
+      <div className="grid grid-cols-1 gap-6 min-[960px]:grid-cols-[1.35fr_1fr] min-[960px]:items-start min-[960px]:gap-[26px]">
+        <div
+          data-reveal-group
+          className={
+            (view === "calendar" ? "block" : "hidden") + " min-[960px]:block"
+          }
+        >
+          <div className={EYEBROW + " hidden min-[960px]:block"}>Kalender</div>
+          {calendar}
         </div>
 
-        <div className="grid grid-cols-1 gap-6 min-[960px]:grid-cols-[1fr_1.35fr] min-[960px]:items-start min-[960px]:gap-[26px]">
-          {/* Letzte Einheiten: am Handy nur in der Listen-Ansicht, am Desktop links. */}
-          <div
-            data-reveal-group
-            className={(view === "list" ? "block" : "hidden") + " min-[960px]:block"}
-          >
-            <Section eyebrow="Letzte Einheiten">{list}</Section>
-          </div>
-
-          {/* Kalender: am Handy nur in der Kalender-Ansicht, am Desktop rechts. */}
-          <div
-            data-reveal-group
-            className={(view === "calendar" ? "block" : "hidden") + " min-[960px]:block"}
-          >
-            <div className={EYEBROW + " hidden min-[960px]:block"}>Kalender</div>
-            {calendar}
-          </div>
+        <div
+          data-reveal-group
+          className={(view === "list" ? "block" : "hidden") + " min-[960px]:block"}
+        >
+          <Section eyebrow="Letzte Einheiten">{list}</Section>
         </div>
-      </PageReveal>
+      </div>
 
       <SessionEditPanel
         sessionId={editId}
@@ -152,6 +147,6 @@ function VerlaufPage(): React.ReactElement {
         open={editId !== null}
         onClose={() => setEditId(null)}
       />
-    </div>
+    </>
   );
 }

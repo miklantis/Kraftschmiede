@@ -46,7 +46,7 @@ Inhaltliche Quellen:
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
-  Aktuelle Version: 1.2.51.
+  Aktuelle Version: 1.2.52.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -93,6 +93,20 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Verlauf-Seite aufgeloest, Inhalt unter Training (Version 1.2.52).
+Die Route /verlauf entfaellt; der Verlauf-Punkt faellt aus der Hauptnavigation
+(nav.ts, einzige Quelle -> Sidebar und Bottom-Nav ziehen automatisch nach, jetzt
+fuenf Eintraege). Der gesamte Verlauf-Inhalt (Umschalter Liste/Kalender am Handy,
+Zwei-Spalten am Desktop, Bearbeiten-Panel, eigene Datenanbindung useHistory/
+useDeleteSession) sitzt jetzt in der eigenstaendigen Komponente
+components/history/HistorySection.tsx und wird auf der Trainingsseite unter dem
+Zwei-Spalten-Block eingebunden. Desktop: Kalender links (1.35fr), Liste rechts
+(1fr). Der Block gibt Umschalter und Gitter als zwei DOM-Elemente auf oberster
+Ebene aus, damit die PageReveal-Staffelung unveraendert greift. Geaendert:
+routes/index.tsx, lib/nav.ts, changelog.json; neu: components/history/
+HistorySection.tsx; geloescht: routes/verlauf.tsx. SessionLogCard/SessionEditPanel/
+Calendar/SegmentedControl unveraendert wiederverwendet.
 
 2026-07-01 — Uebungsdetail: Coach und Kennzahlen in einem Block (Version 1.2.51).
 Die separate Statistik-Reihe (StatRow) entfaellt; ihre Werte wandern als eine

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.52",
+      "date": "2026-07-01",
+      "changes": [
+        "Der Verlauf ist keine eigene Seite mehr, sondern sitzt jetzt unten auf der Trainingsseite. Am Computer erscheint er als eigener Bereich unter den Workouts: links der Kalender, rechts die Liste der letzten Einheiten. Am Handy schaltest du wie gewohnt zwischen Liste und Kalender um. In der Navigation fällt der Verlauf-Punkt damit weg – alles steckt jetzt unter Training."
+      ]
+    },
+    {
       "version": "1.2.51",
       "date": "2026-07-01",
       "changes": [

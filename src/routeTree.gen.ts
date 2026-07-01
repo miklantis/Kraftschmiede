@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as VerlaufRouteImport } from './routes/verlauf'
 import { Route as UebungenRouteImport } from './routes/uebungen'
 import { Route as SkillsRouteImport } from './routes/skills'
 import { Route as KoerperRouteImport } from './routes/koerper'
@@ -20,11 +19,6 @@ import { Route as UebungenExerciseIdRouteImport } from './routes/uebungen_.$exer
 import { Route as JourneyWaehlenRouteImport } from './routes/journey_.waehlen'
 import { Route as EinstellungenVersionRouteImport } from './routes/einstellungen_.version'
 
-const VerlaufRoute = VerlaufRouteImport.update({
-  id: '/verlauf',
-  path: '/verlauf',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const UebungenRoute = UebungenRouteImport.update({
   id: '/uebungen',
   path: '/uebungen',
@@ -78,7 +72,6 @@ export interface FileRoutesByFullPath {
   '/koerper': typeof KoerperRoute
   '/skills': typeof SkillsRoute
   '/uebungen': typeof UebungenRoute
-  '/verlauf': typeof VerlaufRoute
   '/einstellungen/version': typeof EinstellungenVersionRoute
   '/journey/waehlen': typeof JourneyWaehlenRoute
   '/uebungen/$exerciseId': typeof UebungenExerciseIdRoute
@@ -90,7 +83,6 @@ export interface FileRoutesByTo {
   '/koerper': typeof KoerperRoute
   '/skills': typeof SkillsRoute
   '/uebungen': typeof UebungenRoute
-  '/verlauf': typeof VerlaufRoute
   '/einstellungen/version': typeof EinstellungenVersionRoute
   '/journey/waehlen': typeof JourneyWaehlenRoute
   '/uebungen/$exerciseId': typeof UebungenExerciseIdRoute
@@ -103,7 +95,6 @@ export interface FileRoutesById {
   '/koerper': typeof KoerperRoute
   '/skills': typeof SkillsRoute
   '/uebungen': typeof UebungenRoute
-  '/verlauf': typeof VerlaufRoute
   '/einstellungen_/version': typeof EinstellungenVersionRoute
   '/journey_/waehlen': typeof JourneyWaehlenRoute
   '/uebungen_/$exerciseId': typeof UebungenExerciseIdRoute
@@ -117,7 +108,6 @@ export interface FileRouteTypes {
     | '/koerper'
     | '/skills'
     | '/uebungen'
-    | '/verlauf'
     | '/einstellungen/version'
     | '/journey/waehlen'
     | '/uebungen/$exerciseId'
@@ -129,7 +119,6 @@ export interface FileRouteTypes {
     | '/koerper'
     | '/skills'
     | '/uebungen'
-    | '/verlauf'
     | '/einstellungen/version'
     | '/journey/waehlen'
     | '/uebungen/$exerciseId'
@@ -141,7 +130,6 @@ export interface FileRouteTypes {
     | '/koerper'
     | '/skills'
     | '/uebungen'
-    | '/verlauf'
     | '/einstellungen_/version'
     | '/journey_/waehlen'
     | '/uebungen_/$exerciseId'
@@ -154,7 +142,6 @@ export interface RootRouteChildren {
   KoerperRoute: typeof KoerperRoute
   SkillsRoute: typeof SkillsRoute
   UebungenRoute: typeof UebungenRoute
-  VerlaufRoute: typeof VerlaufRoute
   EinstellungenVersionRoute: typeof EinstellungenVersionRoute
   JourneyWaehlenRoute: typeof JourneyWaehlenRoute
   UebungenExerciseIdRoute: typeof UebungenExerciseIdRoute
@@ -162,13 +149,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/verlauf': {
-      id: '/verlauf'
-      path: '/verlauf'
-      fullPath: '/verlauf'
-      preLoaderRoute: typeof VerlaufRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/uebungen': {
       id: '/uebungen'
       path: '/uebungen'
@@ -242,7 +222,6 @@ const rootRouteChildren: RootRouteChildren = {
   KoerperRoute: KoerperRoute,
   SkillsRoute: SkillsRoute,
   UebungenRoute: UebungenRoute,
-  VerlaufRoute: VerlaufRoute,
   EinstellungenVersionRoute: EinstellungenVersionRoute,
   JourneyWaehlenRoute: JourneyWaehlenRoute,
   UebungenExerciseIdRoute: UebungenExerciseIdRoute,
