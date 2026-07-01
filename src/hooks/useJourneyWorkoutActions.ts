@@ -37,7 +37,7 @@ export function useJourneyWorkoutActions(): UseJourneyWorkoutActions {
       qc.setQueryData<string[]>(
         ["journeyWorkouts", userId, journeyId],
         (old) => {
-          const list = old ?? [];
+          const list = Array.isArray(old) ? old : [];
           if (next) {
             return list.includes(templateId) ? list : [...list, templateId];
           }

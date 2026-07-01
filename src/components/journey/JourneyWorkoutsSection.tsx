@@ -33,6 +33,10 @@ export function JourneyWorkoutsSection(): React.ReactElement | null {
     lookup[e.id] = { name: e.name, profile: e.profile };
   }
 
+  // Defensiv: nur ein echtes Array wird zum Set. Ein aelterer, kaputt
+  // serialisierter Cachewert (frueher als Set abgelegt -> {}) darf nicht
+  // crashen, sondern gilt als leere Zuordnung, bis der Refetch greift.
+  const assignedIds = Array.isArray(assignedQ.data) ? assignedQ.data : [];
   const ready = Boolean(
     templatesQ.data && exercisesQ.data && assignedQ.data !== undefined,
   );
@@ -40,7 +44,7 @@ export function JourneyWorkoutsSection(): React.ReactElement | null {
     ? buildJourneyAssignment(
         templatesQ.data as WorkoutInput[],
         lookup,
-        new Set(assignedQ.data ?? []),
+        new Set(assignedIds),
       )
     : [];
 

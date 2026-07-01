@@ -10,7 +10,9 @@ const CACHE_SCHLUESSEL = "kraftschmiede-query-cache";
 // automatisch verworfen, damit nichts Veraltetes haengenbleibt.
 // v2: Skill-Definitionen tragen jetzt Uebungsname + Tempo (Phase 11 L5) - der
 //     alte gecachte Stand ohne diese Felder muss verworfen werden.
-export const CACHE_BUSTER = "v2";
+// v3: journey_workouts wurde kurzzeitig als Set gecacht und zerfiel im
+//     JSON-Persister zu {}; dieser kaputte Stand muss einmalig verworfen werden.
+export const CACHE_BUSTER = "v3";
 
 // Wie lange ein gespeicherter Stand hoechstens gueltig ist, bevor er beim
 // Laden verworfen wird. Korrespondiert mit gcTime im queryClient.

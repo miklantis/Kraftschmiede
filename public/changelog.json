@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.9",
+      "date": "2026-07-01",
+      "changes": [
+        "Fehler behoben: Nach dem vorherigen Absturz konnte ein alter, defekter Zwischenspeicher-Stand die Journey-Seite weiter blockieren. Dieser Stand wird jetzt einmalig verworfen, und die Seite lädt auch mit unerwarteten Altdaten stabil."
+      ]
+    },
+    {
       "version": "1.3.8",
       "date": "2026-07-01",
       "changes": [
