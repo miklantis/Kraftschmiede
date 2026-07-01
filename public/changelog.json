@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.4",
+      "date": "2026-07-01",
+      "changes": [
+        "Kleiner Feinschliff: Auf der Workout-Detailseite sitzt der „Bearbeiten“-Knopf am Handy jetzt als eigene Zeile unter dem Hinweis-Chip statt gedrängt oben rechts neben dem Konto-Symbol. Am Desktop unverändert."
+      ]
+    },
+    {
       "version": "1.3.3",
       "date": "2026-07-01",
       "changes": [

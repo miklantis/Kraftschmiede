@@ -55,7 +55,7 @@ function WorkoutDetailPage(): React.ReactElement {
     <>
       <BackLink to="/workouts" label="Workouts" />
       <PageHeader title={workout.name} className="mb-3 min-[960px]:mb-4" />
-      <div className="-mt-2 mb-5 flex flex-wrap items-center gap-2 min-[960px]:mb-6">
+      <div className="-mt-2 mb-5 flex flex-col items-start gap-3 min-[960px]:mb-6 min-[960px]:flex-row min-[960px]:items-center min-[960px]:gap-2">
         {workout.journeyCapable ? (
           <span className="rounded-[20px] bg-foreground px-2.5 py-1 text-[13px] font-medium text-background">
             journey-fähig
@@ -65,7 +65,12 @@ function WorkoutDetailPage(): React.ReactElement {
             nicht journey-fähig
           </span>
         )}
-        <Button asChild variant="outline" size="sm" className="ml-auto">
+        <Button
+          asChild
+          variant="outline"
+          size="sm"
+          className="min-[960px]:ml-auto"
+        >
           <Link
             to="/workouts/$templateId/bearbeiten"
             params={{ templateId }}

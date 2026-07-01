@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   offline-fest). Als Naechstes Lieferung 4 (Journey-Zuordnung der aktiven Journey).
   Konzept: `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben ausser 1.3.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.3.
+  Konzept-vor-Code. Aktuelle Version: 1.3.4.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -134,6 +134,12 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Workout-Detail: Bearbeiten-Knopf am Handy (Version 1.3.4). Die Chip/Bearbeiten-
+Zeile in workouts_.$templateId.tsx am Handy von flex-wrap (Knopf via ml-auto rechts, gedraengt
+unter dem Konto-Avatar) auf flex-col umgestellt: Chip oben, Knopf als eigene Zeile darunter
+linksbuendig. Ab 960px unveraendert nebeneinander (flex-row, ml-auto). Reiner Layout-Fix, eine
+Datei. Validierung gruen: vite build, tsc --noEmit, vitest run.
 
 2026-07-01 — Workout-Namen als volle Wahrheit (Version 1.3.3). Das Anzeige-Praefix
 "Workout " (Relikt aus der Zeit einbuchstabiger Namen) an allen Stellen entfernt:
