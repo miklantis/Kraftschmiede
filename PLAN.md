@@ -69,6 +69,23 @@ gefuehrt, sobald sie auftauchen.
 
 - (noch keine offenen Punkte)
 
+### Workouts editierbar & Journey-Zuordnung (Version 1.3, Konzept liegt vor)
+
+Konzept: `docs/Konzept-Workouts-und-Journey-Zuordnung.md`. Grundlegende Anpassung: Workouts
+(Vorlagen) werden bearbeitbar (neue Workouts-Seite + Editor), und Workouts lassen sich der
+aktiven Journey zuordnen. Der Charakter eines Workouts wird aus den Uebungen abgeleitet
+(journey-faehig, wenn es eine gewichtsbasierte Hauptuebung enthaelt); die Periodisierung
+steuert nur diese Hauptuebungen. Der Coach empfiehlt bei aktiver Journey aus deren
+zugewiesenen Workouts, sonst aus der ganzen Bibliothek; jedes Workout bleibt frei startbar.
+Skills bleiben getrennt. Bau in kleinen Schritten ab 1.3.0 – **wartet auf ausdrueckliche
+Freigabe** (mittlere Versionsstelle).
+
+- [ ] Lieferung 1: Migration `journey_workouts` + `templates.active` + Schema + Lese-Hooks
+- [ ] Lieferung 2: Workouts-Seite (lesend)
+- [ ] Lieferung 3: Workout-Editor (anlegen/bearbeiten/archivieren)
+- [ ] Lieferung 4: Journey-Zuordnung der aktiven Journey
+- [ ] Lieferung 5: Trainingsempfehlung auf die Zuordnung einschraenken (mit Rueckfall)
+
 ---
 
 ## Abgeschlossene Vorhaben
