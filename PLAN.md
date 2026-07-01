@@ -46,7 +46,7 @@ Inhaltliche Quellen:
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
-  Aktuelle Version: 1.2.59.
+  Aktuelle Version: 1.2.60.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -110,8 +110,10 @@ Versionierung: eigenstaendige Patch-Lieferungen 1.2.58/59/60; unabhaengig vom Wo
 - [x] Lieferung 1 (1.2.58): SQL-Migration + Schema (Enums umstellen), Alt- und Neuform ueberlappend
 - [x] Lieferung 2 (1.2.59): Lesestellen umgehaengt (equipment==="barbell" in coach/
   ExerciseLiveCard/Mapper/Live-Eintrag, `kind` -> `tier` in exercises/suitability, `tierLabel`)
-- [ ] Lieferung 3: `category`/`kind` aus Export/Restore + Live-Eintrag entfernen,
-  Export-Schema-Marker hochziehen, danach alte Spalten in der DB loeschen
+- [x] Lieferung 3 (1.2.60): `category`/`kind` aus Export/Restore + Live-Eintrag entfernt,
+  Export-Schema-Marker v2 -> v3, Restore toleriert Altbackups (leitet tier/equipment ab),
+  Schema-Enums entfernt. DB-DROP der Altspalten via Migration 0003 (nach dem Update
+  auszufuehren).
 
 ---
 
@@ -137,6 +139,15 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Typfelder aufraeumen, Lieferung 3 / Abschluss (Version 1.2.60). Altfelder
+`category`/`kind` aus dem Datenpfad entfernt: Export strippt sie und fuehrt Schema-Marker
+`v3` (exportData.ts); Restore akzeptiert v2 UND v3 und migriert Uebungszeilen aus
+Altbackups (category/kind verworfen, `tier` aus `kind` abgeleitet, Barbell-`equipment` aus
+`category` gesichert – restoreData.ts, mit zwei neuen Tests); Live-Eintrag-Rueckwaerts-
+Fallback in liveSession.ts entfernt; Enums/Felder aus schemas/exercises.ts genommen. Neue
+DB-Migration 0003 loescht die Altspalten (kind, category) – vom Nutzer nach dem Update
+auszufuehren. Coach-Rechenkern unangetastet. Validierung gruen (336 Tests).
 
 2026-07-01 — Typfelder aufraeumen, Lieferung 2 (Version 1.2.59). Interne Lesestellen von
 den Altfeldern auf die neuen umgehaengt: `equipment === "barbell"` uebernimmt die

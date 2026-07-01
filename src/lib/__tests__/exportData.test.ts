@@ -134,7 +134,7 @@ describe("buildExport", () => {
     expect(out.inventory.bars).toHaveLength(1);
     expect(out.settings).toEqual({ user_id: "u1", unit: "kg" });
     expect(out.app).toBe("Kraftschmiede");
-    expect(out.schemaVersion).toBe("v2");
+    expect(out.schemaVersion).toBe("v3");
     expect(out.exportedAt).toBe("2026-06-23T10:00:00.000Z");
   });
 
@@ -142,7 +142,7 @@ describe("buildExport", () => {
     const out = buildExport(emptyRaw(), NOW);
     const text = serializeExport(out);
     expect(text).toContain("\n"); // eingerueckt
-    expect(JSON.parse(text).schemaVersion).toBe("v2");
+    expect(JSON.parse(text).schemaVersion).toBe("v3");
   });
 });
 

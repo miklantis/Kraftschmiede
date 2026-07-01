@@ -10,7 +10,7 @@
 import { scoreInfo, SCORE_MAP, type ScoreInfo } from "@/engine/score";
 import { todayISO } from "@/lib/format";
 
-export const EXPORT_SCHEMA_VERSION = "v2";
+export const EXPORT_SCHEMA_VERSION = "v3";
 
 // Pass-through-Zeile: wir reichen die DB-Spalten unveraendert durch und tippen
 // nur die wenigen Felder an, die der Aufbau wirklich anfasst (kein any).
@@ -144,6 +144,17 @@ function cloneScoreMap(): Record<number, ScoreInfo> {
 
 // Baut das vollstaendige Export-Objekt aus den rohen Zeilen. now nur fuer den
 // Zeitstempel (in Tests fixierbar).
+// Ab Schema v3 fuehren Uebungen tier/equipment; die Altfelder category/kind
+// werden nicht mehr exportiert (unabhaengig davon, ob die DB sie noch traegt).
+function stripLegacyExerciseFields(rows: Row[]): Row[] {
+  return rows.map((r) => {
+    const { category, kind, ...rest } = r;
+    void category;
+    void kind;
+    return rest;
+  });
+}
+
 export function buildExport(
   raw: RawExportData,
   now: Date = new Date(),
@@ -184,7 +195,7 @@ export function buildExport(
       kettlebells: raw.kettlebells,
       equipment: raw.equipment,
     },
-    exercises: raw.exercises,
+    exercises: stripLegacyExerciseFields(raw.exercises),
     exerciseMuscles: raw.exerciseMuscles,
     templates: raw.templates,
     templateExercises: raw.templateExercises,

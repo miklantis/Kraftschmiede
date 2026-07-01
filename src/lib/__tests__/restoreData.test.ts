@@ -33,6 +33,31 @@ function validExport(): Record<string, unknown> {
 }
 
 describe("parseRestore", () => {
+  it("nimmt category/kind aus einem v2-Backup und leitet tier/equipment ab", () => {
+    const exp = validExport();
+    exp.exercises = [
+      { id: "e1", name: "Back Squat", category: "barbell", kind: "main", equipment: "bodyweight" },
+      { id: "e2", name: "Curl", category: "core", kind: "accessory", equipment: "band" },
+    ];
+    const row = parseRestore(JSON.stringify(exp)).tables.exercises;
+    expect(row[0]).not.toHaveProperty("category");
+    expect(row[0]).not.toHaveProperty("kind");
+    // Barbell-Wahrheit aus category durchgesetzt, tier aus kind abgeleitet.
+    expect(row[0]?.equipment).toBe("barbell");
+    expect(row[0]?.tier).toBe("main");
+    expect(row[1]?.equipment).toBe("band");
+    expect(row[1]?.tier).toBe("accessory");
+  });
+
+  it("akzeptiert einen v3-Backup unveraendert", () => {
+    const exp = validExport();
+    exp.schemaVersion = "v3";
+    exp.exercises = [{ id: "e1", name: "Back Squat", tier: "main", equipment: "barbell" }];
+    const row = parseRestore(JSON.stringify(exp)).tables.exercises;
+    expect(row[0]?.tier).toBe("main");
+    expect(row[0]?.equipment).toBe("barbell");
+  });
+
   it("akzeptiert einen gueltigen V2-Export und zaehlt die Vorschau", () => {
     const res = parseRestore(JSON.stringify(validExport()));
     expect(res.preview).toEqual({
@@ -65,7 +90,7 @@ describe("parseRestore", () => {
 
   it("lehnt ein V1-JSON ab (kein app/schemaVersion v2)", () => {
     const v1 = { schemaVersion: "0.14", sessions: [], migrations: {} };
-    expect(() => parseRestore(JSON.stringify(v1))).toThrow(/V2-Export/);
+    expect(() => parseRestore(JSON.stringify(v1))).toThrow(/Kraftschmiede-Export/);
   });
 
   it("lehnt ungueltiges JSON ab", () => {

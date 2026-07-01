@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.60",
+      "date": "2026-07-01",
+      "changes": [
+        "Abschluss des Katalog-Aufräumens: Die doppelt geführten Alt-Angaben an den Übungen sind aus Export und Wiederherstellung entfernt, neue Sicherungen sind schlanker. Ältere Sicherungen lassen sich weiterhin einspielen – die alten Angaben werden dabei automatisch auf die neue Form übertragen. Für dich ändert sich nichts am Training."
+      ]
+    },
+    {
       "version": "1.2.59",
       "date": "2026-07-01",
       "changes": [

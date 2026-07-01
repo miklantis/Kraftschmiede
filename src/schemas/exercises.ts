@@ -4,14 +4,7 @@ import { z } from "zod";
 import { metricEnum, muscleKategorieEnum, isoDate, uuid } from "./shared";
 
 // CHECK-Listen, die nur die exercises-Tabelle nutzt.
-export const exerciseCategoryEnum = z.enum(["barbell", "core", "bodyweight"]);
 export const exerciseProfileEnum = z.enum(["strength", "core", "bodyweight"]);
-export const exerciseKindEnum = z.enum([
-  "main",
-  "accessory",
-  "core",
-  "bodyweight",
-]);
 // Neu (Lieferung 1): ersetzt kind. Bewusst erweiterbar (spaeter z. B. isolation/prehab).
 export const exerciseTierEnum = z.enum(["main", "accessory"]);
 export const exerciseEquipmentEnum = z.enum([
@@ -28,9 +21,7 @@ export const exerciseRow = z.object({
   user_id: uuid,
   key: z.string().nullable(),
   name: z.string(),
-  category: exerciseCategoryEnum,
   profile: exerciseProfileEnum,
-  kind: exerciseKindEnum,
   tier: exerciseTierEnum,
   equipment: exerciseEquipmentEnum,
   bar_id: uuid.nullable(),
@@ -52,9 +43,7 @@ export type ExerciseRow = z.infer<typeof exerciseRow>;
 
 export const exerciseInsert = exerciseRow.omit({ id: true }).partial({
   key: true,
-  category: true,
   profile: true,
-  kind: true,
   tier: true,
   equipment: true,
   bar_id: true,

@@ -56,7 +56,7 @@ const zSession = z.looseObject({ entries: z.array(zEntry).optional() });
 // Export an Detailregeln scheitern). app + schemaVersion sind die harte Schranke.
 const zExport = z.looseObject({
   app: z.literal("Kraftschmiede"),
-  schemaVersion: z.literal("v2"),
+  schemaVersion: z.union([z.literal("v2"), z.literal("v3")]),
   inventory: z
     .looseObject({
       bars: z.array(zRow).optional(),
@@ -97,6 +97,22 @@ function stripSet(set: Row): Row {
   return copy;
 }
 
+// Uebungszeilen aus Alt-Backups (Schema v2, mit category/kind) auf die neue Form
+// bringen: Altfelder verwerfen, tier ableiten falls es fehlt, und die
+// Barbell-Wahrheit aus category in equipment sichern (wie die DB-Migration).
+// v3-Backups tragen bereits tier/equipment und passieren unveraendert.
+function migrateExerciseRow(r: Row): Row {
+  const { category, kind, ...rest } = r;
+  const out: Row = { ...rest };
+  if (out.tier == null) {
+    out.tier = kind === "accessory" ? "accessory" : "main";
+  }
+  if (category === "barbell") {
+    out.equipment = "barbell";
+  }
+  return out;
+}
+
 export function parseRestore(text: string): RestoreResult {
   let data: unknown;
   try {
@@ -112,11 +128,11 @@ export function parseRestore(text: string): RestoreResult {
   if (
     obj == null ||
     obj.app !== "Kraftschmiede" ||
-    obj.schemaVersion !== "v2"
+    (obj.schemaVersion !== "v2" && obj.schemaVersion !== "v3")
   ) {
     throw new Error(
-      "Das ist kein Kraftschmiede-V2-Export. Nur ein eigener V2-Export kann " +
-        "wiederhergestellt werden (kein V1-JSON).",
+      "Das ist kein Kraftschmiede-Export. Nur ein eigener Export (Schema v2 " +
+        "oder v3) kann wiederhergestellt werden (kein V1-JSON).",
     );
   }
 
@@ -146,7 +162,7 @@ export function parseRestore(text: string): RestoreResult {
     inventory_plates: arr(exp.inventory?.plates),
     inventory_kettlebells: arr(exp.inventory?.kettlebells),
     inventory_equipment: arr(exp.inventory?.equipment),
-    exercises: arr(exp.exercises),
+    exercises: arr(exp.exercises).map(migrateExerciseRow),
     exercise_muscles: arr(exp.exerciseMuscles),
     templates: arr(exp.templates),
     template_exercises: arr(exp.templateExercises),

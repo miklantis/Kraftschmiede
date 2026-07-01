@@ -20,9 +20,7 @@ describe("Lese-Form (Row) verlangt alle Spalten", () => {
     user_id: uid(),
     key: null,
     name: "Kniebeuge",
-    category: "barbell",
     profile: "strength",
-    kind: "main",
     tier: "main",
     equipment: "barbell",
     bar_id: null,
@@ -53,7 +51,7 @@ describe("Lese-Form (Row) verlangt alle Spalten", () => {
 
   it("unbekannter Enum-Wert scheitert", () => {
     expect(
-      exerciseRow.safeParse({ ...fullExercise, category: "kettlebell" }).success,
+      exerciseRow.safeParse({ ...fullExercise, equipment: "kettlebell" }).success,
     ).toBe(false);
   });
 });
@@ -71,7 +69,7 @@ describe("Schreib-Form (Insert) laesst Defaults und Auto-Felder weg", () => {
 
   it("Enum wird auch im Insert geprueft", () => {
     expect(
-      exerciseInsert.safeParse({ user_id: uid(), name: "x", kind: "falsch" })
+      exerciseInsert.safeParse({ user_id: uid(), name: "x", equipment: "falsch" })
         .success,
     ).toBe(false);
   });
