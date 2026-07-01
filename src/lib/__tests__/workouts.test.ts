@@ -5,6 +5,7 @@ import {
   buildWorkoutList,
   buildWorkoutDetail,
   buildJourneyAssignment,
+  filterCopyableAssignments,
   type WorkoutInput,
 } from "@/lib/workouts";
 
@@ -130,5 +131,42 @@ describe("buildJourneyAssignment", () => {
       new Set<string>(),
     );
     expect(rows.map((r) => r.id)).toEqual(["x", "y", "z"]);
+  });
+});
+
+describe("filterCopyableAssignments", () => {
+  const strengthWk = (id: string, active = true): WorkoutInput =>
+    wk({
+      id,
+      name: id,
+      active,
+      exercises: [{ exerciseId: "squat", role: "primary", position: 0 }],
+    });
+
+  it("uebernimmt nur weiterhin zuweisbare (aktiv + journey-faehig) Zuweisungen", () => {
+    const workouts = [
+      strengthWk("a"),
+      strengthWk("b", false), // inzwischen archiviert
+      wk({
+        id: "c",
+        name: "c",
+        exercises: [{ exerciseId: "plank", role: "core", position: 0 }],
+      }), // nicht mehr journey-faehig
+    ];
+    const copyable = filterCopyableAssignments(
+      workouts,
+      lookup,
+      new Set(["a", "b", "c"]),
+    );
+    expect(copyable).toEqual(["a"]);
+  });
+
+  it("laesst nicht zugewiesene Workouts aus", () => {
+    const copyable = filterCopyableAssignments(
+      [strengthWk("a"), strengthWk("b")],
+      lookup,
+      new Set(["a"]),
+    );
+    expect(copyable).toEqual(["a"]);
   });
 });

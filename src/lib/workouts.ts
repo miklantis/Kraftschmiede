@@ -138,6 +138,26 @@ export function buildJourneyAssignment(
     }));
 }
 
+// Beim Journey-Wechsel uebernehmbare Zuweisungen: aus den zuvor zugewiesenen
+// Workout-Ids bleiben nur die, die weiterhin zuweisbar sind (aktiv UND
+// journey-faehig). Reihenfolge nach der uebergebenen Workout-Liste (Position).
+// Unbekannte oder inzwischen archivierte/nicht mehr journey-faehige Zuweisungen
+// fallen weg.
+export function filterCopyableAssignments(
+  workouts: WorkoutInput[],
+  lookup: Lookup,
+  previousAssignedIds: ReadonlySet<string>,
+): string[] {
+  return workouts
+    .filter(
+      (w) =>
+        w.active &&
+        isJourneyCapable(w, lookup) &&
+        previousAssignedIds.has(w.id),
+    )
+    .map((w) => w.id);
+}
+
 // Detailansicht eines Workouts: nach Rolle gruppiert (Haupt -> Assistenz -> Core),
 // innerhalb der Gruppe in Reihenfolge. Leere Gruppen entfallen.
 export function buildWorkoutDetail(

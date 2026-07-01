@@ -51,13 +51,14 @@ Inhaltliche Quellen:
   Hauptnav-Punkt „Workouts", Bibliothek der aktiven Workouts mit „Neues Workout" und
   ausklappbarem Archiv (Reaktivieren), lesende Detailseite mit „Bearbeiten", der Editor
   (Name, Uebungen aus dem Katalog per Auswaehler, Rolle Haupt/Assistenz/Core, Reihenfolge,
-  Entfernen, Live-Journey-Faehigkeit, bewusstes Speichern; offline-fest), und auf der
+  Entfernen, Live-Journey-Faehigkeit, bewusstes Speichern; offline-fest), auf der
   Journey-Seite der Abschnitt „Workouts in dieser Journey" (An/Aus-Schalter je zuweisbarem
-  Workout, sofort speichernd, offline-fest, optimistisch). Als Naechstes Lieferung 4b
-  (Uebernahme der Zuordnung beim Journey-Wechsel), danach Lieferung 5 (Empfehlung auf die
+  Workout, sofort speichernd, offline-fest, optimistisch), und beim Journey-Wechsel ein
+  einmaliges Rueckfrage-Angebot, die Zuordnung der zuvor aktiven Journey zu uebernehmen
+  (nur weiterhin zuweisbare Workouts). Als Naechstes Lieferung 5 (Empfehlung auf die
   Zuordnung einschraenken). Konzept: `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben ausser 1.3.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.6.
+  Konzept-vor-Code. Aktuelle Version: 1.3.7.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -104,8 +105,9 @@ Schritten; die Empfehlung aendert ihr Verhalten erst mit Lieferung 5.
 - [x] Lieferung 4a (1.3.6): Journey-Zuordnung der aktiven Journey (Abschnitt „Workouts in
   dieser Journey" auf der Journey-Seite, An/Aus-Schalter je zuweisbarem Workout, sofort
   speichernd, offline-fest)
-- [ ] Lieferung 4b (1.3.x): Uebernahme der Zuordnung beim Journey-Wechsel (einmaliges
-  Angebot, die Zuweisung der zuvor aktiven Journey zu uebernehmen)
+- [x] Lieferung 4b (1.3.7): Uebernahme der Zuordnung beim Journey-Wechsel (einmaliges
+  Rueckfrage-Overlay nach der Vorlagenwahl; uebernommen werden nur weiterhin zuweisbare
+  Workouts, „Leer starten“ beginnt ohne Zuordnung)
 - [ ] Lieferung 5 (1.3.x): Trainingsempfehlung auf die Zuordnung einschraenken (Rueckfall auf
   Bibliothek nur bei leerer Zuweisung; bei „alles ausgeschlossen“ bleibt es in der Journey)
 
@@ -140,6 +142,22 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 4b / Uebernahme beim Journey-Wechsel
+(Version 1.3.7). Startet man eine neue Journey und die zuvor aktive hatte zugewiesene
+Workouts, erscheint nach der Vorlagenwahl ein einmaliges Rueckfrage-Overlay „Workouts
+uebernehmen?" (Ja = Uebernehmen / Nein = Leer starten), danach weiter ins Training.
+useJourneyActions.createFromTemplate gibt jetzt { newJourneyId, previousJourneyId } zurueck
+(vorige Journey-Id gemerkt, bevor sie deaktiviert wird; ihre journey_workouts bleiben, da
+die Zeile nur active=false wird). Neue Aktionen readAssignments (zugewiesene template_id
+einer Journey) und copyAssignments (Batch-Insert in die neue Journey, clientseitige Ids,
+invalidiert journeyWorkouts). Reine Hilfsfunktion filterCopyableAssignments in
+lib/workouts.ts (uebernimmt nur aktiv + journey-faehig + zuvor zugewiesen) mit zwei Tests;
+das Angebot erscheint nur, wenn nach dieser Filterung mindestens ein Workout uebrig bleibt.
+routes/journey_.waehlen.tsx orchestriert (haelt das Angebot, nutzt useTemplates/useExercises
+fuers Zuweisbarkeits-Nachschlagewerk, rendert das Overlay-Primitive). Journey-Wechsel bleibt
+ein Online-Vorgang wie bisher; Coach-Rechenkern unangetastet; kein neues DB-Migrat.
+Validierung gruen: vite build, tsc --noEmit, vitest run.
 
 2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 4a / Journey-Zuordnung per Schalter
 (Version 1.3.6). Auf der Journey-Seite neuer Abschnitt „Workouts in dieser Journey"

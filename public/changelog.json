@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.7",
+      "date": "2026-07-01",
+      "changes": [
+        "Wenn du eine neue Journey startest und die vorherige bereits Workouts zugewiesen hatte, fragt die App jetzt einmalig, ob du diese Zuordnung übernehmen möchtest. Übernommen werden nur weiterhin passende Workouts (aktiv und journey-fähig); „Leer starten“ beginnt ohne Zuordnung."
+      ]
+    },
+    {
       "version": "1.3.6",
       "date": "2026-07-01",
       "changes": [
