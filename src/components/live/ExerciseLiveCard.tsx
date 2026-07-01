@@ -67,7 +67,7 @@ export function ExerciseLiveCard({
    *  Werte + RIR + „+/- Satz“ bleiben. Default false = unveraenderter Live-Look. */
   editMode?: boolean;
 }): React.ReactElement {
-  const isBar = entry.category === "barbell" && entry.barWeight != null;
+  const isBar = entry.equipment === "barbell" && entry.barWeight != null;
   const hasPlates = isBar && plates.length > 0;
   const grid = editMode ? ROW_EDIT : ROW;
 

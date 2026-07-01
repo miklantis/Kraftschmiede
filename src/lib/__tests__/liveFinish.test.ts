@@ -21,7 +21,7 @@ function entry(over: Partial<LiveEntry> = {}): LiveEntry {
   return {
     exerciseId: "squat",
     exerciseName: "Kniebeuge",
-    category: "barbell",
+    equipment: "barbell",
     tag: "1RM 120 kg",
     barId: "bar1",
     barName: "Standard",

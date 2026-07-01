@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.59",
+      "date": "2026-07-01",
+      "changes": [
+        "Zweiter Schritt beim Aufräumen des Übungskatalogs: Die App liest die Art einer Übung (Hauptübung, Assistenz) und die Frage „läuft an der Langhantel?\" jetzt aus den neuen, klar benannten Angaben statt aus doppelt geführten Altfeldern. Für dich bleibt alles unverändert – Empfehlungen, Aufwärmen, Stangen- und Scheibenanzeige, Verlauf und Übungsliste verhalten sich genau wie zuvor."
+      ]
+    },
+    {
       "version": "1.2.58",
       "date": "2026-07-01",
       "changes": [

@@ -3,7 +3,7 @@
 
 import type { ExerciseRow } from "@/schemas";
 import { fmtWeight } from "@/lib/format";
-import { kindLabel } from "@/lib/labels";
+import { tierLabel } from "@/lib/labels";
 import type { CoachState } from "@/lib/coach";
 
 export interface ExerciseRowModel {
@@ -30,7 +30,7 @@ export function exerciseRowMeta(e: ExerciseRow, unit: string): string {
     const u = e.metric === "duration" ? " s" : " Wdh";
     return (max ?? 0) + u;
   }
-  if (e.profile === "core" || e.kind === "accessory") {
+  if (e.profile === "core" || e.tier === "accessory") {
     return fmtWeight(e.work_weight, unit) + " × " + (max ?? 0);
   }
   return e.rm != null
@@ -43,7 +43,10 @@ export function exerciseRowMeta(e: ExerciseRow, unit: string): string {
 export function exerciseRowSub(e: ExerciseRow): string {
   const mg = (e.muscle_groups ?? []).filter((x) => x !== "core");
   if (mg.length) return mg.join(" · ");
-  return kindLabel(e.kind);
+  // Core/Koerpergewicht tragen ihr Label ueber das Profil (tier kennt nur main/accessory).
+  if (e.profile === "core") return "Core";
+  if (e.profile === "bodyweight") return "Körpergewicht";
+  return tierLabel(e.tier);
 }
 
 // Gruppiert den Uebungskatalog in die V1-Reihenfolge. Reihenfolge innerhalb
@@ -64,7 +67,7 @@ export function groupExercises(
     if (!e.active) inactive.push(e);
     else if (e.profile === "bodyweight") bw.push(e);
     else if (e.profile === "core") core.push(e);
-    else if (e.kind === "accessory") assist.push(e);
+    else if (e.tier === "accessory") assist.push(e);
     else main.push(e);
   }
 

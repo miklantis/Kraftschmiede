@@ -21,7 +21,7 @@ const SESSION: WorkoutSession = {
     {
       exerciseId: "ex-1",
       exerciseName: "Bankdrücken",
-      category: "barbell",
+      equipment: "barbell",
       tag: "1RM 100 kg",
       barId: "bar-1",
       barName: "Olympia",
@@ -149,7 +149,7 @@ describe("liveSession", () => {
         {
           exerciseId: "ex-9",
           exerciseName: "",
-          category: "barbell",
+          equipment: "barbell",
           tag: "",
           barId: null,
           barName: null,

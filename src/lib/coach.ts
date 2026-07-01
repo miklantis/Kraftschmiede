@@ -157,7 +157,7 @@ export function rankWorkouts<T extends RankableTemplate>(
 export interface CoachBuildExercise {
   key: string | null;
   profile: "strength" | "core" | "bodyweight";
-  category: "barbell" | "core" | "bodyweight";
+  equipment: "barbell" | "plate" | "bar" | "band" | "bodyweight";
   repRange: [number, number] | null;
   workWeight: number;
   targetScore: number;
@@ -283,7 +283,7 @@ export function suggestWithBar<B extends { weight: number }>(
   exo: CoachBuildExercise,
   input: SuggestWithBarInput<B>,
 ): SuggestWithBarResult<B> {
-  if (exo.category === "barbell" && input.bars.length > 0) {
+  if (exo.equipment === "barbell" && input.bars.length > 0) {
     const lightest = input.bars.reduce(
       (a, b) => (b.weight < a.weight ? b : a),
       input.bars[0]!,
@@ -363,7 +363,7 @@ export function warmupFor(
   isFirst: boolean,
   plates: number[],
 ): EngineSet[] {
-  if (!exo || exo.category !== "barbell" || !bar) return [];
+  if (!exo || exo.equipment !== "barbell" || !bar) return [];
   const isDeadlift = /deadlift/i.test(exo.key ?? "");
   return generateWarmup(workWeight, bar.weight, plates, {
     isLift1: !!isFirst,

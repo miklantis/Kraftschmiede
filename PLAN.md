@@ -46,7 +46,7 @@ Inhaltliche Quellen:
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
-  Aktuelle Version: 1.2.58.
+  Aktuelle Version: 1.2.59.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -108,8 +108,8 @@ den getrauten Altwerten und verifiziert die Barbell-Zuordnung, bevor `category` 
 Versionierung: eigenstaendige Patch-Lieferungen 1.2.58/59/60; unabhaengig vom Workouts-Vorhaben, kann davor oder danach laufen.
 
 - [x] Lieferung 1 (1.2.58): SQL-Migration + Schema (Enums umstellen), Alt- und Neuform ueberlappend
-- [ ] Lieferung 2: Lesestellen umhaengen (equipment==="barbell" in coach/ExerciseLiveCard/
-  Mapper, `kind` -> `tier` in exercises/suitability, `tierLabel`)
+- [x] Lieferung 2 (1.2.59): Lesestellen umgehaengt (equipment==="barbell" in coach/
+  ExerciseLiveCard/Mapper/Live-Eintrag, `kind` -> `tier` in exercises/suitability, `tierLabel`)
 - [ ] Lieferung 3: `category`/`kind` aus Export/Restore + Live-Eintrag entfernen,
   Export-Schema-Marker hochziehen, danach alte Spalten in der DB loeschen
 
@@ -137,6 +137,17 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Typfelder aufraeumen, Lieferung 2 (Version 1.2.59). Interne Lesestellen von
+den Altfeldern auf die neuen umgehaengt: `equipment === "barbell"` uebernimmt die
+Langhantel-Rolle von `category` (coach suggestWithBar/warmupFor, ExerciseLiveCard,
+Mapper in useCoachStatuses/useLiveBuilder/liveBuild, Live-Eintrag in liveSession mit
+Rueckwaerts-Fallback fuer bereits laufende Einheiten); `kind` -> `tier` in exercises
+(Gruppierung/Meta) und suitability (Kraftphasen-Bonus). Verhaltenserhaltend abgesichert:
+Bonus zaehlt nur `tier==="main" && profile==="strength"`, damit Core-Uebungen wie bisher
+nicht als Hauptlift zaehlen; Unterzeilen-Label fuer Core/Koerpergewicht kommt jetzt aus
+dem Profil. `kindLabel` -> `tierLabel`. Altfelder `category`/`kind` bleiben ueberlappend
+bestehen (fallen in Lieferung 3). Coach-Rechenkern unangetastet. Validierung gruen.
 
 2026-07-01 — Typfelder aufraeumen, Lieferung 1 (Version 1.2.58). Neue Spalte `tier`
 (main/accessory) am Uebungskatalog angelegt und aus `kind` befuellt; `equipment` an der

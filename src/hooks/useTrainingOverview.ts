@@ -111,7 +111,8 @@ export function useTrainingOverview(): {
       exMap[e.id] = {
         id: e.id,
         name: e.name,
-        kind: e.kind,
+        tier: e.tier,
+        profile: e.profile,
         muscleGroups: e.muscle_groups,
         recoveryHours: e.recovery_hours,
       };

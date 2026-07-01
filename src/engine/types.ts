@@ -34,7 +34,8 @@ export interface Bar {
 export interface Exercise {
   id: string;
   name?: string;
-  kind?: string; // z. B. "main" | "accessory" | "core"
+  tier?: string; // "main" | "accessory"
+  profile?: string; // "strength" | "core" | "bodyweight"
   muscleGroups?: string[];
   recoveryHours?: number;
 }

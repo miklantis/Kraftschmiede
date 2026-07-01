@@ -10,8 +10,8 @@ import {
 import type { Exercise } from "@/engine/types";
 
 const exMap: Record<string, Exercise> = {
-  squat: { id: "squat", name: "Kniebeuge", kind: "main", muscleGroups: ["legs"], recoveryHours: 48 },
-  bench: { id: "bench", name: "Bankdrücken", kind: "main", muscleGroups: ["chest"], recoveryHours: 48 },
+  squat: { id: "squat", name: "Kniebeuge", tier: "main", profile: "strength", muscleGroups: ["legs"], recoveryHours: 48 },
+  bench: { id: "bench", name: "Bankdrücken", tier: "main", profile: "strength", muscleGroups: ["chest"], recoveryHours: 48 },
 };
 
 describe("lastByExercise", () => {
@@ -109,7 +109,7 @@ import type { SetEntry } from "@/engine/types";
 const STRENGTH: CoachBuildExercise = {
   key: "squat",
   profile: "strength",
-  category: "barbell",
+  equipment: "barbell",
   repRange: [8, 12],
   workWeight: 60,
   targetScore: 3,
@@ -118,7 +118,7 @@ const STRENGTH: CoachBuildExercise = {
 const CORE: CoachBuildExercise = {
   key: "plank",
   profile: "core",
-  category: "core",
+  equipment: "bodyweight",
   repRange: [12, 20],
   workWeight: 0,
   targetScore: 3,

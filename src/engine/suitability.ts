@@ -113,7 +113,7 @@ export function suitability(
       let mains = 0;
       ids.forEach((id) => {
         const exo = exMap[id];
-        if (exo && exo.kind === "main") mains++;
+        if (exo && exo.tier === "main" && exo.profile === "strength") mains++;
       });
       const pb = round2(mains * 0.6);
       score += pb;

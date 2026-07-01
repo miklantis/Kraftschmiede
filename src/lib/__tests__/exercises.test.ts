@@ -53,7 +53,7 @@ describe("exerciseRowMeta", () => {
     ).toBe("20 kg × 15");
     expect(
       exerciseRowMeta(
-        ex({ kind: "accessory", work_weight: 30, rep_range_max: 12 }),
+        ex({ tier: "accessory", work_weight: 30, rep_range_max: 12 }),
         "kg",
       ),
     ).toBe("30 kg × 12");
@@ -87,10 +87,10 @@ describe("exerciseRowSub", () => {
   });
 
   it("faellt auf die Uebungsart zurueck, wenn keine Gruppe (ausser core) da ist", () => {
-    expect(exerciseRowSub(ex({ kind: "accessory", muscle_groups: [] }))).toBe(
+    expect(exerciseRowSub(ex({ tier: "accessory", muscle_groups: [] }))).toBe(
       "Assistenz",
     );
-    expect(exerciseRowSub(ex({ kind: "core", muscle_groups: ["core"] }))).toBe(
+    expect(exerciseRowSub(ex({ profile: "core", muscle_groups: ["core"] }))).toBe(
       "Core",
     );
   });
@@ -99,10 +99,10 @@ describe("exerciseRowSub", () => {
 describe("groupExercises", () => {
   it("ordnet Uebungen den richtigen Gruppen in der V1-Reihenfolge zu", () => {
     const list = [
-      ex({ id: "a", name: "Squat", kind: "main", profile: "strength" }),
-      ex({ id: "b", name: "Curl", kind: "accessory", profile: "strength" }),
-      ex({ id: "c", name: "Situps", kind: "core", profile: "core" }),
-      ex({ id: "d", name: "Pushup", kind: "bodyweight", profile: "bodyweight" }),
+      ex({ id: "a", name: "Squat", tier: "main", profile: "strength" }),
+      ex({ id: "b", name: "Curl", tier: "accessory", profile: "strength" }),
+      ex({ id: "c", name: "Situps", profile: "core" }),
+      ex({ id: "d", name: "Pushup", profile: "bodyweight" }),
       ex({ id: "e", name: "Alt", active: false }),
     ];
     const groups = groupExercises(list, "kg");

@@ -52,10 +52,10 @@ describe("workWeightForPhase – Phasenwechsel (Paritaet zu V1)", () => {
 
 describe("suitability – Phasen-Fit (Paritaet zu V1)", () => {
   const exMap: Record<string, Exercise> = {
-    sq: { id: "sq", name: "Squat", kind: "main", muscleGroups: ["legs"], recoveryHours: 48 },
-    bp: { id: "bp", name: "Bench", kind: "main", muscleGroups: ["chest"], recoveryHours: 48 },
-    cu: { id: "cu", name: "Curl", kind: "accessory", muscleGroups: ["biceps"], recoveryHours: 48 },
-    co: { id: "co", name: "Core", kind: "core", muscleGroups: ["core"], recoveryHours: 24 },
+    sq: { id: "sq", name: "Squat", tier: "main", profile: "strength", muscleGroups: ["legs"], recoveryHours: 48 },
+    bp: { id: "bp", name: "Bench", tier: "main", profile: "strength", muscleGroups: ["chest"], recoveryHours: 48 },
+    cu: { id: "cu", name: "Curl", tier: "accessory", profile: "strength", muscleGroups: ["biceps"], recoveryHours: 48 },
+    co: { id: "co", name: "Core", tier: "main", profile: "core", muscleGroups: ["core"], recoveryHours: 24 },
   };
   const tplTwoMain: SuitabilityTemplate = {
     id: "t2",

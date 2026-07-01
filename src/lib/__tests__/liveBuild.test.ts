@@ -7,7 +7,7 @@ const squat: LiveBuildExercise = {
   key: "squat",
   name: "Kniebeuge",
   profile: "strength",
-  category: "barbell",
+  equipment: "barbell",
   repRange: [8, 12],
   workWeight: 60,
   targetScore: 3,
@@ -20,7 +20,7 @@ const plank: LiveBuildExercise = {
   key: "plank",
   name: "Plank",
   profile: "core",
-  category: "core",
+  equipment: "bodyweight",
   repRange: [12, 20],
   workWeight: 0,
   targetScore: 3,
@@ -59,7 +59,7 @@ describe("buildLiveEntries", () => {
   it("baut eine Kraftuebung mit Stange, Tag, Aufwaermen und Arbeitssaetzen", () => {
     const r = buildLiveEntries(input());
     const sq = r.entries.find((e) => e.exerciseId === "squat")!;
-    expect(sq.category).toBe("barbell");
+    expect(sq.equipment).toBe("barbell");
     expect(sq.barName).toBe("Olympia");
     expect(sq.barWeight).toBe(20);
     expect(sq.tag).toBe("1RM 120 kg");
@@ -76,7 +76,7 @@ describe("buildLiveEntries", () => {
   it("baut Core fix mit 3 Saetzen, ohne Stange und ohne Aufwaermen", () => {
     const r = buildLiveEntries(input());
     const pl = r.entries.find((e) => e.exerciseId === "plank")!;
-    expect(pl.category).toBe("core");
+    expect(pl.equipment).toBe("bodyweight");
     expect(pl.barName).toBeNull();
     expect(pl.barWeight).toBeNull();
     expect(pl.warmupSets).toEqual([]);
@@ -98,7 +98,7 @@ describe("buildLiveEntries", () => {
       key: "curl",
       name: "Curl",
       profile: "strength",
-      category: "barbell",
+      equipment: "barbell",
       repRange: [12, 20],
       workWeight: 20,
       targetScore: 3,

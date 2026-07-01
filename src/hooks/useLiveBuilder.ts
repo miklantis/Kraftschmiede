@@ -63,7 +63,7 @@ export function useLiveBuilder(): UseLiveBuilder {
         key: e.key,
         name: e.name,
         profile: e.profile,
-        category: e.category,
+        equipment: e.equipment,
         repRange:
           e.rep_range_min != null && e.rep_range_max != null
             ? [e.rep_range_min, e.rep_range_max]

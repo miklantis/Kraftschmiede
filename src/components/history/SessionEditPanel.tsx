@@ -147,7 +147,7 @@ function toLiveEntry(ex: PanelExercise): LiveEntry {
   return {
     exerciseId: ex.exerciseId ?? "",
     exerciseName: ex.name,
-    category: "core", // neutral: keine Stange/Scheiben im Bearbeiten-Modus
+    equipment: "bodyweight", // neutral: keine Stange/Scheiben im Bearbeiten-Modus
     tag: "",
     barId: null,
     barName: null,

@@ -23,14 +23,12 @@ export function skillMetricUnit(metric: string | null | undefined): string {
   return "";
 }
 
-// Anzeigename der Uebungsart (kind). 1:1 aus V1 (data.js kindLabel).
-const KIND_LABELS: Record<string, string> = {
+// Anzeigename der Uebungsart (tier). Ersetzt das fruehere kindLabel.
+const TIER_LABELS: Record<string, string> = {
   main: "Hauptübung",
   accessory: "Assistenz",
-  core: "Core",
-  bodyweight: "Körpergewicht",
 };
-export function kindLabel(kind: string | null | undefined): string {
-  if (!kind) return "–";
-  return KIND_LABELS[kind] ?? kind;
+export function tierLabel(tier: string | null | undefined): string {
+  if (!tier) return "–";
+  return TIER_LABELS[tier] ?? tier;
 }

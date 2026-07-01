@@ -29,7 +29,7 @@ function entry(over: Partial<LiveEntry> = {}): LiveEntry {
   return {
     exerciseId: "e",
     exerciseName: "Uebung",
-    category: "barbell",
+    equipment: "barbell",
     tag: "",
     barId: "bar1",
     barName: "Standard",

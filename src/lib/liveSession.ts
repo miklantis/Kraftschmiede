@@ -92,7 +92,7 @@ export interface SkillLiveExercise {
 export interface LiveEntry {
   exerciseId: string;
   exerciseName: string;
-  category: "barbell" | "core" | "bodyweight";
+  equipment: "barbell" | "plate" | "bar" | "band" | "bodyweight";
   /** Kurzkennung im Kartenkopf: "1RM 120 kg" bzw. Muskelgruppen. */
   tag: string;
   /** Stange (nur Langhantel) - aufgeloest fuer Anzeige und Scheiben-Aufteilung. */
@@ -239,9 +239,16 @@ function parseEntries(v: unknown): LiveEntry[] {
     .map((x): LiveEntry | null => {
       const o = (typeof x === "object" && x !== null ? x : {}) as Record<string, unknown>;
       if (typeof o.exerciseId !== "string") return null;
-      const cat = o.category;
-      const category: LiveEntry["category"] =
-        cat === "core" || cat === "bodyweight" ? cat : "barbell";
+      // Neue Eintraege tragen equipment; alte laufende Eintraege noch category.
+      const rawEq = o.equipment;
+      const rawCat = o.category;
+      const equipment: LiveEntry["equipment"] =
+        rawEq === "barbell" || rawEq === "plate" || rawEq === "bar" ||
+        rawEq === "band" || rawEq === "bodyweight"
+          ? rawEq
+          : rawCat === "core" || rawCat === "bodyweight"
+            ? "bodyweight"
+            : "barbell";
       const warmupSets = (Array.isArray(o.warmupSets) ? o.warmupSets : []).map(
         (w): LiveWarmupSet => {
           const wo = (typeof w === "object" && w !== null ? w : {}) as Record<string, unknown>;
@@ -265,7 +272,7 @@ function parseEntries(v: unknown): LiveEntry[] {
       return {
         exerciseId: o.exerciseId,
         exerciseName: str(o.exerciseName),
-        category,
+        equipment,
         tag: str(o.tag),
         barId: typeof o.barId === "string" ? o.barId : null,
         barName: typeof o.barName === "string" ? o.barName : null,
