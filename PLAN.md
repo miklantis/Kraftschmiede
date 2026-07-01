@@ -69,22 +69,31 @@ gefuehrt, sobald sie auftauchen.
 
 - (noch keine offenen Punkte)
 
-### Workouts editierbar & Journey-Zuordnung (Version 1.3, Konzept liegt vor)
+### Workouts editierbar & Journey-Zuordnung (Version 1.3, Konzept besprochen, 1.3.0 freigegeben)
 
-Konzept: `docs/Konzept-Workouts-und-Journey-Zuordnung.md`. Grundlegende Anpassung: Workouts
-(Vorlagen) werden bearbeitbar (neue Workouts-Seite + Editor), und Workouts lassen sich der
-aktiven Journey zuordnen. Der Charakter eines Workouts wird aus den Uebungen abgeleitet
-(journey-faehig, wenn es eine gewichtsbasierte Hauptuebung enthaelt); die Periodisierung
-steuert nur diese Hauptuebungen. Der Coach empfiehlt bei aktiver Journey aus deren
-zugewiesenen Workouts, sonst aus der ganzen Bibliothek; jedes Workout bleibt frei startbar.
-Skills bleiben getrennt. Bau in kleinen Schritten ab 1.3.0 – **wartet auf ausdrueckliche
-Freigabe** (mittlere Versionsstelle).
+Konzept: `docs/Konzept-Workouts-und-Journey-Zuordnung.md` (auf den besprochenen Stand
+fortgeschrieben). Grundlegende Anpassung: Workouts (Vorlagen) werden bearbeitbar (neue
+Workouts-Seite + Editor), und Workouts lassen sich der aktiven Journey zuordnen. Der
+Charakter wird aus den Uebungen abgeleitet: **journey-faehig, wenn mindestens eine Uebung
+das Profil `strength` hat** (Equipment egal). Die Periodisierung bleibt **profilbasiert wie
+heute** (strength progressiv, core/bodyweight mitgefuehrt) – der Coach-Rechenkern bleibt
+unangetastet. Die Rolle (primary/secondary/core) dient nur noch als Ordnungs-/Anzeigeraster.
+Der Coach empfiehlt bei aktiver Journey aus deren zugewiesenen Workouts, sonst aus der ganzen
+Bibliothek; jedes Workout bleibt frei startbar. Skills bleiben getrennt.
 
-- [ ] Lieferung 1: Migration `journey_workouts` + `templates.active` + Schema + Lese-Hooks
-- [ ] Lieferung 2: Workouts-Seite (lesend)
-- [ ] Lieferung 3: Workout-Editor (anlegen/bearbeiten/archivieren)
-- [ ] Lieferung 4: Journey-Zuordnung der aktiven Journey
-- [ ] Lieferung 5: Trainingsempfehlung auf die Zuordnung einschraenken (mit Rueckfall)
+Versionierung: Lieferung 1 ist **1.3.0** (mittlere Stelle, **freigegeben**), die weiteren
+Lieferungen laufen als 1.3.1, 1.3.2 … (Patch-Stelle). Bau in kleinen, einzeln testbaren
+Schritten; die Empfehlung aendert ihr Verhalten erst mit Lieferung 5.
+
+- [ ] Lieferung 1 (1.3.0): Migration `journey_workouts` + `templates.active`
+  + `unique(user_id, name)` + Schema + Lese-Hooks (inkl. `role` in `useTemplates`)
+- [ ] Lieferung 2 (1.3.x): Workouts-Seite (lesend) + neuer Nav-Punkt
+- [ ] Lieferung 3 (1.3.x): Workout-Editor (anlegen/bearbeiten/archivieren/reaktivieren,
+  Gueltigkeit: Name eindeutig + min. eine Uebung, bewusstes Speichern)
+- [ ] Lieferung 4 (1.3.x): Journey-Zuordnung der aktiven Journey (Toggles, Uebernahme beim
+  Journey-Wechsel)
+- [ ] Lieferung 5 (1.3.x): Trainingsempfehlung auf die Zuordnung einschraenken (Rueckfall auf
+  Bibliothek nur bei leerer Zuweisung; bei „alles ausgeschlossen“ bleibt es in der Journey)
 
 ---
 
