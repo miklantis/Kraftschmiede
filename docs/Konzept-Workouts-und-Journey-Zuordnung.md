@@ -84,6 +84,10 @@ Liste der aktiven Workouts, Aufbau wie die Übungen-Seite (`List` / `ListRow`). 
 Name, enthaltene Übungen in Kurzform, ein abgeleiteter Hinweis „journey-fähig“. Aktionen:
 neues Workout anlegen, Workout öffnen/bearbeiten, archivieren. Archivierte separat/ausblendbar.
 
+Die Seite bekommt einen **eigenen Hauptnavigations-Punkt** (`lib/nav.ts` ist die einzige
+Quelle; Sidebar und Bottom-Nav ziehen automatisch nach). Reihenfolge dann: Training ·
+Journey · Workouts · Übungen · Körper · Skills (sechs Einträge).
+
 ### 5.2 Workout-Editor (neu)
 Name; geordnete Übungsliste mit: Übung hinzufügen (Auswähler über den Katalog), Rolle setzen
 (Haupt/Assistenz/Core), Reihenfolge ändern, entfernen. Die Ableitung „journey-fähig ja/nein“
@@ -142,6 +146,5 @@ bei neuen Primitives.
 
 - Übernahme der Zuordnung beim Journey-Wechsel. Vorschlag: die bisherige Auswahl beim Start
   einer neuen Journey zum Übernehmen anbieten.
-- Navigationsplatz der Workouts-Seite: eigener Hauptpunkt (dann sechs Einträge, Reihenfolge
-  Training · Journey · Workouts · Übungen · Körper · Skills) oder als Unterbereich bei den
-  Übungen.
+
+Entschieden: Die Workouts-Seite wird ein eigener Hauptnavigations-Punkt (siehe 5.1).
