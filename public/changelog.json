@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.1",
+      "date": "2026-07-01",
+      "changes": [
+        "Neuer Menüpunkt „Workouts“: eine Übersicht aller Workouts mit den enthaltenen Übungen. Tippe ein Workout an, um seine Übungen im Detail zu sehen (nach Haupt-, Assistenz- und Core-Übungen geordnet). Ob ein Workout für eine Journey geeignet ist, wird direkt angezeigt. Bearbeiten und das Zuordnen zu einer Journey folgen in den nächsten Versionen."
+      ]
+    },
+    {
       "version": "1.3.0",
       "date": "2026-07-01",
       "changes": [

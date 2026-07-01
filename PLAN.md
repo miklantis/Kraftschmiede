@@ -46,12 +46,13 @@ Inhaltliche Quellen:
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Vorhaben „Workouts editierbar & Journey-Zuordnung" (Version 1.3) begonnen.** Lieferung 1
-  (1.3.0) umgesetzt: reiner Unterbau ohne sichtbares Verhalten. Migration 0004 (Tabelle
-  `journey_workouts`, Spalte `templates.active`, eindeutiger Workout-Name pro Nutzer),
-  Zod-Schema erweitert, `useTemplates` liest jetzt die Rolle mit. Als Naechstes Lieferung 2
-  (Workouts-Seite, lesend). Konzept: `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
+  (1.3.0, Unterbau) und Lieferung 2 (1.3.1, Workouts-Seite lesend) umgesetzt: neuer
+  Hauptnav-Punkt „Workouts", Bibliothek der aktiven Workouts (Name, Uebungen in Kurzform,
+  Hinweis „journey-faehig"), lesende Detailseite mit nach Rolle gruppierten Uebungen. Als
+  Naechstes Lieferung 3 (Workout-Editor: anlegen/bearbeiten/archivieren/reaktivieren).
+  Konzept: `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben ausser 1.3.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.0.
+  Konzept-vor-Code. Aktuelle Version: 1.3.1.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -92,7 +93,7 @@ Schritten; die Empfehlung aendert ihr Verhalten erst mit Lieferung 5.
 
 - [x] Lieferung 1 (1.3.0): Migration `journey_workouts` + `templates.active`
   + `unique(user_id, name)` + Schema + Lese-Hooks (inkl. `role` in `useTemplates`)
-- [ ] Lieferung 2 (1.3.x): Workouts-Seite (lesend) + neuer Nav-Punkt
+- [x] Lieferung 2 (1.3.x): Workouts-Seite (lesend) + neuer Nav-Punkt
 - [ ] Lieferung 3 (1.3.x): Workout-Editor (anlegen/bearbeiten/archivieren/reaktivieren,
   Gueltigkeit: Name eindeutig + min. eine Uebung, bewusstes Speichern)
 - [ ] Lieferung 4 (1.3.x): Journey-Zuordnung der aktiven Journey (Toggles, Uebernahme beim
@@ -131,6 +132,19 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 2 / Workouts-Seite lesend
+(Version 1.3.1). Neuer Hauptnav-Punkt „Workouts" (ClipboardList) zwischen Journey und
+Uebungen (nav.ts, jetzt sechs Eintraege; Sidebar/Bottom-Nav ziehen automatisch nach,
+Bottom-Nav verteilt per flex-1). Neue Routen routes/workouts.tsx (Bibliothek der aktiven
+Workouts, List/ListRow wie die Uebungen-Seite: Name, Uebungen in Kurzform, Chip
+„journey-faehig", tippen -> Detail) und routes/workouts_.$templateId.tsx (lesende
+Detailseite: Kopf, Journey-Faehigkeit-Chip, Uebungen nach Rolle gruppiert Haupt/Assistenz/
+Core). Datenzugriff gekapselt in useWorkoutsView/useWorkoutDetail (kombinieren
+useTemplates + useExercises); reine Aufbereitung in lib/workouts.ts (isJourneyCapable =
+mind. eine strength-Uebung, workoutSummary, buildWorkoutList nur aktive, buildWorkoutDetail
+nach Rolle) mit fuenf Tests. Kein bestehendes Verhalten geaendert; Coach-Rechenkern
+unangetastet. Validierung gruen: vite build, tsc --noEmit, vitest run.
 
 2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 1 / Unterbau (Version 1.3.0).
 Migration 0004_journey_workouts.sql: neue Tabelle `journey_workouts` (user_id,

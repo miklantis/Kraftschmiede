@@ -1,4 +1,4 @@
-import { Dumbbell, Map, ListChecks, Ruler, Zap } from "lucide-react";
+import { Dumbbell, Map, ClipboardList, ListChecks, Ruler, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 // Einzige Quelle fuer die Hauptnavigation. Sidebar (Desktop) und Bottom-Nav
@@ -19,6 +19,7 @@ export interface NavEntry {
 export const NAV_ENTRIES: readonly NavEntry[] = [
   { to: "/", label: "Training", icon: Dumbbell, exact: true },
   { to: "/journey", label: "Journey", icon: Map },
+  { to: "/workouts", label: "Workouts", icon: ClipboardList },
   { to: "/uebungen", label: "Übungen", icon: ListChecks },
   { to: "/koerper", label: "Körper", icon: Ruler },
   { to: "/skills", label: "Skills", icon: Zap },
