@@ -95,31 +95,18 @@ Schritten; die Empfehlung aendert ihr Verhalten erst mit Lieferung 5.
 - [ ] Lieferung 5 (1.3.x): Trainingsempfehlung auf die Zuordnung einschraenken (Rueckfall auf
   Bibliothek nur bei leerer Zuweisung; bei „alles ausgeschlossen“ bleibt es in der Journey)
 
-### Typ-Felder am Uebungskatalog aufraeumen (Konzept besprochen, Version 1.2.58 ff.)
-
-Konzept: `docs/Konzept-Typfelder-Aufraeumen.md`. Die zwei redundanten Typ-Felder `category`
-und `kind` am Uebungskatalog entfernen. Am Code gegengeprueft: `category` verzweigt real nur
-auf „ist Langhantel", `kind` traegt real nur „main vs. accessory" (zwei der vier Werte sind
-Ballast); `equipment` an der Uebung wird bislang nirgends gelesen. Zielbild: `equipment ===
-'barbell'` uebernimmt die Langhantel-Rolle von `category`, ein neues Enum `tier`
-(`main`/`accessory`, erweiterbar) ersetzt `kind`. `profile` und `bar_id` bleiben, der
-Coach-Rechenkern bleibt unangetastet. Migration befuellt die neuen Werte deterministisch aus
-den getrauten Altwerten und verifiziert die Barbell-Zuordnung, bevor `category` faellt.
-Versionierung: eigenstaendige Patch-Lieferungen 1.2.58/59/60; unabhaengig vom Workouts-Vorhaben, kann davor oder danach laufen.
-
-- [x] Lieferung 1 (1.2.58): SQL-Migration + Schema (Enums umstellen), Alt- und Neuform ueberlappend
-- [x] Lieferung 2 (1.2.59): Lesestellen umgehaengt (equipment==="barbell" in coach/
-  ExerciseLiveCard/Mapper/Live-Eintrag, `kind` -> `tier` in exercises/suitability, `tierLabel`)
-- [x] Lieferung 3 (1.2.60): `category`/`kind` aus Export/Restore + Live-Eintrag entfernt,
-  Export-Schema-Marker v2 -> v3, Restore toleriert Altbackups (leitet tier/equipment ab),
-  Schema-Enums entfernt. DB-DROP der Altspalten via Migration 0003 (nach dem Update
-  auszufuehren).
-
 ---
 
 ## Abgeschlossene Vorhaben
 
 Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
+
+- Typ-Felder am Uebungskatalog aufgeraeumt (Lieferungen 1-3, Versionen 1.2.58-1.2.60).
+  Redundante Felder `category`/`kind` entfernt: `equipment === "barbell"` traegt die
+  Langhantel-Rolle, neues Enum `tier` (`main`/`accessory`) die Uebungsart; Restore
+  toleriert Altbackups (Schema-Marker v3). DB-Spalten via Migrationen 0002/0003
+  umgestellt und geloescht. Coach-Rechenkern unangetastet. Konzept:
+  `docs/Konzept-Typfelder-Aufraeumen.md`.
 
 - PWA – Offline-Huelle & Update-Hinweis (Lieferungen 1–4, ab Version 1.1.0).
   Konzept: `docs/archive/Konzept-PWA-Offline.md`.
@@ -147,7 +134,8 @@ Altbackups (category/kind verworfen, `tier` aus `kind` abgeleitet, Barbell-`equi
 `category` gesichert – restoreData.ts, mit zwei neuen Tests); Live-Eintrag-Rueckwaerts-
 Fallback in liveSession.ts entfernt; Enums/Felder aus schemas/exercises.ts genommen. Neue
 DB-Migration 0003 loescht die Altspalten (kind, category) – vom Nutzer nach dem Update
-auszufuehren. Coach-Rechenkern unangetastet. Validierung gruen (336 Tests).
+am 2026-07-01 im Supabase-Dashboard ausgefuehrt. Coach-Rechenkern unangetastet.
+Validierung gruen (336 Tests).
 
 2026-07-01 — Typfelder aufraeumen, Lieferung 2 (Version 1.2.59). Interne Lesestellen von
 den Altfeldern auf die neuen umgehaengt: `equipment === "barbell"` uebernimmt die
