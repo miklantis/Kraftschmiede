@@ -88,7 +88,7 @@ function TrainingPage(): React.ReactElement {
     });
   };
 
-  const mainColumn = (
+  const trainingColumn = (
     <>
       <Section eyebrow="Heute empfohlen">
         {data.hero ? (
@@ -126,11 +126,7 @@ function TrainingPage(): React.ReactElement {
           </List>
         </Section>
       )}
-    </>
-  );
 
-  const sideColumn = (
-    <>
       <Section eyebrow="Aktive Skills">
         <List bordered>
           {data.skills.length > 0 ? (
@@ -181,8 +177,7 @@ function TrainingPage(): React.ReactElement {
             total={data.journey.total}
           />
         )}
-        <TwoColumn main={mainColumn} side={sideColumn} />
-        <HistorySection />
+        <TwoColumn main={trainingColumn} side={<HistorySection />} />
       </PageReveal>
       <YogaEntryModal open={yogaOpen} onClose={() => setYogaOpen(false)} />
     </div>

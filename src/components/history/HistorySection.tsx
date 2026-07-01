@@ -13,17 +13,18 @@ import { useHistory } from "@/hooks/useHistory";
 import { useDeleteSession } from "@/hooks/useDeleteSession";
 import type { HistoryKind } from "@/lib/history";
 
-// Verlauf-Band der Trainingsseite: navigierbarer Monatskalender und Liste der
+// Verlauf-Block der Trainingsseite: navigierbarer Monatskalender und Liste der
 // letzten Einheiten mit aufklappbarer Zusammenfassung und Bearbeiten-Panel.
 // Fruehere eigene Seite (/verlauf); jetzt unter Training als eigenstaendiger,
-// wiederverwendbarer Block. Desktop zeigt beides nebeneinander (Kalender links
-// und etwas breiter, Liste rechts); Mobile hat einen Umschalter und zeigt eine
-// Ansicht. Bringt seine Datenanbindung selbst mit; die Trainingsseite bindet
-// den Block nur ein. Keine Statistik-Reihe, keine Charts (Paritaet zu V1).
+// wiederverwendbarer Block – rechte Spalte der Trainingsseite. Desktop stapelt
+// Kalender (oben) und Liste (darunter) in dieser Spalte; Mobile hat einen
+// Umschalter und zeigt eine Ansicht. Bringt seine Datenanbindung selbst mit;
+// die Trainingsseite bindet den Block nur ein. Keine Statistik-Reihe, keine
+// Charts (Paritaet zu V1).
 //
-// Der Block gibt zwei DOM-Elemente auf oberster Ebene aus (Umschalter, dann das
-// Zwei-Spalten-Gitter mit je einer als `data-reveal-group` markierten Spalte),
-// damit die PageReveal-Staffelung der Trainingsseite unveraendert greift.
+// Die Bloecke (Umschalter, Kalender, Liste) laufen in der umgebenden
+// reveal-group der Trainingsseite mit; der Block markiert selbst keine
+// eigenen Spalten mehr.
 
 // Farb-/Hintergrundklassen der Kalenderpunkte je Typ (Optik aus V1 cal-dot).
 const CAL_DOT: Record<HistoryKind, string> = {
@@ -118,25 +119,21 @@ export function HistorySection(): React.ReactElement {
         />
       </div>
 
-      {/* Kalender links (breiter), Liste rechts; gleiches 1,6/1-Raster wie der
-          obere Block, damit die Spaltenkante fluchtet. Am Handy je nach Umschalter. */}
-      <div className="grid grid-cols-1 gap-6 min-[960px]:grid-cols-[1.6fr_1fr] min-[960px]:items-start min-[960px]:gap-[26px]">
-        <div
-          data-reveal-group
-          className={
-            (view === "calendar" ? "block" : "hidden") + " min-[960px]:block"
-          }
-        >
-          <div className={EYEBROW + " hidden min-[960px]:block"}>Kalender</div>
-          {calendar}
-        </div>
+      {/* Kalender oben, Liste darunter (Desktop gestapelt in der rechten Spalte
+          der Trainingsseite). Am Handy je nach Umschalter genau eine Ansicht.
+          Kein eigenes data-reveal-group mehr: die Bloecke laufen in der
+          umgebenden Spalte der Trainingsseite mit. */}
+      <div
+        className={
+          (view === "calendar" ? "block" : "hidden") + " min-[960px]:block"
+        }
+      >
+        <div className={EYEBROW + " hidden min-[960px]:block"}>Kalender</div>
+        {calendar}
+      </div>
 
-        <div
-          data-reveal-group
-          className={(view === "list" ? "block" : "hidden") + " min-[960px]:block"}
-        >
-          <Section eyebrow="Letzte Einheiten">{list}</Section>
-        </div>
+      <div className={(view === "list" ? "block" : "hidden") + " min-[960px]:block"}>
+        <Section eyebrow="Letzte Einheiten">{list}</Section>
       </div>
 
       <SessionEditPanel

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.2.55",
+      "date": "2026-07-01",
+      "changes": [
+        "Neues Layout der Trainingsseite am Computer: Links stehen jetzt alle Trainingsinhalte untereinander – Heute empfohlen, weitere Workouts, aktive Skills und Yoga. Rechts liegt der Verlauf mit dem Kalender oben und der Liste der letzten Einheiten darunter. So sind Training und Rückblick klar getrennt, und die Trainingsspalte ist etwas breiter. Am Handy bleibt alles wie gewohnt: erst die Trainingsblöcke, darunter der Verlauf mit dem Umschalter zwischen Liste und Kalender."
+      ]
+    },
+    {
       "version": "1.2.54",
       "date": "2026-07-01",
       "changes": [

@@ -46,7 +46,7 @@ Inhaltliche Quellen:
   unberuehrt; Yoga bearbeitet Minuten + Notiz. Damit ist das Vorhaben „Verlauf: Satz-Darstellung
   & Bearbeiten" insgesamt fertig (siehe Abgeschlossene Vorhaben).
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
-  Aktuelle Version: 1.2.54.
+  Aktuelle Version: 1.2.55.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -110,6 +110,15 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-01 — Trainingsseite Desktop: ein Zweispalter statt zwei (Version 1.2.55).
+Links alle Trainingsbloecke gestapelt (Heute empfohlen, Weitere Workouts, Aktive
+Skills, Yoga), rechts der Verlauf mit Kalender oben und Liste darunter. TwoColumn
+(components/ui/two-column.tsx) von 1.6/1 auf 1.2/1 gesetzt (Training etwas breiter,
+Kalender rechts bekommt mehr Raum); HistorySection (components/history/HistorySection.tsx)
+gibt das innere Nebeneinander-Raster auf und stapelt Kalender/Liste in der rechten
+Spalte, Handy-Umschalter unveraendert. index.tsx fuehrt main/side zu einer
+Trainingsspalte zusammen. Mobile-Reihenfolge unveraendert.
 
 2026-07-01 — Chart-Rahmen scrollt nur bei echtem Ueberlauf (Version 1.2.54).
 In ChartCanvas (components/ui/chart.tsx) den Rahmen von fixem overflow-x-auto
