@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.14",
+      "date": "2026-07-01",
+      "changes": [
+        "Neue Reihenfolge im Hauptmenü: Training, Journey, Workouts, Skills, Übungen, Körper. Skills rückt weiter nach vorne, Übungen und Körper folgen dahinter. Gilt gleichermaßen für die Menüleiste am unteren Rand (Handy) und die Seitenleiste (Desktop)."
+      ]
+    },
+    {
       "version": "1.3.13",
       "date": "2026-07-01",
       "changes": [
