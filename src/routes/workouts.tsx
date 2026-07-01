@@ -6,6 +6,7 @@ import { PageReveal } from "@/components/ui/page-reveal";
 import { Section } from "@/components/ui/section";
 import { List, ListRow } from "@/components/ui/list";
 import { Button } from "@/components/ui/button";
+import { JourneyChip } from "@/components/ui/journey-chip";
 import { useWorkoutsView } from "@/hooks/useWorkoutsView";
 import { useTemplateActions } from "@/hooks/useTemplateActions";
 
@@ -69,9 +70,7 @@ function WorkoutsPage(): React.ReactElement {
                   subtitle={w.summary || "Keine Übungen"}
                   trailing={
                     w.journeyCapable ? (
-                      <span className="rounded-[20px] bg-foreground px-2.5 py-1 text-[12px] font-medium text-background">
-                        journey-fähig
-                      </span>
+                      <JourneyChip label="Journey-fähig" />
                     ) : undefined
                   }
                   chevron

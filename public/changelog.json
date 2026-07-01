@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.12",
+      "date": "2026-07-01",
+      "changes": [
+        "Die Journey-Markierung bei Workouts ist jetzt ein dezentes grünes Journey-Symbol (das Karten-Icon aus dem Menü) statt der schwarzen „Journey“-/„journey-fähig“-Pille – ruhiger im Gesamtbild und klar der Journey zugeordnet. Betrifft die Markierungen unter „Weitere Workouts“ auf der Trainingsseite und auf der Workouts-Seite."
+      ]
+    },
+    {
       "version": "1.3.11",
       "date": "2026-07-01",
       "changes": [

@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Section } from "@/components/ui/section";
 import { List, ListRow } from "@/components/ui/list";
 import { ScoreBadge } from "@/components/ui/score-badge";
+import { JourneyChip } from "@/components/ui/journey-chip";
 import { TwoColumn } from "@/components/ui/two-column";
 import { PageReveal } from "@/components/ui/page-reveal";
 import { JourneyStrip } from "@/components/training/JourneyStrip";
@@ -126,9 +127,7 @@ function TrainingPage(): React.ReactElement {
                 trailing={
                   w.inJourney ? (
                     <div className="flex items-center gap-2">
-                      <span className="rounded-[20px] bg-foreground px-2.5 py-1 text-[12px] font-medium text-background">
-                        Journey
-                      </span>
+                      <JourneyChip label="In deiner Journey" />
                       <ScoreBadge value={w.score} />
                     </div>
                   ) : undefined
