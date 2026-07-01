@@ -9,6 +9,146 @@ Einträge bleiben historisch unverändert, neueste zuerst.
 
 ---
 
+2026-07-01 — Info-Chips dunkel (Version 1.2.62). Die drei Chips auf der Uebungs-Detailseite
+von bg-muted/text-muted-foreground auf bg-foreground/text-background umgestellt (dunkler
+Grund, heller Text) fuer bessere Lesbarkeit. Nur Klassen, Theme-Tokens. Validierung gruen.
+
+2026-07-01 — Uebungs-Detailseite: Info-Chips (Version 1.2.61). Unter dem Namen stehen
+statt der Muskelgruppen-Zeile drei Chips (Profil, Geraet, Art) im vorhandenen Chip-Stil,
+nur Werte ohne Kategorie-Beschriftung. Neue wiederverwendbare Label-Helfer profileLabel
+und equipmentLabel in lib/labels.ts (neben tierLabel); Route uebungen_.$exerciseId.tsx
+nutzt sie, exerciseRowSub dort entfernt (bleibt in der Uebungsliste in Gebrauch).
+Muskelgruppen weiterhin ueber die Muskel-Grafik sichtbar. Validierung gruen.
+
+2026-07-01 — Typfelder aufraeumen, Lieferung 3 / Abschluss (Version 1.2.60). Altfelder
+`category`/`kind` aus dem Datenpfad entfernt: Export strippt sie und fuehrt Schema-Marker
+`v3` (exportData.ts); Restore akzeptiert v2 UND v3 und migriert Uebungszeilen aus
+Altbackups (category/kind verworfen, `tier` aus `kind` abgeleitet, Barbell-`equipment` aus
+`category` gesichert – restoreData.ts, mit zwei neuen Tests); Live-Eintrag-Rueckwaerts-
+Fallback in liveSession.ts entfernt; Enums/Felder aus schemas/exercises.ts genommen. Neue
+DB-Migration 0003 loescht die Altspalten (kind, category) – vom Nutzer nach dem Update
+am 2026-07-01 im Supabase-Dashboard ausgefuehrt. Coach-Rechenkern unangetastet.
+Validierung gruen (336 Tests).
+
+2026-07-01 — Typfelder aufraeumen, Lieferung 2 (Version 1.2.59). Interne Lesestellen von
+den Altfeldern auf die neuen umgehaengt: `equipment === "barbell"` uebernimmt die
+Langhantel-Rolle von `category` (coach suggestWithBar/warmupFor, ExerciseLiveCard,
+Mapper in useCoachStatuses/useLiveBuilder/liveBuild, Live-Eintrag in liveSession mit
+Rueckwaerts-Fallback fuer bereits laufende Einheiten); `kind` -> `tier` in exercises
+(Gruppierung/Meta) und suitability (Kraftphasen-Bonus). Verhaltenserhaltend abgesichert:
+Bonus zaehlt nur `tier==="main" && profile==="strength"`, damit Core-Uebungen wie bisher
+nicht als Hauptlift zaehlen; Unterzeilen-Label fuer Core/Koerpergewicht kommt jetzt aus
+dem Profil. `kindLabel` -> `tierLabel`. Altfelder `category`/`kind` bleiben ueberlappend
+bestehen (fallen in Lieferung 3). Coach-Rechenkern unangetastet. Validierung gruen.
+
+2026-07-01 — Typfelder aufraeumen, Lieferung 1 (Version 1.2.58). Neue Spalte `tier`
+(main/accessory) am Uebungskatalog angelegt und aus `kind` befuellt; `equipment` an der
+Barbell-Wahrheit von `category` ausgerichtet (Migration 0002, mit Verifikation vor dem
+Weitermachen). Zod-Schema traegt `tier` zusaetzlich – Alt- und Neuform ueberlappend, noch
+keine Lesestelle umgehaengt, kein sichtbares Verhalten geaendert. Coach-Rechenkern
+unangetastet. Validierung gruen.
+
+2026-07-01 — Verlauf-Liste: Startzahl auf 5 (Version 1.2.57). PAGE_SIZE in
+HistorySection von 10 auf 5 gesenkt; „Mehr laden" legt entsprechend je 5 weitere
+frei. Einzige Aenderung. Validierung gruen.
+
+2026-07-01 — Verlauf-Block: Handy gestapelt statt Umschalter, Liste mit „Mehr
+laden" (Version 1.2.56). HistorySection (components/history/HistorySection.tsx):
+SegmentedControl-Umschalter entfernt, Kalender oben / Liste darunter jetzt auf
+Handy wie Desktop gleich gestapelt (beide mit Ueberschrift). Liste zeigt zunaechst
+PAGE_SIZE=10 juengste Einheiten, „Mehr laden" (Button outline, volle Breite) legt
+je 10 weitere frei – reine Anzeige, Daten liegen bereits vor; Kalender unveraendert
+(alle Monatspunkte). Nur diese eine Datei geaendert; useHistory/Datenschicht
+unberuehrt. Validierung: vite build, tsc --noEmit, vitest run gruen.
+
+2026-07-01 — Trainingsseite Desktop: ein Zweispalter statt zwei (Version 1.2.55).
+Links alle Trainingsbloecke gestapelt (Heute empfohlen, Weitere Workouts, Aktive
+Skills, Yoga), rechts der Verlauf mit Kalender oben und Liste darunter. TwoColumn
+(components/ui/two-column.tsx) von 1.6/1 auf 1.2/1 gesetzt (Training etwas breiter,
+Kalender rechts bekommt mehr Raum); HistorySection (components/history/HistorySection.tsx)
+gibt das innere Nebeneinander-Raster auf und stapelt Kalender/Liste in der rechten
+Spalte, Handy-Umschalter unveraendert. index.tsx fuehrt main/side zu einer
+Trainingsspalte zusammen. Mobile-Reihenfolge unveraendert.
+
+2026-07-01 — Chart-Rahmen scrollt nur bei echtem Ueberlauf (Version 1.2.54).
+In ChartCanvas (components/ui/chart.tsx) den Rahmen von fixem overflow-x-auto
+auf bedarfsabhaengig umgestellt: needsScroll = Zeichenbreite > Containerbreite
+(kleine Toleranz), sonst overflow-x-clip. Behebt das kurzzeitige Aufblitzen
+einer waagerechten Scrollbar bei den angehefteten Uebungs-Charts, wenn am
+Desktop das Fenster resized wird (Rahmen- und SVG-Breite liefen einen Frame
+auseinander). Handy-Scrollfall (lange Kurve, minInnerWidth) unveraendert. Reiner
+Layout-Fix, keine Logik beruehrt. Geaendert: components/ui/chart.tsx,
+changelog.json.
+
+2026-07-01 — Verlauf-Band auf oberes Spaltenraster ausgerichtet (Version 1.2.53).
+Das Verlauf-Gitter in HistorySection.tsx von 1.35fr/1fr auf 1.6fr/1fr umgestellt,
+damit die Spaltenkante (Kalender links, Liste rechts) am Desktop mit dem oberen
+TwoColumn-Block (1.6fr/1fr, gleicher 26px-Spaltenabstand) fluchtet. Korrigiert die
+Konzept-Entscheidung von 1.2.52 (eigenes, engeres Verhaeltnis). Reine Layout-
+Korrektur, keine Logik beruehrt. Geaendert: components/history/HistorySection.tsx,
+changelog.json.
+
+2026-07-01 — Verlauf-Seite aufgeloest, Inhalt unter Training (Version 1.2.52).
+Die Route /verlauf entfaellt; der Verlauf-Punkt faellt aus der Hauptnavigation
+(nav.ts, einzige Quelle -> Sidebar und Bottom-Nav ziehen automatisch nach, jetzt
+fuenf Eintraege). Der gesamte Verlauf-Inhalt (Umschalter Liste/Kalender am Handy,
+Zwei-Spalten am Desktop, Bearbeiten-Panel, eigene Datenanbindung useHistory/
+useDeleteSession) sitzt jetzt in der eigenstaendigen Komponente
+components/history/HistorySection.tsx und wird auf der Trainingsseite unter dem
+Zwei-Spalten-Block eingebunden. Desktop: Kalender links (1.35fr), Liste rechts
+(1fr). Der Block gibt Umschalter und Gitter als zwei DOM-Elemente auf oberster
+Ebene aus, damit die PageReveal-Staffelung unveraendert greift. Geaendert:
+routes/index.tsx, lib/nav.ts, changelog.json; neu: components/history/
+HistorySection.tsx; geloescht: routes/verlauf.tsx. SessionLogCard/SessionEditPanel/
+Calendar/SegmentedControl unveraendert wiederverwendet.
+
+2026-07-01 — Uebungsdetail: Coach und Kennzahlen in einem Block (Version 1.2.51).
+Die separate Statistik-Reihe (StatRow) entfaellt; ihre Werte wandern als eine
+zeilenweise Reihe in die Coach-Karte (geschaetztes 1RM -> Label „1RM“, bestes Set,
+6-Wochen-1RM-Trend -> Label „in 6 Wo.“, Trend farbig akzentuiert). Block zeigt sich
+jetzt auch ohne Coach-Status, solange Kennzahlen vorliegen. Rechte Spalte nur noch
+Muskel-Figur + „Uebung anpassen“; die Figur rueckt nach oben. Geaendert:
+routes/uebungen_.$exerciseId.tsx, hooks/useExerciseDetail.ts (Labels), changelog.json.
+StatRow-Primitive bleibt erhalten, aktuell ungenutzt.
+
+2026-06-30 — Doku aufgeraeumt (kein App-Code).
+Migrationshistorie docs/archive/PLAN-Migration-V1-zu-V2.md geloescht (Backup existiert).
+Masterplan-V2.md zu docs/Architektur.md entkernt: Schema, Architektur-Leitplanken,
+Entscheidungen und Risiken bleiben; Migrations- und Phasenplan-Teile entfernt, V1-Vergleiche
+geglaettet. Abgeschlossene Konzepte (PWA-Offline, Einheit-bearbeiten) nach docs/archive/
+verschoben. README neu (ohne V1/Migrationssprech). Doku-Verweise in PLAN.md und
+Designsystem.md auf die neue Struktur gezogen. Log-Eintraege bleiben historisch unveraendert.
+
+2026-06-30 — Repo/Adresse umbenannt von Kraftschmiede-v2 auf Kraftschmiede (1.2.48).
+V1 ist abgeloest: V1-Repo geloescht, V1-Supabase (Projekt Fitness, eu-north-1) pausiert,
+Code-Backup als ZIP gesichert. base-Pfad in vite.config.ts und navigateFallback von
+/Kraftschmiede-v2/ auf /Kraftschmiede/ umgestellt, Titel in index.html und Kommentar in
+main.tsx angepasst, Supabase-URLs in dieser Datei nachgezogen. Interne Schema-/Cache-Marker
+(CACHE_BUSTER, EXPORT_SCHEMA_VERSION v2) bewusst unberuehrt. Supabase Site-/Redirect-URL im
+Dashboard muss separat auf die neue Adresse umgestellt werden.
+
+- 2026-06-29 - Einstellungen-Layout: alle Bloecke halbbreit im Raster, Version 1.2.47:
+  "Daten · Coaching" und der App-Version-Block wieder in den `columns-2`-Container gelegt, so
+  dass am Desktop alle Bloecke halbbreit im selben Raster liegen und kein Block die volle Breite
+  nimmt. Korrigiert die vorherige Richtung (1.2.46, voll-breite Reihen). Am Handy unveraendert
+  (Stapel). Reine Layout-Korrektur, keine Logik beruehrt.
+
+- 2026-06-29 - Einstellungen-Layout: App-Block an Coaching anschliessen, Version 1.2.46:
+  "Daten · Coaching" und der App-Version-Block aus dem `columns-2`-Raster herausgenommen und
+  als Reihen ueber die volle Breite darunter gesetzt. Ursache war das CSS-`columns`-Masonry:
+  die rechte Rasterspalte war laenger, daher begann der voll-breite App-Block erst unterhalb
+  und wirkte am Desktop eingerueckt. Jetzt schliesst der App-Block luckenlos an Coaching an.
+  Am Handy unveraendert (Stapel). Reine Layout-Korrektur, keine Logik beruehrt.
+
+- 2026-06-29 - Versionsverlauf als Unterseite, Version 1.2.45: Der App-Version-Block in den
+  Einstellungen fuehrt jetzt auf eine eigenstaendige Vollseite (Route `einstellungen_.version`)
+  statt das WhatsNewSheet-Popup zu oeffnen. Die Seite zeigt alle Versionen aus changelog.json
+  (newest-first) mit ihren Aenderungen als schlichten Text ohne Karten/Hintergruende, oben ein
+  BackLink zu den Einstellungen. Neue Ladefunktion `fetchChangelogVersions` (alle Versionen);
+  `fetchLatestChangelog` baut darauf auf. WhatsNewSheet/useChangelog bleiben unberuehrt - sie
+  treiben weiter den Update-Hinweis beim App-Start (UpdateBanner). Der App-Version-Block selbst
+  bleibt optisch und in Position unveraendert (war bereits einspaltig ueber volle Breite).
+
 - 2026-06-29 - Uebungsseite: Coach-Status je Uebung, Version 1.2.44: In der Liste steht
   unter jedem Namen statt der Muskelgruppen eine Pille mit der groben Coach-Lesart fuer die
   naechste Einheit (Steigern/Halten/Senken, dazu "Frei" fuer Begleituebungen und "Start"
