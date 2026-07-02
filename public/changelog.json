@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.22",
+      "date": "2026-07-02",
+      "changes": [
+        "Das Workout-Symbol (Stoppuhr) ist jetzt auch das Icon fuer „Workouts“ in der Hauptnavigation – einheitlich zu den Listen. Zusaetzlich zeigt die Journey-Seite im Abschnitt „Workouts in dieser Journey“ vor jedem Eintrag dasselbe Symbol."
+      ]
+    },
+    {
       "version": "1.3.21",
       "date": "2026-07-02",
       "changes": [

@@ -1,5 +1,6 @@
-import { Dumbbell, Map, ClipboardList, ListChecks, Ruler, Zap } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { Dumbbell, Map, ListChecks, Ruler, Zap } from "lucide-react";
+import type { ComponentType } from "react";
+import { WorkoutIcon } from "@/components/ui/training-icons";
 
 // Einzige Quelle fuer die Hauptnavigation. Sidebar (Desktop) und Bottom-Nav
 // (Mobile) lesen beide aus dieser Liste, damit sie nie auseinanderlaufen.
@@ -10,8 +11,8 @@ export interface NavEntry {
   readonly to: string;
   /** Sichtbares Label (Domaenensprache deutsch). */
   readonly label: string;
-  /** Lucide-Icon-Komponente. */
-  readonly icon: LucideIcon;
+  /** Icon-Komponente: Lucide-Icon oder eigenes Symbol (nimmt className). */
+  readonly icon: ComponentType<{ readonly className?: string }>;
   /** Nur die Startroute soll exakt matchen, sonst waere sie ueberall aktiv. */
   readonly exact?: boolean;
 }
@@ -19,7 +20,7 @@ export interface NavEntry {
 export const NAV_ENTRIES: readonly NavEntry[] = [
   { to: "/", label: "Training", icon: Dumbbell, exact: true },
   { to: "/journey", label: "Journey", icon: Map },
-  { to: "/workouts", label: "Workouts", icon: ClipboardList },
+  { to: "/workouts", label: "Workouts", icon: WorkoutIcon },
   { to: "/skills", label: "Skills", icon: Zap },
   { to: "/uebungen", label: "Übungen", icon: ListChecks },
   { to: "/koerper", label: "Körper", icon: Ruler },

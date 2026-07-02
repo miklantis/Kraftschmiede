@@ -1,5 +1,6 @@
 import { Section } from "@/components/ui/section";
 import { List, ListRow } from "@/components/ui/list";
+import { WorkoutIcon } from "@/components/ui/training-icons";
 import { Switch } from "@/components/ui/switch";
 import { useActiveJourney } from "@/hooks/useJourney";
 import { useTemplates } from "@/hooks/useTemplates";
@@ -63,6 +64,7 @@ export function JourneyWorkoutsSection(): React.ReactElement | null {
               key={r.id}
               title={r.name}
               subtitle={r.summary.length > 0 ? r.summary : undefined}
+              leading={<WorkoutIcon />}
               trailing={
                 <Switch
                   checked={r.assigned}

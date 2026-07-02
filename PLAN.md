@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.21.
+  Konzept-vor-Code. Aktuelle Version: 1.3.22.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -116,6 +116,13 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-02 — Workout-Symbol in Navigation und Journey-Liste (Version 1.3.22).
+Hauptnavigation: „Workouts“ nutzt statt ClipboardList jetzt das eigene WorkoutIcon
+(Stoppuhr); NavEntry.icon auf ComponentType<{className?}> geweitet, damit neben
+Lucide auch eigene Symbole passen. Journey-Seite: JourneyWorkoutsSection setzt in
+jeder Zeile das WorkoutIcon als leading. Rein optisch, keine Logik. Validierung
+gruen: vite build, tsc --noEmit, vitest run (367 Tests).
 
 2026-07-02 — Trainingstyp-Symbole vor Listeneintraegen (Version 1.3.21).
 Neue Listenzeilen-Option `leading` (dezent grau, 20px) plus zwei eigene Icons
