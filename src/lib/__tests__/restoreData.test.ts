@@ -58,6 +58,17 @@ describe("parseRestore", () => {
     expect(row[0]?.equipment).toBe("barbell");
   });
 
+  it("verwirft die alte Rolle aus template_exercises (Migration 0006)", () => {
+    const exp = validExport();
+    exp.templateExercises = [
+      { id: "te1", template_id: "t1", exercise_id: "e1", role: "primary", position: 0 },
+    ];
+    const row = parseRestore(JSON.stringify(exp)).tables.template_exercises;
+    expect(row[0]).not.toHaveProperty("role");
+    expect(row[0]?.exercise_id).toBe("e1");
+    expect(row[0]?.position).toBe(0);
+  });
+
   it("akzeptiert einen gueltigen V2-Export und zaehlt die Vorschau", () => {
     const res = parseRestore(JSON.stringify(validExport()));
     expect(res.preview).toEqual({

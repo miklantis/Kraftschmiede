@@ -113,6 +113,14 @@ function migrateExerciseRow(r: Row): Row {
   return out;
 }
 
+// Alt-Backups (vor Version 1.3.16 bzw. Migration 0006) fuehren je Uebung eine
+// Rolle. Die Spalte gibt es nicht mehr; sie wird beim Restore verworfen, damit
+// ein aelterer Export weiterhin sauber einspielbar bleibt.
+function stripTemplateExerciseRow(r: Row): Row {
+  const { role: _role, ...rest } = r;
+  return rest;
+}
+
 export function parseRestore(text: string): RestoreResult {
   let data: unknown;
   try {
@@ -165,7 +173,7 @@ export function parseRestore(text: string): RestoreResult {
     exercises: arr(exp.exercises).map(migrateExerciseRow),
     exercise_muscles: arr(exp.exerciseMuscles),
     templates: arr(exp.templates),
-    template_exercises: arr(exp.templateExercises),
+    template_exercises: arr(exp.templateExercises).map(stripTemplateExerciseRow),
     journey_templates: arr(exp.journeyTemplates),
     journey_template_phases: arr(exp.journeyTemplatePhases),
     skills: arr(exp.skills),

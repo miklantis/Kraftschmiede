@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.17",
+      "date": "2026-07-02",
+      "changes": [
+        "Internes Aufräumen: Die seit dem letzten Update ungenutzte Rollen-Angabe an Workout-Übungen wird nun auch in der Datenbank entfernt. Für dich ändert sich nichts Sichtbares; ältere Datensicherungen lassen sich weiterhin problemlos einspielen."
+      ]
+    },
+    {
       "version": "1.3.16",
       "date": "2026-07-02",
       "changes": [

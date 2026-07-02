@@ -9,6 +9,22 @@ Einträge bleiben historisch unverändert, neueste zuerst.
 
 ---
 
+2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 4b / Uebernahme beim Journey-Wechsel
+(Version 1.3.7). Startet man eine neue Journey und die zuvor aktive hatte zugewiesene
+Workouts, erscheint nach der Vorlagenwahl ein einmaliges Rueckfrage-Overlay „Workouts
+uebernehmen?" (Ja = Uebernehmen / Nein = Leer starten), danach weiter ins Training.
+useJourneyActions.createFromTemplate gibt jetzt { newJourneyId, previousJourneyId } zurueck
+(vorige Journey-Id gemerkt, bevor sie deaktiviert wird; ihre journey_workouts bleiben, da
+die Zeile nur active=false wird). Neue Aktionen readAssignments (zugewiesene template_id
+einer Journey) und copyAssignments (Batch-Insert in die neue Journey, clientseitige Ids,
+invalidiert journeyWorkouts). Reine Hilfsfunktion filterCopyableAssignments in
+lib/workouts.ts (uebernimmt nur aktiv + journey-faehig + zuvor zugewiesen) mit zwei Tests;
+das Angebot erscheint nur, wenn nach dieser Filterung mindestens ein Workout uebrig bleibt.
+routes/journey_.waehlen.tsx orchestriert (haelt das Angebot, nutzt useTemplates/useExercises
+fuers Zuweisbarkeits-Nachschlagewerk, rendert das Overlay-Primitive). Journey-Wechsel bleibt
+ein Online-Vorgang wie bisher; Coach-Rechenkern unangetastet; kein neues DB-Migrat.
+Validierung gruen: vite build, tsc --noEmit, vitest run.
+
 2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 4a / Journey-Zuordnung per Schalter
 (Version 1.3.6). Auf der Journey-Seite neuer Abschnitt „Workouts in dieser Journey"
 (components/journey/JourneyWorkoutsSection.tsx, in journey.tsx am Ende der aktiven Journey

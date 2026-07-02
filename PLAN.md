@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.16.
+  Konzept-vor-Code. Aktuelle Version: 1.3.17.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -117,6 +117,15 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
 
+2026-07-02 — DB-Spalte template_exercises.role entfernt (Version 1.3.17). Migration
+0006_template_exercises_drop_role.sql zieht die seit 1.3.16 funktionslose Rollen-Spalte
+(die inline CHECK-Beschraenkung faellt mit weg; idempotent per drop column if exists).
+MUSS im Supabase-SQL-Editor ausgefuehrt werden. Restore gegen Alt-Backups abgesichert:
+restoreData.stripTemplateExerciseRow verwirft ein evtl. vorhandenes role-Feld beim
+Einspielen (Muster wie migrateExerciseRow), mit Test. Architektur.md fortgeschrieben.
+Kein App-Verhalten geaendert; Coach-Rechenkern unangetastet. Validierung gruen: vite build,
+tsc --noEmit, vitest run (365 Tests).
+
 2026-07-02 — Workout-Rolle entfernt, Antippen oeffnet direkt den Editor (Version 1.3.16).
 Die Rollen-Einteilung je Uebung (Haupt/Assistenz/Core) ist raus – sie war reines Anzeigeraster
 und wurde von Coach, Empfehlung, Aufwaermen und Live nie ausgewertet (geprueft). Schema
@@ -124,8 +133,8 @@ und wurde von Coach, Empfehlung, Aufwaermen und Live nie ausgewertet (geprueft).
 (workoutEditor ohne defaultRole/setRole; workouts.ts ohne ROLE_ORDER/LABELS und
 buildWorkoutDetail), Speicherpfad (useTemplateActions/templateActions ohne role) und der Editor
 (WorkoutEditor ohne Rollen-Dropdown, jetzt reine geordnete Uebungsliste) entsprechend
-entschlackt. Die DB-Spalte template_exercises.role bleibt mit Default 'primary' schlafend
-liegen (kein Migrat). Die lesende Detailseite (routes/workouts_.$templateId.tsx) und
+entschlackt. Die DB-Spalte template_exercises.role bleibt mit Default 'primary' zunaechst
+liegen; mit Migration 0006 (Version 1.3.17) nachgezogen. Die lesende Detailseite (routes/workouts_.$templateId.tsx) und
 useWorkoutDetail entfielen; Antippen eines Workouts in der Bibliothek fuehrt direkt in den
 Editor, nach Speichern/Zurueck zurueck in die Bibliothek. Tests angepasst
 (defaultRole/setRole/buildWorkoutDetail-Faelle entfernt). Coach-Rechenkern unangetastet.
@@ -208,22 +217,6 @@ useJourneyWorkoutActions: optimistischer setQueryData nun auf Array). buildJourn
 und filterCopyableAssignments bleiben unveraendert (nehmen weiterhin ein frisch gebautes
 Set). Reine Datenschicht-Korrektur, kein Verhalten geaendert. Validierung gruen: vite build,
 tsc --noEmit, vitest run.
-
-2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 4b / Uebernahme beim Journey-Wechsel
-(Version 1.3.7). Startet man eine neue Journey und die zuvor aktive hatte zugewiesene
-Workouts, erscheint nach der Vorlagenwahl ein einmaliges Rueckfrage-Overlay „Workouts
-uebernehmen?" (Ja = Uebernehmen / Nein = Leer starten), danach weiter ins Training.
-useJourneyActions.createFromTemplate gibt jetzt { newJourneyId, previousJourneyId } zurueck
-(vorige Journey-Id gemerkt, bevor sie deaktiviert wird; ihre journey_workouts bleiben, da
-die Zeile nur active=false wird). Neue Aktionen readAssignments (zugewiesene template_id
-einer Journey) und copyAssignments (Batch-Insert in die neue Journey, clientseitige Ids,
-invalidiert journeyWorkouts). Reine Hilfsfunktion filterCopyableAssignments in
-lib/workouts.ts (uebernimmt nur aktiv + journey-faehig + zuvor zugewiesen) mit zwei Tests;
-das Angebot erscheint nur, wenn nach dieser Filterung mindestens ein Workout uebrig bleibt.
-routes/journey_.waehlen.tsx orchestriert (haelt das Angebot, nutzt useTemplates/useExercises
-fuers Zuweisbarkeits-Nachschlagewerk, rendert das Overlay-Primitive). Journey-Wechsel bleibt
-ein Online-Vorgang wie bisher; Coach-Rechenkern unangetastet; kein neues DB-Migrat.
-Validierung gruen: vite build, tsc --noEmit, vitest run.
 
 ---
 

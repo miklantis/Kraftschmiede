@@ -74,8 +74,7 @@ Recovery-Fenster, Timer).
   kategorie (primär/sekundär/stabilisierend)
 - **templates** – key, name, image, active (Soft-Archiv), position. Namen pro Nutzer
   eindeutig über alle Workouts inkl. archivierter (`templates_unique_user_name`)
-- **template_exercises** – template_id (FK), exercise_id (FK), role (primary/secondary/core),
-  position
+- **template_exercises** – template_id (FK), exercise_id (FK), position
 - **journey_templates** – key, name, tagline, for_whom, summary, position
 - **journey_template_phases** – journey_template_id (FK), name, focus, weeks,
   sets_start, sets_end, deload_week (nullable), rep_target_min/max, position
