@@ -9,6 +9,33 @@ Einträge bleiben historisch unverändert, neueste zuerst.
 
 ---
 
+2026-07-01 — „Weitere Workouts“ zeigt alle aktiven Workouts (Version 1.3.11). Verfeinerung der
+Empfehlung: der Hero „Heute empfohlen“ kommt weiterhin aus der Journey-Zuweisung (Konzept 5.4),
+aber die Liste „Weitere Workouts“ listet jetzt ALLE aktiven Workouts (ausser dem Hero), nach
+Eignung sortiert, damit jedes frei startbar bleibt. Der aktiven Journey zugewiesene, nutzbare
+Workouts (aktiv + journey-faehig) tragen dort einen Journey-Chip und ihren Score; nicht
+zugewiesene erscheinen schlicht ohne Chip/Score. Die Kater=3-Startsperre (Ausschluss) gilt
+unveraendert fuer alle Zeilen gleichermassen (Kater=2 bleibt wie bisher nur -2 auf den Score und
+startbar). useTrainingOverview rankt jetzt alle aktiven Workouts und waehlt den Hero per
+selectedIds daraus; neues Kartenfeld inJourney (aus assignedUsableIds). routes/index.tsx zeigt
+Chip+Score nur bei inJourney. Coach-Rechenkern unangetastet, kein DB-Migrat. Validierung gruen:
+vite build, tsc --noEmit, vitest run.
+
+2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 5 / Empfehlung auf die Zuordnung
+einschraenken (Version 1.3.10). Die Trainingsempfehlung bewertet jetzt nur noch die der
+aktiven Journey zugewiesenen Workouts. Neue reine Auswahlregel selectRecommendationTemplates
+in lib/workouts.ts (keine aktive Journey -> ganze Bibliothek, nur aktive; aktive Journey mit
+nutzbarer Zuweisung -> nur diese Teilmenge, kein Rueckfall auch wenn heute alles
+ausgeschlossen; aktive Journey ohne nutzbare Zuweisung -> Rueckfall auf die ganze Bibliothek
+mit Hinweis) mit fuenf Tests; „nutzbar“ = aktiv + journey-faehig + zugewiesen. useTrainingOverview
+liest zusaetzlich useJourneyWorkouts, waehlt die Teilmenge und reicht nur diese an rankWorkouts
+(Coach-Rechenkern unangetastet); neues Anzeigefeld libraryFallbackHint. routes/index.tsx zeigt
+bei Rueckfall den dezenten Hinweis „Keine Workouts dieser Journey zugewiesen – Empfehlung aus
+der ganzen Bibliothek“ unter dem Hero. Nebeneffekt-Korrektur: der Bibliotheks-Rueckfall
+beruecksichtigt nur aktive Workouts (archivierte fielen vorher faelschlich mit ins Ranking).
+Kein neues DB-Migrat. Damit ist Vorhaben 1.3 komplett. Validierung gruen: vite build,
+tsc --noEmit, vitest run.
+
 2026-07-01 — Bugfix-Nachzug: kaputter Cache-Stand verworfen + Absicherung (Version 1.3.9).
 Der unter 1.3.8 behobene Set-Fehler hinterliess bei bereits geladenen Clients einen defekten
 persistierten Eintrag ({} statt Array), der beim naechsten Start „object is not iterable"

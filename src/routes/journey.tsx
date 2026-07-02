@@ -60,7 +60,9 @@ function JourneyPage(): React.ReactElement {
     <div>
       <PageHeader title="Journey" />
       <PageReveal className="flex flex-col gap-7 min-[960px]:gap-8">
-        <ActiveJourneyCard name={data.name} metaLine={metaLine} />
+        <Section eyebrow="Aktive Journey">
+          <ActiveJourneyCard name={data.name} metaLine={metaLine} />
+        </Section>
         {data.periodization.weeks.length > 0 && (
           <Section eyebrow="Periodisierung">
             <PeriodizationChart data={data.periodization} />
