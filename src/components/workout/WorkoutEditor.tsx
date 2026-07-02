@@ -4,16 +4,8 @@ import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 import { BackLink } from "@/components/ui/back-link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { ExercisePicker } from "@/components/exercise/ExercisePicker";
 import { useWorkoutEditor } from "@/hooks/useWorkoutEditor";
-import type { TemplateRole } from "@/schemas";
-
-const ROLE_OPTIONS: Array<{ value: TemplateRole; label: string }> = [
-  { value: "primary", label: "Haupt" },
-  { value: "secondary", label: "Assistenz" },
-  { value: "core", label: "Core" },
-];
 
 // Editor-Seite fuer ein Workout. templateId = null legt neu an, sonst wird das
 // bestehende Workout bearbeitet. Bewusster Speichern-Schritt (bis dahin ist
@@ -29,22 +21,10 @@ export function WorkoutEditor({
   const [pickerOpen, setPickerOpen] = useState(false);
   const [confirmArchive, setConfirmArchive] = useState(false);
 
-  const backTo = templateId
-    ? {
-        to: "/workouts/$templateId" as const,
-        params: { templateId } as { templateId: string } | undefined,
-        label: "Workout",
-      }
-    : {
-        to: "/workouts" as const,
-        params: undefined as { templateId: string } | undefined,
-        label: "Workouts",
-      };
-
   if (ed.isLoading) {
     return (
       <div>
-        <BackLink to={backTo.to} label={backTo.label} params={backTo.params} />
+        <BackLink to="/workouts" label="Workouts" />
         <p className="text-sm text-muted-foreground">Wird geladen …</p>
       </div>
     );
@@ -52,7 +32,7 @@ export function WorkoutEditor({
   if (ed.isError) {
     return (
       <div>
-        <BackLink to={backTo.to} label={backTo.label} params={backTo.params} />
+        <BackLink to="/workouts" label="Workouts" />
         <p className="text-sm text-danger">
           Daten konnten nicht geladen werden
           {ed.error instanceof Error ? ": " + ed.error.message : "."}
@@ -72,8 +52,8 @@ export function WorkoutEditor({
   }
 
   const onSave = async (): Promise<void> => {
-    const id = await ed.save();
-    void navigate({ to: "/workouts/$templateId", params: { templateId: id } });
+    await ed.save();
+    void navigate({ to: "/workouts" });
   };
 
   const onArchive = async (): Promise<void> => {
@@ -83,7 +63,7 @@ export function WorkoutEditor({
 
   return (
     <>
-      <BackLink to={backTo.to} label={backTo.label} params={backTo.params} />
+      <BackLink to="/workouts" label="Workouts" />
       <PageHeader
         title={ed.isNew ? "Neues Workout" : "Workout bearbeiten"}
         className="mb-4"
@@ -143,13 +123,6 @@ export function WorkoutEditor({
                 <span className="min-w-0 flex-1 truncate text-[15px] font-semibold text-foreground">
                   {row.name}
                 </span>
-                <Select
-                  options={ROLE_OPTIONS}
-                  value={row.role}
-                  onChange={(v) => ed.setRole(row.exerciseId, v as TemplateRole)}
-                  ariaLabel="Rolle im Workout"
-                  className="flex-none"
-                />
                 <button
                   type="button"
                   aria-label="Nach oben"

@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.15.
+  Konzept-vor-Code. Aktuelle Version: 1.3.16.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -88,7 +88,7 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
   der aktiven Journey per Schalter zuordnen (Uebernahme beim Journey-Wechsel), und die
   Trainingsempfehlung beschraenkt sich auf die Zuordnung (Rueckfall auf die ganze Bibliothek
   nur bei leerer/nicht nutzbarer Zuweisung, kein Rueckfall bei „alles heute ausgeschlossen“).
-  Journey-Faehigkeit = mind. eine strength-Uebung; Rolle nur Ordnungsraster;
+  Journey-Faehigkeit = mind. eine strength-Uebung;
   Coach-Rechenkern unangetastet. Konzept: `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 
 - Typ-Felder am Uebungskatalog aufgeraeumt (Lieferungen 1-3, Versionen 1.2.58-1.2.60).
@@ -116,6 +116,20 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-02 — Workout-Rolle entfernt, Antippen oeffnet direkt den Editor (Version 1.3.16).
+Die Rollen-Einteilung je Uebung (Haupt/Assistenz/Core) ist raus – sie war reines Anzeigeraster
+und wurde von Coach, Empfehlung, Aufwaermen und Live nie ausgewertet (geprueft). Schema
+(templates.ts ohne templateRoleEnum/role), Datenzugriff (useTemplates ohne role), Regellogik
+(workoutEditor ohne defaultRole/setRole; workouts.ts ohne ROLE_ORDER/LABELS und
+buildWorkoutDetail), Speicherpfad (useTemplateActions/templateActions ohne role) und der Editor
+(WorkoutEditor ohne Rollen-Dropdown, jetzt reine geordnete Uebungsliste) entsprechend
+entschlackt. Die DB-Spalte template_exercises.role bleibt mit Default 'primary' schlafend
+liegen (kein Migrat). Die lesende Detailseite (routes/workouts_.$templateId.tsx) und
+useWorkoutDetail entfielen; Antippen eines Workouts in der Bibliothek fuehrt direkt in den
+Editor, nach Speichern/Zurueck zurueck in die Bibliothek. Tests angepasst
+(defaultRole/setRole/buildWorkoutDetail-Faelle entfernt). Coach-Rechenkern unangetastet.
+Validierung gruen: vite build, tsc --noEmit, vitest run (364 Tests).
 
 2026-07-01 — Journey-Chip an Journey-Block angeglichen (Version 1.3.15). In
 src/components/ui/journey-chip.tsx die Toenung von bg-primary/10 auf bg-primary/12 und die
@@ -211,100 +225,8 @@ fuers Zuweisbarkeits-Nachschlagewerk, rendert das Overlay-Primitive). Journey-We
 ein Online-Vorgang wie bisher; Coach-Rechenkern unangetastet; kein neues DB-Migrat.
 Validierung gruen: vite build, tsc --noEmit, vitest run.
 
-2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 4a / Journey-Zuordnung per Schalter
-(Version 1.3.6). Auf der Journey-Seite neuer Abschnitt „Workouts in dieser Journey"
-(components/journey/JourneyWorkoutsSection.tsx, in journey.tsx am Ende der aktiven Journey
-eingehaengt): An/Aus-Schalter je zuweisbarem Workout, angeboten werden nur aktive und
-journey-faehige (mind. eine strength-Uebung). Jeder Schalter speichert sofort und
-optimistisch (Cache-Write, springt auch offline um). Datenzugriff gekapselt: neuer Lese-Hook
-useJourneyWorkouts (Menge der zugewiesenen template_id je Journey, queryKey
-[\"journeyWorkouts\", userId, journeyId]) und Aktions-Hook useJourneyWorkoutActions (toggle
-= assign/unassign). Schreibvorgang ueber den neuen registrierten Mutations-Default
-lib/journeyWorkoutActions.ts (Kennung [\"journeyWorkoutAction\"], in queryClient.ts NACH den
-Workout-Aktionen registriert – ADR-0009, damit ein offline neu angelegtes Workout vor seiner
-Zuordnung landet); Insert mit clientseitiger Id, Unassign per Delete ueber
-journey_id+template_id (idempotent). Reine Aufbereitung buildJourneyAssignment in
-lib/workouts.ts (aktiv + journey-faehig, Reihenfolge unveraendert, assigned-Flag) mit drei
-neuen Tests. Empfehlung nutzt die Zuordnung noch nicht (Einschraenkung erst Lieferung 5);
-Coach-Rechenkern unangetastet. Kein neues DB-Migrat (nutzt journey_workouts aus 1.3.0).
-Validierung gruen: vite build, tsc --noEmit, vitest run.
-
-2026-07-01 — Workout-Editor: Rolle als Dropdown (Version 1.3.5). Die vollbreite
-Segmentleiste je Uebung (Haupt/Assistenz/Core) durch das generische Select-Primitive ersetzt,
-kompakt in der Kopfzeile neben dem Uebungsnamen (Icons auf size-9 angeglichen). Die Rolle ist
-reines Anzeigeraster und tritt so dezenter auf. Nur components/workout/WorkoutEditor.tsx.
-Validierung gruen: vite build, tsc --noEmit, vitest run.
-
-2026-07-01 — Workout-Detail: Bearbeiten-Knopf am Handy (Version 1.3.4). Die Chip/Bearbeiten-
-Zeile in workouts_.$templateId.tsx am Handy von flex-wrap (Knopf via ml-auto rechts, gedraengt
-unter dem Konto-Avatar) auf flex-col umgestellt: Chip oben, Knopf als eigene Zeile darunter
-linksbuendig. Ab 960px unveraendert nebeneinander (flex-row, ml-auto). Reiner Layout-Fix, eine
-Datei. Validierung gruen: vite build, tsc --noEmit, vitest run.
-
-2026-07-01 — Workout-Namen als volle Wahrheit (Version 1.3.3). Das Anzeige-Praefix
-"Workout " (Relikt aus der Zeit einbuchstabiger Namen) an allen Stellen entfernt:
-RecommendedWorkout (Hero), routes/index.tsx (Weitere Workouts), live/StartModal,
-live/LivePanel, live/EndModal (Workout-Zweig; Skill-Praefix bleibt) und
-lib/history.ts sessionTitle (gibt jetzt den Template-Namen roh, Fallback "Workout").
-Die neuen Workouts-Seiten (Bibliothek/Detail/Editor) zeigten den Namen schon roh und
-sind damit ab jetzt konsistent. Datenkorrektur per Migration 0005_workout_namen.sql:
-einbuchstabige Alt-Namen einmalig auf "Workout "||name gehoben (char_length=1, idempotent,
-Unique-Index bleibt gewahrt) – im Supabase-Dashboard auszufuehren. history-Test auf den
-rohen Template-Namen angepasst. Coach-Rechenkern unberuehrt. Validierung gruen: vite build,
-tsc --noEmit, vitest run.
-
-2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 3 / Workout-Editor (Version 1.3.2).
-Workouts sind editierbar: neue Routen workouts_.neu.tsx (/workouts/neu) und
-workouts_.$templateId_.bearbeiten.tsx (/workouts/$templateId/bearbeiten), beide rendern die
-neue Feature-Komponente components/workout/WorkoutEditor.tsx. Der Editor haelt einen lokalen
-Entwurf (Name + geordnete Uebungsliste mit Rolle), zeigt die Journey-Faehigkeit live und
-speichert erst per Knopf. Bibliotheksseite (routes/workouts.tsx) um „Neues Workout" und einen
-ausklappbaren Abschnitt „Archivierte" (Reaktivieren) erweitert; Detailseite
-(workouts_.$templateId.tsx) um „Bearbeiten". Reine Regellogik in lib/workoutEditor.ts
-(Journey-Faehigkeit, Namens-/Speicherbarkeit, Hinzufuegen/Entfernen/Rolle/Verschieben) mit
-16 Tests; Datenzugriff in Hooks gekapselt: useWorkoutEditor (Entwurfszustand),
-useTemplateActions (Speichern/Archivieren/Reaktivieren). Speichern laeuft ueber den neuen
-registrierten Mutations-Default lib/templateActions.ts (Kennung ["templateAction"], in
-queryClient.ts nach den bestehenden und vor einer kuenftigen Journey-Zuordnung registriert –
-ADR-0009) mit clientseitigen IDs; Bearbeiten ersetzt die Uebungsliste sauber
-(Loeschen + Neu-Einfuegen), unbedenklich da template_exercises nur das Rezept ist. Neuer
-Auswaehler components/exercise/ExercisePicker.tsx (Overlay, gruppierter Katalog, Suche,
-Mehrfachauswahl). BackLink um optionale Params erweitert (Ruecksprung auf die Detailseite).
-Archivieren setzt nur templates.active=false (journey_workouts bleiben, kommen beim
-Reaktivieren von allein zurueck). Empfehlung rankt weiter alle Workouts (Einschraenkung erst
-Lieferung 5); Coach-Rechenkern unangetastet. Kein neues DB-Migrat (nutzt 0004). Validierung
-gruen: vite build, tsc --noEmit, vitest run (357 Tests).
-
-2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 2 / Workouts-Seite lesend
-(Version 1.3.1). Neuer Hauptnav-Punkt „Workouts" (ClipboardList) zwischen Journey und
-Uebungen (nav.ts, jetzt sechs Eintraege; Sidebar/Bottom-Nav ziehen automatisch nach,
-Bottom-Nav verteilt per flex-1). Neue Routen routes/workouts.tsx (Bibliothek der aktiven
-Workouts, List/ListRow wie die Uebungen-Seite: Name, Uebungen in Kurzform, Chip
-„journey-faehig", tippen -> Detail) und routes/workouts_.$templateId.tsx (lesende
-Detailseite: Kopf, Journey-Faehigkeit-Chip, Uebungen nach Rolle gruppiert Haupt/Assistenz/
-Core). Datenzugriff gekapselt in useWorkoutsView/useWorkoutDetail (kombinieren
-useTemplates + useExercises); reine Aufbereitung in lib/workouts.ts (isJourneyCapable =
-mind. eine strength-Uebung, workoutSummary, buildWorkoutList nur aktive, buildWorkoutDetail
-nach Rolle) mit fuenf Tests. Kein bestehendes Verhalten geaendert; Coach-Rechenkern
-unangetastet. Validierung gruen: vite build, tsc --noEmit, vitest run.
-
-2026-07-01 — Workouts & Journey-Zuordnung, Lieferung 1 / Unterbau (Version 1.3.0).
-Migration 0004_journey_workouts.sql: neue Tabelle `journey_workouts` (user_id,
-journey_id FK, template_id FK, `unique(user_id, journey_id, template_id)`, RLS + vier
-Policies + Grant, ON DELETE CASCADE ueber beide FKs), Spalte `templates.active`
-(Soft-Archiv, Default true) und Unique-Index `templates_unique_user_name` auf
-(user_id, name) ueber alle Workouts inkl. archivierter – mit Vorab-Pruefung auf doppelte
-Namen. Zod: `templates.active` im Row/Insert, neues Schema `journeyWorkouts.ts` (+ Barrel),
-`TemplateRole` exportiert. `useTemplates` liest jetzt `role` mit und liefert zusaetzlich
-eine geordnete `exercises`-Liste (exerciseId/role/position); `exerciseIds` unveraendert.
-Architektur.md fortgeschrieben. Kein sichtbares Verhalten geaendert (keine Lesestelle
-wertet die neuen Strukturen aus); Coach-Rechenkern unangetastet. Dateiname 0004 statt des
-im Konzept genannten 0002 (0002/0003 sind bereits die Typfelder-Migrationen). Migration
-muss im Supabase-Dashboard ausgefuehrt werden. Validierung gruen: vite build, tsc --noEmit,
-vitest run.
-
 ---
 
-Ältere Einträge (vor 1.3) stehen im Archiv: `docs/archive/PLAN-Log-Archiv.md`.
+Ältere Einträge stehen im Archiv: `docs/archive/PLAN-Log-Archiv.md`.
 Der nutzerverständliche Verlauf je Version liegt in `public/changelog.json`, die
 getroffenen Entscheidungen und Betriebs-Lernpunkte in `docs/adr/`.

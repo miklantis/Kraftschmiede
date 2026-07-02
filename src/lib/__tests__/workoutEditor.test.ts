@@ -2,12 +2,10 @@ import { describe, it, expect } from "vitest";
 import {
   addExercise,
   canSaveDraft,
-  defaultRole,
   draftJourneyCapable,
   moveExercise,
   nameStatus,
   removeExercise,
-  setRole,
   trimmedName,
   type WorkoutDraft,
 } from "../workoutEditor";
@@ -22,10 +20,7 @@ const profiles: Record<string, string | undefined> = {
 function draft(exerciseIds: string[]): WorkoutDraft {
   return {
     name: "Test",
-    exercises: exerciseIds.map((id, i) => ({
-      exerciseId: id,
-      role: i === 0 ? "primary" : "secondary",
-    })),
+    exercises: exerciseIds.map((id) => ({ exerciseId: id })),
   };
 }
 
@@ -38,14 +33,6 @@ describe("draftJourneyCapable", () => {
   });
   it("ist falsch bei leerem Entwurf", () => {
     expect(draftJourneyCapable(draft([]), profiles)).toBe(false);
-  });
-});
-
-describe("defaultRole", () => {
-  it("erste Uebung primary, weitere secondary", () => {
-    expect(defaultRole(0)).toBe("primary");
-    expect(defaultRole(1)).toBe("secondary");
-    expect(defaultRole(5)).toBe("secondary");
   });
 });
 
@@ -78,14 +65,11 @@ describe("canSaveDraft", () => {
 });
 
 describe("addExercise", () => {
-  it("haengt an und belegt die Rolle nach der Regel", () => {
+  it("haengt an", () => {
     let d: WorkoutDraft = { name: "x", exercises: [] };
     d = addExercise(d, "a");
     d = addExercise(d, "b");
-    expect(d.exercises).toEqual([
-      { exerciseId: "a", role: "primary" },
-      { exerciseId: "b", role: "secondary" },
-    ]);
+    expect(d.exercises).toEqual([{ exerciseId: "a" }, { exerciseId: "b" }]);
   });
   it("fuegt eine bereits enthaltene Uebung nicht doppelt hinzu", () => {
     const d = addExercise(draft(["a"]), "a");
@@ -97,14 +81,6 @@ describe("removeExercise", () => {
   it("entfernt die Uebung", () => {
     const d = removeExercise(draft(["a", "b"]), "a");
     expect(d.exercises.map((e) => e.exerciseId)).toEqual(["b"]);
-  });
-});
-
-describe("setRole", () => {
-  it("setzt die Rolle genau einer Uebung", () => {
-    const d = setRole(draft(["a", "b"]), "b", "core");
-    expect(d.exercises.find((e) => e.exerciseId === "b")?.role).toBe("core");
-    expect(d.exercises.find((e) => e.exerciseId === "a")?.role).toBe("primary");
   });
 });
 

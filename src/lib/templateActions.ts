@@ -13,7 +13,6 @@
 
 import type { QueryClient } from "@tanstack/react-query";
 import { supabase } from "./supabase";
-import type { TemplateRole } from "@/schemas";
 
 export const TEMPLATE_MUTATION_KEY = ["templateAction"] as const;
 
@@ -22,7 +21,6 @@ export const TEMPLATE_MUTATION_KEY = ["templateAction"] as const;
 export interface WorkoutSaveExercise {
   id: string;
   exercise_id: string;
-  role: TemplateRole;
   position: number;
 }
 
@@ -81,7 +79,6 @@ async function writeSave(p: WorkoutSavePayload): Promise<void> {
       user_id: p.userId,
       template_id: p.templateId,
       exercise_id: e.exercise_id,
-      role: e.role,
       position: e.position,
     }));
     const ins = await supabase.from("template_exercises").insert(rows);

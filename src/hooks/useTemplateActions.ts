@@ -20,7 +20,7 @@ export interface SaveWorkoutInput {
   /** Position des Workout-Kopfes (nur beim Anlegen genutzt). */
   position: number;
   /** Uebungen in Reihenfolge; Position ergibt sich aus dem Index. */
-  exercises: Array<{ exerciseId: string; role: WorkoutSaveExercise["role"] }>;
+  exercises: Array<{ exerciseId: string }>;
 }
 
 export interface UseTemplateActions {
@@ -42,7 +42,6 @@ export function useTemplateActions(): UseTemplateActions {
       const exercises: WorkoutSaveExercise[] = input.exercises.map((e, i) => ({
         id: crypto.randomUUID(),
         exercise_id: e.exerciseId,
-        role: e.role,
         position: i,
       }));
       return mutation.mutateAsync({

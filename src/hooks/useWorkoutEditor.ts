@@ -9,19 +9,16 @@ import {
   moveExercise,
   nameStatus,
   removeExercise as removeEx,
-  setRole as setRoleFn,
   trimmedName,
   type NameStatus,
   type WorkoutDraft,
 } from "@/lib/workoutEditor";
-import type { ExerciseRow, TemplateRole } from "@/schemas";
+import type { ExerciseRow } from "@/schemas";
 
-// Eine Zeile in der Editor-Uebungsliste (Name aus dem Katalog, Rolle aus dem
-// Entwurf, Position = Index).
+// Eine Zeile in der Editor-Uebungsliste (Name aus dem Katalog, Position = Index).
 export interface EditorExerciseRow {
   exerciseId: string;
   name: string;
-  role: TemplateRole;
 }
 
 export interface UseWorkoutEditor {
@@ -45,7 +42,6 @@ export interface UseWorkoutEditor {
 
   addExercise: (exerciseId: string) => void;
   removeExercise: (exerciseId: string) => void;
-  setRole: (exerciseId: string, role: TemplateRole) => void;
   moveUp: (index: number) => void;
   moveDown: (index: number) => void;
 
@@ -95,7 +91,7 @@ export function useWorkoutEditor(templateId: string | null): UseWorkoutEditor {
         exercises: existing.exercises
           .slice()
           .sort((a, b) => a.position - b.position)
-          .map((e) => ({ exerciseId: e.exerciseId, role: e.role })),
+          .map((e) => ({ exerciseId: e.exerciseId })),
       });
     } else {
       return; // noch nicht gefunden – nicht initialisieren
@@ -128,7 +124,6 @@ export function useWorkoutEditor(templateId: string | null): UseWorkoutEditor {
   const rows: EditorExerciseRow[] = draft.exercises.map((e) => ({
     exerciseId: e.exerciseId,
     name: names[e.exerciseId] ?? "Unbekannte Übung",
-    role: e.role,
   }));
 
   const catalog = (exercisesQ.data ?? []).filter((e) => e.active);
@@ -147,7 +142,6 @@ export function useWorkoutEditor(templateId: string | null): UseWorkoutEditor {
       position: existing ? existing.position : nextPosition,
       exercises: draft.exercises.map((e) => ({
         exerciseId: e.exerciseId,
-        role: e.role,
       })),
     });
     return effectiveId;
@@ -171,7 +165,6 @@ export function useWorkoutEditor(templateId: string | null): UseWorkoutEditor {
     selectedIds,
     addExercise: (id) => setDraft((d) => addEx(d, id)),
     removeExercise: (id) => setDraft((d) => removeEx(d, id)),
-    setRole: (id, role) => setDraft((d) => setRoleFn(d, id, role)),
     moveUp: (i) => setDraft((d) => moveExercise(d, i, -1)),
     moveDown: (i) => setDraft((d) => moveExercise(d, i, 1)),
     save,

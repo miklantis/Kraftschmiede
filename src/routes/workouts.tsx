@@ -74,10 +74,10 @@ function WorkoutsPage(): React.ReactElement {
                     ) : undefined
                   }
                   chevron
-                  ariaLabel={w.name + " öffnen"}
+                  ariaLabel={w.name + " bearbeiten"}
                   onClick={() =>
                     void navigate({
-                      to: "/workouts/$templateId",
+                      to: "/workouts/$templateId/bearbeiten",
                       params: { templateId: w.id },
                     })
                   }

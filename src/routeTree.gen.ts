@@ -17,7 +17,6 @@ import { Route as JourneyRouteImport } from './routes/journey'
 import { Route as EinstellungenRouteImport } from './routes/einstellungen'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkoutsNeuRouteImport } from './routes/workouts_.neu'
-import { Route as WorkoutsTemplateIdRouteImport } from './routes/workouts_.$templateId'
 import { Route as UebungenExerciseIdRouteImport } from './routes/uebungen_.$exerciseId'
 import { Route as JourneyWaehlenRouteImport } from './routes/journey_.waehlen'
 import { Route as EinstellungenVersionRouteImport } from './routes/einstellungen_.version'
@@ -63,11 +62,6 @@ const WorkoutsNeuRoute = WorkoutsNeuRouteImport.update({
   path: '/workouts/neu',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WorkoutsTemplateIdRoute = WorkoutsTemplateIdRouteImport.update({
-  id: '/workouts_/$templateId',
-  path: '/workouts/$templateId',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const UebungenExerciseIdRoute = UebungenExerciseIdRouteImport.update({
   id: '/uebungen_/$exerciseId',
   path: '/uebungen/$exerciseId',
@@ -101,7 +95,6 @@ export interface FileRoutesByFullPath {
   '/einstellungen/version': typeof EinstellungenVersionRoute
   '/journey/waehlen': typeof JourneyWaehlenRoute
   '/uebungen/$exerciseId': typeof UebungenExerciseIdRoute
-  '/workouts/$templateId': typeof WorkoutsTemplateIdRoute
   '/workouts/neu': typeof WorkoutsNeuRoute
   '/workouts/$templateId/bearbeiten': typeof WorkoutsTemplateIdBearbeitenRoute
 }
@@ -116,7 +109,6 @@ export interface FileRoutesByTo {
   '/einstellungen/version': typeof EinstellungenVersionRoute
   '/journey/waehlen': typeof JourneyWaehlenRoute
   '/uebungen/$exerciseId': typeof UebungenExerciseIdRoute
-  '/workouts/$templateId': typeof WorkoutsTemplateIdRoute
   '/workouts/neu': typeof WorkoutsNeuRoute
   '/workouts/$templateId/bearbeiten': typeof WorkoutsTemplateIdBearbeitenRoute
 }
@@ -132,7 +124,6 @@ export interface FileRoutesById {
   '/einstellungen_/version': typeof EinstellungenVersionRoute
   '/journey_/waehlen': typeof JourneyWaehlenRoute
   '/uebungen_/$exerciseId': typeof UebungenExerciseIdRoute
-  '/workouts_/$templateId': typeof WorkoutsTemplateIdRoute
   '/workouts_/neu': typeof WorkoutsNeuRoute
   '/workouts_/$templateId_/bearbeiten': typeof WorkoutsTemplateIdBearbeitenRoute
 }
@@ -149,7 +140,6 @@ export interface FileRouteTypes {
     | '/einstellungen/version'
     | '/journey/waehlen'
     | '/uebungen/$exerciseId'
-    | '/workouts/$templateId'
     | '/workouts/neu'
     | '/workouts/$templateId/bearbeiten'
   fileRoutesByTo: FileRoutesByTo
@@ -164,7 +154,6 @@ export interface FileRouteTypes {
     | '/einstellungen/version'
     | '/journey/waehlen'
     | '/uebungen/$exerciseId'
-    | '/workouts/$templateId'
     | '/workouts/neu'
     | '/workouts/$templateId/bearbeiten'
   id:
@@ -179,7 +168,6 @@ export interface FileRouteTypes {
     | '/einstellungen_/version'
     | '/journey_/waehlen'
     | '/uebungen_/$exerciseId'
-    | '/workouts_/$templateId'
     | '/workouts_/neu'
     | '/workouts_/$templateId_/bearbeiten'
   fileRoutesById: FileRoutesById
@@ -195,7 +183,6 @@ export interface RootRouteChildren {
   EinstellungenVersionRoute: typeof EinstellungenVersionRoute
   JourneyWaehlenRoute: typeof JourneyWaehlenRoute
   UebungenExerciseIdRoute: typeof UebungenExerciseIdRoute
-  WorkoutsTemplateIdRoute: typeof WorkoutsTemplateIdRoute
   WorkoutsNeuRoute: typeof WorkoutsNeuRoute
   WorkoutsTemplateIdBearbeitenRoute: typeof WorkoutsTemplateIdBearbeitenRoute
 }
@@ -258,13 +245,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkoutsNeuRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/workouts_/$templateId': {
-      id: '/workouts_/$templateId'
-      path: '/workouts/$templateId'
-      fullPath: '/workouts/$templateId'
-      preLoaderRoute: typeof WorkoutsTemplateIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/uebungen_/$exerciseId': {
       id: '/uebungen_/$exerciseId'
       path: '/uebungen/$exerciseId'
@@ -307,7 +287,6 @@ const rootRouteChildren: RootRouteChildren = {
   EinstellungenVersionRoute: EinstellungenVersionRoute,
   JourneyWaehlenRoute: JourneyWaehlenRoute,
   UebungenExerciseIdRoute: UebungenExerciseIdRoute,
-  WorkoutsTemplateIdRoute: WorkoutsTemplateIdRoute,
   WorkoutsNeuRoute: WorkoutsNeuRoute,
   WorkoutsTemplateIdBearbeitenRoute: WorkoutsTemplateIdBearbeitenRoute,
 }
