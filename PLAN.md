@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.22.
+  Konzept-vor-Code. Aktuelle Version: 1.3.23.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -116,6 +116,14 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-02 — Trainingsart-Symbole auf Skill-Karten und im Verlauf (Version 1.3.23).
+SkillCard-Kopf bekommt vorne das Lucide Zap (dezent grau, size-5), einheitlich zu
+den Listen. SessionLogCard: der Farbpunkt (DOT) ist durch das Typ-Symbol in der
+Typfarbe ersetzt (ICON+TONE je HistoryKind) – WorkoutIcon/Zap/YogaIcon in
+text-primary/skill/yoga, Abweichung als WorkoutIcon in text-deviation (Bernstein).
+Ein Element statt Punkt plus Symbol. Rein optisch, keine Logik/Datenaenderung.
+Validierung gruen: vite build, tsc --noEmit, vitest run (367 Tests).
 
 2026-07-02 — Workout-Symbol in Navigation und Journey-Liste (Version 1.3.22).
 Hauptnavigation: „Workouts“ nutzt statt ClipboardList jetzt das eigene WorkoutIcon

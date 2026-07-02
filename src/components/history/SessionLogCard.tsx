@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Pencil, Trash2 } from "lucide-react";
+import type { ComponentType } from "react";
+import { ChevronDown, ChevronUp, Pencil, Trash2, Zap } from "lucide-react";
+import { WorkoutIcon, YogaIcon } from "@/components/ui/training-icons";
 import type { HistorySession, HistoryKind } from "@/lib/history";
 
 // Aufklappbare Karte einer Einheit (Optik 1:1 aus V1 ks-log-card). Zugeklappt:
@@ -9,11 +11,21 @@ import type { HistorySession, HistoryKind } from "@/lib/history";
 // Offen-/Loesch-Zustand haelt die Karte selbst; das eigentliche Loeschen reicht
 // sie ueber onDelete nach oben.
 
-const DOT: Record<HistoryKind, string> = {
-  kraft: "bg-primary",
-  skill: "bg-skill",
-  yoga: "bg-yoga",
-  dev: "bg-deviation",
+// Typ-Symbol je Einheit, in der jeweiligen Typfarbe (ersetzt den frueheren
+// Farbpunkt): Form traegt den Typ, Farbe das Signal. Eine Abweichung ist eine
+// Kraft-Einheit, daher Stoppuhr in Bernstein.
+const ICON: Record<HistoryKind, ComponentType<{ className?: string }>> = {
+  kraft: WorkoutIcon,
+  skill: Zap,
+  yoga: YogaIcon,
+  dev: WorkoutIcon,
+};
+
+const TONE: Record<HistoryKind, string> = {
+  kraft: "text-primary",
+  skill: "text-skill",
+  yoga: "text-yoga",
+  dev: "text-deviation",
 };
 
 export function SessionLogCard({
@@ -29,6 +41,7 @@ export function SessionLogCard({
 }): React.ReactElement {
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState(false);
+  const Icon = ICON[session.kind];
 
   return (
     <div className="overflow-hidden rounded-[16px] bg-card shadow-card">
@@ -38,7 +51,7 @@ export function SessionLogCard({
         aria-expanded={open}
         className="flex w-full items-center gap-3 px-4 py-3.5 text-left hover:bg-primary/5"
       >
-        <span className={"size-2.5 flex-none rounded-full " + DOT[session.kind]} />
+        <Icon className={"size-[18px] flex-none " + TONE[session.kind]} />
         <span className="min-w-0 flex-1 truncate text-[15px] font-semibold text-foreground">
           {session.title}
         </span>

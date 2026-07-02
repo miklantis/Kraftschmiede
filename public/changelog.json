@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.3.23",
+      "date": "2026-07-02",
+      "changes": [
+        "Skills-Seite: Jede Skill-Karte trägt jetzt vorne das Blitz-Symbol (dezent grau, wie in den Listen).",
+        "Verlauf: Der farbige Punkt vor jedem Eintrag ist durch das Trainingsart-Symbol in der Typfarbe ersetzt – Stoppuhr, Blitz oder Figur in Grün, bei einer Kraft-Einheit mit Satz-Abweichung in Bernstein. So sieht man Art und Signal auf einen Blick."
+      ]
+    },
+    {
       "version": "1.3.22",
       "date": "2026-07-02",
       "changes": [

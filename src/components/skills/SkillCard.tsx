@@ -1,3 +1,4 @@
+import { Zap } from "lucide-react";
 import { AccordionItem } from "@/components/ui/accordion";
 import { SkillPhaseList } from "./SkillPhaseList";
 import type { SkillCardView } from "@/hooks/useSkillsView";
@@ -30,6 +31,7 @@ export function SkillCard({
 
   const header = (
     <div className="flex items-center gap-3">
+      <Zap className="size-5 flex-none text-muted-foreground" />
       <div className="min-w-0 flex-1">
         <div className="text-[17px] font-semibold text-foreground min-[960px]:text-[15px]">
           {model.name}
