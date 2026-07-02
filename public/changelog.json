@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.28",
+      "date": "2026-07-02",
+      "changes": [
+        "Workout-Start: Ist fuer heute noch kein Koerperzustand erfasst, nennt der Hinweis jetzt das Datum des Eintrags, mit dem der Coach rechnet (bzw. „neutral“, falls noch nie erfasst) – so ist vor dem Start klar, worauf die Vorschlaege beruhen."
+      ]
+    },
+    {
       "version": "1.3.27",
       "date": "2026-07-02",
       "changes": [

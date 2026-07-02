@@ -3,7 +3,7 @@ import { Overlay } from "@/components/ui/overlay";
 import { Button } from "@/components/ui/button";
 import { useLiveSession } from "@/hooks/useLiveSession";
 import { useLatestBody } from "@/hooks/useBody";
-import { fmtKg, todayISO } from "@/lib/format";
+import { fmtKg, longDateShort, todayISO } from "@/lib/format";
 import type {
   LiveEntry,
   SkillLiveExercise,
@@ -86,6 +86,12 @@ function WorkoutPreview({ p }: { p: WorkoutSession }): React.ReactElement {
   const live = useLiveSession();
   // Banner nur, wenn heute noch kein Koerperzustand erfasst ist (V1 todayBody()).
   const todayBodyDone = bodyQ.data?.date === todayISO();
+  // Woraus der Coach heute rechnet: letzter Eintrag mit Datum, sonst neutral.
+  const basisText = bodyQ.data
+    ? "Der Coach rechnet mit deinem Eintrag vom " +
+      longDateShort(bodyQ.data.date) +
+      "."
+    : "Der Coach rechnet neutral – noch kein Befinden erfasst.";
   const toBody = (): void => {
     live.cancelStart();
     void navigate({ to: "/koerper" });
@@ -102,7 +108,7 @@ function WorkoutPreview({ p }: { p: WorkoutSession }): React.ReactElement {
               Körperzustand noch nicht erfasst
             </div>
             <div className="mt-0.5 text-[13px] text-warning-foreground/80">
-              Kurz eintragen → bessere Gewichtsvorschläge.
+              {basisText}
             </div>
           </div>
           <button

@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.27.
+  Konzept-vor-Code. Aktuelle Version: 1.3.28.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -116,6 +116,15 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-02 — Hinweis am Workout-Start nennt die Befinden-Grundlage (Version 1.3.28).
+StartModal: Ist fuer heute kein Koerperzustand erfasst, zeigt das Start-Banner
+jetzt das Datum des Eintrags, mit dem der Coach rechnet (longDateShort), sonst
+„neutral“. Bewusste Entscheidung dahinter: die Erholungs-Logik bleibt
+unveraendert – der Coach nimmt weiterhin den letzten Eintrag ohne Zeit-Abklingen,
+weil zwischen zwei Eintraegen Training liegen kann und ein nicht gemeldeter Kater
+nicht erratbar ist; stattdessen nur Transparenz vor dem Start. Validierung gruen:
+vite build, tsc --noEmit, vitest run.
 
 2026-07-02 — Seiteninhalt auf Desktop tiefer gesetzt (Version 1.3.27).
 AppShell: min-[960px] Top-Abstand des Inhalts von pt-10 auf pt-20 erhoeht, damit
