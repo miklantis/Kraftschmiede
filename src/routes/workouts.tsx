@@ -7,6 +7,7 @@ import { Section } from "@/components/ui/section";
 import { List, ListRow } from "@/components/ui/list";
 import { Button } from "@/components/ui/button";
 import { JourneyChip } from "@/components/ui/journey-chip";
+import { WorkoutIcon } from "@/components/ui/training-icons";
 import { useWorkoutsView } from "@/hooks/useWorkoutsView";
 import { useTemplateActions } from "@/hooks/useTemplateActions";
 
@@ -61,6 +62,7 @@ function WorkoutsPage(): React.ReactElement {
                   key={w.id}
                   title={w.name}
                   subtitle={w.summary || "Keine Übungen"}
+                  leading={<WorkoutIcon />}
                   trailing={
                     w.journeyCapable ? (
                       <JourneyChip label="Journey-fähig" />
@@ -110,6 +112,7 @@ function WorkoutsPage(): React.ReactElement {
                       key={w.id}
                       title={w.name}
                       subtitle={w.summary || "Keine Übungen"}
+                      leading={<WorkoutIcon />}
                       trailing={
                         <Button
                           variant="outline"

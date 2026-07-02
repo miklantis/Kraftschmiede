@@ -77,7 +77,7 @@ Karten tragen einen sehr weichen Schatten statt eines harten Rahmens. Erhöhte E
 | **Section** | Abschnitt mit kleiner, gesperrter Versal-Eyebrow plus Inhalt. Auf fast jeder Seite. |
 | **TwoColumn** | Zwei-Spalten-Layout: mobil gestapelt, ab 960px Haupt- und Seitenspalte nebeneinander. Markiert seine Spalten als `data-reveal-group`, damit PageReveal sie eigenständig staffelt. |
 | **Card** | Weiße Grundfläche mit weichem Schatten und 16px-Radius. Trägt fast allen Inhalt. |
-| **List** | Umrahmter Listen-Container mit Trennlinien zwischen den Zeilen. |
+| **List** | Umrahmter Listen-Container mit Trennlinien zwischen den Zeilen. Die Zeile (ListRow) hat vorne einen optionalen `leading`-Platz fuer ein Symbol (dezent grau, einheitlich 20px), dahinter Titel/Untertitel, rechts ein optionales Anhaengsel und Chevron. |
 | **SettingList** (SettingsGroup / SettingRow) | Gruppierte Listen im iOS-Einstellungen-Stil: Beschriftung links, Steuerelement rechts; Reihe optional tippbar, Label optional mit kleiner Erklärzeile (description) darunter. |
 | **Accordion** (AccordionItem) | Aufklappbare Karte mit Chevron; optional ein Element (z. B. Schalter) rechts neben dem Kopf. |
 | **BackLink** | Einheitlicher Zurück-Link oben links auf Unterseiten, überall gleich (Grün, Chevron). |
@@ -108,6 +108,7 @@ Karten tragen einen sehr weichen Schatten statt eines harten Rahmens. Erhöhte E
 | **ScoreBadge** | Coach-Score als Mono-Zahl; Variante row (klein, in Listen) und hero (groß, in der Empfehlungskarte). |
 | **CoachStatusPill** | Kleine Pille mit der groben Coach-Lesart für die nächste Einheit einer Übung: Steigern (Akzentgrün), Halten, Senken (ruhig gedeckt, keine Alarmfarbe), dazu „Frei“ (Begleitübung) und „Start“ (keine Vordaten). In der Übungsliste (statt der Muskelzeile) und im Coach-Block der Detailseite. |
 | **JourneyChip** | Kleiner Journey-Marker als weiche grüne Tönung (`bg-primary/10`) mit dem Karten-Icon der Journey (wie im Hauptmenü), nur Icon ohne Text; Label als aria-label. Auf der Trainingsseite („Weitere Workouts“) und der Workouts-Seite; die Bedeutung („in der Journey“ vs. „journey-fähig“) trägt der Seitenkontext. |
+| **WorkoutIcon / YogaIcon** | Zwei eigene Trainingstyp-Symbole im Lucide-Stil (24er-Raster, currentColor): Stoppuhr für Workout/Kraft, sitzende Figur für Yoga. Für Skills dient das Lucide-Symbol „Zap“. Genutzt als `leading` in Listenzeilen (Workouts-Seite, Trainingsseite). |
 | **ProgressDots** | Punktreihe für Fortschritt (z. B. Einheiten der Woche): gefüllt in Akzentfarbe, Rest gedeckt. |
 | **Chart** | Generisches Verlaufschart-Fundament (D3): misst die Breite, wird am Handy scrollbar, zeichnet einheitlich (glatte Linie, weiche Fläche, Tooltip). |
 | **Calendar** | Generisches Monatsgitter; was in einer Tageszelle steht, liefert der Aufrufer (renderCell). |

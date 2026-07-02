@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.20.
+  Konzept-vor-Code. Aktuelle Version: 1.3.21.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -117,6 +117,14 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
 
+2026-07-02 — Trainingstyp-Symbole vor Listeneintraegen (Version 1.3.21).
+Neue Listenzeilen-Option `leading` (dezent grau, 20px) plus zwei eigene Icons
+(WorkoutIcon Stoppuhr, YogaIcon Figur) im System; Skills nutzen Lucide Zap.
+Angewendet auf Workouts-Seite (aktiv + Archiv) und die drei Sektionen der
+Trainingsseite (Weitere Workouts, Aktive Skills, Yoga). Empfehlungskarte und
+Navigation bewusst unberuehrt. Validierung gruen: vite build, tsc --noEmit,
+vitest run (367 Tests).
+
 2026-07-02 — Ueberschrift „Aktive Journey" ausserhalb der Karte (Version 1.3.20).
 Die Eyebrow „Aktive Journey" aus ActiveJourneyCard entfernt und in journey.tsx als
 Section-Eyebrow ueber die Karte gesetzt – gleiche Optik wie „Periodisierung" und
@@ -169,33 +177,6 @@ Validierung gruen: vite build, tsc --noEmit, vitest run (364 Tests).
 src/components/ui/journey-chip.tsx die Toenung von bg-primary/10 auf bg-primary/12 und die
 Icon-Farbe vom fest verdrahteten #0a7d5e auf text-primary (--primary, #0c9d77) umgestellt –
 damit identisch zum Symbolfeld im JourneyStrip. Reiner Optik-Patch, keine Logikaenderung.
-
-2026-07-01 — Hauptnavigation neu geordnet (Version 1.3.14). Reihenfolge in NAV_ENTRIES
-(src/lib/nav.ts) angepasst: Training, Journey, Workouts, Skills, Uebungen, Koerper. Skills von
-Position 6 auf 4 gezogen, Uebungen und Koerper je einen Platz nach hinten. Einzige Quelle, daher
-greifen Sidebar (Desktop) und BottomNav (Mobile) automatisch. Labels und Routen unveraendert.
-
-2026-07-01 — Skills immer aktiv, Aktiv-Schalter entfernt (Version 1.3.13). Der An/Aus-Schalter
-je Skill auf der Skills-Seite ist weg; jeder Skill gilt dauerhaft als aktiv. SkillCard rendert
-immer die aktive Darstellung (Phase, Zaehler, manuelle Aktionen Phase zurueck/Zuruecksetzen),
-das Switch-Primitive bleibt (nur die Nutzung in der Skill-Karte faellt weg). useSkillsView:
-Felder active/hasProgress raus, kein Pausiert-Zweig mehr. useSkillActions: activate/deactivate
-entfernt, nur regress/reset bleiben. useTrainingOverview zeigt jetzt ALLE Skill-Definitionen
-(gemergt mit Fortschritt, sonst Startwerte Phase 1) statt nur progress.filter(active). Luecke
-geschlossen: da bisher „Aktivieren“ die skill_progress-Zeile anlegte, legt jetzt die erste
-abgeschlossene Skill-Einheit sie an – SkillProgressWrite um isNew/userId/skillId erweitert,
-HistoryStore.updateSkillProgress -> writeSkillProgress (Insert bei isNew mit active=true/log=[],
-sonst Update), useFinishSkill baucht immer ein progressWrite. Kein DB-Migrat: die Spalte
-skill_progress.active bleibt liegen und wird dauerhaft als „an“ behandelt (Insert setzt sie
-true). Coach-Rechenkern unangetastet. Validierung gruen: vite build, tsc --noEmit, vitest run
-(367 Tests).
-
-2026-07-01 — Journey-Chip als Icon statt Text (Version 1.3.12). Neuer wiederverwendbarer
-`JourneyChip` (`src/components/ui/journey-chip.tsx`): zeigt das Journey-Karten-Icon (Lucide `Map`,
-wie im Hauptmenue) als weiche gruene Toenung (`bg-primary/10`, Icon `#0a7d5e`, analog CoachStatusPill)
-statt der bisherigen schwarzen Text-Pille. Ersetzt die Text-Chips „Journey“ (Trainingsseite,
-„Weitere Workouts“) und „journey-faehig“ (Workouts-Seite); Bedeutung traegt der Seitenkontext,
-aria-label/title bleiben sprechend. Rein optisch, ruhiger im UI.
 
 ---
 

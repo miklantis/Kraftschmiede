@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Zap } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Section } from "@/components/ui/section";
 import { List, ListRow } from "@/components/ui/list";
 import { ScoreBadge } from "@/components/ui/score-badge";
 import { JourneyChip } from "@/components/ui/journey-chip";
+import { WorkoutIcon, YogaIcon } from "@/components/ui/training-icons";
 import { TwoColumn } from "@/components/ui/two-column";
 import { PageReveal } from "@/components/ui/page-reveal";
 import { JourneyStrip } from "@/components/training/JourneyStrip";
@@ -124,6 +126,7 @@ function TrainingPage(): React.ReactElement {
                 key={w.id}
                 title={w.name}
                 subtitle={w.lifts}
+                leading={<WorkoutIcon />}
                 trailing={
                   w.inJourney ? (
                     <div className="flex items-center gap-2">
@@ -149,6 +152,7 @@ function TrainingPage(): React.ReactElement {
                 key={sk.id}
                 title={sk.name}
                 subtitle={sk.subtitle}
+                leading={<Zap />}
                 chevron
                 disabled={sk.gated}
                 onClick={sk.gated ? undefined : () => startSkill(sk.id)}
@@ -158,6 +162,7 @@ function TrainingPage(): React.ReactElement {
             <ListRow
               title="Noch kein aktiver Skill"
               subtitle="Im Skills-Tab aktivieren"
+              leading={<Zap />}
               chevron
               onClick={() => navigate({ to: "/skills" })}
             />
@@ -170,6 +175,7 @@ function TrainingPage(): React.ReactElement {
           <ListRow
             title="Yoga-Einheit eintragen"
             subtitle={data.yogaSubtitle}
+            leading={<YogaIcon />}
             chevron
             onClick={() => setYogaOpen(true)}
           />

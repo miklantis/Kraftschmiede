@@ -34,6 +34,7 @@ export function List({
 export function ListRow({
   title,
   subtitle,
+  leading,
   trailing,
   chevron = false,
   onClick,
@@ -42,6 +43,9 @@ export function ListRow({
 }: {
   title: ReactNode;
   subtitle?: ReactNode;
+  /** Fuehrendes Symbol ganz vorne (z. B. Trainingstyp-Icon). Dezent grau,
+   *  einheitlich auf 20px gesetzt; der Aufrufer gibt nur das Icon herein. */
+  leading?: ReactNode;
   trailing?: ReactNode;
   chevron?: boolean;
   onClick?: () => void;
@@ -52,6 +56,11 @@ export function ListRow({
 
   const inner = (
     <>
+      {leading != null && (
+        <span className="flex-none text-muted-foreground [&>svg]:size-5">
+          {leading}
+        </span>
+      )}
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <div className="text-[17px] font-semibold text-foreground min-[960px]:text-[15px]">
           {title}

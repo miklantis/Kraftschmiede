@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.21",
+      "date": "2026-07-02",
+      "changes": [
+        "Listen zeigen jetzt vor jedem Eintrag ein kleines, dezent graues Symbol fuer die Trainingsart: eine Stoppuhr fuer Workouts, ein Blitz fuer Skills und eine sitzende Figur fuer Yoga. So ist auf einen Blick erkennbar, um welche Art Training es geht – auf der Workouts-Seite und in den Abschnitten der Trainingsseite."
+      ]
+    },
+    {
       "version": "1.3.20",
       "date": "2026-07-02",
       "changes": [

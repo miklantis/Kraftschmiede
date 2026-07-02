@@ -9,6 +9,33 @@ Einträge bleiben historisch unverändert, neueste zuerst.
 
 ---
 
+2026-07-01 — Hauptnavigation neu geordnet (Version 1.3.14). Reihenfolge in NAV_ENTRIES
+(src/lib/nav.ts) angepasst: Training, Journey, Workouts, Skills, Uebungen, Koerper. Skills von
+Position 6 auf 4 gezogen, Uebungen und Koerper je einen Platz nach hinten. Einzige Quelle, daher
+greifen Sidebar (Desktop) und BottomNav (Mobile) automatisch. Labels und Routen unveraendert.
+
+2026-07-01 — Skills immer aktiv, Aktiv-Schalter entfernt (Version 1.3.13). Der An/Aus-Schalter
+je Skill auf der Skills-Seite ist weg; jeder Skill gilt dauerhaft als aktiv. SkillCard rendert
+immer die aktive Darstellung (Phase, Zaehler, manuelle Aktionen Phase zurueck/Zuruecksetzen),
+das Switch-Primitive bleibt (nur die Nutzung in der Skill-Karte faellt weg). useSkillsView:
+Felder active/hasProgress raus, kein Pausiert-Zweig mehr. useSkillActions: activate/deactivate
+entfernt, nur regress/reset bleiben. useTrainingOverview zeigt jetzt ALLE Skill-Definitionen
+(gemergt mit Fortschritt, sonst Startwerte Phase 1) statt nur progress.filter(active). Luecke
+geschlossen: da bisher „Aktivieren“ die skill_progress-Zeile anlegte, legt jetzt die erste
+abgeschlossene Skill-Einheit sie an – SkillProgressWrite um isNew/userId/skillId erweitert,
+HistoryStore.updateSkillProgress -> writeSkillProgress (Insert bei isNew mit active=true/log=[],
+sonst Update), useFinishSkill baucht immer ein progressWrite. Kein DB-Migrat: die Spalte
+skill_progress.active bleibt liegen und wird dauerhaft als „an“ behandelt (Insert setzt sie
+true). Coach-Rechenkern unangetastet. Validierung gruen: vite build, tsc --noEmit, vitest run
+(367 Tests).
+
+2026-07-01 — Journey-Chip als Icon statt Text (Version 1.3.12). Neuer wiederverwendbarer
+`JourneyChip` (`src/components/ui/journey-chip.tsx`): zeigt das Journey-Karten-Icon (Lucide `Map`,
+wie im Hauptmenue) als weiche gruene Toenung (`bg-primary/10`, Icon `#0a7d5e`, analog CoachStatusPill)
+statt der bisherigen schwarzen Text-Pille. Ersetzt die Text-Chips „Journey“ (Trainingsseite,
+„Weitere Workouts“) und „journey-faehig“ (Workouts-Seite); Bedeutung traegt der Seitenkontext,
+aria-label/title bleiben sprechend. Rein optisch, ruhiger im UI.
+
 2026-07-01 — „Weitere Workouts“ zeigt alle aktiven Workouts (Version 1.3.11). Verfeinerung der
 Empfehlung: der Hero „Heute empfohlen“ kommt weiterhin aus der Journey-Zuweisung (Konzept 5.4),
 aber die Liste „Weitere Workouts“ listet jetzt ALLE aktiven Workouts (ausser dem Hero), nach
