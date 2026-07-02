@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.26.
+  Konzept-vor-Code. Aktuelle Version: 1.3.27.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -117,6 +117,13 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
 
+2026-07-02 — Seiteninhalt auf Desktop tiefer gesetzt (Version 1.3.27).
+AppShell: min-[960px] Top-Abstand des Inhalts von pt-10 auf pt-20 erhoeht, damit
+Titel und Inhalt unterhalb der oberen Kante beginnen; der Titel-Oberrand fluchtet
+mit dem Beginn der Sidebar-Navigation. Nur Desktop; Handy-Ansicht (pt-[22px])
+unberuehrt. PageHeader unveraendert. Rein optisch. Validierung gruen: vite build,
+tsc --noEmit, vitest run.
+
 2026-07-02 — Datumszeile auf der Trainingsseite entfernt (Version 1.3.26).
 routes/index.tsx: PageHeader ohne date-Prop, weil der Kalender im Verlauf das Datum bereits zeigt und die Zeile ueber dem Titel redundant war. PageHeader (date optional) und useTrainingOverview unveraendert. Rein optisch. Validierung gruen: vite build, tsc --noEmit, vitest run.
 
@@ -163,16 +170,6 @@ als ruhiger Hinweissatz statt als Chip. Workouts-Uebersicht: Knopf „Neues Work
 von oben unter die Liste verschoben (Leer-Text und Kommentar angepasst). Reiner
 Optik-/Text-Patch, keine Logikaenderung; JourneyChip in der Uebersicht unberuehrt.
 Validierung gruen: vite build, tsc --noEmit, vitest run (367 Tests).
-
-2026-07-02 — Uebungsreihenfolge im Workout-Editor per Drag-and-Drop (Version 1.3.18).
-Die Auf/Ab-Pfeile je Uebung entfallen; stattdessen links ein Ziehgriff, mit dem die
-Zeile an die gewuenschte Stelle gezogen wird (Maus und Touch, nur der Griff loest aus,
-uebrige Flaeche scrollt weiter). Entfernen-Icon bleibt rechts. Neues wiederverwendbares
-Primitive SortableList (Pointer-Events, ohne Zusatz-Bibliothek; gezogene Zeile hebt sich
-ab, andere weichen aus, umgeordnet erst beim Loslassen). Engine: moveExercise (schrittweise)
-durch reorderExercise(from, to) ersetzt, mit Tests; Hook moveUp/moveDown -> reorder.
-Persistenz unveraendert (erst beim Speichern), Coach-Rechenkern unangetastet. Designsystem.md
-um SortableList ergaenzt. Validierung gruen: vite build, tsc --noEmit, vitest run (367 Tests).
 ---
 
 Ältere Einträge stehen im Archiv: `docs/archive/PLAN-Log-Archiv.md`.

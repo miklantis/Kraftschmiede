@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.27",
+      "date": "2026-07-02",
+      "changes": [
+        "Desktop-Ansicht: Titel und Seiteninhalt beginnen jetzt etwas tiefer, unterhalb der oberen Kante – ruhigerer gemeinsamer oberer Rand mit der Seitenleiste. Handy-Ansicht unveraendert."
+      ]
+    },
+    {
       "version": "1.3.26",
       "date": "2026-07-02",
       "changes": [

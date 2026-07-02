@@ -9,6 +9,16 @@ Einträge bleiben historisch unverändert, neueste zuerst.
 
 ---
 
+2026-07-02 — Uebungsreihenfolge im Workout-Editor per Drag-and-Drop (Version 1.3.18).
+Die Auf/Ab-Pfeile je Uebung entfallen; stattdessen links ein Ziehgriff, mit dem die
+Zeile an die gewuenschte Stelle gezogen wird (Maus und Touch, nur der Griff loest aus,
+uebrige Flaeche scrollt weiter). Entfernen-Icon bleibt rechts. Neues wiederverwendbares
+Primitive SortableList (Pointer-Events, ohne Zusatz-Bibliothek; gezogene Zeile hebt sich
+ab, andere weichen aus, umgeordnet erst beim Loslassen). Engine: moveExercise (schrittweise)
+durch reorderExercise(from, to) ersetzt, mit Tests; Hook moveUp/moveDown -> reorder.
+Persistenz unveraendert (erst beim Speichern), Coach-Rechenkern unangetastet. Designsystem.md
+um SortableList ergaenzt. Validierung gruen: vite build, tsc --noEmit, vitest run (367 Tests).
+
 2026-07-02 — DB-Spalte template_exercises.role entfernt (Version 1.3.17). Migration
 0006_template_exercises_drop_role.sql zieht die seit 1.3.16 funktionslose Rollen-Spalte
 (die inline CHECK-Beschraenkung faellt mit weg; idempotent per drop column if exists).
