@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { GripVertical, Plus, Trash2 } from "lucide-react";
 import { BackLink } from "@/components/ui/back-link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
+import { SortableList } from "@/components/ui/sortable-list";
 import { ExercisePicker } from "@/components/exercise/ExercisePicker";
 import { useWorkoutEditor } from "@/hooks/useWorkoutEditor";
 
@@ -113,37 +114,28 @@ export function WorkoutEditor({
           Noch keine Übung. Füge unten mindestens eine hinzu.
         </p>
       ) : (
-        <div className="mb-3 flex flex-col gap-2.5">
-          {ed.rows.map((row, i) => (
-            <div
-              key={row.exerciseId}
-              className="rounded-[14px] bg-card px-3.5 py-3 shadow-card"
-            >
+        <SortableList
+          className="mb-3"
+          items={ed.rows}
+          getKey={(row) => row.exerciseId}
+          onReorder={ed.reorder}
+          renderItem={(row, _i, { handleProps, isDragging }) => (
+            <div className="rounded-[14px] bg-card px-2.5 py-3 shadow-card">
               <div className="flex items-center gap-2">
+                <span
+                  {...handleProps}
+                  aria-label="Zum Umsortieren ziehen"
+                  className="flex size-9 flex-none items-center justify-center rounded-[10px] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <GripVertical className="size-[18px]" />
+                </span>
                 <span className="min-w-0 flex-1 truncate text-[15px] font-semibold text-foreground">
                   {row.name}
                 </span>
                 <button
                   type="button"
-                  aria-label="Nach oben"
-                  disabled={i === 0}
-                  onClick={() => ed.moveUp(i)}
-                  className="flex size-9 flex-none items-center justify-center rounded-[10px] border border-border bg-card text-foreground transition-[filter] hover:brightness-95 disabled:opacity-30"
-                >
-                  <ChevronUp className="size-[18px]" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Nach unten"
-                  disabled={i === ed.rows.length - 1}
-                  onClick={() => ed.moveDown(i)}
-                  className="flex size-9 flex-none items-center justify-center rounded-[10px] border border-border bg-card text-foreground transition-[filter] hover:brightness-95 disabled:opacity-30"
-                >
-                  <ChevronDown className="size-[18px]" />
-                </button>
-                <button
-                  type="button"
                   aria-label="Übung entfernen"
+                  disabled={isDragging}
                   onClick={() => ed.removeExercise(row.exerciseId)}
                   className="flex size-9 flex-none items-center justify-center rounded-[10px] border border-danger/40 bg-card text-danger transition-colors hover:bg-danger/10"
                 >
@@ -151,8 +143,8 @@ export function WorkoutEditor({
                 </button>
               </div>
             </div>
-          ))}
-        </div>
+          )}
+        />
       )}
 
       <button

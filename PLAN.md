@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.17.
+  Konzept-vor-Code. Aktuelle Version: 1.3.18.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -116,6 +116,16 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-02 — Uebungsreihenfolge im Workout-Editor per Drag-and-Drop (Version 1.3.18).
+Die Auf/Ab-Pfeile je Uebung entfallen; stattdessen links ein Ziehgriff, mit dem die
+Zeile an die gewuenschte Stelle gezogen wird (Maus und Touch, nur der Griff loest aus,
+uebrige Flaeche scrollt weiter). Entfernen-Icon bleibt rechts. Neues wiederverwendbares
+Primitive SortableList (Pointer-Events, ohne Zusatz-Bibliothek; gezogene Zeile hebt sich
+ab, andere weichen aus, umgeordnet erst beim Loslassen). Engine: moveExercise (schrittweise)
+durch reorderExercise(from, to) ersetzt, mit Tests; Hook moveUp/moveDown -> reorder.
+Persistenz unveraendert (erst beim Speichern), Coach-Rechenkern unangetastet. Designsystem.md
+um SortableList ergaenzt. Validierung gruen: vite build, tsc --noEmit, vitest run (367 Tests).
 
 2026-07-02 — DB-Spalte template_exercises.role entfernt (Version 1.3.17). Migration
 0006_template_exercises_drop_role.sql zieht die seit 1.3.16 funktionslose Rollen-Spalte
@@ -206,17 +216,6 @@ persistierten Eintrag ({} statt Array), der beim naechsten Start „object is no
 den gespeicherten Cache einmalig. Zusaetzlich lesen JourneyWorkoutsSection und
 useJourneyWorkoutActions den Wert defensiv (Array.isArray-Pruefung, sonst leere Liste), damit
 kein unerwarteter Altwert mehr crasht. Validierung gruen: vite build, tsc --noEmit, vitest run.
-
-2026-07-01 — Bugfix: Journey-Seite stuerzte nach Rehydrieren ab (Version 1.3.8).
-useJourneyWorkouts legte die Zuordnung als Set im Query-Cache ab; der Offline-Persister
-(createAsyncStoragePersister, JSON) macht daraus beim Speichern {}, sodass nach dem Laden
-aus IndexedDB assignedQ.data.has kein Function mehr war („n.has is not a function",
-ErrorBoundary auf /journey). Hook gibt jetzt ein string[] zurueck; die Konsumenten bilden
-das Set lokal (JourneyWorkoutsSection: new Set(assignedQ.data) frisch je Render;
-useJourneyWorkoutActions: optimistischer setQueryData nun auf Array). buildJourneyAssignment
-und filterCopyableAssignments bleiben unveraendert (nehmen weiterhin ein frisch gebautes
-Set). Reine Datenschicht-Korrektur, kein Verhalten geaendert. Validierung gruen: vite build,
-tsc --noEmit, vitest run.
 
 ---
 

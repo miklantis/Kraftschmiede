@@ -6,9 +6,9 @@ import {
   addExercise as addEx,
   canSaveDraft,
   draftJourneyCapable,
-  moveExercise,
   nameStatus,
   removeExercise as removeEx,
+  reorderExercise,
   trimmedName,
   type NameStatus,
   type WorkoutDraft,
@@ -42,8 +42,7 @@ export interface UseWorkoutEditor {
 
   addExercise: (exerciseId: string) => void;
   removeExercise: (exerciseId: string) => void;
-  moveUp: (index: number) => void;
-  moveDown: (index: number) => void;
+  reorder: (from: number, to: number) => void;
 
   /** Speichert und liefert die Workout-Id zurueck (fuer die Navigation). */
   save: () => Promise<string>;
@@ -165,8 +164,7 @@ export function useWorkoutEditor(templateId: string | null): UseWorkoutEditor {
     selectedIds,
     addExercise: (id) => setDraft((d) => addEx(d, id)),
     removeExercise: (id) => setDraft((d) => removeEx(d, id)),
-    moveUp: (i) => setDraft((d) => moveExercise(d, i, -1)),
-    moveDown: (i) => setDraft((d) => moveExercise(d, i, 1)),
+    reorder: (from, to) => setDraft((d) => reorderExercise(d, from, to)),
     save,
     archive,
     isNew,

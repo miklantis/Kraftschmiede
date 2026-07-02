@@ -3,8 +3,8 @@ import {
   addExercise,
   canSaveDraft,
   draftJourneyCapable,
-  moveExercise,
   nameStatus,
+  reorderExercise,
   removeExercise,
   trimmedName,
   type WorkoutDraft,
@@ -84,18 +84,33 @@ describe("removeExercise", () => {
   });
 });
 
-describe("moveExercise", () => {
-  it("schiebt nach unten", () => {
-    const d = moveExercise(draft(["a", "b", "c"]), 0, 1);
-    expect(d.exercises.map((e) => e.exerciseId)).toEqual(["b", "a", "c"]);
+describe("reorderExercise", () => {
+  it("verschiebt an eine spaetere Position", () => {
+    const d = reorderExercise(draft(["a", "b", "c"]), 0, 2);
+    expect(d.exercises.map((e) => e.exerciseId)).toEqual(["b", "c", "a"]);
   });
-  it("schiebt nach oben", () => {
-    const d = moveExercise(draft(["a", "b", "c"]), 2, -1);
-    expect(d.exercises.map((e) => e.exerciseId)).toEqual(["a", "c", "b"]);
+  it("verschiebt an eine fruehere Position", () => {
+    const d = reorderExercise(draft(["a", "b", "c"]), 2, 0);
+    expect(d.exercises.map((e) => e.exerciseId)).toEqual(["c", "a", "b"]);
   });
-  it("laesst die Grenzen unangetastet", () => {
+  it("laesst den Entwurf bei gleicher Position unveraendert", () => {
+    const start = draft(["a", "b", "c"]);
+    expect(reorderExercise(start, 1, 1).exercises).toEqual(start.exercises);
+  });
+  it("klemmt Ziele ausserhalb der Grenzen an den Rand", () => {
+    expect(
+      reorderExercise(draft(["a", "b", "c"]), 0, 9).exercises.map(
+        (e) => e.exerciseId,
+      ),
+    ).toEqual(["b", "c", "a"]);
+    expect(
+      reorderExercise(draft(["a", "b", "c"]), 2, -5).exercises.map(
+        (e) => e.exerciseId,
+      ),
+    ).toEqual(["c", "a", "b"]);
+  });
+  it("laesst den Entwurf bei ungueltiger Quelle unveraendert", () => {
     const start = draft(["a", "b"]);
-    expect(moveExercise(start, 0, -1).exercises).toEqual(start.exercises);
-    expect(moveExercise(start, 1, 1).exercises).toEqual(start.exercises);
+    expect(reorderExercise(start, 5, 0).exercises).toEqual(start.exercises);
   });
 });

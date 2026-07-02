@@ -79,18 +79,21 @@ export function removeExercise(
   };
 }
 
-// Uebung um eine Position nach oben/unten schieben. dir = -1 hoch, +1 runter.
-// Ausserhalb der Grenzen bleibt der Entwurf unveraendert.
-export function moveExercise(
+// Uebung von Position `from` an Position `to` verschieben (fuer Drag-and-Drop).
+// `to` ist die Zielposition in der Liste OHNE das gezogene Element gedacht,
+// also 0..length-1. Ungueltige oder wirkungslose Indizes lassen den Entwurf
+// unveraendert.
+export function reorderExercise(
   draft: WorkoutDraft,
-  index: number,
-  dir: -1 | 1,
+  from: number,
+  to: number,
 ): WorkoutDraft {
-  const target = index + dir;
-  if (index < 0 || index >= draft.exercises.length) return draft;
-  if (target < 0 || target >= draft.exercises.length) return draft;
+  const n = draft.exercises.length;
+  if (from < 0 || from >= n) return draft;
+  const clampedTo = to < 0 ? 0 : to > n - 1 ? n - 1 : to;
+  if (clampedTo === from) return draft;
   const next = draft.exercises.slice();
-  const [moved] = next.splice(index, 1);
-  next.splice(target, 0, moved);
+  const [moved] = next.splice(from, 1);
+  next.splice(clampedTo, 0, moved);
   return { ...draft, exercises: next };
 }
