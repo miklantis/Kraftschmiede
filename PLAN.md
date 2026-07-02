@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.25.
+  Konzept-vor-Code. Aktuelle Version: 1.3.26.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -116,6 +116,9 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-02 — Datumszeile auf der Trainingsseite entfernt (Version 1.3.26).
+routes/index.tsx: PageHeader ohne date-Prop, weil der Kalender im Verlauf das Datum bereits zeigt und die Zeile ueber dem Titel redundant war. PageHeader (date optional) und useTrainingOverview unveraendert. Rein optisch. Validierung gruen: vite build, tsc --noEmit, vitest run.
 
 2026-07-02 — Fokus-Chip aus den Journey-Phasen entfernt (Version 1.3.25).
 PhaseList: der Chip oben rechts (p.focus) faellt in Desktop-Raster und Mobile-Liste weg, weil er bei sprechenden Phasennamen den Namen doppelt. Statuspunkt bleibt, Layout entsprechend vereinfacht (Desktop: mb-3 statt flex justify-between). PhaseView.focus bleibt im Datenmodell, nur nicht mehr gerendert. Rein optisch. Validierung gruen: vite build, tsc --noEmit, vitest run.

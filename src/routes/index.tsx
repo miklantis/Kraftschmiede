@@ -186,7 +186,7 @@ function TrainingPage(): React.ReactElement {
 
   return (
     <div>
-      <PageHeader title="Training" date={data.date} />
+      <PageHeader title="Training" />
       <PageReveal className="flex flex-col gap-[18px] min-[960px]:gap-[26px]">
         <UpdateBanner />
         {data.journey && (
