@@ -71,18 +71,8 @@ export function PhaseList({
                 : "border-[#ececef] bg-card")
             }
           >
-            <div className="mb-3 flex items-center justify-between">
+            <div className="mb-3">
               <PhaseDot state={p.state} mark={p.mark} />
-              <span
-                className={
-                  "rounded-pill px-2.5 py-1 text-[11px] font-semibold " +
-                  (p.isCurrent
-                    ? "bg-primary/15 text-primary"
-                    : "bg-secondary text-[#a0a0a5]")
-                }
-              >
-                {p.focus}
-              </span>
             </div>
             <div
               className={
@@ -125,16 +115,6 @@ export function PhaseList({
                 </div>
                 <div className="text-[12px] text-[#a0a0a5]">{p.meta}</div>
               </div>
-              <span
-                className={
-                  "flex-none rounded-pill px-2.5 py-[3px] text-[11px] font-semibold " +
-                  (p.isCurrent
-                    ? "bg-primary/15 text-primary"
-                    : "bg-secondary text-[#a0a0a5]")
-                }
-              >
-                {p.focus}
-              </span>
             </div>
             {p.isCurrent && (
               <div className="mx-3.5 mb-3.5">

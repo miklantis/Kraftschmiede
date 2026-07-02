@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.24.
+  Konzept-vor-Code. Aktuelle Version: 1.3.25.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -117,6 +117,9 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
 
+2026-07-02 — Fokus-Chip aus den Journey-Phasen entfernt (Version 1.3.25).
+PhaseList: der Chip oben rechts (p.focus) faellt in Desktop-Raster und Mobile-Liste weg, weil er bei sprechenden Phasennamen den Namen doppelt. Statuspunkt bleibt, Layout entsprechend vereinfacht (Desktop: mb-3 statt flex justify-between). PhaseView.focus bleibt im Datenmodell, nur nicht mehr gerendert. Rein optisch. Validierung gruen: vite build, tsc --noEmit, vitest run.
+
 2026-07-02 — Innenpunkt fuer kuenftige Journey-Phasen (Version 1.3.24).
 PhaseDot: der future-Zustand bekommt denselben weissen Innenpunkt (size-2.5 rounded-full bg-white) wie current, statt leerem Kreis; Farben unveraendert (#d8d8dc). Rein optisch, keine Logik. Validierung gruen: vite build, tsc --noEmit, vitest run.
 
@@ -167,35 +170,6 @@ ab, andere weichen aus, umgeordnet erst beim Loslassen). Engine: moveExercise (s
 durch reorderExercise(from, to) ersetzt, mit Tests; Hook moveUp/moveDown -> reorder.
 Persistenz unveraendert (erst beim Speichern), Coach-Rechenkern unangetastet. Designsystem.md
 um SortableList ergaenzt. Validierung gruen: vite build, tsc --noEmit, vitest run (367 Tests).
-
-2026-07-02 — DB-Spalte template_exercises.role entfernt (Version 1.3.17). Migration
-0006_template_exercises_drop_role.sql zieht die seit 1.3.16 funktionslose Rollen-Spalte
-(die inline CHECK-Beschraenkung faellt mit weg; idempotent per drop column if exists).
-MUSS im Supabase-SQL-Editor ausgefuehrt werden. Restore gegen Alt-Backups abgesichert:
-restoreData.stripTemplateExerciseRow verwirft ein evtl. vorhandenes role-Feld beim
-Einspielen (Muster wie migrateExerciseRow), mit Test. Architektur.md fortgeschrieben.
-Kein App-Verhalten geaendert; Coach-Rechenkern unangetastet. Validierung gruen: vite build,
-tsc --noEmit, vitest run (365 Tests).
-
-2026-07-02 — Workout-Rolle entfernt, Antippen oeffnet direkt den Editor (Version 1.3.16).
-Die Rollen-Einteilung je Uebung (Haupt/Assistenz/Core) ist raus – sie war reines Anzeigeraster
-und wurde von Coach, Empfehlung, Aufwaermen und Live nie ausgewertet (geprueft). Schema
-(templates.ts ohne templateRoleEnum/role), Datenzugriff (useTemplates ohne role), Regellogik
-(workoutEditor ohne defaultRole/setRole; workouts.ts ohne ROLE_ORDER/LABELS und
-buildWorkoutDetail), Speicherpfad (useTemplateActions/templateActions ohne role) und der Editor
-(WorkoutEditor ohne Rollen-Dropdown, jetzt reine geordnete Uebungsliste) entsprechend
-entschlackt. Die DB-Spalte template_exercises.role bleibt mit Default 'primary' zunaechst
-liegen; mit Migration 0006 (Version 1.3.17) nachgezogen. Die lesende Detailseite (routes/workouts_.$templateId.tsx) und
-useWorkoutDetail entfielen; Antippen eines Workouts in der Bibliothek fuehrt direkt in den
-Editor, nach Speichern/Zurueck zurueck in die Bibliothek. Tests angepasst
-(defaultRole/setRole/buildWorkoutDetail-Faelle entfernt). Coach-Rechenkern unangetastet.
-Validierung gruen: vite build, tsc --noEmit, vitest run (364 Tests).
-
-2026-07-01 — Journey-Chip an Journey-Block angeglichen (Version 1.3.15). In
-src/components/ui/journey-chip.tsx die Toenung von bg-primary/10 auf bg-primary/12 und die
-Icon-Farbe vom fest verdrahteten #0a7d5e auf text-primary (--primary, #0c9d77) umgestellt –
-damit identisch zum Symbolfeld im JourneyStrip. Reiner Optik-Patch, keine Logikaenderung.
-
 ---
 
 Ältere Einträge stehen im Archiv: `docs/archive/PLAN-Log-Archiv.md`.

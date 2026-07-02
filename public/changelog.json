@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.25",
+      "date": "2026-07-02",
+      "changes": [
+        "Journey-Phasen: Die kleine Kategorie-Markierung oben rechts in den Phasenkarten entfaellt – sie hat bei gleich benannten Phasen nur den Namen doppelt gezeigt."
+      ]
+    },
+    {
       "version": "1.3.24",
       "date": "2026-07-02",
       "changes": [
