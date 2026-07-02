@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.23.
+  Konzept-vor-Code. Aktuelle Version: 1.3.24.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -116,6 +116,9 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-02 — Innenpunkt fuer kuenftige Journey-Phasen (Version 1.3.24).
+PhaseDot: der future-Zustand bekommt denselben weissen Innenpunkt (size-2.5 rounded-full bg-white) wie current, statt leerem Kreis; Farben unveraendert (#d8d8dc). Rein optisch, keine Logik. Validierung gruen: vite build, tsc --noEmit, vitest run.
 
 2026-07-02 — Trainingsart-Symbole auf Skill-Karten und im Verlauf (Version 1.3.23).
 SkillCard-Kopf bekommt vorne das Lucide Zap (dezent grau, size-5), einheitlich zu
