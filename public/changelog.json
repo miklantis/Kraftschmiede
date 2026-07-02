@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.3.19",
+      "date": "2026-07-02",
+      "changes": [
+        "Feinschliff im Workout-Editor: Der Workout-Name steht jetzt etwas größer im Vordergrund, die Übungszeilen sind dezenter. Der Hinweis zur Journey-Fähigkeit erscheint als ruhiger Satz statt als auffälliger Aufkleber.",
+        "Workouts-Übersicht: Der Knopf „Neues Workout“ sitzt jetzt unter der Liste statt darüber."
+      ]
+    },
+    {
       "version": "1.3.18",
       "date": "2026-07-02",
       "changes": [

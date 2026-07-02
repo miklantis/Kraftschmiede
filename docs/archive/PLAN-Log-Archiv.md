@@ -9,6 +9,14 @@ Einträge bleiben historisch unverändert, neueste zuerst.
 
 ---
 
+2026-07-01 — Bugfix-Nachzug: kaputter Cache-Stand verworfen + Absicherung (Version 1.3.9).
+Der unter 1.3.8 behobene Set-Fehler hinterliess bei bereits geladenen Clients einen defekten
+persistierten Eintrag ({} statt Array), der beim naechsten Start „object is not iterable"
+(new Set({})) ausloeste, bevor der Refetch griff. CACHE_BUSTER v2 -> v3 (offline.ts) verwirft
+den gespeicherten Cache einmalig. Zusaetzlich lesen JourneyWorkoutsSection und
+useJourneyWorkoutActions den Wert defensiv (Array.isArray-Pruefung, sonst leere Liste), damit
+kein unerwarteter Altwert mehr crasht. Validierung gruen: vite build, tsc --noEmit, vitest run.
+
 2026-07-01 — Bugfix: Journey-Seite stuerzte nach Rehydrieren ab (Version 1.3.8).
 useJourneyWorkouts legte die Zuordnung als Set im Query-Cache ab; der Offline-Persister
 (createAsyncStoragePersister, JSON) macht daraus beim Speichern {}, sodass nach dem Laden

@@ -78,7 +78,7 @@ export function WorkoutEditor({
         value={ed.name}
         onChange={(e) => ed.setName(e.target.value)}
         placeholder="z. B. Oberkörper A"
-        className="h-10"
+        className="h-11 text-[17px] font-medium md:text-[17px]"
         aria-label="Workout-Name"
       />
       {ed.nameState === "duplicate" && (
@@ -87,23 +87,12 @@ export function WorkoutEditor({
         </p>
       )}
 
-      {/* Journey-Faehigkeit live */}
-      <div className="mt-3 mb-5 flex items-center gap-2">
-        {ed.journeyCapable ? (
-          <span className="rounded-[20px] bg-foreground px-2.5 py-1 text-[13px] font-medium text-background">
-            journey-fähig
-          </span>
-        ) : (
-          <span className="rounded-[20px] bg-muted px-2.5 py-1 text-[13px] font-medium text-muted-foreground">
-            nicht journey-fähig
-          </span>
-        )}
-        <span className="text-[12px] text-muted-foreground">
-          {ed.journeyCapable
-            ? "enthält eine Kraftübung"
-            : "keine Kraftübung enthalten"}
-        </span>
-      </div>
+      {/* Journey-Faehigkeit live – schlichter Hinweistext, kein Chip */}
+      <p className="mt-2 mb-5 text-[13px] text-muted-foreground">
+        {ed.journeyCapable
+          ? "Journey-fähig – enthält eine Kraftübung."
+          : "Nicht journey-fähig – keine Kraftübung enthalten."}
+      </p>
 
       {/* Uebungsliste */}
       <div className="mb-1.5 text-[12px] font-semibold tracking-[0.3px] text-muted-foreground">
@@ -120,7 +109,7 @@ export function WorkoutEditor({
           getKey={(row) => row.exerciseId}
           onReorder={ed.reorder}
           renderItem={(row, _i, { handleProps, isDragging }) => (
-            <div className="rounded-[14px] bg-card px-2.5 py-3 shadow-card">
+            <div className="rounded-[14px] bg-card px-2.5 py-2.5 shadow-card">
               <div className="flex items-center gap-2">
                 <span
                   {...handleProps}
@@ -129,7 +118,7 @@ export function WorkoutEditor({
                 >
                   <GripVertical className="size-[18px]" />
                 </span>
-                <span className="min-w-0 flex-1 truncate text-[15px] font-semibold text-foreground">
+                <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-foreground">
                   {row.name}
                 </span>
                 <button

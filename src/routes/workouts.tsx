@@ -12,8 +12,8 @@ import { useTemplateActions } from "@/hooks/useTemplateActions";
 
 // Workouts – Bibliothek. Zeigt die aktiven Workouts als Liste (Name, Uebungen
 // in Kurzform, Hinweis "journey-faehig"); tippen fuehrt auf die lesende
-// Detailseite. Oben "Neues Workout" (Editor), unten ein ausklappbarer
-// Archiv-Abschnitt mit Reaktivieren.
+// Detailseite. Unter der Liste "Neues Workout" (Editor), darunter ein
+// ausklappbarer Archiv-Abschnitt mit Reaktivieren.
 export const Route = createFileRoute("/workouts")({
   component: WorkoutsPage,
 });
@@ -49,17 +49,10 @@ function WorkoutsPage(): React.ReactElement {
     <div>
       <PageHeader title="Workouts" />
       <PageReveal>
-        <Button asChild variant="outline" className="mb-5 w-full">
-          <Link to="/workouts/neu">
-            <Plus className="size-[18px]" />
-            Neues Workout
-          </Link>
-        </Button>
-
         <Section>
           {workouts.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Noch keine aktiven Workouts. Lege oben ein neues an.
+              Noch keine aktiven Workouts. Lege unten ein neues an.
             </p>
           ) : (
             <List bordered>
@@ -86,6 +79,13 @@ function WorkoutsPage(): React.ReactElement {
             </List>
           )}
         </Section>
+
+        <Button asChild variant="outline" className="mt-5 w-full">
+          <Link to="/workouts/neu">
+            <Plus className="size-[18px]" />
+            Neues Workout
+          </Link>
+        </Button>
 
         {archived.length > 0 && (
           <div className="mt-6">

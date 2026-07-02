@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.18.
+  Konzept-vor-Code. Aktuelle Version: 1.3.19.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -116,6 +116,14 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-02 — Feinschliff Workout-Editor + Workouts-Uebersicht (Version 1.3.19).
+Editor: Name-Feld etwas groesser (17px, medium); Uebungszeilen dezenter (Name 14px
+medium statt 15px semibold, geringere Zeilenhoehe); die Journey-Faehigkeit erscheint
+als ruhiger Hinweissatz statt als Chip. Workouts-Uebersicht: Knopf „Neues Workout"
+von oben unter die Liste verschoben (Leer-Text und Kommentar angepasst). Reiner
+Optik-/Text-Patch, keine Logikaenderung; JourneyChip in der Uebersicht unberuehrt.
+Validierung gruen: vite build, tsc --noEmit, vitest run (367 Tests).
 
 2026-07-02 — Uebungsreihenfolge im Workout-Editor per Drag-and-Drop (Version 1.3.18).
 Die Auf/Ab-Pfeile je Uebung entfallen; stattdessen links ein Ziehgriff, mit dem die
@@ -208,14 +216,6 @@ der ganzen Bibliothek“ unter dem Hero. Nebeneffekt-Korrektur: der Bibliotheks-
 beruecksichtigt nur aktive Workouts (archivierte fielen vorher faelschlich mit ins Ranking).
 Kein neues DB-Migrat. Damit ist Vorhaben 1.3 komplett. Validierung gruen: vite build,
 tsc --noEmit, vitest run.
-
-2026-07-01 — Bugfix-Nachzug: kaputter Cache-Stand verworfen + Absicherung (Version 1.3.9).
-Der unter 1.3.8 behobene Set-Fehler hinterliess bei bereits geladenen Clients einen defekten
-persistierten Eintrag ({} statt Array), der beim naechsten Start „object is not iterable"
-(new Set({})) ausloeste, bevor der Refetch griff. CACHE_BUSTER v2 -> v3 (offline.ts) verwirft
-den gespeicherten Cache einmalig. Zusaetzlich lesen JourneyWorkoutsSection und
-useJourneyWorkoutActions den Wert defensiv (Array.isArray-Pruefung, sonst leere Liste), damit
-kein unerwarteter Altwert mehr crasht. Validierung gruen: vite build, tsc --noEmit, vitest run.
 
 ---
 
