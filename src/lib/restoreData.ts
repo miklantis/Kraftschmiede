@@ -97,12 +97,13 @@ function stripSet(set: Row): Row {
   return copy;
 }
 
-// Uebungszeilen aus Alt-Backups (Schema v2, mit category/kind) auf die neue Form
-// bringen: Altfelder verwerfen, tier ableiten falls es fehlt, und die
-// Barbell-Wahrheit aus category in equipment sichern (wie die DB-Migration).
-// v3-Backups tragen bereits tier/equipment und passieren unveraendert.
+// Uebungszeilen aus Alt-Backups auf die neue Form bringen: Altfelder verwerfen
+// (category/kind aus v2, active aus Backups vor dem Aufraeumen der Aktiv-Spalte),
+// tier ableiten falls es fehlt, und die Barbell-Wahrheit aus category in
+// equipment sichern (wie die DB-Migration). Neuere Backups passieren unveraendert.
 function migrateExerciseRow(r: Row): Row {
-  const { category, kind, ...rest } = r;
+  const { category, kind, active, ...rest } = r;
+  void active;
   const out: Row = { ...rest };
   if (out.tier == null) {
     out.tier = kind === "accessory" ? "accessory" : "main";

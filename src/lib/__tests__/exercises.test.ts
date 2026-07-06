@@ -28,7 +28,6 @@ function ex(overrides: Partial<ExerciseRow>): ExerciseRow {
     rm: null,
     rm_as_of: null,
     rm_stale: false,
-    active: true,
     position: 0,
     ...overrides,
   };
@@ -101,7 +100,6 @@ describe("groupExercises", () => {
       ex({ id: "b", name: "Curl", tier: "accessory", profile: "strength" }),
       ex({ id: "c", name: "Situps", profile: "core" }),
       ex({ id: "d", name: "Pushup", profile: "bodyweight" }),
-      ex({ id: "e", name: "Alt", active: false }),
     ];
     const groups = groupExercises(list, "kg");
     expect(groups.map((g) => g.title)).toEqual([
@@ -109,10 +107,9 @@ describe("groupExercises", () => {
       "Assistenz",
       "Core",
       "Körpergewicht",
-      "Inaktiv / Swaps",
     ]);
     expect(groups[0].items[0].name).toBe("Squat");
-    expect(groups[4].items[0].name).toBe("Alt");
+    expect(groups[3].items[0].name).toBe("Pushup");
   });
 
   it("laesst leere Gruppen weg und behaelt die Eingabereihenfolge je Gruppe", () => {
@@ -124,12 +121,5 @@ describe("groupExercises", () => {
     expect(groups).toHaveLength(1);
     expect(groups[0].title).toBe("Hauptübungen");
     expect(groups[0].items.map((i) => i.name)).toEqual(["A", "B"]);
-  });
-
-  it("zaehlt inaktive Uebungen unabhaengig vom Profil zu Inaktiv", () => {
-    const list = [ex({ id: "x", profile: "bodyweight", active: false })];
-    const groups = groupExercises(list, "kg");
-    expect(groups).toHaveLength(1);
-    expect(groups[0].title).toBe("Inaktiv / Swaps");
   });
 });

@@ -66,10 +66,10 @@ Recovery-Fenster, Timer).
 
 ### 3.2 Definitionen (Stammdaten in der DB, per Seed)
 
-- **exercises** – key, name, category (barbell/core/bodyweight), profile, kind, equipment,
-  bar_id (FK), description, metric (reps/duration bei Körpergewicht), muscle_groups
-  (grobe Tags als text[]), rep_range_min/max, target_score, work_weight, recovery_hours,
-  rm/rm_as_of/rm_stale (zwischengespeichertes 1RM für den Coach), active, position
+- **exercises** – key, name, profile (strength/core/bodyweight), tier (main/accessory),
+  equipment, bar_id (FK), description, metric (reps/duration bei Körpergewicht),
+  muscle_groups (grobe Tags als text[]), rep_range_min/max, target_score, work_weight,
+  recovery_hours, rm/rm_as_of/rm_stale (zwischengespeichertes 1RM für den Coach), position
 - **exercise_muscles** – feine Regionen-Map: exercise_id (FK), region_id (Code-/SVG-Region),
   kategorie (primär/sekundär/stabilisierend)
 - **templates** – key, name, image, active (Soft-Archiv), position. Namen pro Nutzer

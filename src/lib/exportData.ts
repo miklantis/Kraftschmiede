@@ -148,9 +148,10 @@ function cloneScoreMap(): Record<number, ScoreInfo> {
 // werden nicht mehr exportiert (unabhaengig davon, ob die DB sie noch traegt).
 function stripLegacyExerciseFields(rows: Row[]): Row[] {
   return rows.map((r) => {
-    const { category, kind, ...rest } = r;
+    const { category, kind, active, ...rest } = r;
     void category;
     void kind;
+    void active;
     return rest;
   });
 }

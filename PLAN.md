@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.28.
+  Konzept-vor-Code. Aktuelle Version: 1.3.29.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -69,6 +69,19 @@ Inhaltliche Quellen:
 ---
 
 ## Offene Vorhaben
+
+### Aktiv/Inaktiv bei Übungen entfernen
+
+Das vestigiale `active`-Feld am Übungskatalog wird komplett entfernt (Liste, Editor,
+Schema, Export/Import). Zwei Schritte wegen laufendem Betrieb.
+
+- [x] Schritt 1 (Code, 1.3.29): App benutzt und erwartet `active` nicht mehr. Gruppe
+      „Inaktiv / Swaps“ entfällt, alle Übungen normal gruppiert und im Workout-Editor
+      wählbar; Coach-Status für alle. Export verwirft das Feld, Restore toleriert
+      Altbackups mit `active`.
+- [ ] Schritt 2 (DB-Migration 0007): Spalte `exercises.active` aus der Datenbank
+      entfernen. Migration liegt im Repo; wird einmalig im Supabase-SQL-Editor
+      ausgeführt (kein Auto-Deploy der DB).
 
 ### Pflege / Bugfixing
 
@@ -116,6 +129,10 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-06 — Aktiv/Inaktiv bei Übungen entfernt, Schritt 1 Code (Version 1.3.29). Gruppe
+„Inaktiv / Swaps“ raus, alle Übungen normal gruppiert und im Editor wählbar; `active` aus
+Schema/Export getilgt, Restore toleriert Altbackups. Spaltenlöschung folgt als Schritt 2.
 
 2026-07-02 — Hinweis am Workout-Start nennt die Befinden-Grundlage (Version 1.3.28).
 StartModal: Ist fuer heute kein Koerperzustand erfasst, zeigt das Start-Banner

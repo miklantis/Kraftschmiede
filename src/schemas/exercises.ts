@@ -36,7 +36,6 @@ export const exerciseRow = z.object({
   rm: z.number().nullable(),
   rm_as_of: isoDate.nullable(),
   rm_stale: z.boolean(),
-  active: z.boolean(),
   position: z.number().int(),
 });
 export type ExerciseRow = z.infer<typeof exerciseRow>;
@@ -58,7 +57,6 @@ export const exerciseInsert = exerciseRow.omit({ id: true }).partial({
   rm: true,
   rm_as_of: true,
   rm_stale: true,
-  active: true,
   position: true,
 });
 export type ExerciseInsert = z.infer<typeof exerciseInsert>;

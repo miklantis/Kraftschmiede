@@ -10,8 +10,8 @@ export interface ExerciseRowModel {
   id: string;
   name: string;
   meta: string;
-  // Grobe Coach-Lesart (Steigern/Halten/Senken/Frei/Start) - nur fuer aktive
-  // Uebungen gesetzt; fehlt, solange der Status noch nicht berechnet ist.
+  // Grobe Coach-Lesart (Steigern/Halten/Senken/Frei/Start); fehlt, solange der
+  // Status noch nicht berechnet ist.
   coachState?: CoachState;
 }
 
@@ -61,11 +61,9 @@ export function groupExercises(
   const assist: ExerciseRow[] = [];
   const core: ExerciseRow[] = [];
   const bw: ExerciseRow[] = [];
-  const inactive: ExerciseRow[] = [];
 
   for (const e of exercises) {
-    if (!e.active) inactive.push(e);
-    else if (e.profile === "bodyweight") bw.push(e);
+    if (e.profile === "bodyweight") bw.push(e);
     else if (e.profile === "core") core.push(e);
     else if (e.tier === "accessory") assist.push(e);
     else main.push(e);
@@ -76,7 +74,6 @@ export function groupExercises(
     ["Assistenz", assist],
     ["Core", core],
     ["Körpergewicht", bw],
-    ["Inaktiv / Swaps", inactive],
   ];
 
   return order
@@ -87,7 +84,7 @@ export function groupExercises(
         id: e.id,
         name: e.name,
         meta: exerciseRowMeta(e, unit),
-        coachState: e.active ? statuses?.[e.id] : undefined,
+        coachState: statuses?.[e.id],
       })),
     }));
 }

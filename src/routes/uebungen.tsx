@@ -9,7 +9,7 @@ import { useExercisesView } from "@/hooks/useExercisesView";
 import { usePinnedView } from "@/hooks/usePinnedView";
 
 // Uebungen – Liste. Reine Lese-/Navigationsseite: zeigt den Katalog gruppiert
-// (Hauptuebungen, Assistenz, Core, Koerpergewicht, Inaktiv/Swaps) und fuehrt per
+// (Hauptuebungen, Assistenz, Core, Koerpergewicht) und fuehrt per
 // Tippen auf die Detailseite. Mobile gestapelt, Desktop zweispaltig (V1 ub-grid).
 export const Route = createFileRoute("/uebungen")({
   component: UebungenPage,

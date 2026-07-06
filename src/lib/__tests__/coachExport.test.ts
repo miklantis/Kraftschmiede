@@ -88,7 +88,7 @@ describe("buildCoachExport - Zuordnung und Saetze", () => {
     ];
     raw.templates = [{ id: "t1", name: "Push A" }];
     raw.exercises = [
-      { id: "e1", name: "Back Squat", active: true, position: 0, rep_range_min: 6, rep_range_max: 10, work_weight: 25, rm: 30.6 },
+      { id: "e1", name: "Back Squat", position: 0, rep_range_min: 6, rep_range_max: 10, work_weight: 25, rm: 30.6 },
     ];
     raw.sessions = [
       {

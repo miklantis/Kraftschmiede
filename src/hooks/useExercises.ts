@@ -3,8 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { useUserId } from "./useUserId";
 import type { ExerciseRow } from "@/schemas";
 
-// Uebungskatalog (alle aktiven und inaktiven). RLS scope't auf den Nutzer; der
-// Query-Key traegt die user_id, damit beim Kontowechsel nicht gemischt wird.
+// Uebungskatalog. RLS scope't auf den Nutzer; der Query-Key traegt die
+// user_id, damit beim Kontowechsel nicht gemischt wird.
 export function useExercises() {
   const userId = useUserId();
   return useQuery({

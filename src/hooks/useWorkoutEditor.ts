@@ -125,7 +125,7 @@ export function useWorkoutEditor(templateId: string | null): UseWorkoutEditor {
     name: names[e.exerciseId] ?? "Unbekannte Übung",
   }));
 
-  const catalog = (exercisesQ.data ?? []).filter((e) => e.active);
+  const catalog = exercisesQ.data ?? [];
   const selectedIds = new Set(draft.exercises.map((e) => e.exerciseId));
 
   const nextPosition = useMemo(() => {

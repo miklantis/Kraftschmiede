@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.29",
+      "date": "2026-07-06",
+      "changes": [
+        "Übungen: Die künstliche Unterscheidung aktiv/inaktiv entfällt. Alle Übungen erscheinen jetzt in ihren normalen Gruppen (Hauptübungen, Assistenz, Core, Körpergewicht) und lassen sich in Workouts auswählen; die Sammelgruppe „Inaktiv / Swaps“ verschwindet. Bisher inaktive Übungen werden dabei zu normalen Übungen, nichts geht verloren."
+      ]
+    },
+    {
       "version": "1.3.28",
       "date": "2026-07-02",
       "changes": [

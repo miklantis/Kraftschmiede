@@ -35,7 +35,6 @@ describe("Lese-Form (Row) verlangt alle Spalten", () => {
     rm: null,
     rm_as_of: null,
     rm_stale: false,
-    active: true,
     position: 0,
   };
 
