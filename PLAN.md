@@ -80,8 +80,9 @@ Schema, Export/Import). Zwei Schritte wegen laufendem Betrieb.
       wählbar; Coach-Status für alle. Export verwirft das Feld, Restore toleriert
       Altbackups mit `active`.
 - [ ] Schritt 2 (DB-Migration 0007): Spalte `exercises.active` aus der Datenbank
-      entfernen. Migration liegt im Repo; wird einmalig im Supabase-SQL-Editor
-      ausgeführt (kein Auto-Deploy der DB).
+      entfernen. Migration `0007_exercises_drop_active.sql` liegt im Repo und ist
+      idempotent; einmalig im Supabase-SQL-Editor ausführen (kein Auto-Deploy der DB),
+      danach abhaken. Erst nach dem Live-Gang von 1.3.29 ausführen.
 
 ### Pflege / Bugfixing
 
