@@ -70,20 +70,6 @@ Inhaltliche Quellen:
 
 ## Offene Vorhaben
 
-### Aktiv/Inaktiv bei Übungen entfernen
-
-Das vestigiale `active`-Feld am Übungskatalog wird komplett entfernt (Liste, Editor,
-Schema, Export/Import). Zwei Schritte wegen laufendem Betrieb.
-
-- [x] Schritt 1 (Code, 1.3.29): App benutzt und erwartet `active` nicht mehr. Gruppe
-      „Inaktiv / Swaps“ entfällt, alle Übungen normal gruppiert und im Workout-Editor
-      wählbar; Coach-Status für alle. Export verwirft das Feld, Restore toleriert
-      Altbackups mit `active`.
-- [ ] Schritt 2 (DB-Migration 0007): Spalte `exercises.active` aus der Datenbank
-      entfernen. Migration `0007_exercises_drop_active.sql` liegt im Repo und ist
-      idempotent; einmalig im Supabase-SQL-Editor ausführen (kein Auto-Deploy der DB),
-      danach abhaken. Erst nach dem Live-Gang von 1.3.29 ausführen.
-
 ### Pflege / Bugfixing
 
 Laufend, ergibt sich im Betrieb. Kein geplanter Block; einzelne Punkte werden hier
@@ -96,6 +82,12 @@ gefuehrt, sobald sie auftauchen.
 ## Abgeschlossene Vorhaben
 
 Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
+
+- Aktiv/Inaktiv bei Übungen entfernt (Schritt 1 Code 1.3.29, Schritt 2 Migration 0007).
+  Das vestigiale `active`-Feld am Übungskatalog ist aus App und Datenbank getilgt: keine
+  Gruppe „Inaktiv / Swaps“ mehr, alle Übungen normal gruppiert und im Workout-Editor
+  wählbar, Coach-Status für alle. Export verwirft das Feld, Restore toleriert Altbackups.
+  Coach-Rechenkern unberührt.
 
 - Workouts editierbar & Journey-Zuordnung (Lieferungen 1-5, Versionen 1.3.0-1.3.10).
   Workouts sind ueber eine eigene Seite anleg-, bearbeit- und archivierbar; sie lassen sich
@@ -130,6 +122,9 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-06 — Aktiv/Inaktiv-Aufräumen abgeschlossen: Migration 0007 zieht die Spalte
+`exercises.active` (Schritt 2, kein Versionssprung).
 
 2026-07-06 — Aktiv/Inaktiv bei Übungen entfernt, Schritt 1 Code (Version 1.3.29). Gruppe
 „Inaktiv / Swaps“ raus, alle Übungen normal gruppiert und im Editor wählbar; `active` aus
