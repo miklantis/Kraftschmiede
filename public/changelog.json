@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.30",
+      "date": "2026-07-08",
+      "changes": [
+        "Aufwärmen: Die vorbelegte Cardio-Art beim Start einer Einheit ist jetzt „Vario\" statt „Rad\". Auch ein neu hinzugefügter Aufwärmsatz startet mit „Vario\". Bereits eingetragene Sätze bleiben unverändert; die Art lässt sich weiterhin frei umstellen."
+      ]
+    },
+    {
       "version": "1.3.29",
       "date": "2026-07-06",
       "changes": [

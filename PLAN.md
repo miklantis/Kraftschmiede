@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.29.
+  Konzept-vor-Code. Aktuelle Version: 1.3.30.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -122,6 +122,12 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-08 — Aufwaerm-Standardart auf „Vario" (Version 1.3.30). Der vorbelegte
+Cardio-Satz beim Start und ein neu angehaengter Aufwaermsatz starten jetzt mit
+„vario" statt „bike" (liveBuild, useLiveSession); der tolerante Restore-Fallback
+ebenso. Bestehende Saetze und die freie Auswahl der Art bleiben unberuehrt.
+Validierung gruen: vite build, tsc --noEmit, vitest run (366 Tests).
 
 2026-07-06 — Aktiv/Inaktiv-Aufräumen abgeschlossen: Migration 0007 zieht die Spalte
 `exercises.active` (Schritt 2, kein Versionssprung).

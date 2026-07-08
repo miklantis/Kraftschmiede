@@ -52,7 +52,7 @@ describe("buildLiveEntries", () => {
   it("legt das allgemeine Aufwaermen mit einem Cardio-Satz an", () => {
     const r = buildLiveEntries(input());
     expect(r.generalWarmup.sets).toEqual([
-      { minutes: 7, mode: "bike", done: false },
+      { minutes: 7, mode: "vario", done: false },
     ]);
   });
 

@@ -167,7 +167,7 @@ describe("liveSession", () => {
       });
       const out = parseLive(raw).session;
       expect(out?.kind === "workout" ? out.generalWarmup.sets : null).toEqual([
-        { minutes: 5, mode: "bike", done: false },
+        { minutes: 5, mode: "vario", done: false },
       ]);
     });
   });

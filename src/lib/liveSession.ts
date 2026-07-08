@@ -228,7 +228,7 @@ function parseGeneralWarmup(v: unknown): { sets: LiveGeneralWarmupSet[] } {
   const arr = Array.isArray(rec.sets) ? rec.sets : [];
   const sets = arr.map((x): LiveGeneralWarmupSet => {
     const o = (typeof x === "object" && x !== null ? x : {}) as Record<string, unknown>;
-    return { minutes: num(o.minutes, 5), mode: str(o.mode, "bike"), done: bool(o.done) };
+    return { minutes: num(o.minutes, 5), mode: str(o.mode, "vario"), done: bool(o.done) };
   });
   return { sets };
 }

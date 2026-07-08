@@ -463,9 +463,9 @@ function setGeneralWarmupMode(si: number, mode: string): void {
   patchGeneralWarmup((sets) => sets.map((w, j) => (j === si ? { ...w, mode } : w)));
 }
 
-/** Aufwaerm-Cardio-Satz anhaengen (5 min Rad). */
+/** Aufwaerm-Cardio-Satz anhaengen (5 min, Art Vario). */
 function addGeneralWarmup(): void {
-  patchGeneralWarmup((sets) => [...sets, { minutes: 5, mode: "bike", done: false }]);
+  patchGeneralWarmup((sets) => [...sets, { minutes: 5, mode: "vario", done: false }]);
 }
 
 /** Letzten Aufwaerm-Cardio-Satz entfernen (mindestens einer bleibt). */

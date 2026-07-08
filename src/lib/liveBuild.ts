@@ -153,8 +153,8 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
   });
 
   return {
-    // Wie V1 buildLive: ein Cardio-Satz (7 min Rad) vorbelegt.
-    generalWarmup: { sets: [{ minutes: 7, mode: "bike", done: false }] },
+    // Ein Cardio-Satz (7 min) vorbelegt; Art standardmaessig Vario.
+    generalWarmup: { sets: [{ minutes: 7, mode: "vario", done: false }] },
     entries,
   };
 }
