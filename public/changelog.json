@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.31",
+      "date": "2026-07-08",
+      "changes": [
+        "Einstellungen · Stangen: Die Stangen sind jetzt ein fester Satz (Standard 20 kg, Leicht 10 kg, SZ 12,5 kg, SZ-Curl 8 kg, Kurz 15 kg) und stehen sauber in einer Karte – wie Scheiben und Kettlebells. Kein loses Hinzufügen-Feld außerhalb mehr; die Auswahl „Olympia\" und „Frauen\" entfällt. Stangen lassen sich nicht mehr versehentlich löschen."
+      ]
+    },
+    {
       "version": "1.3.30",
       "date": "2026-07-08",
       "changes": [

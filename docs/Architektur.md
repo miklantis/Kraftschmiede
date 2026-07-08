@@ -57,7 +57,9 @@ Recovery-Fenster, Timer).
 
 ### 3.1 Inventar
 
-- **inventory_bars** – Stangen: key, name, weight, is_default, position
+- **inventory_bars** – Stangen: key, name, weight, is_default, position. Fester Satz
+  (Standard/Leicht/SZ/SZ-Curl/Kurz), in der Oberflaeche nicht editierbar; per `key`
+  markiert, per Migration 0008 gesetzt.
 - **inventory_plates** – Scheiben: je Zeile ein verfügbares Gewicht (kein Stück-Zähler;
   der Plate-Loader rechnet ohne Limit)
 - **inventory_kettlebells** – Kettlebells: je Zeile ein Gewicht

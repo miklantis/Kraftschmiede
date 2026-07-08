@@ -4,13 +4,10 @@ import { useUserId } from "./useUserId";
 
 // Schreibzugriffe aufs Inventar, gebuendelt in einem Hook. Alle Aktionen laufen
 // ueber eine Mutation (gemeinsamer Lade-/Fehlerzustand); nach Erfolg wird die
-// passende Liste neu geladen. Stangen werden ohne key angelegt (key bleibt den
-// importierten/voreingestellten Stangen vorbehalten); ihre Reihenfolge ergibt
-// sich aus position (Unix-Sekunden beim Anlegen). Scheiben/Kettlebells werden in
-// der Anzeige nach Gewicht sortiert, daher genuegt die Standard-position.
+// passende Liste neu geladen. Stangen sind ein festes Set (in der DB gepflegt)
+// und hier nicht schreibbar. Scheiben/Kettlebells werden in der Anzeige nach
+// Gewicht sortiert, daher genuegt die Standard-position.
 type InventoryAction =
-  | { type: "addBar"; name: string; weight: number }
-  | { type: "delBar"; id: string }
   | { type: "addPlate"; weight: number }
   | { type: "delPlate"; id: string }
   | { type: "addKb"; weight: number }
@@ -18,8 +15,6 @@ type InventoryAction =
   | { type: "toggleEquip"; key: string; active: boolean };
 
 export function useInventoryActions(): {
-  addBar: (name: string, weight: number) => Promise<void>;
-  deleteBar: (id: string) => Promise<void>;
   addPlate: (weight: number) => Promise<void>;
   deletePlate: (id: string) => Promise<void>;
   addKettlebell: (weight: number) => Promise<void>;
@@ -37,24 +32,6 @@ export function useInventoryActions(): {
       let error: { message: string } | null = null;
 
       switch (action.type) {
-        case "addBar": {
-          ({ error } = await supabase.from("inventory_bars").insert({
-            user_id: userId,
-            key: null,
-            name: action.name,
-            weight: action.weight,
-            is_default: false,
-            position: Math.floor(Date.now() / 1000),
-          }));
-          break;
-        }
-        case "delBar": {
-          ({ error } = await supabase
-            .from("inventory_bars")
-            .delete()
-            .eq("id", action.id));
-          break;
-        }
         case "addPlate": {
           ({ error } = await supabase
             .from("inventory_plates")
@@ -94,8 +71,6 @@ export function useInventoryActions(): {
     },
     onSuccess: (_data, action) => {
       const map: Record<InventoryAction["type"], string[]> = {
-        addBar: ["bars"],
-        delBar: ["bars"],
         addPlate: ["plates"],
         delPlate: ["plates"],
         addKb: ["kettlebells"],
@@ -112,8 +87,6 @@ export function useInventoryActions(): {
     mutation.mutateAsync(action);
 
   return {
-    addBar: (name, weight) => run({ type: "addBar", name, weight }),
-    deleteBar: (id) => run({ type: "delBar", id }),
     addPlate: (weight) => run({ type: "addPlate", weight }),
     deletePlate: (id) => run({ type: "delPlate", id }),
     addKettlebell: (weight) => run({ type: "addKb", weight }),
