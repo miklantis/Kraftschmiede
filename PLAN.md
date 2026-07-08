@@ -128,8 +128,8 @@ jetzt ein abgeschlossener, nicht editierbarer Satz (Standard 20, Leicht 10, SZ 1
 SZ-Curl 8, Kurz 15); InventoryBars zeigt sie in einer Karte (SettingsGroup/SettingRow),
 ohne Loeschen und ohne Hinzufuegen-Knoepfe. BAR_PRESETS raus (Olympia/Frauen weg), die
 nun ungenutzten addBar/deleteBar aus useInventoryActions entfernt. Zugehoeriger
-DB-Schritt: Migration 0008_stangen_festes_set.sql — von Kadir im Supabase-Editor
-auszufuehren; uebernimmt bestehende Stangen per Gewicht (Referenzen bleiben) und legt
+DB-Schritt: Migration 0008_stangen_festes_set.sql am 2026-07-08 im Supabase-Editor
+ausgefuehrt (Success, keine Zeilen); uebernimmt bestehende Stangen per Gewicht (Referenzen bleiben) und legt
 SZ-Curl/Kurz an. Coach/Plate-Loader unberuehrt. Validierung gruen: vite build,
 tsc --noEmit, vitest run (366 Tests).
 
