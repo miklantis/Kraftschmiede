@@ -1,9 +1,38 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import { VitePWA } from "vite-plugin-pwa";
 import { fileURLToPath, URL } from "node:url";
+import { readFileSync } from "node:fs";
+
+// Schreibt die aktuelle App-Version aus public/changelog.json bereits beim Build
+// in den <title>, sodass das App-Fenster "Kraftschmiede <Version>" zeigt - von
+// der ersten Sekunde an und offline, ohne Nachladen. Quelle bleibt einzig die
+// changelog.json (newest-first). Der Homescreen-/Installationsname
+// (apple-mobile-web-app-title, Manifest) bleibt unberuehrt "Kraftschmiede".
+function appTitleVersion(): Plugin {
+  return {
+    name: "app-title-version",
+    transformIndexHtml(html) {
+      let version = "";
+      try {
+        const raw = readFileSync(
+          fileURLToPath(new URL("./public/changelog.json", import.meta.url)),
+          "utf-8",
+        );
+        const parsed = JSON.parse(raw) as {
+          versions?: { version?: string }[];
+        };
+        version = parsed.versions?.[0]?.version ?? "";
+      } catch {
+        version = "";
+      }
+      const title = version ? `Kraftschmiede ${version}` : "Kraftschmiede";
+      return html.replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`);
+    },
+  };
+}
 
 // base ist auf den Repo-Namen gesetzt, weil die App unter
 // https://miklantis.github.io/Kraftschmiede/ ausgeliefert wird (Projekt-Pages).
@@ -14,6 +43,7 @@ export default defineConfig({
     tanstackRouter({ target: "react", autoCodeSplitting: true }),
     react(),
     tailwindcss(),
+    appTitleVersion(),
     // Offline-Huelle (PWA). Der Service Worker cacht beim ersten Laden die
     // App-Shell (HTML/JS/CSS, Icons, gebuendelte Schriften); danach startet und
     // laeuft die App ohne Netz. Die Daten bleiben Sache der bestehenden

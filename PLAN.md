@@ -54,7 +54,7 @@ Inhaltliche Quellen:
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.31.
+  Konzept-vor-Code. Aktuelle Version: 1.3.32.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -122,6 +122,8 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-09 - Versionsnummer im Fenstertitel (Version 1.3.32). Ein kleines Vite-Plugin (appTitleVersion, transformIndexHtml) schreibt die neueste Version aus public/changelog.json schon beim Build in den <title>, sodass das App-Fenster "Kraftschmiede <Version>" zeigt - offline-fest und ohne Nachladen. Homescreen-/Installationsname (apple-mobile-web-app-title, Manifest) unveraendert "Kraftschmiede". Validierung gruen: vite build, tsc --noEmit, vitest run (366 Tests).
 
 2026-07-08 — Festes Stangen-Set + Karten-Optik (Version 1.3.31). Die Stangen sind
 jetzt ein abgeschlossener, nicht editierbarer Satz (Standard 20, Leicht 10, SZ 12,5,

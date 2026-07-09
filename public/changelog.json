@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.3.32",
+      "date": "2026-07-09",
+      "changes": [
+        "App-Fenster: Der Fenstertitel zeigt jetzt neben dem Namen die Versionsnummer („Kraftschmiede 1.3.32“). Der Name auf dem Homescreen bleibt „Kraftschmiede“."
+      ]
+    },
+    {
       "version": "1.3.31",
       "date": "2026-07-08",
       "changes": [
