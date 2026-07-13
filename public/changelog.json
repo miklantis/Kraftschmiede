@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.4.2",
+      "date": "2026-07-13",
+      "changes": [
+        "Übungs-Detailseite: Das Gerät „Kurzhantel“ wird jetzt korrekt beschriftet (vorher stand dort der interne Kürzel-Begriff in Kleinschreibung)."
+      ]
+    },
+    {
       "version": "1.4.1",
       "date": "2026-07-13",
       "changes": [

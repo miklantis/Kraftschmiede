@@ -71,7 +71,7 @@ Inhaltliche Quellen:
   **Lieferung 3 (durch den Nutzer):** im Workout-Editor in Workout E den bisherigen Curl gegen
   „Curl (Kurzhantel)“ tauschen.
 - **Kein weiteres offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.4.1.
+  Konzept-vor-Code. Aktuelle Version: 1.4.2.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -139,6 +139,8 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-13 - Label fuer Kurzhantel ergaenzt (Version 1.4.2, Bugfix). equipmentLabel in src/lib/labels.ts kannte 'dumbbell' nicht und fiel auf den rohen Schluessel zurueck (klein geschrieben) - jetzt "Kurzhantel". Nur Anzeige auf der Uebungs-Detailseite. Validierung gruen: vite build, tsc --noEmit, vitest run (374 Tests).
 
 2026-07-13 - Uebungstyp Kurzhantel + Curl (Kurzhantel) (Version 1.4.1, Lieferung 2 von 3 des Vorhabens „Kurzhanteln“). Engine: neue reine Funktion nearestDumbbell in plates.ts (naechste vorhandene Stufe; bei Gleichstand die leichtere; roundDown fuers Abrunden). progression.ts bekommt SuggestOpts.dumbbells - ist die Liste gesetzt, snappt der ld-Helper auf Kurzhantel-Stufen statt nearestLoadable; Entscheidungslogik (auf/halten/senken, Fresh-Sets) unveraendert. coach.ts: equipment-Union +dumbbell, SuggestBuildCtx/SuggestWithBarInput +dumbbells, eigener dumbbell-Zweig in suggestWithBar (keine Stange, bar=null). Durchgereicht ueber liveBuild (LiveBuildInput.dumbbells) und beide Hooks (useLiveBuilder, useCoachStatuses); Schema-Enum und liveSession-Union erweitert. Migration 0010: equipment-CHECK um dumbbell erweitert, Uebung „Curl (Kurzhantel)“ je Nutzer mit vorhandener „Barbell Curl“ angelegt (equipment=dumbbell, work_weight 10 je Hand, in der App anpassbar), Muskel-Map von der Langhantel-Curl uebernommen; idempotent. Warmup bleibt bei Nicht-Langhantel leer (korrekt fuer Isolation). Neue Tests: nearestDumbbell (5) + Kurzhantel-Progression (3); drei bestehende Tests um dumbbells ergaenzt. Offene DB-Schritte: 0009 und 0010 im Supabase-Editor ausfuehren. Lieferung 3 (Tausch in Workout E) macht der Nutzer im Editor. Validierung gruen: vite build, tsc --noEmit, vitest run (374 Tests).
 

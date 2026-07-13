@@ -51,6 +51,7 @@ const EQUIPMENT_LABELS: Record<string, string> = {
   bar: "Stange",
   band: "Band",
   bodyweight: "Körpergewicht",
+  dumbbell: "Kurzhantel",
 };
 export function equipmentLabel(equipment: string | null | undefined): string {
   if (!equipment) return "–";
