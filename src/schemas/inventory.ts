@@ -49,6 +49,20 @@ export const inventoryKettlebellInsert = inventoryKettlebellRow
   .partial({ position: true });
 export type InventoryKettlebellInsert = z.infer<typeof inventoryKettlebellInsert>;
 
+// inventory_dumbbells – verfuegbare Kurzhantel-Gewichte (festes Gewicht je Stueck).
+export const inventoryDumbbellRow = z.object({
+  id: uuid,
+  user_id: uuid,
+  weight: z.number(),
+  position: z.number().int(),
+});
+export type InventoryDumbbellRow = z.infer<typeof inventoryDumbbellRow>;
+
+export const inventoryDumbbellInsert = inventoryDumbbellRow
+  .omit({ id: true })
+  .partial({ position: true });
+export type InventoryDumbbellInsert = z.infer<typeof inventoryDumbbellInsert>;
+
 // inventory_equipment – Equipment-Tor fuer Skills (key wird von Skill-Phasen referenziert).
 export const inventoryEquipmentRow = z.object({
   id: uuid,

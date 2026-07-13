@@ -12,6 +12,7 @@ import { InventoryBars } from "@/components/settings/InventoryBars";
 import {
   InventoryPlates,
   InventoryKettlebells,
+  InventoryDumbbells,
 } from "@/components/settings/InventoryWeights";
 import { InventoryEquipment } from "@/components/settings/InventoryEquipment";
 import { DataExport } from "@/components/settings/DataExport";
@@ -23,6 +24,7 @@ import {
   useBars,
   usePlates,
   useKettlebells,
+  useDumbbells,
   useEquipment,
 } from "@/hooks/useInventory";
 
@@ -47,6 +49,7 @@ function EinstellungenPage(): React.ReactElement {
   const bars = useBars().data ?? [];
   const plates = usePlates().data ?? [];
   const kettlebells = useKettlebells().data ?? [];
+  const dumbbells = useDumbbells().data ?? [];
   const equipment = useEquipment().data ?? [];
 
   const placeholder = (
@@ -86,6 +89,10 @@ function EinstellungenPage(): React.ReactElement {
 
           <Section eyebrow="Inventar · Kettlebells · kg">
             <InventoryKettlebells kettlebells={kettlebells} />
+          </Section>
+
+          <Section eyebrow="Inventar · Kurzhanteln · je Hand (kg)">
+            <InventoryDumbbells dumbbells={dumbbells} />
           </Section>
 
           {equipment.length > 0 && (

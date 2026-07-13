@@ -35,6 +35,7 @@ const DELETE_ORDER: string[] = [
   "composition",
   "inventory_equipment",
   "inventory_kettlebells",
+  "inventory_dumbbells",
   "inventory_plates",
   "inventory_bars",
 ];
@@ -44,6 +45,7 @@ const INSERT_ORDER: (keyof RestoreTables)[] = [
   "inventory_bars",
   "inventory_plates",
   "inventory_kettlebells",
+  "inventory_dumbbells",
   "inventory_equipment",
   "exercises",
   "exercise_muscles",

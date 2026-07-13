@@ -12,6 +12,8 @@ type InventoryAction =
   | { type: "delPlate"; id: string }
   | { type: "addKb"; weight: number }
   | { type: "delKb"; id: string }
+  | { type: "addDb"; weight: number }
+  | { type: "delDb"; id: string }
   | { type: "toggleEquip"; key: string; active: boolean };
 
 export function useInventoryActions(): {
@@ -19,6 +21,8 @@ export function useInventoryActions(): {
   deletePlate: (id: string) => Promise<void>;
   addKettlebell: (weight: number) => Promise<void>;
   deleteKettlebell: (id: string) => Promise<void>;
+  addDumbbell: (weight: number) => Promise<void>;
+  deleteDumbbell: (id: string) => Promise<void>;
   toggleEquipment: (key: string, active: boolean) => Promise<void>;
   isPending: boolean;
   error: unknown;
@@ -58,6 +62,19 @@ export function useInventoryActions(): {
             .eq("id", action.id));
           break;
         }
+        case "addDb": {
+          ({ error } = await supabase
+            .from("inventory_dumbbells")
+            .insert({ user_id: userId, weight: action.weight }));
+          break;
+        }
+        case "delDb": {
+          ({ error } = await supabase
+            .from("inventory_dumbbells")
+            .delete()
+            .eq("id", action.id));
+          break;
+        }
         case "toggleEquip": {
           ({ error } = await supabase
             .from("inventory_equipment")
@@ -75,6 +92,8 @@ export function useInventoryActions(): {
         delPlate: ["plates"],
         addKb: ["kettlebells"],
         delKb: ["kettlebells"],
+        addDb: ["dumbbells"],
+        delDb: ["dumbbells"],
         toggleEquip: ["equipment", "ownedEquipment"],
       };
       for (const key of map[action.type]) {
@@ -91,6 +110,8 @@ export function useInventoryActions(): {
     deletePlate: (id) => run({ type: "delPlate", id }),
     addKettlebell: (weight) => run({ type: "addKb", weight }),
     deleteKettlebell: (id) => run({ type: "delKb", id }),
+    addDumbbell: (weight) => run({ type: "addDb", weight }),
+    deleteDumbbell: (id) => run({ type: "delDb", id }),
     toggleEquipment: (key, active) =>
       run({ type: "toggleEquip", key, active }),
     isPending: mutation.isPending,

@@ -105,3 +105,20 @@ export function useKettlebells() {
     },
   });
 }
+
+// Verfuegbare Kurzhantel-Gewichte (festes Gewicht je Stueck), aufsteigend sortiert.
+export function useDumbbells() {
+  const userId = useUserId();
+  return useQuery({
+    queryKey: ["dumbbells", userId],
+    enabled: userId !== null,
+    queryFn: async (): Promise<WeightItem[]> => {
+      const { data, error } = await supabase
+        .from("inventory_dumbbells")
+        .select("id, weight")
+        .order("weight", { ascending: true });
+      if (error) throw new Error(error.message);
+      return (data ?? []) as WeightItem[];
+    },
+  });
+}

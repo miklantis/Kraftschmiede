@@ -12,6 +12,7 @@ function emptyRaw(): RawExportData {
     bars: [],
     plates: [],
     kettlebells: [],
+    dumbbells: [],
     equipment: [],
     exercises: [],
     exerciseMuscles: [],

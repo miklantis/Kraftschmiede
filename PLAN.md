@@ -53,8 +53,17 @@ Inhaltliche Quellen:
   Rueckfall auf die ganze Bibliothek mit dezentem Hinweis, bei „alles heute ausgeschlossen"
   kein Rueckfall. Coach-Rechenkern unangetastet. Konzept:
   `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
-- **Kein offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.3.32.
+- **Vorhaben „Kurzhanteln (Dumbbells)“ (Version 1.4) in Arbeit.** Ziel: Curl-Uebungen von der
+  Langhantel auf Kurzhanteln bringen (schont den rechten Ellbogen, loest die Links/Rechts-
+  Asymmetrie). Konzept in drei Lieferungen: (1) Kurzhantel-Inventar, (2) Uebungstyp
+  „Kurzhantel“ im Coach + neue Uebung „Curl (Kurzhantel)“, (3) Tausch in Workout E durch den
+  Nutzer. **Lieferung 1 (1.4.0) umgesetzt:** eigene Kategorie `inventory_dumbbells` (Tabelle,
+  RLS, Grants, Seed 2–30 kg in 2er-Schritten), Schema/Hook/Aktionen nach Kettlebell-Muster,
+  Abschnitt „Inventar · Kurzhanteln · je Hand (kg)“ in den Einstellungen, plus Backup/Restore
+  (exportSource/exportData/restoreData/useRestore). **Offener DB-Schritt:** Migration
+  `0009_kurzhanteln_inventar.sql` muss im Supabase-SQL-Editor ausgefuehrt werden.
+- **Kein weiteres offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
+  Konzept-vor-Code. Aktuelle Version: 1.4.0.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -122,6 +131,8 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-07-13 - Kurzhantel-Inventar (Version 1.4.0, Lieferung 1 von 3 des Vorhabens „Kurzhanteln“). Neue Inventar-Kategorie inventory_dumbbells (festes Gewicht je Stueck, je Hand) nach dem Kettlebell-Muster: Migration 0009 (Tabelle + RLS + Grants + Seed 2-30 kg in 2er-Schritten fuer Nutzer mit vorhandenem Inventar, idempotent), Zod-Schema (inventoryDumbbellRow/Insert), Query-Hook useDumbbells, Aktionen addDumbbell/deleteDumbbell in useInventoryActions, Komponente InventoryDumbbells + Abschnitt in einstellungen.tsx. Backup/Restore erweitert (exportSource, exportData RawExportData/KsExport, restoreData RestoreTables + Huellen-Schema, useRestore DELETE_/INSERT_ORDER), Schema-Version bleibt v3 (optionales Feld, alte Sicherungen spielen unveraendert ein). Drei Tests um das neue Feld ergaenzt. Coach/Plate-Loader unberuehrt (Uebungstyp folgt in Lieferung 2). Offener DB-Schritt: Migration 0009 im Supabase-Editor ausfuehren. Validierung gruen: vite build, tsc --noEmit, vitest run (366 Tests).
 
 2026-07-09 - Versionsnummer im Fenstertitel (Version 1.3.32). Ein kleines Vite-Plugin (appTitleVersion, transformIndexHtml) schreibt die neueste Version aus public/changelog.json schon beim Build in den <title>, sodass das App-Fenster "Kraftschmiede <Version>" zeigt - offline-fest und ohne Nachladen. Homescreen-/Installationsname (apple-mobile-web-app-title, Manifest) unveraendert "Kraftschmiede". Validierung gruen: vite build, tsc --noEmit, vitest run (366 Tests).
 

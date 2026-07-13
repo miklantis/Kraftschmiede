@@ -5,7 +5,7 @@ function validExport(): Record<string, unknown> {
   return {
     app: "Kraftschmiede",
     schemaVersion: "v2",
-    inventory: { bars: [{ id: "b1", name: "Standard" }], plates: [], kettlebells: [], equipment: [] },
+    inventory: { bars: [{ id: "b1", name: "Standard" }], plates: [], kettlebells: [], dumbbells: [], equipment: [] },
     exercises: [{ id: "e1", name: "Back Squat" }],
     journeys: [{ id: "j1", name: "Rückkehr", active: true }],
     phases: [{ id: "p1", journey_id: "j1", name: "Hypertrophie" }],

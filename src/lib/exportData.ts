@@ -40,6 +40,7 @@ export interface RawExportData {
   bars: Row[];
   plates: Row[];
   kettlebells: Row[];
+  dumbbells: Row[];
   equipment: Row[];
   exercises: Row[];
   exerciseMuscles: Row[];
@@ -80,6 +81,7 @@ export interface KsExport {
     bars: Row[];
     plates: Row[];
     kettlebells: Row[];
+    dumbbells: Row[];
     equipment: Row[];
   };
   exercises: Row[];
@@ -194,6 +196,7 @@ export function buildExport(
       bars: raw.bars,
       plates: raw.plates,
       kettlebells: raw.kettlebells,
+      dumbbells: raw.dumbbells,
       equipment: raw.equipment,
     },
     exercises: stripLegacyExerciseFields(raw.exercises),

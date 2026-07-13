@@ -14,6 +14,7 @@ export interface RestoreTables {
   inventory_bars: Row[];
   inventory_plates: Row[];
   inventory_kettlebells: Row[];
+  inventory_dumbbells: Row[];
   inventory_equipment: Row[];
   exercises: Row[];
   exercise_muscles: Row[];
@@ -62,6 +63,7 @@ const zExport = z.looseObject({
       bars: z.array(zRow).optional(),
       plates: z.array(zRow).optional(),
       kettlebells: z.array(zRow).optional(),
+      dumbbells: z.array(zRow).optional(),
       equipment: z.array(zRow).optional(),
     })
     .optional(),
@@ -170,6 +172,7 @@ export function parseRestore(text: string): RestoreResult {
     inventory_bars: arr(exp.inventory?.bars),
     inventory_plates: arr(exp.inventory?.plates),
     inventory_kettlebells: arr(exp.inventory?.kettlebells),
+    inventory_dumbbells: arr(exp.inventory?.dumbbells),
     inventory_equipment: arr(exp.inventory?.equipment),
     exercises: arr(exp.exercises).map(migrateExerciseRow),
     exercise_muscles: arr(exp.exerciseMuscles),
