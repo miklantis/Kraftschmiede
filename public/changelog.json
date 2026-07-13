@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.4.1",
+      "date": "2026-07-13",
+      "changes": [
+        "Kurzhanteln als Übungstyp: Übungen können jetzt mit Kurzhanteln geführt werden. Der Coach lädt dafür keine Scheiben, sondern schlägt die nächste vorhandene Kurzhantel-Stufe je Hand vor (bei genau gleichem Abstand die leichtere). Neu dabei ist die Übung „Curl (Kurzhantel)“ – Startgewicht 10 kg je Hand, unter „Übung anpassen“ änderbar. Sie lässt sich im Workout-Editor gegen den bisherigen Curl tauschen."
+      ]
+    },
+    {
       "version": "1.4.0",
       "date": "2026-07-13",
       "changes": [

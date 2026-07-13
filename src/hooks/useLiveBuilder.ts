@@ -15,7 +15,7 @@ import { useSessions } from "./useSessions";
 import { useSessionsDetailed } from "./useSessionsDetailed";
 import { useActiveJourney } from "./useJourney";
 import { useSettings } from "./useSettings";
-import { useBars, usePlates } from "./useInventory";
+import { useBars, usePlates, useDumbbells } from "./useInventory";
 import { useLatestBody } from "./useBody";
 
 // Stellt die laufende Einheit aus einer Vorlage zusammen (Phase 11, Lieferung 2).
@@ -44,6 +44,7 @@ export function useLiveBuilder(): UseLiveBuilder {
   const settingsQ = useSettings();
   const barsQ = useBars();
   const platesQ = usePlates();
+  const dumbbellsQ = useDumbbells();
   const bodyQ = useLatestBody();
 
   const ready =
@@ -52,7 +53,8 @@ export function useLiveBuilder(): UseLiveBuilder {
     sessionsQ.data != null &&
     detailedQ.data != null &&
     barsQ.data != null &&
-    platesQ.data != null;
+    platesQ.data != null &&
+    dumbbellsQ.data != null;
 
   // Vom Vorlagen-/Phasenbezug unabhaengige Eingaben einmal aufbereiten.
   const base = useMemo(() => {
@@ -82,6 +84,7 @@ export function useLiveBuilder(): UseLiveBuilder {
       weight: b.weight,
     }));
     const plates = (platesQ.data ?? []).map((p) => p.weight);
+    const dumbbells = (dumbbellsQ.data ?? []).map((d) => d.weight);
     const lastEntryByExercise = buildLastEntries(detailedQ.data ?? []);
 
     const body = bodyQ.data;
@@ -107,6 +110,7 @@ export function useLiveBuilder(): UseLiveBuilder {
       exercisesById,
       bars,
       plates,
+      dumbbells,
       lastEntryByExercise,
       green,
       unit,
@@ -116,6 +120,7 @@ export function useLiveBuilder(): UseLiveBuilder {
     exercisesQ.data,
     barsQ.data,
     platesQ.data,
+    dumbbellsQ.data,
     detailedQ.data,
     bodyQ.data,
     settingsQ.data,
@@ -140,6 +145,7 @@ export function useLiveBuilder(): UseLiveBuilder {
         lastEntryByExercise: base.lastEntryByExercise,
         bars: base.bars,
         plates: base.plates,
+        dumbbells: base.dumbbells,
         unit: base.unit,
       });
     },

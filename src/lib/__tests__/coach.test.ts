@@ -245,6 +245,7 @@ describe("suggestWithBar", () => {
         { id: "b12", name: "12,5er", weight: 12.5 },
       ],
       plates: [1.25, 2.5, 5, 10, 20],
+      dumbbells: [],
       repTarget: null,
     });
     expect(r.bar?.id).toBe("b20"); // 20 <= 60, schwerste passende
@@ -258,6 +259,7 @@ describe("suggestWithBar", () => {
       lastEntry: null,
       bars: [{ id: "b20", name: "20er", weight: 20 }],
       plates: [2.5],
+      dumbbells: [],
       repTarget: null,
     });
     expect(r.bar).toBeNull();

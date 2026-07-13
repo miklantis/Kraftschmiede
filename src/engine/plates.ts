@@ -52,3 +52,42 @@ export function plateBreakdown(
   }
   return { perSide, plates: out, remainder: round2(rem) };
 }
+
+// Naechste verfuegbare Kurzhantel-Stufe zu einem Zielgewicht (festes Gewicht je
+// Stueck, keine Belade-Rechnung). Gewaehlt wird die naechstgelegene vorhandene
+// Stufe; bei genau gleichem Abstand die leichtere (konservativ). roundDown =
+// immer abrunden (groesste Stufe <= Ziel), z. B. fuer den Wiedereinstieg. Ist
+// kein Bestand vorhanden, bleibt das Zielgewicht unveraendert. Ziel unter der
+// leichtesten Stufe -> leichteste; ueber der schwersten -> schwerste.
+export function nearestDumbbell(
+  target: number,
+  steps: number[],
+  roundDown?: boolean,
+): number {
+  if (steps.length === 0) return round2(target);
+  const s = steps.slice().sort((a, b) => a - b);
+  const min = s[0]!;
+  const max = s[s.length - 1]!;
+  if (target <= min) return min;
+  if (target >= max) return max;
+  if (roundDown) {
+    let chosen = min;
+    for (const w of s) {
+      if (w <= target + 1e-9) chosen = w;
+      else break;
+    }
+    return chosen;
+  }
+  // Naechstgelegene Stufe; bei Gleichstand die leichtere (aufsteigend iteriert,
+  // Ersetzen nur bei echt kleinerem Abstand -> die leichtere bleibt bei Gleichstand).
+  let best = min;
+  let bestDist = Math.abs(target - min);
+  for (const w of s) {
+    const d = Math.abs(target - w);
+    if (d < bestDist - 1e-9) {
+      best = w;
+      bestDist = d;
+    }
+  }
+  return best;
+}

@@ -15,7 +15,7 @@ import { useSessions } from "./useSessions";
 import { useSessionsDetailed } from "./useSessionsDetailed";
 import { useActiveJourney } from "./useJourney";
 import { useSettings } from "./useSettings";
-import { useBars, usePlates } from "./useInventory";
+import { useBars, usePlates, useDumbbells } from "./useInventory";
 
 // Coach-Status je Uebung fuer die Uebungsseite (Liste + Detail): was der Coach
 // fuer die naechste Einheit dieser Uebung entscheiden wuerde - steigern, halten,
@@ -46,20 +46,23 @@ export function useCoachStatuses(): UseCoachStatuses {
   const settingsQ = useSettings();
   const barsQ = useBars();
   const platesQ = usePlates();
+  const dumbbellsQ = useDumbbells();
 
   const ready =
     exercisesQ.data != null &&
     sessionsQ.data != null &&
     detailedQ.data != null &&
     barsQ.data != null &&
-    platesQ.data != null;
+    platesQ.data != null &&
+    dumbbellsQ.data != null;
 
   const isLoading =
     exercisesQ.isLoading ||
     sessionsQ.isLoading ||
     detailedQ.isLoading ||
     barsQ.isLoading ||
-    platesQ.isLoading;
+    platesQ.isLoading ||
+    dumbbellsQ.isLoading;
 
   const byExercise = useMemo<Record<string, CoachStatus>>(() => {
     const out: Record<string, CoachStatus> = {};
@@ -71,6 +74,7 @@ export function useCoachStatuses(): UseCoachStatuses {
       weight: b.weight,
     }));
     const plates = (platesQ.data ?? []).map((p) => p.weight);
+    const dumbbells = (dumbbellsQ.data ?? []).map((d) => d.weight);
     const lastEntryByExercise = buildLastEntries(detailedQ.data ?? []);
     const freqTarget = settingsQ.data?.weekly_frequency_target || 3;
 
@@ -108,6 +112,7 @@ export function useCoachStatuses(): UseCoachStatuses {
         lastEntry,
         bars,
         plates,
+        dumbbells,
         repTarget,
       });
       out[e.id] = coachStatusFromSuggestion(suggestion, hadPriorData);
@@ -122,6 +127,7 @@ export function useCoachStatuses(): UseCoachStatuses {
     settingsQ.data,
     barsQ.data,
     platesQ.data,
+    dumbbellsQ.data,
   ]);
 
   return { isLoading, ready, byExercise };

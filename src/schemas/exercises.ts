@@ -13,6 +13,7 @@ export const exerciseEquipmentEnum = z.enum([
   "bar",
   "band",
   "bodyweight",
+  "dumbbell",
 ]);
 
 // exercises – Uebungskatalog mit Coach-Feldern (rm, rm_as_of, rm_stale).

@@ -76,3 +76,50 @@ describe("suggestWeight – Doppelprogression", () => {
     expect(r.weight).toBe(60);
   });
 });
+
+describe("suggestWeight – Kurzhantel-Stufen", () => {
+  const DB = [8, 10, 12, 14, 16, 18, 20];
+  const dbEx = {
+    workWeight: 14,
+    repRange: [8, 12] as [number, number],
+    targetScore: 3,
+  };
+  const dbWork = (o: Partial<EngineSet>): EngineSet => ({
+    type: "work",
+    weight: 14,
+    reps: 8,
+    done: true,
+    targetReps: 8,
+    targetWeight: 14,
+    score: 3,
+    ...o,
+  });
+
+  it("keine Vordaten => Startgewicht auf vorhandene Stufe", () => {
+    const r = suggestWeight(dbEx, null, { dumbbells: DB });
+    expect(r.weight).toBe(14);
+    expect(r.decision).toBe("hold");
+  });
+
+  it("Repband oben erreicht => eine Stufe hoch (kein Scheiben-Schritt)", () => {
+    // W+2.5 = 16.5 -> naechste Stufe 16
+    const r = suggestWeight(
+      dbEx,
+      entry([dbWork({ reps: 12, score: 2 }), dbWork({ reps: 12, score: 2 })]),
+      { dumbbells: DB },
+    );
+    expect(r.decision).toBe("increase");
+    expect(r.weight).toBe(16);
+  });
+
+  it("Versagen => Stufe runter, konservativ abgerundet", () => {
+    // W-2.5 = 11.5, beim Senken wird abgerundet -> naechste Stufe darunter: 10
+    const r = suggestWeight(
+      dbEx,
+      entry([dbWork({ score: 5, failed: true }), dbWork({ score: 5, failed: true })]),
+      { dumbbells: DB },
+    );
+    expect(r.decision).toBe("decrease");
+    expect(r.weight).toBe(10);
+  });
+});

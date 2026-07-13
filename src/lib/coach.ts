@@ -157,7 +157,7 @@ export function rankWorkouts<T extends RankableTemplate>(
 export interface CoachBuildExercise {
   key: string | null;
   profile: "strength" | "core" | "bodyweight";
-  equipment: "barbell" | "plate" | "bar" | "band" | "bodyweight";
+  equipment: "barbell" | "plate" | "bar" | "band" | "bodyweight" | "dumbbell";
   repRange: [number, number] | null;
   workWeight: number;
   targetScore: number;
@@ -210,6 +210,8 @@ export interface SuggestBuildCtx {
   lastEntry: SetEntry | null;
   bar?: Bar;
   plates?: number[];
+  // Vorhandene Kurzhantel-Stufen (nur fuer Kurzhantel-Uebungen gesetzt).
+  dumbbells?: number[];
   // Ueberschreibt das Repband der Uebung (Ziel-Repband der aktiven Phase).
   repTarget?: [number, number] | null;
 }
@@ -236,6 +238,7 @@ export function suggestForExercise(
   return suggestWeight(exUse, ctx.lastEntry, {
     bar: ctx.bar,
     plates: ctx.plates,
+    dumbbells: ctx.dumbbells,
     reentry: focus === "reentry",
   });
 }
@@ -271,6 +274,8 @@ export interface SuggestWithBarInput<B extends { weight: number }> {
   lastEntry: SetEntry | null;
   bars: B[];
   plates: number[];
+  // Vorhandene Kurzhantel-Stufen; nur fuer Kurzhantel-Uebungen genutzt.
+  dumbbells: number[];
   repTarget: [number, number] | null;
 }
 
@@ -304,6 +309,19 @@ export function suggestWithBar<B extends { weight: number }>(
       repTarget: input.repTarget,
     });
     return { suggestion, bar };
+  }
+  if (exo.equipment === "dumbbell") {
+    // Kurzhantel: keine Stange, keine Scheiben. Der Vorschlag wird auf die
+    // naechste vorhandene Kurzhantel-Stufe gerundet (je Hand).
+    const suggestion = suggestForExercise(exo, {
+      phase: input.phaseFocus,
+      lastEntry: input.lastEntry,
+      bar: undefined,
+      plates: input.plates,
+      dumbbells: input.dumbbells,
+      repTarget: input.repTarget,
+    });
+    return { suggestion, bar: null };
   }
   const suggestion = suggestForExercise(exo, {
     phase: input.phaseFocus,

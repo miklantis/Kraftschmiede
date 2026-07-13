@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { gcd, plateGrid, round2 } from "../math";
-import { nearestLoadable, plateBreakdown } from "../plates";
+import { nearestLoadable, nearestDumbbell, plateBreakdown } from "../plates";
 
 describe("math", () => {
   it("gcd auf zwei Nachkommastellen", () => {
@@ -51,5 +51,33 @@ describe("plates – Ladbarkeit", () => {
   it("plateBreakdown meldet Rest bei nicht exakt ladbarem Gewicht", () => {
     const b = plateBreakdown(61, 20, plates);
     expect(b.remainder).toBeGreaterThan(0);
+  });
+});
+
+describe("nearestDumbbell", () => {
+  const steps = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20];
+
+  it("waehlt die naechstgelegene vorhandene Stufe", () => {
+    expect(nearestDumbbell(15.4, steps)).toBe(16);
+    expect(nearestDumbbell(14.6, steps)).toBe(14);
+  });
+
+  it("bei genau gleichem Abstand die leichtere Stufe (konservativ)", () => {
+    // 15 liegt genau zwischen 14 und 16 -> 14
+    expect(nearestDumbbell(15, steps)).toBe(14);
+  });
+
+  it("roundDown nimmt die groesste Stufe <= Ziel", () => {
+    expect(nearestDumbbell(15.9, steps, true)).toBe(14);
+    expect(nearestDumbbell(16, steps, true)).toBe(16);
+  });
+
+  it("Ziel ausserhalb des Bestands klemmt an die Randstufen", () => {
+    expect(nearestDumbbell(1, steps)).toBe(2);
+    expect(nearestDumbbell(99, steps)).toBe(20);
+  });
+
+  it("ohne Bestand bleibt das Zielgewicht unveraendert", () => {
+    expect(nearestDumbbell(13, [])).toBe(13);
   });
 });

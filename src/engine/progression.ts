@@ -3,7 +3,7 @@
 // zu hoher Anstrengung halten oder senken. Reentry = vorsichtiger Wiedereinstieg.
 
 import { avg } from "./math";
-import { nearestLoadable } from "./plates";
+import { nearestLoadable, nearestDumbbell } from "./plates";
 import { metTarget, workSets } from "./target";
 import type { Bar, SetEntry } from "./types";
 
@@ -17,6 +17,9 @@ export interface SuggestExercise {
 export interface SuggestOpts {
   bar?: Bar;
   plates?: number[];
+  // Vorhandene Kurzhantel-Stufen. Ist die Liste gesetzt und nicht leer, wird das
+  // Gewicht auf die naechste feste Stufe gerundet statt mit Scheiben geladen.
+  dumbbells?: number[];
   reentry?: boolean;
 }
 
@@ -45,7 +48,9 @@ export function suggestWeight(
   const reentry = !!o.reentry;
 
   const ld = (x: number, down?: boolean): number =>
-    nearestLoadable(x, bar.weight, plates, !!down);
+    o.dumbbells && o.dumbbells.length
+      ? nearestDumbbell(x, o.dumbbells, !!down)
+      : nearestLoadable(x, bar.weight, plates, !!down);
 
   if (reentry) {
     // Wiedereinstieg: nur erhoehen bei Score <= 3 und Technik ok; abrunden.

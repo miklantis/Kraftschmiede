@@ -50,6 +50,7 @@ export interface LiveBuildInput {
   lastEntryByExercise: Record<string, SetEntry | null>;
   bars: LiveBuildBar[];
   plates: number[];
+  dumbbells: number[];
   unit: string;
 }
 
@@ -112,6 +113,7 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
       lastEntry,
       bars: input.bars,
       plates: input.plates,
+      dumbbells: input.dumbbells,
       repTarget,
     });
 

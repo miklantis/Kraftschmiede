@@ -43,6 +43,7 @@ function input(overrides: Partial<LiveBuildInput> = {}): LiveBuildInput {
     lastEntryByExercise: {},
     bars: [{ id: "bar1", name: "Olympia", weight: 20 }],
     plates: PLATES,
+    dumbbells: [],
     unit: "kg",
     ...overrides,
   };

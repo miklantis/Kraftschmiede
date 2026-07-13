@@ -92,7 +92,7 @@ export interface SkillLiveExercise {
 export interface LiveEntry {
   exerciseId: string;
   exerciseName: string;
-  equipment: "barbell" | "plate" | "bar" | "band" | "bodyweight";
+  equipment: "barbell" | "plate" | "bar" | "band" | "bodyweight" | "dumbbell";
   /** Kurzkennung im Kartenkopf: "1RM 120 kg" bzw. Muskelgruppen. */
   tag: string;
   /** Stange (nur Langhantel) - aufgeloest fuer Anzeige und Scheiben-Aufteilung. */
