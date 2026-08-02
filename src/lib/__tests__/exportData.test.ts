@@ -34,6 +34,7 @@ function emptyRaw(): RawExportData {
     skillProgress: [],
     bodyLog: [],
     composition: [],
+    milestones: [],
     settings: null,
   };
 }
@@ -137,6 +138,23 @@ describe("buildExport", () => {
     expect(out.app).toBe("Kraftschmiede");
     expect(out.schemaVersion).toBe("v3");
     expect(out.exportedAt).toBe("2026-06-23T10:00:00.000Z");
+  });
+
+  it("reicht Meilensteine durch", () => {
+    const raw = emptyRaw();
+    raw.milestones = [
+      {
+        id: "m1",
+        exercise_id: "e1",
+        name: "Erste 100 kg",
+        target_rm: 100,
+        achieved_at: null,
+      },
+    ];
+
+    const out = buildExport(raw, NOW);
+    expect(out.milestones).toHaveLength(1);
+    expect(out.milestones[0].target_rm).toBe(100);
   });
 
   it("liefert valides, lesbares JSON", () => {

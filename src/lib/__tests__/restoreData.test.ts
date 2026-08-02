@@ -99,6 +99,20 @@ describe("parseRestore", () => {
     expect(res.tables.settings).toEqual({ user_id: "u1", unit: "kg" });
   });
 
+  it("uebernimmt Meilensteine aus dem Backup, fehlend = leer", () => {
+    const exp = validExport();
+    exp.milestones = [
+      { id: "m1", exercise_id: "e1", name: "100 kg", target_rm: 100, achieved_at: null },
+    ];
+    const res = parseRestore(JSON.stringify(exp));
+    expect(res.tables.exercise_milestones).toHaveLength(1);
+    expect(res.tables.exercise_milestones[0]?.target_rm).toBe(100);
+
+    // Ohne das Feld (aelteres Backup) bleibt die Tabelle leer.
+    const without = parseRestore(JSON.stringify(validExport()));
+    expect(without.tables.exercise_milestones).toEqual([]);
+  });
+
   it("lehnt ein V1-JSON ab (kein app/schemaVersion v2)", () => {
     const v1 = { schemaVersion: "0.14", sessions: [], migrations: {} };
     expect(() => parseRestore(JSON.stringify(v1))).toThrow(/Kraftschmiede-Export/);

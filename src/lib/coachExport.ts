@@ -47,11 +47,19 @@ export interface CoachJourney {
   phases: CoachPhase[];
 }
 
+export interface CoachMilestone {
+  name: string;
+  targetRm: number;
+  achieved?: string; // Datum, falls erreicht
+  gap?: number; // sonst Abstand in kg zum aktuellen 1RM (falls bekannt)
+}
+
 export interface CoachExerciseCat {
   name: string;
   repBand: string | null;
   workWeight: number | null;
   est1RM: number | null;
+  milestones?: CoachMilestone[];
 }
 
 export interface CoachEntry {
@@ -306,15 +314,47 @@ export function buildCoachExport(
   }
 
   // ---- Uebungskatalog (nur aktive, sprechend) ----
+  // Meilensteine je Uebung (Ziel-1RM). Erreichte tragen ihr Datum, offene den
+  // Abstand zum aktuellen geschaetzten 1RM (falls bekannt).
+  const milestonesByExercise = new Map<string, Row[]>();
+  for (const m of raw.milestones) {
+    const exId = str(m, "exercise_id");
+    if (exId == null) continue;
+    const list = milestonesByExercise.get(exId) ?? [];
+    list.push(m);
+    milestonesByExercise.set(exId, list);
+  }
+
   const exercises: CoachExerciseCat[] = raw.exercises
-    .filter((e) => flag(e, "active"))
     .sort((a, b) => (num(a, "position") ?? 0) - (num(b, "position") ?? 0))
-    .map((e) => ({
-      name: str(e, "name") ?? "Übung",
-      repBand: repBand(num(e, "rep_range_min"), num(e, "rep_range_max")),
-      workWeight: num(e, "work_weight"),
-      est1RM: num(e, "rm"),
-    }));
+    .map((e) => {
+      const est1RM = num(e, "rm");
+      const cat: CoachExerciseCat = {
+        name: str(e, "name") ?? "Übung",
+        repBand: repBand(num(e, "rep_range_min"), num(e, "rep_range_max")),
+        workWeight: num(e, "work_weight"),
+        est1RM,
+      };
+      const exId = str(e, "id");
+      const ms = exId != null ? milestonesByExercise.get(exId) : undefined;
+      if (ms != null && ms.length > 0) {
+        cat.milestones = ms.map((m) => {
+          const target = num(m, "target_rm") ?? 0;
+          const achieved = str(m, "achieved_at");
+          const out: CoachMilestone = {
+            name: str(m, "name") ?? "Ziel",
+            targetRm: target,
+          };
+          if (achieved != null) {
+            out.achieved = achieved;
+          } else if (est1RM != null) {
+            out.gap = Math.max(0, Math.round((target - est1RM) * 100) / 100);
+          }
+          return out;
+        });
+      }
+      return cat;
+    });
 
   // ---- Einheiten in der Spanne ----
   const sessions: CoachSession[] = [...raw.sessions]

@@ -32,6 +32,7 @@ function emptyRaw(): RawExportData {
     skillProgress: [],
     bodyLog: [],
     composition: [],
+    milestones: [],
     settings: null,
   };
 }
@@ -237,5 +238,34 @@ describe("buildCoachExport - schlank", () => {
     const json = JSON.stringify(out.sessions[0]);
     expect(json).not.toContain("user_id");
     expect(json).not.toContain("s1");
+  });
+});
+
+describe("buildCoachExport - Uebungskatalog & Meilensteine", () => {
+  it("nimmt alle Uebungen in den Katalog (kein active-Filter mehr)", () => {
+    const raw = emptyRaw();
+    raw.exercises = [
+      { id: "e1", name: "Back Squat", position: 0, rm: 90 },
+      { id: "e2", name: "Bench Press", position: 1, rm: 70 },
+    ];
+    const out = buildCoachExport(raw, { weeks: null, today: TODAY });
+    expect(out.exercises.map((e) => e.name)).toEqual([
+      "Back Squat",
+      "Bench Press",
+    ]);
+  });
+
+  it("haengt Meilensteine je Uebung an (Abstand offen, Datum erreicht)", () => {
+    const raw = emptyRaw();
+    raw.exercises = [{ id: "e1", name: "Back Squat", position: 0, rm: 90 }];
+    raw.milestones = [
+      { id: "m1", exercise_id: "e1", name: "100 kg", target_rm: 100, achieved_at: null },
+      { id: "m2", exercise_id: "e1", name: "80 kg", target_rm: 80, achieved_at: "2026-06-01" },
+    ];
+    const out = buildCoachExport(raw, { weeks: null, today: TODAY });
+    const ms = out.exercises[0].milestones;
+    expect(ms).toHaveLength(2);
+    expect(ms?.[0]).toEqual({ name: "100 kg", targetRm: 100, gap: 10 });
+    expect(ms?.[1]).toEqual({ name: "80 kg", targetRm: 80, achieved: "2026-06-01" });
   });
 });

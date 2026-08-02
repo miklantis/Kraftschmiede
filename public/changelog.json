@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.5.2",
+      "date": "2026-08-02",
+      "changes": [
+        "Meilensteine werden jetzt beim Backup und bei der Wiederherstellung mitgesichert.",
+        "Coach-Export: Meilensteine erscheinen je Übung (Ziel plus Abstand in kg bzw. Erreicht-Datum). Außerdem behoben – der Coach-Export listet wieder alle Übungen; zuletzt fehlten sie durch ein veraltetes Filterkriterium."
+      ]
+    },
+    {
       "version": "1.5.1",
       "date": "2026-08-02",
       "changes": [

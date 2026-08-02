@@ -74,10 +74,11 @@ Inhaltliche Quellen:
   je Gewichtsuebung eigene Meilensteine (Name + Ziel-1RM) auf der Detailseite anlegen,
   bearbeiten, loeschen; Fortschritt gegen das aktuelle geschaetzte 1RM (nur gelesen)
   mit Balken und kg-Abstand; automatisches „erreicht" mit Datum. Migration 0011
-  ausgefuehrt. Offen: Lieferung 1b (Backup/Restore um die Tabelle erweitern, 1.5.1).
-  Coach-Rechenkern unberuehrt.
+  ausgefuehrt. Lieferung 1b (1.5.2): Backup/Restore und Coach-Export decken die
+  Meilensteine mit ab (im Coach-Export zusaetzlich der veraltete active-Filter
+  entfernt). Coach-Rechenkern unberuehrt.
 - **Kein weiteres offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.5.1.
+  Konzept-vor-Code. Aktuelle Version: 1.5.2.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -123,8 +124,9 @@ im Supabase-SQL-Editor ausgefuehrt (Success, „No rows returned").
       „Fortschritt-zu-Ziel" (`progress-to-goal.tsx`) und der Abschnitt
       „Meilensteine" auf der Detailseite mit Anlege-/Bearbeiten-Popup
       (`MilestonesSection`, `MilestoneEditModal`). Nur Gewichtsuebungen.
-- [ ] Lieferung 1b: Backup/Restore um `exercise_milestones` erweitern (Version
-      1.5.1), damit Meilensteine mitgesichert und wiederhergestellt werden.
+- [x] Lieferung 1b (Version 1.5.2): Backup/Restore um `exercise_milestones`
+      erweitert; zusaetzlich im Coach-Export je Uebung ausgewiesen und dort der
+      veraltete active-Filter entfernt (listete zuletzt keine Uebungen).
 - [ ] Bewusst spaeter: Marker im Verlauf am Erreichen-Tag.
 - [ ] Bewusst spaeter: automatische Vorschlaege aus der alten
       Excel-Bestwerte-Liste.
@@ -174,6 +176,8 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-08-02 - Meilensteine in Backup/Restore und Coach-Export (Version 1.5.2, Lieferung 1b des Vorhabens „Meilensteine pro Uebung"). Voll-Export/Restore: exercise_milestones ergaenzt (RawExportData/KsExport/buildExport, exportSource selectAll, restoreData RestoreTables + Huellen-Schema optionales milestones, useRestore DELETE_/INSERT_ORDER als Kind von exercises). Schema-Version bleibt v3 (optionales Feld; aeltere Backups spielen unveraendert ein, Tabelle dann leer). Coach-Export: je Uebung milestones (Ziel + Abstand zum aktuellen 1RM bzw. Erreicht-Datum); dabei den veralteten Filter .filter(active) entfernt - da die active-Spalte seit Migration 0007 weg ist, lieferte der Coach-Export zuletzt gar keine Uebungen mehr (Bugfix). Neue Tests: Export-Durchreichung, Restore-Uebernahme + Leerfall, Coach-Katalog ohne active-Filter, Coach-Meilensteine (offen/erreicht). Coach-Rechenkern unberuehrt. Validierung gruen: vite build, tsc --noEmit, vitest run.
 
 2026-08-02 - Meilensteine unter das Diagramm verschoben (Version 1.5.1). Der Abschnitt sitzt jetzt in der linken Spalte der Uebungs-Detailseite zwischen Verlaufsdiagramm und Verlauf (Desktop), mobil direkt nach dem Diagramm (order 3; Muskeln/Verlauf/Anpassen um eins nachgeschoben). Vorher stand er ganz oben ueber voller Breite. Rein optisch, keine Logikaenderung. Validierung gruen: vite build, tsc --noEmit, vitest run.
 
