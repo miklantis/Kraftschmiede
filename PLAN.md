@@ -78,7 +78,7 @@ Inhaltliche Quellen:
   Meilensteine mit ab (im Coach-Export zusaetzlich der veraltete active-Filter
   entfernt). Coach-Rechenkern unberuehrt.
 - **Kein weiteres offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.5.4.
+  Konzept-vor-Code. Aktuelle Version: 1.5.5.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -186,6 +186,8 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-08-02 - Ziele-Zustand angehefteter Kacheln geraete-lokal gemerkt (Version 1.5.5, Vorhaben „Meilensteine pro Uebung"). Der „Ziele"-Umschalter auf den angehefteten Kacheln lag bisher nur im Komponenten-State (nach Neuladen aus). Neuer geraete-lokaler Store usePinnedGoals nach dem Muster von usePinnedCharts (useSyncExternalStore + localStorage, eigener Schluessel ks_pin_goals_v1), nutzt die vorhandenen reinen Helfer (parsePins/serializePins/hasPin/togglePin) mit {exerciseId, metric}-Eintraegen. PinnedChartTile liest/schreibt den Zustand darueber statt per useState; goalsAvailable bleibt vorgeschaltet, sodass ein gemerkter Zustand ohne Ziele/Datenpunkte nicht greift. Nur die angehefteten Kacheln (Detail-Chart bleibt bewusst sitzungslokal). Nicht synchronisiert, nicht im Export - wie die Anheftungen. Validierung gruen: vite build, tsc --noEmit, vitest run.
 
 2026-08-02 - Ziel-Linien auf angehefteten Kacheln, Schritt 2 (Version 1.5.4, Vorhaben „Meilensteine pro Uebung"). Angeheftete Verlaufs-Kachel in eigene Komponente PinnedChartTile ausgelagert, damit useMilestones je Kachel auf oberster Ebene laeuft; „Ziele"-Toggle und milestoneLines wie auf der Detailseite, sichtbar nur bei Kacheln mit Metrik 1RM, vorhandenen Zielen und rm-Datenpunkten. PinnedCharts rendert nur noch die Kacheln (ExerciseChart-Direktnutzung entfallen). Kein Datenmodell/Coach beruehrt. Validierung gruen: vite build, tsc --noEmit, vitest run.
 

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.5.5",
+      "date": "2026-08-02",
+      "changes": [
+        "Bei den angehefteten Diagrammen bleibt der Umschalter „Ziele“ jetzt erhalten: ein- oder ausgeschaltet, wie du ihn zuletzt gelassen hast, auch nach dem Neuladen. Wie die Anheftungen selbst gilt das je Gerät."
+      ]
+    },
+    {
       "version": "1.5.4",
       "date": "2026-08-02",
       "changes": [

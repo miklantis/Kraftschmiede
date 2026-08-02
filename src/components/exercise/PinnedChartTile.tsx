@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ExerciseChart } from "./ExerciseChart";
 import { useMilestones } from "@/hooks/useMilestones";
+import { usePinnedGoals } from "@/hooks/usePinnedGoals";
 import { fmtWeight } from "@/lib/format";
 import { exLineSeries } from "@/lib/exerciseHistory";
 import type { PinnedCard } from "@/hooks/usePinnedView";
@@ -8,7 +9,8 @@ import type { PinnedCard } from "@/hooks/usePinnedView";
 // Eine angeheftete Verlaufs-Kachel. Eigene Komponente, damit useMilestones je
 // Kachel auf oberster Ebene laeuft. Der „Ziele"-Toggle erscheint nur, wenn die
 // Kachel-Metrik 1RM ist, die Uebung Meilensteine hat und Datenpunkte vorliegen
-// (gleiches Verhalten wie auf der Detailseite). Zustand lokal, Standard aus.
+// (gleiches Verhalten wie auf der Detailseite). Der An/Aus-Zustand liegt
+// geraete-lokal (usePinnedGoals) und ueberlebt Neuladen - wie die Anheftung.
 export function PinnedChartTile({
   card,
   unit,
@@ -23,8 +25,8 @@ export function PinnedChartTile({
   const goalsAvailable =
     milestones.length > 0 && card.metric === "rm" && rmPoints.length > 0;
 
-  const [showGoals, setShowGoals] = useState(false);
-  const goalsOn = goalsAvailable && showGoals;
+  const { has: goalShown, toggle: toggleGoal } = usePinnedGoals();
+  const goalsOn = goalsAvailable && goalShown(card.exerciseId, card.metric);
 
   const milestoneLines = useMemo(
     () =>
@@ -45,7 +47,7 @@ export function PinnedChartTile({
         {goalsAvailable && (
           <button
             type="button"
-            onClick={() => setShowGoals((v) => !v)}
+            onClick={() => toggleGoal(card.exerciseId, card.metric)}
             aria-pressed={goalsOn}
             className={
               "shrink-0 rounded-[20px] px-[11px] py-[5px] text-[11px] font-semibold transition-colors " +

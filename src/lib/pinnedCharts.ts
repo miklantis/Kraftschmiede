@@ -14,6 +14,10 @@ export interface PinnedChart {
 // Eigener localStorage-Schluessel (analog V1 fs_dash_v013), versioniert.
 export const PINS_STORAGE_KEY = "ks_pins_v1";
 
+// Geraete-lokaler Merker, fuer welche angehefteten Kacheln der „Ziele"-
+// Umschalter aktiv ist (gleiche {exerciseId, metric}-Form wie ein Pin).
+export const PIN_GOALS_STORAGE_KEY = "ks_pin_goals_v1";
+
 const VALID_METRICS: readonly ExMetric[] = [
   "rm",
   "weight",
