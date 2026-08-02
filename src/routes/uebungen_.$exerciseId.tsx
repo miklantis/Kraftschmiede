@@ -137,14 +137,6 @@ function ExerciseDetailPage(): React.ReactElement {
         </Section>
       )}
 
-      {!isBodyweight && (
-        <MilestonesSection
-          exerciseId={exercise.id}
-          currentRm={exercise.rm}
-          unit={unit}
-        />
-      )}
-
       <PageReveal>
         {/* Mobil ein Stapel in fester Reihenfolge (Statistik, Diagramm, Muskeln,
           Verlauf). Ab 960px zwei unabhaengig fliessende Spalten wie V1: links
@@ -172,9 +164,19 @@ function ExerciseDetailPage(): React.ReactElement {
             </div>
           )}
 
+          {!isBodyweight && (
+            <div className="order-3 min-w-0 min-[960px]:order-none">
+              <MilestonesSection
+                exerciseId={exercise.id}
+                currentRm={exercise.rm}
+                unit={unit}
+              />
+            </div>
+          )}
+
           <Section
             eyebrow="Verlauf"
-            className="order-4 min-w-0 min-[960px]:order-none"
+            className="order-5 min-w-0 min-[960px]:order-none"
           >
             {verlauf.length === 0 ? (
               <p className="text-[15px] text-muted-foreground">
@@ -206,7 +208,7 @@ function ExerciseDetailPage(): React.ReactElement {
         <div className="contents min-w-0 min-[960px]:flex min-[960px]:flex-1 min-[960px]:flex-col min-[960px]:gap-7">
           <Section
             eyebrow="Beanspruchte Muskeln"
-            className="order-3 min-[960px]:order-none"
+            className="order-4 min-[960px]:order-none"
           >
             {/* Figur nimmt ~78% der Breite (V1-Wert), zentriert - so bleibt
                 Abstand zwischen Rand und Illustration, Desktop wie Mobile.
@@ -222,7 +224,7 @@ function ExerciseDetailPage(): React.ReactElement {
           <button
             type="button"
             onClick={() => setEditOpen(true)}
-            className="order-5 flex w-full items-center justify-center gap-2 rounded-[13px] border border-border bg-card py-3.5 text-[15px] font-semibold text-foreground shadow-card transition-[filter] hover:brightness-95 min-[960px]:order-none"
+            className="order-6 flex w-full items-center justify-center gap-2 rounded-[13px] border border-border bg-card py-3.5 text-[15px] font-semibold text-foreground shadow-card transition-[filter] hover:brightness-95 min-[960px]:order-none"
           >
             <Pencil className="size-4" />
             Übung anpassen

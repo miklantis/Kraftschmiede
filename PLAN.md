@@ -77,7 +77,7 @@ Inhaltliche Quellen:
   ausgefuehrt. Offen: Lieferung 1b (Backup/Restore um die Tabelle erweitern, 1.5.1).
   Coach-Rechenkern unberuehrt.
 - **Kein weiteres offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.5.0.
+  Konzept-vor-Code. Aktuelle Version: 1.5.1.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -174,6 +174,8 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-08-02 - Meilensteine unter das Diagramm verschoben (Version 1.5.1). Der Abschnitt sitzt jetzt in der linken Spalte der Uebungs-Detailseite zwischen Verlaufsdiagramm und Verlauf (Desktop), mobil direkt nach dem Diagramm (order 3; Muskeln/Verlauf/Anpassen um eins nachgeschoben). Vorher stand er ganz oben ueber voller Breite. Rein optisch, keine Logikaenderung. Validierung gruen: vite build, tsc --noEmit, vitest run.
 
 2026-08-02 - Meilensteine je Uebung, Lieferung 1 (Version 1.5.0, Vorhaben „Meilensteine pro Uebung"). Neue Zusatz-Tabelle exercise_milestones (Migration 0011, am 2026-08-02 in Supabase ausgefuehrt). Zod-Schema milestones.ts (Row/Insert), Query-Hook useMilestones (je Uebung), Aktionen-Hook useMilestoneActions (add/update/remove/markAchieved; markAchieved stempelt heute nur solange achieved_at leer ist, DB-seitig idempotent). Neue wiederverwendbare Komponente progress-to-goal.tsx (rein darstellend: Balken aktuell/Ziel, kg-Abstand bzw. „erreicht am <Datum>"). Abschnitt MilestonesSection auf der Uebungs-Detailseite (nur Gewichtsuebungen, nach dem Coach-Block): offene zuerst, erreichte als Historie, „Meilenstein hinzufuegen"; Auto-„erreicht" per Effekt gegen exercises.rm (nur gelesen). MilestoneEditModal (Overlay) zum Anlegen/Bearbeiten/Loeschen. Coach-Rechenkern unberuehrt. Offen: Backup/Restore um die Tabelle erweitern (1.5.1). Validierung gruen: vite build, tsc --noEmit, vitest run.
 

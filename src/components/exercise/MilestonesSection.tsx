@@ -88,7 +88,7 @@ export function MilestonesSection({
   );
 
   return (
-    <Section eyebrow="Meilensteine" className="mb-5 min-[960px]:mb-6">
+    <Section eyebrow="Meilensteine">
       {milestonesQ.isLoading ? (
         <p className="text-[15px] text-muted-foreground">Wird geladen …</p>
       ) : rows.length === 0 ? (

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.5.1",
+      "date": "2026-08-02",
+      "changes": [
+        "Meilensteine sind auf der Übungs-Detailseite jetzt unter dem Verlaufsdiagramm platziert (vorher ganz oben) und nehmen auf dem Desktop nur die linke Spalte ein."
+      ]
+    },
+    {
       "version": "1.5.0",
       "date": "2026-08-02",
       "changes": [
