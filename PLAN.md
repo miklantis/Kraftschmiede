@@ -107,6 +107,11 @@ Leitplanken: Coach-Rechenkern unberuehrt (Meilensteine lesen nur das vorhandene
 1RM). Neue, wiederverwendbare Komponente „Fortschritt-zu-Ziel". DB-Migration
 formuliert, ausgefuehrt vom Nutzer in Supabase.
 
+**Offener DB-Schritt:** Migration `0011_uebungs_meilensteine.sql` im
+Supabase-SQL-Editor ausfuehren (Tabelle `exercise_milestones` + RLS + Grants,
+kein Seed; erwartete Ausgabe „No rows returned"). Code (Schema, Hooks,
+Komponente, Detailseiten-Abschnitt) folgt als 1.5.0.
+
 - [ ] Lieferung 1: Anlegen/Bearbeiten/Loeschen auf der Uebungsseite, Fortschritt
       sehen, automatisches „erreicht" mit Datum. Umfasst Migration 0011 (Tabelle
       `exercise_milestones` + RLS + Grants + Backup/Restore), Zod-Schema,
