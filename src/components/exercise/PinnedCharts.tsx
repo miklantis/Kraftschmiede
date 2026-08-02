@@ -1,5 +1,5 @@
 import { Section } from "@/components/ui/section";
-import { ExerciseChart } from "./ExerciseChart";
+import { PinnedChartTile } from "./PinnedChartTile";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import type { PinnedCard } from "@/hooks/usePinnedView";
 
@@ -31,18 +31,12 @@ export function PinnedCharts({
       ) : (
         <div className="grid grid-cols-1 gap-3 min-[960px]:grid-cols-2 min-[960px]:gap-4">
           {cards.map((c) => (
-            <div
+            <PinnedChartTile
               key={c.key}
-              className="rounded-[18px] bg-card p-4 shadow-card"
-            >
-              <div className="mb-2 text-[14px] font-semibold">{c.title}</div>
-              <ExerciseChart
-                history={c.history}
-                metric={c.metric}
-                unit={unit}
-                height={chartHeight}
-              />
-            </div>
+              card={c}
+              unit={unit}
+              height={chartHeight}
+            />
           ))}
         </div>
       )}

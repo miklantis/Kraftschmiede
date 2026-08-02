@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.5.4",
+      "date": "2026-08-02",
+      "changes": [
+        "Der Umschalter „Ziele“ ist jetzt auch bei den angehefteten Diagrammen oben auf der Übungsseite verfügbar – bei jeder 1RM-Kachel, deren Übung Meilensteine hat."
+      ]
+    },
+    {
       "version": "1.5.3",
       "date": "2026-08-02",
       "changes": [

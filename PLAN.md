@@ -78,7 +78,7 @@ Inhaltliche Quellen:
   Meilensteine mit ab (im Coach-Export zusaetzlich der veraltete active-Filter
   entfernt). Coach-Rechenkern unberuehrt.
 - **Kein weiteres offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.5.3.
+  Konzept-vor-Code. Aktuelle Version: 1.5.4.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -133,8 +133,10 @@ im Supabase-SQL-Editor ausgefuehrt (Success, „No rows returned").
       Uebung Ziele hat und Datenpunkte existieren. Umgesetzt in der vorhandenen
       ExerciseChart (optionale Prop `milestoneLines`, rein additiv) und der
       Chartkarte (liest Ziele ueber `useMilestones`).
-- [ ] Ziel-Linien im Chart, Schritt 2: dieselbe Anzeige auf den angehefteten
-      Kacheln (Uebungsliste), sofern deren Metrik 1RM ist.
+- [x] Ziel-Linien im Chart, Schritt 2 (Version 1.5.4): dieselbe Anzeige auf den
+      angehefteten Kacheln (Uebungsliste). Kachel in eigene Komponente
+      `PinnedChartTile` gezogen (useMilestones je Kachel), Toggle nur bei
+      1RM-Kacheln mit Zielen.
 - [ ] Bewusst spaeter: Marker im Verlauf am Erreichen-Tag.
 - [ ] Bewusst spaeter: automatische Vorschlaege aus der alten
       Excel-Bestwerte-Liste.
@@ -184,6 +186,8 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-08-02 - Ziel-Linien auf angehefteten Kacheln, Schritt 2 (Version 1.5.4, Vorhaben „Meilensteine pro Uebung"). Angeheftete Verlaufs-Kachel in eigene Komponente PinnedChartTile ausgelagert, damit useMilestones je Kachel auf oberster Ebene laeuft; „Ziele"-Toggle und milestoneLines wie auf der Detailseite, sichtbar nur bei Kacheln mit Metrik 1RM, vorhandenen Zielen und rm-Datenpunkten. PinnedCharts rendert nur noch die Kacheln (ExerciseChart-Direktnutzung entfallen). Kein Datenmodell/Coach beruehrt. Validierung gruen: vite build, tsc --noEmit, vitest run.
 
 2026-08-02 - Ziel-Linien im Uebungs-Chart, Schritt 1 (Version 1.5.3, Vorhaben „Meilensteine pro Uebung"). ExerciseChart bekommt die optionale Prop milestoneLines (value/achieved/label); in der Linien-Metrik werden die Ziele in die Skala einbezogen (axisLo/axisHi echte Extremwerte fuer die Beschriftung, Zeichen-Domaene mit 8% Luft oben) und als dezente gestrichelte Waagerechte mit Label rechts gezeichnet, erreichte mit Opacity 0.4 gedimmt. Rein additiv - ohne milestoneLines unveraendert. ExerciseChartCard: liest Ziele ueber useMilestones(exerciseId), neuer Toggle „Ziele" im Kopf (links von Anheften), sichtbar nur wenn Ziele existieren, active===\"rm\" und rm-Datenpunkte vorhanden; Zustand lokal (Standard aus). Gilt zunaechst fuer den Detail-Chart; angeheftete Kacheln folgen als Schritt 2. Coach-Rechenkern unberuehrt. Validierung gruen: vite build, tsc --noEmit, vitest run.
 
