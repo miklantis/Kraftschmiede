@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.5.3",
+      "date": "2026-08-02",
+      "changes": [
+        "Übungs-Diagramm (1RM-Ansicht): Neuer Umschalter „Ziele“. Ist er an, erscheinen deine Meilensteine als dezente waagerechte Linien mit Beschriftung (erreichte gedimmt). Liegt ein Ziel über deinen bisherigen Werten, dehnt sich die Höhenachse nach oben, damit die Linie sichtbar bleibt. Der Umschalter erscheint nur, wenn die Übung Meilensteine hat."
+      ]
+    },
+    {
       "version": "1.5.2",
       "date": "2026-08-02",
       "changes": [

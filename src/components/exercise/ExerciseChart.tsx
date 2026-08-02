@@ -44,6 +44,10 @@ export interface ExerciseChartProps {
   metric: ExMetric;
   unit: string;
   height?: number;
+  // Optionale Ziel-Linien (Meilensteine) fuer die 1RM-Ansicht. Jede zeichnet
+  // eine dezente Waagerechte auf Hoehe von value; erreichte werden gedimmt.
+  // Leer/undefiniert => Chart verhaelt sich unveraendert.
+  milestoneLines?: readonly { value: number; achieved: boolean; label: string }[];
 }
 
 export function ExerciseChart({
@@ -51,6 +55,7 @@ export function ExerciseChart({
   metric,
   unit,
   height = 200,
+  milestoneLines,
 }: ExerciseChartProps): React.ReactElement {
   const isVolume = metric === "volume";
   const linePoints = isVolume
@@ -92,11 +97,33 @@ export function ExerciseChart({
         lo -= 1;
         hi += 1;
       }
+
+      // Ziel-Linien in die Skala einbeziehen (damit sie im Bild liegen). axisLo/
+      // axisHi tragen die echten Extremwerte fuer die Achsen-Beschriftung; die
+      // Domaene fuers Zeichnen bekommt oben etwas Luft, wenn Ziele dabei sind.
+      const goals = milestoneLines ?? [];
+      let axisLo = lo;
+      let axisHi = hi;
+      let domLo = lo;
+      let domHi = hi;
+      if (goals.length > 0) {
+        const tv = goals.map((gl) => gl.value);
+        axisLo = Math.min(lo, ...tv);
+        axisHi = Math.max(hi, ...tv);
+        domLo = axisLo;
+        domHi = axisHi;
+        if (domLo === domHi) {
+          domLo -= 1;
+          domHi += 1;
+        }
+        domHi += (domHi - domLo) * 0.08;
+      }
+
       const x = scaleLinear()
         .domain([0, Math.max(1, n - 1)])
         .range([0, iw]);
       const px = (i: number) => (n === 1 ? iw / 2 : x(i));
-      const Y = (v: number) => ih - ((v - lo) / (hi - lo)) * ih;
+      const Y = (v: number) => ih - ((v - domLo) / (domHi - domLo)) * ih;
 
       // x-Position je Punkt einbacken (Helfer erwarten (d)=>number).
       const co = pts.map((p, i) => ({ y: p.y, flag: p.flag, cx: px(i) }));
@@ -109,7 +136,7 @@ export function ExerciseChart({
         .attr("y2", ih)
         .attr("stroke", GRID)
         .attr("stroke-width", 1);
-      [hi, lo].forEach((v) => {
+      [axisHi, axisLo].forEach((v) => {
         g.append("text")
           .attr("x", -6)
           .attr("y", Y(v) + 3.5)
@@ -118,6 +145,32 @@ export function ExerciseChart({
           .attr("font-family", CHART_MONO)
           .attr("font-size", 10)
           .text(fmtNum(v));
+      });
+
+      // Ziel-Linien (Meilensteine): dezent gestrichelt, Label rechts oben an der
+      // Linie; erreichte Ziele gedimmt. Hinter Flaeche/Kurve (zuerst gezeichnet).
+      goals.forEach((gl) => {
+        const gy = Y(gl.value);
+        if (gy < -2 || gy > ih + 2) return;
+        const op = gl.achieved ? 0.4 : 0.85;
+        g.append("line")
+          .attr("x1", 0)
+          .attr("y1", gy)
+          .attr("x2", iw)
+          .attr("y2", gy)
+          .attr("stroke", FAINT)
+          .attr("stroke-width", 1)
+          .attr("stroke-dasharray", "3 3")
+          .attr("opacity", op);
+        g.append("text")
+          .attr("x", iw)
+          .attr("y", gy - 4)
+          .attr("text-anchor", "end")
+          .attr("fill", FAINT)
+          .attr("opacity", op)
+          .attr("font-family", CHART_MONO)
+          .attr("font-size", 10)
+          .text(gl.label);
       });
 
       // Flaeche + Kurve.
@@ -183,7 +236,7 @@ export function ExerciseChart({
           });
       });
     },
-    [linePoints, n, metric, unit],
+    [linePoints, n, metric, unit, milestoneLines],
   );
 
   const drawBars = useCallback(

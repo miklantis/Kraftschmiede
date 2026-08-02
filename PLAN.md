@@ -78,7 +78,7 @@ Inhaltliche Quellen:
   Meilensteine mit ab (im Coach-Export zusaetzlich der veraltete active-Filter
   entfernt). Coach-Rechenkern unberuehrt.
 - **Kein weiteres offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.5.2.
+  Konzept-vor-Code. Aktuelle Version: 1.5.3.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -127,6 +127,14 @@ im Supabase-SQL-Editor ausgefuehrt (Success, „No rows returned").
 - [x] Lieferung 1b (Version 1.5.2): Backup/Restore um `exercise_milestones`
       erweitert; zusaetzlich im Coach-Export je Uebung ausgewiesen und dort der
       veraltete active-Filter entfernt (listete zuletzt keine Uebungen).
+- [x] Ziel-Linien im Chart, Schritt 1 (Version 1.5.3): Toggle „Ziele" in der
+      1RM-Ansicht des Detail-Charts; je Meilenstein eine dezente Waagerechte
+      (erreichte gedimmt), Y-Achse dehnt sich fuer hoehere Ziele. Nur wenn die
+      Uebung Ziele hat und Datenpunkte existieren. Umgesetzt in der vorhandenen
+      ExerciseChart (optionale Prop `milestoneLines`, rein additiv) und der
+      Chartkarte (liest Ziele ueber `useMilestones`).
+- [ ] Ziel-Linien im Chart, Schritt 2: dieselbe Anzeige auf den angehefteten
+      Kacheln (Uebungsliste), sofern deren Metrik 1RM ist.
 - [ ] Bewusst spaeter: Marker im Verlauf am Erreichen-Tag.
 - [ ] Bewusst spaeter: automatische Vorschlaege aus der alten
       Excel-Bestwerte-Liste.
@@ -176,6 +184,8 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-08-02 - Ziel-Linien im Uebungs-Chart, Schritt 1 (Version 1.5.3, Vorhaben „Meilensteine pro Uebung"). ExerciseChart bekommt die optionale Prop milestoneLines (value/achieved/label); in der Linien-Metrik werden die Ziele in die Skala einbezogen (axisLo/axisHi echte Extremwerte fuer die Beschriftung, Zeichen-Domaene mit 8% Luft oben) und als dezente gestrichelte Waagerechte mit Label rechts gezeichnet, erreichte mit Opacity 0.4 gedimmt. Rein additiv - ohne milestoneLines unveraendert. ExerciseChartCard: liest Ziele ueber useMilestones(exerciseId), neuer Toggle „Ziele" im Kopf (links von Anheften), sichtbar nur wenn Ziele existieren, active===\"rm\" und rm-Datenpunkte vorhanden; Zustand lokal (Standard aus). Gilt zunaechst fuer den Detail-Chart; angeheftete Kacheln folgen als Schritt 2. Coach-Rechenkern unberuehrt. Validierung gruen: vite build, tsc --noEmit, vitest run.
 
 2026-08-02 - Meilensteine in Backup/Restore und Coach-Export (Version 1.5.2, Lieferung 1b des Vorhabens „Meilensteine pro Uebung"). Voll-Export/Restore: exercise_milestones ergaenzt (RawExportData/KsExport/buildExport, exportSource selectAll, restoreData RestoreTables + Huellen-Schema optionales milestones, useRestore DELETE_/INSERT_ORDER als Kind von exercises). Schema-Version bleibt v3 (optionales Feld; aeltere Backups spielen unveraendert ein, Tabelle dann leer). Coach-Export: je Uebung milestones (Ziel + Abstand zum aktuellen 1RM bzw. Erreicht-Datum); dabei den veralteten Filter .filter(active) entfernt - da die active-Spalte seit Migration 0007 weg ist, lieferte der Coach-Export zuletzt gar keine Uebungen mehr (Bugfix). Neue Tests: Export-Durchreichung, Restore-Uebernahme + Leerfall, Coach-Katalog ohne active-Filter, Coach-Meilensteine (offen/erreicht). Coach-Rechenkern unberuehrt. Validierung gruen: vite build, tsc --noEmit, vitest run.
 
