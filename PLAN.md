@@ -70,8 +70,14 @@ Inhaltliche Quellen:
   `0010_curl_kurzhantel.sql` im Supabase-SQL-Editor ausfuehren (0009 zuerst).
   **Lieferung 3 (durch den Nutzer):** im Workout-Editor in Workout E den bisherigen Curl gegen
   „Curl (Kurzhantel)“ tauschen.
+- **Vorhaben „Meilensteine pro Uebung" in Arbeit.** Lieferung 1 (1.5.0) umgesetzt:
+  je Gewichtsuebung eigene Meilensteine (Name + Ziel-1RM) auf der Detailseite anlegen,
+  bearbeiten, loeschen; Fortschritt gegen das aktuelle geschaetzte 1RM (nur gelesen)
+  mit Balken und kg-Abstand; automatisches „erreicht" mit Datum. Migration 0011
+  ausgefuehrt. Offen: Lieferung 1b (Backup/Restore um die Tabelle erweitern, 1.5.1).
+  Coach-Rechenkern unberuehrt.
 - **Kein weiteres offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.4.2.
+  Konzept-vor-Code. Aktuelle Version: 1.5.0.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -107,16 +113,18 @@ Leitplanken: Coach-Rechenkern unberuehrt (Meilensteine lesen nur das vorhandene
 1RM). Neue, wiederverwendbare Komponente „Fortschritt-zu-Ziel". DB-Migration
 formuliert, ausgefuehrt vom Nutzer in Supabase.
 
-**Offener DB-Schritt:** Migration `0011_uebungs_meilensteine.sql` im
-Supabase-SQL-Editor ausfuehren (Tabelle `exercise_milestones` + RLS + Grants,
-kein Seed; erwartete Ausgabe „No rows returned"). Code (Schema, Hooks,
-Komponente, Detailseiten-Abschnitt) folgt als 1.5.0.
+**DB-Schritt erledigt:** Migration `0011_uebungs_meilensteine.sql` am 2026-08-02
+im Supabase-SQL-Editor ausgefuehrt (Success, „No rows returned").
 
-- [ ] Lieferung 1: Anlegen/Bearbeiten/Loeschen auf der Uebungsseite, Fortschritt
-      sehen, automatisches „erreicht" mit Datum. Umfasst Migration 0011 (Tabelle
-      `exercise_milestones` + RLS + Grants + Backup/Restore), Zod-Schema,
-      Query-Hook, Aktionen-Hook, Komponente „Fortschritt-zu-Ziel" und den
-      Abschnitt „Meilensteine" auf der Detailseite mit Anlege-/Bearbeiten-Popup.
+- [x] Lieferung 1 (Version 1.5.0): Anlegen/Bearbeiten/Loeschen auf der
+      Uebungsseite, Fortschritt sehen, automatisches „erreicht" mit Datum.
+      Migration 0011, Zod-Schema (`milestones.ts`), Query-Hook (`useMilestones`),
+      Aktionen-Hook (`useMilestoneActions`), wiederverwendbare Komponente
+      „Fortschritt-zu-Ziel" (`progress-to-goal.tsx`) und der Abschnitt
+      „Meilensteine" auf der Detailseite mit Anlege-/Bearbeiten-Popup
+      (`MilestonesSection`, `MilestoneEditModal`). Nur Gewichtsuebungen.
+- [ ] Lieferung 1b: Backup/Restore um `exercise_milestones` erweitern (Version
+      1.5.1), damit Meilensteine mitgesichert und wiederhergestellt werden.
 - [ ] Bewusst spaeter: Marker im Verlauf am Erreichen-Tag.
 - [ ] Bewusst spaeter: automatische Vorschlaege aus der alten
       Excel-Bestwerte-Liste.
@@ -166,6 +174,8 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-08-02 - Meilensteine je Uebung, Lieferung 1 (Version 1.5.0, Vorhaben „Meilensteine pro Uebung"). Neue Zusatz-Tabelle exercise_milestones (Migration 0011, am 2026-08-02 in Supabase ausgefuehrt). Zod-Schema milestones.ts (Row/Insert), Query-Hook useMilestones (je Uebung), Aktionen-Hook useMilestoneActions (add/update/remove/markAchieved; markAchieved stempelt heute nur solange achieved_at leer ist, DB-seitig idempotent). Neue wiederverwendbare Komponente progress-to-goal.tsx (rein darstellend: Balken aktuell/Ziel, kg-Abstand bzw. „erreicht am <Datum>"). Abschnitt MilestonesSection auf der Uebungs-Detailseite (nur Gewichtsuebungen, nach dem Coach-Block): offene zuerst, erreichte als Historie, „Meilenstein hinzufuegen"; Auto-„erreicht" per Effekt gegen exercises.rm (nur gelesen). MilestoneEditModal (Overlay) zum Anlegen/Bearbeiten/Loeschen. Coach-Rechenkern unberuehrt. Offen: Backup/Restore um die Tabelle erweitern (1.5.1). Validierung gruen: vite build, tsc --noEmit, vitest run.
 
 2026-07-13 - Label fuer Kurzhantel ergaenzt (Version 1.4.2, Bugfix). equipmentLabel in src/lib/labels.ts kannte 'dumbbell' nicht und fiel auf den rohen Schluessel zurueck (klein geschrieben) - jetzt "Kurzhantel". Nur Anzeige auf der Uebungs-Detailseite. Validierung gruen: vite build, tsc --noEmit, vitest run (374 Tests).
 

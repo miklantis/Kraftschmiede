@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.5.0",
+      "date": "2026-08-02",
+      "changes": [
+        "Meilensteine je Übung: Auf der Übungs-Detailseite kannst du jetzt eigene Ziele anlegen – Name plus Ziel-1RM in kg. Jeder Meilenstein zeigt dein aktuelles geschätztes 1RM gegen das Ziel mit Fortschrittsbalken und dem Abstand in kg. Erreicht dein 1RM das Ziel, wird der Meilenstein automatisch mit Datum als erreicht markiert und bleibt in der Historie. Meilensteine lassen sich bearbeiten und löschen."
+      ]
+    },
+    {
       "version": "1.4.2",
       "date": "2026-07-13",
       "changes": [

@@ -11,6 +11,7 @@ import { MuscleMap } from "@/components/ui/muscle-map";
 import { PageReveal } from "@/components/ui/page-reveal";
 import { ExerciseChartCard } from "@/components/exercise/ExerciseChartCard";
 import { ExerciseEditModal } from "@/components/exercise/ExerciseEditModal";
+import { MilestonesSection } from "@/components/exercise/MilestonesSection";
 import { useExerciseDetail } from "@/hooks/useExerciseDetail";
 import { profileLabel, equipmentLabel, tierLabel } from "@/lib/labels";
 import { longDateShort, fmtWeight } from "@/lib/format";
@@ -32,6 +33,7 @@ function ExerciseDetailPage(): React.ReactElement {
     isError,
     error,
     exercise,
+    isBodyweight,
     stats,
     verlauf,
     chartHistory,
@@ -133,6 +135,14 @@ function ExerciseDetailPage(): React.ReactElement {
             )}
           </div>
         </Section>
+      )}
+
+      {!isBodyweight && (
+        <MilestonesSection
+          exerciseId={exercise.id}
+          currentRm={exercise.rm}
+          unit={unit}
+        />
       )}
 
       <PageReveal>

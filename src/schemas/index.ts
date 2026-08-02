@@ -8,6 +8,7 @@
 export * from "./shared";
 export * from "./inventory";
 export * from "./exercises";
+export * from "./milestones";
 export * from "./templates";
 export * from "./journeyWorkouts";
 export * from "./journeyTemplates";
