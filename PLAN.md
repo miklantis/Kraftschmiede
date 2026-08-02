@@ -94,6 +94,28 @@ gefuehrt, sobald sie auftauchen.
 
 - (noch keine offenen Punkte)
 
+### Meilensteine pro Uebung
+
+Auf der Uebungs-Detailseite kann der Nutzer pro Uebung eigene Meilensteine
+anlegen: Name + Ziel-1RM (kg). Mehrere je Uebung, editier- und loeschbar. Jeder
+Meilenstein zeigt das aktuelle geschaetzte 1RM (`exercises.rm`, nur gelesen)
+gegen das Ziel mit kleinem Fortschrittsbalken und dem Abstand in kg. Erreicht das
+geschaetzte 1RM das Ziel, wird der Meilenstein automatisch als „erreicht" mit
+Datum markiert und bleibt in der Historie. Keine Prognose, kein „wie lange noch".
+
+Leitplanken: Coach-Rechenkern unberuehrt (Meilensteine lesen nur das vorhandene
+1RM). Neue, wiederverwendbare Komponente „Fortschritt-zu-Ziel". DB-Migration
+formuliert, ausgefuehrt vom Nutzer in Supabase.
+
+- [ ] Lieferung 1: Anlegen/Bearbeiten/Loeschen auf der Uebungsseite, Fortschritt
+      sehen, automatisches „erreicht" mit Datum. Umfasst Migration 0011 (Tabelle
+      `exercise_milestones` + RLS + Grants + Backup/Restore), Zod-Schema,
+      Query-Hook, Aktionen-Hook, Komponente „Fortschritt-zu-Ziel" und den
+      Abschnitt „Meilensteine" auf der Detailseite mit Anlege-/Bearbeiten-Popup.
+- [ ] Bewusst spaeter: Marker im Verlauf am Erreichen-Tag.
+- [ ] Bewusst spaeter: automatische Vorschlaege aus der alten
+      Excel-Bestwerte-Liste.
+
 ---
 
 ## Abgeschlossene Vorhaben
