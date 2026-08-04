@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.6.0",
+      "date": "2026-08-04",
+      "changes": [
+        "Neu: Meilensteine für Körpermessungen. Pro Messwert (Gewicht, Körperfett, Muskelmasse, Körperwasser, Phasenwinkel) kannst du eigene Zielwerte mit Namen anlegen, ändern und löschen – direkt unter dem Mess-Diagramm, passend zur gerade gewählten Metrik.",
+        "Im Mess-Diagramm gibt es dazu den Umschalter „Ziele“: Ist er an, erscheinen deine Meilensteine als dezente waagerechte Linien mit Beschriftung, sodass du auf einen Blick siehst, wo ein Ziel liegt und wo dein aktueller Wert steht. Liegt ein Ziel über oder unter deinen bisherigen Werten, dehnt sich die Höhenachse, damit die Linie sichtbar bleibt."
+      ]
+    },
+    {
       "version": "1.5.5",
       "date": "2026-08-02",
       "changes": [

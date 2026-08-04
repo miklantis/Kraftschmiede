@@ -25,11 +25,17 @@ export function BodyMetricChart({
   vals,
   unit,
   pad,
+  milestoneLines,
   height = 180,
 }: {
   vals: number[];
   unit: string;
   pad: number;
+  // Optionale Ziel-Linien (Meilensteine) der gewaehlten Metrik. Jede zeichnet
+  // eine dezente Waagerechte auf Hoehe von value mit Label rechts. Leer/
+  // undefiniert => Chart verhaelt sich unveraendert. Reine Richtwerte, daher
+  // ohne Erreicht-Zustand.
+  milestoneLines?: readonly { value: number; label: string }[];
   height?: number;
 }): React.ReactElement {
   const n = vals.length;
@@ -67,14 +73,32 @@ export function BodyMetricChart({
         lo -= pad;
         hi += pad;
       }
+
+      // Ziel-Linien in die Skala einbeziehen, damit sie im Bild liegen, auch
+      // wenn ein Ziel ueber/unter den bisherigen Werten liegt. Etwas Luft oben
+      // fuer das Label. Die Hilfslinien-Beschriftung nutzt die reine Wertespanne.
+      const goals = milestoneLines ?? [];
+      let axisLo = lo;
+      let axisHi = hi;
+      if (goals.length > 0) {
+        const tv = goals.map((gl) => gl.value);
+        axisLo = Math.min(lo, ...tv);
+        axisHi = Math.max(hi, ...tv);
+        if (axisLo === axisHi) {
+          axisLo -= 1;
+          axisHi += 1;
+        }
+        axisHi += (axisHi - axisLo) * 0.06;
+      }
+
       const x = scaleLinear()
         .domain([0, Math.max(1, n - 1)])
         .range([0, iw]);
       const px = (i: number) => (n === 1 ? iw / 2 : x(i));
-      const Y = (v: number) => ih - ((v - lo) / (hi - lo)) * ih;
+      const Y = (v: number) => ih - ((v - axisLo) / (axisHi - axisLo)) * ih;
 
-      // Drei Hilfslinien.
-      const yScale = scaleLinear().domain([lo, hi]).range([ih, 0]);
+      // Drei Hilfslinien (auf Basis der Ist-Wertespanne).
+      const yScale = scaleLinear().domain([lo, hi]).range([Y(lo), Y(hi)]);
       yScale.ticks(3).forEach((t) => {
         g.append("line")
           .attr("x1", 0)
@@ -83,6 +107,31 @@ export function BodyMetricChart({
           .attr("y2", yScale(t))
           .attr("stroke", GRID)
           .attr("stroke-width", 1);
+      });
+
+      // Ziel-Linien: dezent gestrichelt, Label rechts oben an der Linie. Hinter
+      // Flaeche/Kurve (zuerst gezeichnet). Reine Richtwerte, einheitliche Deckkraft.
+      goals.forEach((gl) => {
+        const gy = Y(gl.value);
+        if (gy < -2 || gy > ih + 2) return;
+        g.append("line")
+          .attr("x1", 0)
+          .attr("y1", gy)
+          .attr("x2", iw)
+          .attr("y2", gy)
+          .attr("stroke", FAINT)
+          .attr("stroke-width", 1)
+          .attr("stroke-dasharray", "3 3")
+          .attr("opacity", 0.85);
+        g.append("text")
+          .attr("x", iw)
+          .attr("y", gy - 4)
+          .attr("text-anchor", "end")
+          .attr("fill", FAINT)
+          .attr("opacity", 0.85)
+          .attr("font-family", CHART_MONO)
+          .attr("font-size", 10)
+          .text(gl.label);
       });
 
       const co = vals.map((v, i) => ({ y: v, cx: px(i) }));
@@ -112,7 +161,7 @@ export function BodyMetricChart({
         .attr("font-family", CHART_MONO)
         .text(fmtScore(last.y) + " " + unit);
     },
-    [vals, n, unit, pad],
+    [vals, n, unit, pad, milestoneLines],
   );
 
   return (

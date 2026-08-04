@@ -9,6 +9,31 @@ Einträge bleiben historisch unverändert, neueste zuerst.
 
 ---
 
+2026-07-09 - Versionsnummer im Fenstertitel (Version 1.3.32). Ein kleines Vite-Plugin (appTitleVersion, transformIndexHtml) schreibt die neueste Version aus public/changelog.json schon beim Build in den <title>, sodass das App-Fenster "Kraftschmiede <Version>" zeigt - offline-fest und ohne Nachladen. Homescreen-/Installationsname (apple-mobile-web-app-title, Manifest) unveraendert "Kraftschmiede". Validierung gruen: vite build, tsc --noEmit, vitest run (366 Tests).
+
+2026-07-08 — Festes Stangen-Set + Karten-Optik (Version 1.3.31). Die Stangen sind
+jetzt ein abgeschlossener, nicht editierbarer Satz (Standard 20, Leicht 10, SZ 12,5,
+SZ-Curl 8, Kurz 15); InventoryBars zeigt sie in einer Karte (SettingsGroup/SettingRow),
+ohne Loeschen und ohne Hinzufuegen-Knoepfe. BAR_PRESETS raus (Olympia/Frauen weg), die
+nun ungenutzten addBar/deleteBar aus useInventoryActions entfernt. Zugehoeriger
+DB-Schritt: Migration 0008_stangen_festes_set.sql am 2026-07-08 im Supabase-Editor
+ausgefuehrt (Success, keine Zeilen); uebernimmt bestehende Stangen per Gewicht (Referenzen bleiben) und legt
+SZ-Curl/Kurz an. Coach/Plate-Loader unberuehrt. Validierung gruen: vite build,
+tsc --noEmit, vitest run (366 Tests).
+
+2026-07-08 — Aufwaerm-Standardart auf „Vario" (Version 1.3.30). Der vorbelegte
+Cardio-Satz beim Start und ein neu angehaengter Aufwaermsatz starten jetzt mit
+„vario" statt „bike" (liveBuild, useLiveSession); der tolerante Restore-Fallback
+ebenso. Bestehende Saetze und die freie Auswahl der Art bleiben unberuehrt.
+Validierung gruen: vite build, tsc --noEmit, vitest run (366 Tests).
+
+2026-07-06 — Aktiv/Inaktiv-Aufräumen abgeschlossen: Migration 0007 zieht die Spalte
+`exercises.active` (Schritt 2, kein Versionssprung).
+
+2026-07-06 — Aktiv/Inaktiv bei Übungen entfernt, Schritt 1 Code (Version 1.3.29). Gruppe
+„Inaktiv / Swaps“ raus, alle Übungen normal gruppiert und im Editor wählbar; `active` aus
+Schema/Export getilgt, Restore toleriert Altbackups. Spaltenlöschung folgt als Schritt 2.
+
 2026-07-02 — Hinweis am Workout-Start nennt die Befinden-Grundlage (Version 1.3.28).
 StartModal: Ist fuer heute kein Koerperzustand erfasst, zeigt das Start-Banner
 jetzt das Datum des Eintrags, mit dem der Coach rechnet (longDateShort), sonst

@@ -77,8 +77,14 @@ Inhaltliche Quellen:
   ausgefuehrt. Lieferung 1b (1.5.2): Backup/Restore und Coach-Export decken die
   Meilensteine mit ab (im Coach-Export zusaetzlich der veraltete active-Filter
   entfernt). Coach-Rechenkern unberuehrt.
-- **Kein weiteres offenes Bau-Vorhaben.** Pflege/Bugfixing laufend; neue Features nach
-  Konzept-vor-Code. Aktuelle Version: 1.5.5.
+- **Vorhaben „Meilensteine pro Koerpermetrik" in Arbeit.** Analog zu den Uebungs-
+  Meilensteinen kann der Nutzer je Mess-Metrik (Gewicht/Fett/Muskel/Wasser/Phasenwinkel)
+  eigene, benannte Zielwerte anlegen. Bewusst schlank: reine Richtwerte ohne Erreicht-
+  Logging und ohne Richtung; der Nutzen liegt in der Ziel-Linie im Mess-Diagramm. Lieferung 1
+  (1.6.0) umgesetzt: Anlegen/Bearbeiten/Loeschen je Metrik plus „Ziele"-Umschalter im Chart.
+  **Offener DB-Schritt:** Migration `0012_koerper_meilensteine.sql` im Supabase-SQL-Editor
+  ausfuehren. Offen: Backup/Restore (Lieferung 1b).
+- **Aktuelle Version: 1.6.0.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -141,6 +147,32 @@ im Supabase-SQL-Editor ausgefuehrt (Success, „No rows returned").
 - [ ] Bewusst spaeter: automatische Vorschlaege aus der alten
       Excel-Bestwerte-Liste.
 
+### Meilensteine pro Koerpermetrik
+
+Auf der Koerper-Seite kann der Nutzer je Mess-Metrik (Gewicht, Koerperfett,
+Muskelmasse, Koerperwasser, Phasenwinkel) eigene Meilensteine anlegen: Name +
+Zielwert. Reine Richtwerte – kein Erreicht-Datum, keine Richtung. Nutzen: im
+Mess-Diagramm laesst sich ueber „Ziele" je Ziel eine dezente Waagerechte ein-/
+ausblenden, sodass sichtbar wird, wo ein Ziel liegt und wo der aktuelle Messwert
+steht. Der Abschnitt folgt der gewaehlten Metrik (wie bei den Uebungen Chart und
+Meilensteine dieselbe Uebung teilen).
+
+Leitplanken: Coach-Rechenkern unberuehrt. Vorhandene Bausteine wiederverwendet
+(Chart-Ziel-Linien nach dem Muster der ExerciseChart, Overlay/Input/Section).
+DB-Migration formuliert, ausgefuehrt vom Nutzer in Supabase.
+
+**DB-Schritt offen:** Migration `0012_koerper_meilensteine.sql` im Supabase-
+SQL-Editor ausfuehren ("No rows returned").
+
+- [x] Lieferung 1 (Version 1.6.0): Anlegen/Bearbeiten/Loeschen je Metrik auf der
+      Koerper-Seite; „Ziele"-Umschalter im Mess-Diagramm zeichnet die Zielwerte
+      der aktiven Metrik als Waagerechte. Migration 0012, Schema
+      (`compositionMilestone*` in `milestones.ts`), Query-Hook
+      (`useCompositionMilestones`), Aktionen-Hook (`useCompositionMilestoneActions`),
+      `MetricMilestonesSection` + `MetricMilestoneEditModal`, `BodyMeasurePanel`
+      (haelt die Metrik) und die additive Prop `milestoneLines` in `BodyMetricChart`.
+- [ ] Lieferung 1b: Backup/Restore um `composition_milestones` erweitern.
+
 ---
 
 ## Abgeschlossene Vorhaben
@@ -187,6 +219,8 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
 
+2026-08-04 - Meilensteine pro Koerpermetrik, Lieferung 1 (Version 1.6.0, Vorhaben „Meilensteine pro Koerpermetrik"). Neue Zusatz-Tabelle composition_milestones (Migration 0012, vom Nutzer in Supabase auszufuehren): je Zeile Metrik (weight/fat/muscle/water/phase, CHECK), Name, target; kein Erreicht-Datum, keine Richtung - reine Richtwerte. Zod-Schema compositionMilestoneRow/Insert (milestones.ts), Query-Hook useCompositionMilestones (alle je Nutzer, clientseitig je Metrik gefiltert), Aktionen-Hook useCompositionMilestoneActions (add/update/remove). Neue Komponenten MetricMilestonesSection (folgt der gewaehlten Metrik; Liste Name+Ziel, dazu der aktuelle Messwert als Kontext; Anlegen/Bearbeiten/Loeschen) und MetricMilestoneEditModal (Overlay, Name + Zielwert). BodyMeasurePanel haelt die gewaehlte Metrik und teilt sie zwischen Mess-Karte und Meilenstein-Abschnitt (wie bei den Uebungen Chart+Meilensteine dieselbe Uebung teilen); reicht die Ziel-Linien der aktiven Metrik in den Chart und steuert den „Ziele"-Umschalter. BodyMeasureCard nimmt die Metrik nun von aussen und bekam den „Ziele"-Toggle; BodyMetricChart bekam die additive Prop milestoneLines (Ziele in die Skala einbezogen, dezente gestrichelte Waagerechte mit Label rechts). koerper.tsx nutzt das Panel. Coach-Rechenkern unberuehrt. Offen: Backup/Restore (Lieferung 1b). Validierung gruen: vite build, tsc --noEmit, vitest run (378 Tests).
+
 2026-08-02 - Ziele-Zustand angehefteter Kacheln geraete-lokal gemerkt (Version 1.5.5, Vorhaben „Meilensteine pro Uebung"). Der „Ziele"-Umschalter auf den angehefteten Kacheln lag bisher nur im Komponenten-State (nach Neuladen aus). Neuer geraete-lokaler Store usePinnedGoals nach dem Muster von usePinnedCharts (useSyncExternalStore + localStorage, eigener Schluessel ks_pin_goals_v1), nutzt die vorhandenen reinen Helfer (parsePins/serializePins/hasPin/togglePin) mit {exerciseId, metric}-Eintraegen. PinnedChartTile liest/schreibt den Zustand darueber statt per useState; goalsAvailable bleibt vorgeschaltet, sodass ein gemerkter Zustand ohne Ziele/Datenpunkte nicht greift. Nur die angehefteten Kacheln (Detail-Chart bleibt bewusst sitzungslokal). Nicht synchronisiert, nicht im Export - wie die Anheftungen. Validierung gruen: vite build, tsc --noEmit, vitest run.
 
 2026-08-02 - Ziel-Linien auf angehefteten Kacheln, Schritt 2 (Version 1.5.4, Vorhaben „Meilensteine pro Uebung"). Angeheftete Verlaufs-Kachel in eigene Komponente PinnedChartTile ausgelagert, damit useMilestones je Kachel auf oberster Ebene laeuft; „Ziele"-Toggle und milestoneLines wie auf der Detailseite, sichtbar nur bei Kacheln mit Metrik 1RM, vorhandenen Zielen und rm-Datenpunkten. PinnedCharts rendert nur noch die Kacheln (ExerciseChart-Direktnutzung entfallen). Kein Datenmodell/Coach beruehrt. Validierung gruen: vite build, tsc --noEmit, vitest run.
@@ -205,30 +239,6 @@ Hier kommen abgeschlossene Bloecke mit Datum dazu.
 
 2026-07-13 - Kurzhantel-Inventar (Version 1.4.0, Lieferung 1 von 3 des Vorhabens „Kurzhanteln“). Neue Inventar-Kategorie inventory_dumbbells (festes Gewicht je Stueck, je Hand) nach dem Kettlebell-Muster: Migration 0009 (Tabelle + RLS + Grants + Seed 2-30 kg in 2er-Schritten fuer Nutzer mit vorhandenem Inventar, idempotent), Zod-Schema (inventoryDumbbellRow/Insert), Query-Hook useDumbbells, Aktionen addDumbbell/deleteDumbbell in useInventoryActions, Komponente InventoryDumbbells + Abschnitt in einstellungen.tsx. Backup/Restore erweitert (exportSource, exportData RawExportData/KsExport, restoreData RestoreTables + Huellen-Schema, useRestore DELETE_/INSERT_ORDER), Schema-Version bleibt v3 (optionales Feld, alte Sicherungen spielen unveraendert ein). Drei Tests um das neue Feld ergaenzt. Coach/Plate-Loader unberuehrt (Uebungstyp folgt in Lieferung 2). Offener DB-Schritt: Migration 0009 im Supabase-Editor ausfuehren. Validierung gruen: vite build, tsc --noEmit, vitest run (366 Tests).
 
-2026-07-09 - Versionsnummer im Fenstertitel (Version 1.3.32). Ein kleines Vite-Plugin (appTitleVersion, transformIndexHtml) schreibt die neueste Version aus public/changelog.json schon beim Build in den <title>, sodass das App-Fenster "Kraftschmiede <Version>" zeigt - offline-fest und ohne Nachladen. Homescreen-/Installationsname (apple-mobile-web-app-title, Manifest) unveraendert "Kraftschmiede". Validierung gruen: vite build, tsc --noEmit, vitest run (366 Tests).
-
-2026-07-08 — Festes Stangen-Set + Karten-Optik (Version 1.3.31). Die Stangen sind
-jetzt ein abgeschlossener, nicht editierbarer Satz (Standard 20, Leicht 10, SZ 12,5,
-SZ-Curl 8, Kurz 15); InventoryBars zeigt sie in einer Karte (SettingsGroup/SettingRow),
-ohne Loeschen und ohne Hinzufuegen-Knoepfe. BAR_PRESETS raus (Olympia/Frauen weg), die
-nun ungenutzten addBar/deleteBar aus useInventoryActions entfernt. Zugehoeriger
-DB-Schritt: Migration 0008_stangen_festes_set.sql am 2026-07-08 im Supabase-Editor
-ausgefuehrt (Success, keine Zeilen); uebernimmt bestehende Stangen per Gewicht (Referenzen bleiben) und legt
-SZ-Curl/Kurz an. Coach/Plate-Loader unberuehrt. Validierung gruen: vite build,
-tsc --noEmit, vitest run (366 Tests).
-
-2026-07-08 — Aufwaerm-Standardart auf „Vario" (Version 1.3.30). Der vorbelegte
-Cardio-Satz beim Start und ein neu angehaengter Aufwaermsatz starten jetzt mit
-„vario" statt „bike" (liveBuild, useLiveSession); der tolerante Restore-Fallback
-ebenso. Bestehende Saetze und die freie Auswahl der Art bleiben unberuehrt.
-Validierung gruen: vite build, tsc --noEmit, vitest run (366 Tests).
-
-2026-07-06 — Aktiv/Inaktiv-Aufräumen abgeschlossen: Migration 0007 zieht die Spalte
-`exercises.active` (Schritt 2, kein Versionssprung).
-
-2026-07-06 — Aktiv/Inaktiv bei Übungen entfernt, Schritt 1 Code (Version 1.3.29). Gruppe
-„Inaktiv / Swaps“ raus, alle Übungen normal gruppiert und im Editor wählbar; `active` aus
-Schema/Export getilgt, Restore toleriert Altbackups. Spaltenlöschung folgt als Schritt 2.
 ---
 
 Ältere Einträge stehen im Archiv: `docs/archive/PLAN-Log-Archiv.md`.

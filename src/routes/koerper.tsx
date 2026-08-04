@@ -6,7 +6,7 @@ import { RestBanner } from "@/components/body/RestBanner";
 import { BodySoreMap } from "@/components/body/BodySoreMap";
 import { BodyStateCard } from "@/components/body/BodyStateCard";
 import { BodyHistoryCard } from "@/components/body/BodyHistoryCard";
-import { BodyMeasureCard } from "@/components/body/BodyMeasureCard";
+import { BodyMeasurePanel } from "@/components/body/BodyMeasurePanel";
 import { BodyMeasureList } from "@/components/body/BodyMeasureList";
 import { BodyImportCard } from "@/components/body/BodyImportCard";
 import { useBodyView } from "@/hooks/useBodyView";
@@ -70,9 +70,7 @@ function KoerperPage(): React.ReactElement {
 
           {/* Messung */}
           <div data-reveal-group className="flex min-w-0 flex-col gap-4">
-            <Section eyebrow="Körpermessung">
-              <BodyMeasureCard rows={comp} />
-            </Section>
+            <BodyMeasurePanel rows={comp} />
             <BodyMeasureList rows={comp} />
             <BodyImportCard />
           </div>
