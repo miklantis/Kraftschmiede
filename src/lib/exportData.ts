@@ -61,6 +61,7 @@ export interface RawExportData {
   bodyLog: Row[];
   composition: Row[];
   milestones: Row[];
+  compositionMilestones: Row[];
   settings: Row | null;
 }
 
@@ -102,6 +103,7 @@ export interface KsExport {
   bodyLog: Row[];
   composition: Row[];
   milestones: Row[];
+  compositionMilestones: Row[];
   settings: Row | null;
   _scoreScale: {
     note: string;
@@ -218,6 +220,7 @@ export function buildExport(
     bodyLog: raw.bodyLog,
     composition: raw.composition,
     milestones: raw.milestones,
+    compositionMilestones: raw.compositionMilestones,
     settings: raw.settings,
     _scoreScale: {
       note: SCORE_SCALE_NOTE,

@@ -82,9 +82,11 @@ Inhaltliche Quellen:
   eigene, benannte Zielwerte anlegen. Bewusst schlank: reine Richtwerte ohne Erreicht-
   Logging und ohne Richtung; der Nutzen liegt in der Ziel-Linie im Mess-Diagramm. Lieferung 1
   (1.6.0) umgesetzt: Anlegen/Bearbeiten/Loeschen je Metrik plus „Ziele"-Umschalter im Chart.
+  Lieferung 1b (1.6.1): Backup/Restore deckt die Koerper-Meilensteine mit ab; zusaetzlich merkt
+  sich die Mess-Ansicht pro Geraet die gewaehlte Metrik und den „Ziele"-Zustand.
   **Offener DB-Schritt:** Migration `0012_koerper_meilensteine.sql` im Supabase-SQL-Editor
-  ausfuehren. Offen: Backup/Restore (Lieferung 1b).
-- **Aktuelle Version: 1.6.0.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
+  ausfuehren.
+- **Aktuelle Version: 1.6.1.** Pflege/Bugfixing laufend; neue Features nach Konzept-vor-Code.
   Bei jeder Auslieferung die Versionsnummer in `public/changelog.json` fortschreiben (letzte
   Stelle pro normaler Auslieferung hoch, mittlere bei groesseren Features) und einen kurzen
   Nutzer-Eintrag ergaenzen.
@@ -171,7 +173,14 @@ SQL-Editor ausfuehren ("No rows returned").
       (`useCompositionMilestones`), Aktionen-Hook (`useCompositionMilestoneActions`),
       `MetricMilestonesSection` + `MetricMilestoneEditModal`, `BodyMeasurePanel`
       (haelt die Metrik) und die additive Prop `milestoneLines` in `BodyMetricChart`.
-- [ ] Lieferung 1b: Backup/Restore um `composition_milestones` erweitern.
+- [x] Lieferung 1b (Version 1.6.1): Backup/Restore um `composition_milestones`
+      erweitert (RawExportData/KsExport/buildExport, exportSource selectAll,
+      restoreData RestoreTables + Huellen-Schema optionales compositionMilestones,
+      useRestore DELETE_/INSERT_ORDER). Schema bleibt v3 (optionales Feld; aeltere
+      Backups spielen unveraendert ein, Tabelle dann leer). Zusaetzlich merkt sich
+      die Mess-Ansicht geraete-lokal die gewaehlte Metrik und den „Ziele"-Zustand
+      (neuer Store useBodyMeasureView + reine Helfer bodyMeasureView.ts, Muster
+      usePinnedGoals; nicht synchronisiert, nicht im Export).
 
 ---
 
@@ -218,6 +227,8 @@ Ueberblick der fertigen Vorhaben; der chronologische Verlauf steht im Log unten.
 ## Erledigt (Log)
 
 Hier kommen abgeschlossene Bloecke mit Datum dazu.
+
+2026-08-04 - Koerper-Meilensteine in Backup/Restore + Mess-Ansicht geraete-lokal (Version 1.6.1, Lieferung 1b des Vorhabens „Meilensteine pro Koerpermetrik"). Backup/Restore: composition_milestones ergaenzt - RawExportData/KsExport/buildExport (Feld compositionMilestones), exportSource selectAll("composition_milestones"), restoreData RestoreTables + Huellen-Schema (optionales compositionMilestones) + Zuordnung, useRestore DELETE_/INSERT_ORDER. Schema-Version bleibt v3 (optionales Feld; aeltere Backups spielen unveraendert ein, Tabelle dann leer). Kein FK zu composition (metric ist Text), daher unabhaengig einspielbar. Coach-Export unberuehrt (Koerper-Meilensteine gehen nicht in den Coach). Zusaetzlich: die Mess-Ansicht der Koerper-Seite merkt sich pro Geraet die gewaehlte Metrik und den „Ziele"-Zustand - neuer Store useBodyMeasureView (useSyncExternalStore + localStorage, Schluessel ks_body_view_v1) mit reinen Helfern in bodyMeasureView.ts (parse/serialize/withMetric/withGoals), Muster wie usePinnedGoals; goalsAvailable bleibt vorgeschaltet, sodass ein gemerkter Zustand ohne Ziele/Datenpunkte nicht greift. BodyMeasurePanel nutzt den Store statt useState. Nicht synchronisiert, nicht im Export - wie die Anheftungen. Neue Tests: Export-Durchreichung + Restore-Uebernahme/Leerfall der Koerper-Meilensteine, bodyMeasureView-Helfer (5). Coach-Rechenkern unberuehrt. Validierung gruen: vite build, tsc --noEmit, vitest run (385 Tests).
 
 2026-08-04 - Meilensteine pro Koerpermetrik, Lieferung 1 (Version 1.6.0, Vorhaben „Meilensteine pro Koerpermetrik"). Neue Zusatz-Tabelle composition_milestones (Migration 0012, vom Nutzer in Supabase auszufuehren): je Zeile Metrik (weight/fat/muscle/water/phase, CHECK), Name, target; kein Erreicht-Datum, keine Richtung - reine Richtwerte. Zod-Schema compositionMilestoneRow/Insert (milestones.ts), Query-Hook useCompositionMilestones (alle je Nutzer, clientseitig je Metrik gefiltert), Aktionen-Hook useCompositionMilestoneActions (add/update/remove). Neue Komponenten MetricMilestonesSection (folgt der gewaehlten Metrik; Liste Name+Ziel, dazu der aktuelle Messwert als Kontext; Anlegen/Bearbeiten/Loeschen) und MetricMilestoneEditModal (Overlay, Name + Zielwert). BodyMeasurePanel haelt die gewaehlte Metrik und teilt sie zwischen Mess-Karte und Meilenstein-Abschnitt (wie bei den Uebungen Chart+Meilensteine dieselbe Uebung teilen); reicht die Ziel-Linien der aktiven Metrik in den Chart und steuert den „Ziele"-Umschalter. BodyMeasureCard nimmt die Metrik nun von aussen und bekam den „Ziele"-Toggle; BodyMetricChart bekam die additive Prop milestoneLines (Ziele in die Skala einbezogen, dezente gestrichelte Waagerechte mit Label rechts). koerper.tsx nutzt das Panel. Coach-Rechenkern unberuehrt. Offen: Backup/Restore (Lieferung 1b). Validierung gruen: vite build, tsc --noEmit, vitest run (378 Tests).
 

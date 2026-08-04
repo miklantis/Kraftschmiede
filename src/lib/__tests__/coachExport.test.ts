@@ -33,6 +33,7 @@ function emptyRaw(): RawExportData {
     bodyLog: [],
     composition: [],
     milestones: [],
+    compositionMilestones: [],
     settings: null,
   };
 }

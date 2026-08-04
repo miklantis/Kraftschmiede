@@ -1,14 +1,11 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Section } from "@/components/ui/section";
 import { BodyMeasureCard } from "./BodyMeasureCard";
 import { MetricMilestonesSection } from "./MetricMilestonesSection";
 import { useCompositionMilestones } from "@/hooks/useCompositionMilestones";
+import { useBodyMeasureView } from "@/hooks/useBodyMeasureView";
 import { fmtWeight } from "@/lib/format";
-import {
-  BODY_METRIC,
-  bodyMetricSeries,
-  type BodyMetric,
-} from "@/lib/composition";
+import { BODY_METRIC, bodyMetricSeries } from "@/lib/composition";
 import type { CompositionRow } from "@/schemas";
 
 // Bindeglied der Messungs-Spalte: haelt die gewaehlte Mess-Metrik, damit die
@@ -21,8 +18,7 @@ export function BodyMeasurePanel({
 }: {
   rows: CompositionRow[];
 }): React.ReactElement {
-  const [metric, setMetric] = useState<BodyMetric>("weight");
-  const [showGoals, setShowGoals] = useState(false);
+  const { metric, goals: goalsPref, setMetric, setGoals } = useBodyMeasureView();
 
   const allMilestones = useCompositionMilestones().data ?? [];
   const forMetric = useMemo(
@@ -35,7 +31,7 @@ export function BodyMeasurePanel({
   const current = series.vals.length ? series.vals[series.vals.length - 1] : null;
 
   const goalsAvailable = forMetric.length > 0 && series.vals.length > 0;
-  const goalsOn = goalsAvailable && showGoals;
+  const goalsOn = goalsAvailable && goalsPref;
 
   const milestoneLines = useMemo(
     () =>
@@ -58,7 +54,7 @@ export function BodyMeasurePanel({
           milestoneLines={milestoneLines}
           goalsAvailable={goalsAvailable}
           goalsOn={goalsOn}
-          onToggleGoals={() => setShowGoals((v) => !v)}
+          onToggleGoals={() => setGoals(!goalsPref)}
         />
       </Section>
 

@@ -35,6 +35,7 @@ function emptyRaw(): RawExportData {
     bodyLog: [],
     composition: [],
     milestones: [],
+    compositionMilestones: [],
     settings: null,
   };
 }
@@ -155,6 +156,18 @@ describe("buildExport", () => {
     const out = buildExport(raw, NOW);
     expect(out.milestones).toHaveLength(1);
     expect(out.milestones[0].target_rm).toBe(100);
+  });
+
+  it("reicht Koerper-Meilensteine durch", () => {
+    const raw = emptyRaw();
+    raw.compositionMilestones = [
+      { id: "cm1", metric: "fat", name: "Unter 15 %", target: 15 },
+    ];
+
+    const out = buildExport(raw, NOW);
+    expect(out.compositionMilestones).toHaveLength(1);
+    expect(out.compositionMilestones[0].target).toBe(15);
+    expect(out.compositionMilestones[0].metric).toBe("fat");
   });
 
   it("liefert valides, lesbares JSON", () => {

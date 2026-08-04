@@ -43,6 +43,7 @@ export async function fetchAllData(): Promise<RawExportData> {
     bodyLog,
     composition,
     milestones,
+    compositionMilestones,
     settingsRows,
   ] = await Promise.all([
     selectAll("inventory_bars"),
@@ -69,6 +70,7 @@ export async function fetchAllData(): Promise<RawExportData> {
     selectAll("body_log"),
     selectAll("composition"),
     selectAll("exercise_milestones"),
+    selectAll("composition_milestones"),
     selectAll("settings"),
   ]);
 
@@ -97,6 +99,7 @@ export async function fetchAllData(): Promise<RawExportData> {
     bodyLog,
     composition,
     milestones,
+    compositionMilestones,
     settings: settingsRows[0] ?? null,
   };
 }

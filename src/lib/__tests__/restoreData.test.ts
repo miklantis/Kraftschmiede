@@ -113,6 +113,20 @@ describe("parseRestore", () => {
     expect(without.tables.exercise_milestones).toEqual([]);
   });
 
+  it("uebernimmt Koerper-Meilensteine aus dem Backup, fehlend = leer", () => {
+    const exp = validExport();
+    exp.compositionMilestones = [
+      { id: "cm1", metric: "muscle", name: "40 kg", target: 40 },
+    ];
+    const res = parseRestore(JSON.stringify(exp));
+    expect(res.tables.composition_milestones).toHaveLength(1);
+    expect(res.tables.composition_milestones[0]?.target).toBe(40);
+
+    // Ohne das Feld (aelteres Backup) bleibt die Tabelle leer.
+    const without = parseRestore(JSON.stringify(validExport()));
+    expect(without.tables.composition_milestones).toEqual([]);
+  });
+
   it("lehnt ein V1-JSON ab (kein app/schemaVersion v2)", () => {
     const v1 = { schemaVersion: "0.14", sessions: [], migrations: {} };
     expect(() => parseRestore(JSON.stringify(v1))).toThrow(/Kraftschmiede-Export/);

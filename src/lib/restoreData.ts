@@ -35,6 +35,7 @@ export interface RestoreTables {
   body_log: Row[];
   composition: Row[];
   exercise_milestones: Row[];
+  composition_milestones: Row[];
   settings: Row | null;
 }
 
@@ -85,6 +86,7 @@ const zExport = z.looseObject({
   bodyLog: z.array(zRow).optional(),
   composition: z.array(zRow).optional(),
   milestones: z.array(zRow).optional(),
+  compositionMilestones: z.array(zRow).optional(),
   settings: zRow.nullable().optional(),
 });
 
@@ -195,6 +197,7 @@ export function parseRestore(text: string): RestoreResult {
     body_log: arr(exp.bodyLog),
     composition: arr(exp.composition),
     exercise_milestones: arr(exp.milestones),
+    composition_milestones: arr(exp.compositionMilestones),
     settings: exp.settings ?? null,
   };
 

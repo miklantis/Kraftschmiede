@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.6.1",
+      "date": "2026-08-04",
+      "changes": [
+        "Das Mess-Diagramm merkt sich jetzt pro Gerät, welche Metrik du zuletzt angeschaut hast und ob „Ziele“ an oder aus war – auch nach dem Neuladen. Wie die Anheftungen bei den Übungen gilt das je Gerät und wird nicht synchronisiert.",
+        "Backup und Wiederherstellung umfassen jetzt auch deine Körper-Meilensteine."
+      ]
+    },
+    {
       "version": "1.6.0",
       "date": "2026-08-04",
       "changes": [
