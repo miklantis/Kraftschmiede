@@ -28,12 +28,9 @@ nicht erst ab einer bestimmten Anzahl Einträge.
 - **App im laufenden Betrieb**, funktional vollständig, installierbar (PWA), auf der
   normalisierten Datenbank. Aktuelle Version: **1.6.2**.
 - Pflege/Bugfixing laufend; neue Features nach Konzept vor Code.
-- **Offene Handgriffe deinerseits (Supabase-SQL-Editor):**
-  - Migration `0009_kurzhanteln_inventar.sql` und `0010_curl_kurzhantel.sql` ausführen
-    (0009 zuerst).
-  - Migration `0012_koerper_meilensteine.sql` ausführen.
-  - Kurzhanteln, Lieferung 3: im Workout-Editor in Workout E den bisherigen Curl gegen
-    „Curl (Kurzhantel)" tauschen.
+- **Offene Handgriffe deinerseits:** Migrationen 0009, 0010 und 0012 sind ausgeführt
+  (Stand 2026-08-05). Offen nur noch: im Workout-Editor in Workout E den bisherigen Curl
+  gegen „Curl (Kurzhantel)" tauschen (reiner App-Handgriff, kein SQL).
 
 ---
 
@@ -92,15 +89,15 @@ Bau bestätigen.
 
 - **Meilensteine pro Körpermetrik** (1.6.0–1.6.1). Je Mess-Metrik eigene Zielwerte anlegen;
   Ziel-Linien im Mess-Diagramm; Backup/Restore und gerätelokale Mess-Ansicht. Migration
-  0012 (DB-Schritt siehe Offene Handgriffe). Coach unberührt.
+  0012 ausgeführt. Coach unberührt.
 - **Meilensteine pro Übung** (1.5.0–1.5.5). Je Gewichtsübung eigene Meilensteine (Name +
   Ziel-1RM), Fortschritt gegen das aktuelle 1RM, Auto-„erreicht", Ziel-Linien im
   Detail-Chart und auf angehefteten Kacheln; Backup/Restore und Coach-Export. Migration
   0011. Coach-Rechenkern unberührt.
 - **Kurzhanteln** (1.4.0–1.4.2). Kurzhantel-Inventar, Übungstyp `dumbbell` im Rechenkern
   (`nearestDumbbell`, zweiter Gewichtsweg in der Doppelprogression), neue Übung „Curl
-  (Kurzhantel)". Migrationen 0009/0010 und der Tausch in Workout E stehen noch aus (siehe
-  Offene Handgriffe).
+  (Kurzhantel)". Migrationen 0009/0010 ausgeführt; der Tausch in Workout E steht noch aus
+  (siehe Offene Handgriffe).
 - **Aktiv/Inaktiv bei Übungen entfernt** (1.3.29, Migration 0007). Das vestigiale
   `active`-Feld ist aus App und DB getilgt. Coach unberührt.
 - **Workouts editierbar & Journey-Zuordnung** (1.3.0–1.3.10). Eigene Workouts-Seite,
