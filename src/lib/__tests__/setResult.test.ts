@@ -93,3 +93,24 @@ describe("deriveSkillSets (Skill)", () => {
     });
   });
 });
+
+describe("deriveWorkSets – Rekord-Kandidat", () => {
+  it("liefert record1RM nur aus Saetzen mit hoechstens 5 Wiederholungen", () => {
+    const many = deriveWorkSets(
+      [{ reps: 10, weight: 60, score: 3, targetReps: 10, targetWeight: 60, adjusted: false, adjustNote: "" }],
+      { userId: "u", sessionExerciseId: "se", rmFormula: "mean", newId: idGen() },
+    );
+    expect(many.est1RM).not.toBeNull();
+    expect(many.record1RM).toBeNull();
+
+    const few = deriveWorkSets(
+      [
+        { reps: 10, weight: 60, score: 3, targetReps: 10, targetWeight: 60, adjusted: false, adjustNote: "" },
+        { reps: 4, weight: 80, score: 4, targetReps: 4, targetWeight: 80, adjusted: false, adjustNote: "" },
+      ],
+      { userId: "u", sessionExerciseId: "se", rmFormula: "mean", newId: idGen() },
+    );
+    expect(few.record1RM).not.toBeNull();
+    expect(few.record1RM ?? 0).toBeGreaterThan(0);
+  });
+});

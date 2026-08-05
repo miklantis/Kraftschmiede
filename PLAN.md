@@ -26,7 +26,7 @@ nicht erst ab einer bestimmten Anzahl Einträge.
 ## Aktueller Stand
 
 - **App im laufenden Betrieb**, funktional vollständig, installierbar (PWA), auf der
-  normalisierten Datenbank. Aktuelle Version: **1.6.1**.
+  normalisierten Datenbank. Aktuelle Version: **1.6.2**.
 - Pflege/Bugfixing laufend; neue Features nach Konzept vor Code.
 - **Offene Handgriffe deinerseits (Supabase-SQL-Editor):**
   - Migration `0009_kurzhanteln_inventar.sql` und `0010_curl_kurzhantel.sql` ausführen
@@ -56,8 +56,9 @@ Gewichtsübungen, mit eigener DB-Tabelle. Konzept:
 1RM-Basis) baut darauf auf; Konzept: `docs/Konzept-Phasenwechsel-Sprung.md`, wird nach
 Punkt 1 gebaut.
 
-- [ ] Lieferung 1: Rekord-Regel im Rechenkern (Automatik hoch nur ≤ 5 Wdh, nie
+- [x] Lieferung 1: Rekord-Regel im Rechenkern (Automatik hoch nur ≤ 5 Wdh, nie
       automatisch runter; beide Speicherstellen Beenden/Bearbeiten). Keine DB, keine UI.
+      Erstbefüllung bleibt möglich, solange eine Übung noch gar kein 1RM hat.
 - [ ] Lieferung 2: eigener 1RM-Block + Test als Live-Block (Migration, Live-Vorschau,
       Test-Liste, nur Gewichtsübungen, Backup/Restore).
 - [ ] Lieferung 3: Tests im Trainingsverlauf & Kalender als eigener Eintragstyp
@@ -127,6 +128,9 @@ wenige Worte). Detail steht im jeweiligen Commit. Abgeschlossene Vorhaben werden
 entfernt, sobald sie in „Abgeschlossene Vorhaben" stehen – Archiv je Halbjahr:
 `docs/archive/PLAN-Log-Archiv-2026-H1.md` (Jan–Jun), `docs/archive/PLAN-Log-Archiv-2026-H2.md`
 (Jul–Dez).
+
+2026-08-05 – 1.6.2 – 1RM als Rekord: Automatik hebt nur bei ≤ 5 Wdh, senkt nie
+(Beenden + Bearbeiten), Lieferung 1 von vier.
 
 2026-08-05 – PLAN-Log-Struktur überarbeitet: Archiv nach Halbjahr gesplittet, Log auf
 Stichworte gekürzt, abgeschlossene Vorhaben wandern künftig sofort ins Archiv statt erst

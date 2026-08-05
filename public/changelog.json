@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.6.2",
+      "date": "2026-08-05",
+      "changes": [
+        "Dein 1RM ist jetzt ein echter Rekord: Es steigt nur noch, wenn du in einem Satz mit höchstens 5 Wiederholungen einen besseren Wert schaffst – und es sinkt nie mehr von allein. Lockere Sätze mit vielen Wiederholungen lassen den Bestwert also in Ruhe.",
+        "Das gilt beim Beenden einer Einheit genauso wie beim nachträglichen Bearbeiten im Verlauf. Hat eine Übung noch gar kein 1RM, wird beim ersten Mal weiterhin ein Startwert gesetzt. Das Arbeitsgewicht des Coaches bleibt unverändert."
+      ]
+    },
+    {
       "version": "1.6.1",
       "date": "2026-08-04",
       "changes": [

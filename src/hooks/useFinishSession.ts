@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { journeyWeekForDate } from "@/engine/journey";
+import { nextRecord1RM } from "@/engine/oneRM";
 import type { RmFormula } from "@/engine/types";
 import { todayISO } from "@/lib/format";
 import { buildFinishRows } from "@/lib/liveFinish";
@@ -85,15 +86,23 @@ export function useFinishSession(): UseFinishSession {
         newId: () => crypto.randomUUID(),
       });
 
-      // Katalog-Patches: Arbeitsgewicht immer; 1RM nur, wenn geschaetzt und die
-      // Uebung 1RM trackt (alles ausser reinem Koerpergewicht) - wie V1.
+      // Katalog-Patches: Arbeitsgewicht immer; das 1RM ist ein Rekord und wird
+      // nur angehoben, wenn ein Satz mit wenigen Wiederholungen den bisherigen
+      // Wert schlaegt (nextRecord1RM). Nie automatisch senken.
       const byId = new Map((exercisesQ.data ?? []).map((e) => [e.id, e]));
       const exercisePatches: ExercisePatch[] = rows.exerciseUpdates.map((u) => {
         const exo = byId.get(u.exerciseId);
         const tracksRm = exo ? exo.profile !== "bodyweight" : false;
         const patch: ExercisePatch = { id: u.exerciseId, work_weight: u.workWeight };
-        if (u.est1RM != null && tracksRm) {
-          patch.rm = u.est1RM;
+        const nextRm = tracksRm
+          ? nextRecord1RM({
+              current: exo?.rm ?? null,
+              record: u.record1RM,
+              estimate: u.est1RM,
+            })
+          : null;
+        if (nextRm != null) {
+          patch.rm = nextRm;
           patch.rm_as_of = date;
           patch.rm_stale = false;
         }

@@ -71,11 +71,14 @@ export interface FinishContext {
 }
 
 /** Kandidat fuer ein Katalog-Update (ob 1RM gesetzt wird, entscheidet der Hook
- *  anhand der Uebungs-Art). */
+ *  anhand der Uebungs-Art und der Rekord-Regel). */
 export interface ExerciseUpdate {
   exerciseId: string;
   workWeight: number;
+  /** Bester Schaetzwert der Einheit (alle sauberen Saetze). */
   est1RM: number | null;
+  /** Rekord-Kandidat (nur Saetze mit <= RECORD_MAX_REPS Wiederholungen). */
+  record1RM: number | null;
 }
 
 export interface FinishRows {
@@ -161,6 +164,7 @@ export function buildFinishRows(ctx: FinishContext): FinishRows {
       exerciseId: en.exerciseId,
       workWeight: work.workWeight ?? 0,
       est1RM: work.est1RM,
+      record1RM: work.record1RM,
     });
   });
 

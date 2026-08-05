@@ -79,6 +79,9 @@ export function useEditSession(): UseEditSession {
         const exo = byId.get(exerciseId);
         return exo ? exo.profile !== "bodyweight" : false;
       };
+      const currentRm = (exerciseId: string): number | null => {
+        return byId.get(exerciseId)?.rm ?? null;
+      };
 
       // „Nur juengste“: gibt es eine ANDERE Kraft-Einheit mit spaeterem Datum,
       // die diese Uebung enthaelt? Wenn nein, ist die bearbeitete die juengste.
@@ -106,6 +109,7 @@ export function useEditSession(): UseEditSession {
         })),
         isYoungest,
         tracksRm,
+        currentRm,
         newId: () => crypto.randomUUID(),
       });
 

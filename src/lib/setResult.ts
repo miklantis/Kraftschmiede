@@ -12,7 +12,7 @@
 // Journey/Phase) und das Coach-Nachziehen („nur juengste Einheit“) - die bleiben
 // bei den jeweiligen Aufrufern, weil sie nur an je eine Stelle gehoeren.
 
-import { best1RMFromSets } from "@/engine/oneRM";
+import { best1RMFromSets, record1RMFromSets } from "@/engine/oneRM";
 import { metTarget } from "@/engine/target";
 import { skillSetMet } from "@/engine/skills";
 import type { EngineSet, RmFormula } from "@/engine/types";
@@ -111,6 +111,10 @@ export interface WorkSetResult {
   setRows: Array<SetInsert & { id: string }>;
   /** Geschaetztes 1RM aus den sauberen Arbeitssaetzen (null wenn keins). */
   est1RM: number | null;
+  /** Rekord-Kandidat: bestes 1RM aus Saetzen mit hoechstens RECORD_MAX_REPS
+   *  Wiederholungen (null wenn kein solcher Satz). Nur dieser Wert darf den
+   *  gespeicherten Rekord der Uebung anheben. */
+  record1RM: number | null;
   /** Hoechstes geleistetes Arbeitsgewicht (null wenn keine Saetze). */
   workWeight: number | null;
   /** Naechste freie Position (startPosition + Anzahl Saetze). */
@@ -138,10 +142,18 @@ export function deriveWorkSets(
       met: metTarget(toEngineWork(s)),
     }),
   );
-  const est1RM = best1RMFromSets(sets.map(toEngineWork), ctx.rmFormula).value;
+  const engineSets = sets.map(toEngineWork);
+  const est1RM = best1RMFromSets(engineSets, ctx.rmFormula).value;
+  const record1RM = record1RMFromSets(engineSets, ctx.rmFormula);
   const workWeight =
     sets.length > 0 ? Math.max(...sets.map((s) => s.weight)) : null;
-  return { setRows, est1RM, workWeight, nextPosition: start + sets.length };
+  return {
+    setRows,
+    est1RM,
+    record1RM,
+    workWeight,
+    nextPosition: start + sets.length,
+  };
 }
 
 // ---- Skill ------------------------------------------------------------------

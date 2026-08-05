@@ -12,8 +12,10 @@
 //
 // Coach-Nachziehen folgt der „nur juengste“-Regel: nur wenn die bearbeitete
 // Einheit die juengste mit dieser Uebung ist, wird der Katalog (Arbeitsgewicht,
-// 1RM) fortgeschrieben; sonst bleibt die laufende Empfehlung stehen.
+// 1RM) fortgeschrieben; sonst bleibt die laufende Empfehlung stehen. Das 1RM
+// folgt dabei der Rekord-Regel (nur anheben, nur aus wenigen Wiederholungen).
 
+import { nextRecord1RM } from "@/engine/oneRM";
 import type { RmFormula } from "@/engine/types";
 import type { SetInsert } from "@/schemas";
 import { deriveWorkSets, deriveSkillSets } from "./setResult";
@@ -52,6 +54,9 @@ export interface EditContext {
   isYoungest: (exerciseId: string) => boolean;
   /** Trackt die Uebung ein 1RM (alles ausser reinem Koerpergewicht)? */
   tracksRm: (exerciseId: string) => boolean;
+  /** Bisher gespeicherter 1RM-Rekord der Uebung (null = noch keiner). Nur ein
+   *  hoeherer Rekord-Kandidat hebt ihn an; gesenkt wird nie automatisch. */
+  currentRm: (exerciseId: string) => number | null;
   /** Datum der Einheit (ISO) – fuer rm_as_of beim Fortschreiben. */
   date: string;
   /** ID-Erzeuger (Default crypto.randomUUID); injizierbar fuer Tests. */
@@ -108,8 +113,15 @@ export function buildEditPayload(ctx: EditContext): EditPayload {
     if (ex.exerciseId && ex.sets.length > 0 && ctx.isYoungest(ex.exerciseId)) {
       const workWeight = work.workWeight ?? 0;
       const patch: ExercisePatch = { id: ex.exerciseId, work_weight: workWeight };
-      if (work.est1RM != null && ctx.tracksRm(ex.exerciseId)) {
-        patch.rm = work.est1RM;
+      const nextRm = ctx.tracksRm(ex.exerciseId)
+        ? nextRecord1RM({
+            current: ctx.currentRm(ex.exerciseId),
+            record: work.record1RM,
+            estimate: work.est1RM,
+          })
+        : null;
+      if (nextRm != null) {
+        patch.rm = nextRm;
         patch.rm_as_of = date;
         patch.rm_stale = false;
       }

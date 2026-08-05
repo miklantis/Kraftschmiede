@@ -26,6 +26,7 @@ function ctx(over: Partial<EditContext> = {}): EditContext {
     ],
     isYoungest: () => true,
     tracksRm: () => true,
+    currentRm: () => null,
     newId: idGen(),
     ...over,
   };
@@ -136,5 +137,40 @@ describe("buildYogaEditPayload", () => {
   it("erlaubt eine leere Notiz", () => {
     const p = buildYogaEditPayload({ sessionId: "y1", minutes: 60, notes: "" });
     expect(p.notes).toBe("");
+  });
+});
+
+describe("buildEditPayload – Rekord-Regel beim 1RM", () => {
+  it("laesst einen hoeheren bestehenden Rekord unberuehrt", () => {
+    const p = buildEditPayload(ctx({ currentRm: () => 200 }));
+    const patch = p.exercisePatches[0];
+    expect(patch.work_weight).toBe(100);
+    expect(patch.rm).toBeUndefined();
+    expect(patch.rm_as_of).toBeUndefined();
+  });
+
+  it("hebt den Rekord an, wenn wenige Wiederholungen ihn schlagen", () => {
+    const p = buildEditPayload(ctx({ currentRm: () => 50 }));
+    const patch = p.exercisePatches[0];
+    expect(patch.rm ?? 0).toBeGreaterThan(50);
+    expect(patch.rm_as_of).toBe("2026-06-20");
+  });
+
+  it("hebt bei vielen Wiederholungen nicht an", () => {
+    const p = buildEditPayload(
+      ctx({
+        currentRm: () => 90,
+        exercises: [
+          {
+            sessionExerciseId: "se1",
+            exerciseId: "ex1",
+            sets: [
+              { reps: 12, weight: 70, score: 3, targetReps: 12, targetWeight: 70, adjusted: false, adjustNote: "" },
+            ],
+          },
+        ],
+      }),
+    );
+    expect(p.exercisePatches[0].rm).toBeUndefined();
   });
 });

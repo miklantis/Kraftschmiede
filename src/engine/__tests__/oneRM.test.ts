@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { best1RMFromSets, brzycki, epley, oneRM, wathan } from "../oneRM";
+import {
+  best1RMFromSets,
+  brzycki,
+  epley,
+  nextRecord1RM,
+  oneRM,
+  record1RMFromSets,
+  wathan,
+} from "../oneRM";
 import { scoreInfo, SCORE_MAP } from "../score";
 import type { EngineSet } from "../types";
 
@@ -75,5 +83,49 @@ describe("scoreInfo", () => {
 
   it("unbekannter Score => null", () => {
     expect(scoreInfo(9)).toBe(null);
+  });
+});
+
+describe("record1RMFromSets", () => {
+  it("zaehlt nur Saetze mit hoechstens 5 Wiederholungen", () => {
+    const sets: EngineSet[] = [
+      { type: "work", weight: 60, reps: 12, done: true },
+      { type: "work", weight: 80, reps: 4, done: true },
+    ];
+    expect(record1RMFromSets(sets, "mean")).toBeCloseTo(
+      oneRM(80, 4, "mean"),
+      1,
+    );
+  });
+
+  it("ohne Satz im Rekord-Bereich => null", () => {
+    const sets: EngineSet[] = [{ type: "work", weight: 60, reps: 10, done: true }];
+    expect(record1RMFromSets(sets, "mean")).toBe(null);
+  });
+
+  it("ignoriert Aufwaermen, nicht Erledigtes und Versagen", () => {
+    const sets: EngineSet[] = [
+      { type: "warmup", weight: 100, reps: 3, done: true },
+      { type: "work", weight: 100, reps: 3, done: false },
+      { type: "work", weight: 100, reps: 3, done: true, failed: true },
+    ];
+    expect(record1RMFromSets(sets, "mean")).toBe(null);
+  });
+});
+
+describe("nextRecord1RM", () => {
+  it("hebt nur an, wenn der Kandidat den Rekord schlaegt", () => {
+    expect(nextRecord1RM({ current: 100, record: 110, estimate: 110 })).toBe(110);
+  });
+
+  it("senkt nie von allein", () => {
+    expect(nextRecord1RM({ current: 100, record: 90, estimate: 95 })).toBe(null);
+    expect(nextRecord1RM({ current: 100, record: null, estimate: 80 })).toBe(null);
+  });
+
+  it("befuellt ohne bisherigen Rekord erst (Kandidat, sonst Schaetzwert)", () => {
+    expect(nextRecord1RM({ current: null, record: 90, estimate: 95 })).toBe(90);
+    expect(nextRecord1RM({ current: 0, record: null, estimate: 95 })).toBe(95);
+    expect(nextRecord1RM({ current: null, record: null, estimate: null })).toBe(null);
   });
 });
