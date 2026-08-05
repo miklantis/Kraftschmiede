@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Trash2, Target } from "lucide-react";
 import { Section } from "@/components/ui/section";
+import { RmTestModal } from "./RmTestModal";
 import { useRmTests } from "@/hooks/useRmTests";
 import { useRmTestActions } from "@/hooks/useRmTestActions";
 import { longDateShort, fmtWeight } from "@/lib/format";
-import type { RmTestRow } from "@/schemas";
+import type { ExerciseRow, RmTestRow } from "@/schemas";
 
 // Abschnitt "1RM" auf der Uebungs-Detailseite. Das 1RM ist ein
 // beweisgebundener Rekord und bekommt hier einen eigenen Block, getrennt vom
@@ -17,18 +19,18 @@ import type { RmTestRow } from "@/schemas";
 // Der Block erscheint nur bei Gewichtsuebungen; die Entscheidung darueber
 // trifft die Seite (kein 1RM bei reinem Koerpergewicht).
 export function RmSection({
-  exerciseId,
-  currentRm,
-  rmAsOf,
+  exercise,
   unit,
 }: {
-  exerciseId: string;
-  currentRm: number | null;
-  rmAsOf: string | null;
+  exercise: ExerciseRow;
   unit: string;
 }): React.ReactElement {
+  const exerciseId = exercise.id;
+  const currentRm = exercise.rm;
+  const rmAsOf = exercise.rm_as_of;
   const testsQ = useRmTests(exerciseId);
   const { remove, isPending } = useRmTestActions();
+  const [testOpen, setTestOpen] = useState(false);
 
   const rows = testsQ.data ?? [];
 
@@ -69,8 +71,7 @@ export function RmSection({
 
         <button
           type="button"
-          disabled
-          title="Der Test folgt im nächsten Schritt."
+          onClick={() => setTestOpen(true)}
           className="mt-3.5 flex w-full items-center justify-center gap-2 rounded-[13px] border border-border bg-card py-3 text-[15px] font-semibold text-foreground shadow-card transition-[filter] hover:brightness-95 disabled:cursor-not-allowed disabled:text-muted-foreground disabled:shadow-none"
         >
           <Target className="size-4" />
@@ -115,6 +116,13 @@ export function RmSection({
           ))}
         </div>
       )}
+
+      <RmTestModal
+        exercise={exercise}
+        unit={unit}
+        open={testOpen}
+        onClose={() => setTestOpen(false)}
+      />
     </Section>
   );
 }

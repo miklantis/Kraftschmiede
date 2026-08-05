@@ -167,12 +167,7 @@ function ExerciseDetailPage(): React.ReactElement {
 
           {!isBodyweight && (
             <div className="order-3 min-w-0 min-[960px]:order-none">
-              <RmSection
-                exerciseId={exercise.id}
-                currentRm={exercise.rm}
-                rmAsOf={exercise.rm_as_of}
-                unit={unit}
-              />
+              <RmSection exercise={exercise} unit={unit} />
             </div>
           )}
 

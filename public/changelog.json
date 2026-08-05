@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.7.1",
+      "date": "2026-08-05",
+      "changes": [
+        "Der Knopf „1RM testen“ funktioniert jetzt: Der Test öffnet sich als vertrauter Satz-Block – zwei Sätze mit 5 und 3 Wiederholungen, vorbelegt mit rund 90 Prozent deines aktuellen Rekords. Gewicht und Wiederholungen passt du frei an, weitere Sätze kommen über „+ Satz“ dazu; mehr als 5 Wiederholungen nimmt ein Testsatz nicht an.",
+        "Sobald du einen Satz abhakst, siehst du unten die Vorschau „altes → neues 1RM“ samt bestem Satz. Der Abschluss setzt deinen Rekord auf den neuen Wert – nach oben wie nach unten – und legt den Test in der Liste ab."
+      ]
+    },
+    {
       "version": "1.7.0",
       "date": "2026-08-05",
       "changes": [

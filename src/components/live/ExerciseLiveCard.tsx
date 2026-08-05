@@ -18,6 +18,10 @@ import { SetCheck } from "./SetCheck";
 const ROW = "grid grid-cols-[34px_1fr_1fr_minmax(46px,58px)_30px] items-center gap-2";
 // Bearbeiten-Modus: ohne Haken-Spalte (kein Abhaken), sonst gleiche Spalten.
 const ROW_EDIT = "grid grid-cols-[34px_1fr_1fr_minmax(46px,58px)] items-center gap-2";
+// Test-Modus (1RM-Test): ohne RIR-Spalte, Haken bleibt. Die drei Varianten
+// stehen bewusst als vollstaendige Klassen-Literale da (Tailwind erkennt keine
+// zur Laufzeit zusammengesetzten Klassennamen).
+const ROW_TEST = "grid grid-cols-[34px_1fr_1fr_30px] items-center gap-2";
 const RIR_VALUES = [1, 2, 3, 4, 5];
 
 // Zeilenstil wie V1: 2px-Rahmen (transparent als Basis, damit aktiv kein Sprung),
@@ -47,6 +51,7 @@ export function ExerciseLiveCard({
   onChangeBar,
   onCyclePlate,
   editMode = false,
+  hideScore = false,
 }: {
   entry: LiveEntry;
   ei: number;
@@ -66,10 +71,13 @@ export function ExerciseLiveCard({
   /** Bearbeiten-Modus (Verlauf): Stange/Scheiben/Haken/Aufwaermsaetze aus,
    *  Werte + RIR + „+/- Satz“ bleiben. Default false = unveraenderter Live-Look. */
   editMode?: boolean;
+  /** RIR-Spalte ausblenden (1RM-Test: dort zaehlt nur Gewicht x Wdh).
+   *  Default false = unveraenderter Live-Look. */
+  hideScore?: boolean;
 }): React.ReactElement {
   const isBar = entry.equipment === "barbell" && entry.barWeight != null;
   const hasPlates = isBar && plates.length > 0;
-  const grid = editMode ? ROW_EDIT : ROW;
+  const grid = editMode ? ROW_EDIT : hideScore ? ROW_TEST : ROW;
 
   function chips(weight: number, warm: boolean, idx: number, done: boolean): React.ReactElement | null {
     if (!hasPlates || plateMode === 0 || done) return null;
@@ -140,7 +148,7 @@ export function ExerciseLiveCard({
           <span>Satz</span>
           <span>Wdh</span>
           <span>kg</span>
-          <span>RIR</span>
+          {!hideScore && <span>RIR</span>}
           {!editMode && <span />}
         </div>
 
@@ -162,7 +170,9 @@ export function ExerciseLiveCard({
                   decimal
                   ariaLabel={"Gewicht Aufwaermsatz " + (wi + 1)}
                 />
-                <span className="text-center text-muted-foreground">–</span>
+                {!hideScore && (
+                  <span className="text-center text-muted-foreground">–</span>
+                )}
                 <SetCheck
                   done={ws.done}
                   active={act}
@@ -193,6 +203,7 @@ export function ExerciseLiveCard({
                   decimal
                   ariaLabel={"Gewicht Satz " + (si + 1)}
                 />
+                {!hideScore && (
                 <select
                   aria-label={"RIR Satz " + (si + 1)}
                   title="RIR / Score je Satz"
@@ -209,6 +220,7 @@ export function ExerciseLiveCard({
                     );
                   })}
                 </select>
+                )}
                 {!editMode && (
                   <SetCheck
                     done={st.done}
