@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.8.2",
+      "date": "2026-08-05",
+      "changes": [
+        "Löschst du deinen jüngsten 1RM-Test, geht dein Rekord jetzt auf den Stand davor zurück – die Rückfrage sagt dir vorher, auf welchen Wert. War es der allererste Test der Übung, steht dort danach wieder „noch kein Wert“.",
+        "Ältere Tests bleiben wie bisher: Löschen entfernt nur die Zeile, dein aktueller Rekord stammt dort ohnehin aus einem neueren Test. Damit kannst du einen Test gefahrlos ausprobieren und wieder zurücknehmen."
+      ]
+    },
+    {
       "version": "1.8.1",
       "date": "2026-08-05",
       "changes": [

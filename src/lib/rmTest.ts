@@ -106,6 +106,49 @@ export function clampTestReps(reps: number): number {
   return r;
 }
 
+// ---- Ruecknahme beim Loeschen ----------------------------------------------
+// Ein Test setzt den Rekord der Uebung. Wird der JUENGSTE Test wieder geloescht,
+// soll der Rekord auf den Stand davor zurueckgehen - jede Test-Zeile traegt
+// dafuer previous_rm. Aeltere Tests sind laengst ueberholt: ihr Loeschen
+// entfernt nur die Zeile und laesst den Rekord in Ruhe.
+
+export interface RmTestLike {
+  id: string;
+  date: string;
+  est_rm: number;
+  previous_rm: number | null;
+}
+
+export interface RmRollback {
+  /** Wert, auf den der Rekord zurueckgeht (null = wieder „kein 1RM“). */
+  rm: number | null;
+  /** Datum, das dann als Stand gilt (null = keins). */
+  asOf: string | null;
+}
+
+/** Sortiert die Tests einer Uebung juengste zuerst (Datum, dann Reihenfolge in
+ *  der Liste als Tiebreaker). */
+function youngestFirst(tests: readonly RmTestLike[]): RmTestLike[] {
+  return tests.slice().sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+}
+
+/** Was beim Loeschen eines Tests mit dem Rekord passieren soll.
+ *  null = Rekord bleibt unveraendert (nur die Zeile verschwindet). */
+export function rollbackForDelete(
+  tests: readonly RmTestLike[],
+  id: string,
+): RmRollback | null {
+  const ordered = youngestFirst(tests);
+  const youngest = ordered[0];
+  if (!youngest || youngest.id !== id) return null;
+  return {
+    rm: youngest.previous_rm,
+    // Als Stand gilt danach das Datum des naechstaelteren Tests, sofern es
+    // einen gibt - sonst gibt es kein belegtes Datum mehr.
+    asOf: ordered[1]?.date ?? null,
+  };
+}
+
 const RM_FORMULAS: RmFormula[] = ["brzycki", "epley", "wathan", "mean"];
 
 /** Formel aus den Einstellungen absichern (Rueckfall auf den Mittelwert). */

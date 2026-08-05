@@ -4,6 +4,7 @@ import { useStartRmTest } from "@/hooks/useStartRmTest";
 import { useRmTests } from "@/hooks/useRmTests";
 import { useRmTestActions } from "@/hooks/useRmTestActions";
 import { longDateShort, fmtWeight } from "@/lib/format";
+import { rollbackForDelete } from "@/lib/rmTest";
 import type { ExerciseRow, RmTestRow } from "@/schemas";
 
 // Abschnitt "1RM" auf der Uebungs-Detailseite. Das 1RM ist ein
@@ -33,10 +34,19 @@ export function RmSection({
 
   const rows = testsQ.data ?? [];
 
+  // Beim juengsten Test nimmt das Loeschen den Rekord mit zurueck - das steht
+  // auch in der Rueckfrage, damit klar ist, was passiert.
   const onDelete = (t: RmTestRow): void => {
+    const restore = rollbackForDelete(rows, t.id);
     const label = longDateShort(t.date);
-    if (window.confirm("Test vom " + label + " löschen?")) {
-      void remove(t.id);
+    const back =
+      restore == null
+        ? ""
+        : restore.rm != null
+          ? " und 1RM auf " + fmtWeight(restore.rm, unit) + " zurücksetzen"
+          : " und 1RM wieder leeren";
+    if (window.confirm("Test vom " + label + " löschen" + back + "?")) {
+      void remove({ id: t.id, exerciseId, restore });
     }
   };
 

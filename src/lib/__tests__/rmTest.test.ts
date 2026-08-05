@@ -5,6 +5,7 @@ import {
   testResult,
   testWeight,
   TEST_SHARE,
+  rollbackForDelete,
 } from "@/lib/rmTest";
 
 const ctx = {
@@ -82,5 +83,34 @@ describe("testResult", () => {
   it("darf unter dem alten Rekord liegen (Test senkt bewusst)", () => {
     const r = testResult([{ reps: 3, weight: 60, done: true }], "mean");
     expect(r.estRm ?? 0).toBeLessThan(100);
+  });
+});
+
+describe("rollbackForDelete", () => {
+  const tests = [
+    { id: "neu", date: "2026-08-05", est_rm: 120, previous_rm: 110 },
+    { id: "alt", date: "2026-06-01", est_rm: 110, previous_rm: 100 },
+  ];
+
+  it("nimmt beim juengsten Test den Rekord zurueck", () => {
+    expect(rollbackForDelete(tests, "neu")).toEqual({
+      rm: 110,
+      asOf: "2026-06-01",
+    });
+  });
+
+  it("laesst den Rekord bei aelteren Tests unberuehrt", () => {
+    expect(rollbackForDelete(tests, "alt")).toBeNull();
+  });
+
+  it("ohne Vorwert wird der Rekord wieder geleert", () => {
+    const only = [{ id: "erst", date: "2026-08-05", est_rm: 120, previous_rm: null }];
+    expect(rollbackForDelete(only, "erst")).toEqual({ rm: null, asOf: null });
+  });
+
+  it("Reihenfolge der Liste spielt keine Rolle", () => {
+    const reversed = tests.slice().reverse();
+    expect(rollbackForDelete(reversed, "neu")?.rm).toBe(110);
+    expect(rollbackForDelete(reversed, "alt")).toBeNull();
   });
 });

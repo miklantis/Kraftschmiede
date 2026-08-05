@@ -6,9 +6,10 @@ import { useUserId } from "./useUserId";
 // Lade-/Fehlerzustand) – wie bei den Meilensteinen. Nach Erfolg werden alle
 // Test-Listen neu geladen.
 //
-// Loeschen ist bewusst eine reine Korrektur bei Fehleingabe: das 1RM der Uebung
-// wird NICHT auf einen frueheren Wert zurueckgerechnet (Konzept 4.3). Wer den
-// Rekord aendern will, macht einen neuen Test.
+// Loeschen des JUENGSTEN Tests nimmt ihn zurueck: der Rekord der Uebung geht auf
+// den Stand davor (previous_rm der Zeile). Bei aelteren Tests verschwindet nur
+// die Zeile - der Rekord stammt dort ohnehin aus einem neueren Test. Was gilt,
+// entscheidet die reine Funktion rollbackForDelete; der Hook fuehrt es aus.
 type RmTestAction =
   | {
       type: "add";
@@ -19,7 +20,13 @@ type RmTestAction =
       estRm: number;
       previousRm: number | null;
     }
-  | { type: "delete"; id: string };
+  | {
+      type: "delete";
+      id: string;
+      exerciseId: string;
+      /** Ruecknahme des Rekords oder null, wenn er unberuehrt bleibt. */
+      restore: { rm: number | null; asOf: string | null } | null;
+    };
 
 export interface RmTestAddInput {
   exerciseId: string;
@@ -30,9 +37,15 @@ export interface RmTestAddInput {
   previousRm: number | null;
 }
 
+export interface RmTestRemoveInput {
+  id: string;
+  exerciseId: string;
+  restore: { rm: number | null; asOf: string | null } | null;
+}
+
 export function useRmTestActions(): {
   add: (input: RmTestAddInput) => Promise<void>;
-  remove: (id: string) => Promise<void>;
+  remove: (input: RmTestRemoveInput) => Promise<void>;
   isPending: boolean;
   error: unknown;
 } {
@@ -75,6 +88,21 @@ export function useRmTestActions(): {
         .delete()
         .eq("id", action.id);
       if (error) throw new Error(error.message);
+
+      if (action.restore) {
+        // Rekord auf den Stand vor dem Test zuruecksetzen. Ohne Vorwert gilt
+        // die Uebung wieder als „kein 1RM“ (rm_stale, damit klar ist, dass ein
+        // frischer Beleg fehlt).
+        const { error: updateError } = await supabase
+          .from("exercises")
+          .update({
+            rm: action.restore.rm,
+            rm_as_of: action.restore.asOf,
+            rm_stale: action.restore.rm == null,
+          })
+          .eq("id", action.exerciseId);
+        if (updateError) throw new Error(updateError.message);
+      }
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["rmTests"] });
@@ -84,7 +112,7 @@ export function useRmTestActions(): {
 
   return {
     add: (input) => mutation.mutateAsync({ type: "add", ...input }),
-    remove: (id) => mutation.mutateAsync({ type: "delete", id }),
+    remove: (input) => mutation.mutateAsync({ type: "delete", ...input }),
     isPending: mutation.isPending,
     error: mutation.error,
   };
