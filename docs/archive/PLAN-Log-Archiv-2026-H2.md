@@ -11,6 +11,10 @@ Eintraege bleiben historisch unveraendert, neueste zuerst.
 
 ---
 
+2026-08-05 – 1.8.3 – Löschen eines 1RM-Tests fragt inline nach (Verlaufs-Muster).
+
+2026-08-05 – 1.8.2 – Löschen des jüngsten 1RM-Tests nimmt den Rekord zurück.
+
 2026-08-05 – 1.8.1 – Test-Punkte im 1RM-Diagramm, Lieferung 4.
 
 2026-08-05 – 1.8.0 – 1RM-Tests als eigener Eintragstyp in Verlauf und Kalender,
