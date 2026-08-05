@@ -8,10 +8,10 @@ Dieses Konzept ist auf den in der Konzeptphase besprochenen Stand fortgeschriebe
 tragenden Entscheidungen stehen jeweils an Ort und Stelle. Der Versionssprung auf **1.3.0**
 für die erste Lieferung ist freigegeben; die weiteren Lieferungen laufen als 1.3.1, 1.3.2 …
 
-Verweise: Ist-Zustand in [`Architektur.md`](./Architektur.md), „eine aktive Journey“ in
-[`adr/0004-eine-aktive-journey.md`](./adr/0004-eine-aktive-journey.md),
+Verweise: Ist-Zustand in [`Architektur.md`](../Architektur.md), „eine aktive Journey“ in
+[`adr/0004-eine-aktive-journey.md`](../adr/0004-eine-aktive-journey.md),
 Offline-Mutationsreihenfolge in
-[`adr/0009-mutationsreihenfolge.md`](./adr/0009-mutationsreihenfolge.md).
+[`adr/0009-mutationsreihenfolge.md`](../adr/0009-mutationsreihenfolge.md).
 
 ---
 

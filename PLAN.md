@@ -80,7 +80,7 @@ Gewichtsübungen, mit eigener DB-Tabelle. Konzept:
   `active`-Feld ist aus App und DB getilgt. Coach unberührt.
 - **Workouts editierbar & Journey-Zuordnung** (1.3.0–1.3.10). Eigene Workouts-Seite,
   Journey-Zuordnung per Schalter, Empfehlung auf die Zuordnung beschränkt. Coach
-  unangetastet. Konzept: `docs/Konzept-Workouts-und-Journey-Zuordnung.md`.
+  unangetastet. Konzept: `docs/archive/Konzept-Workouts-und-Journey-Zuordnung.md`.
 - **Typ-Felder am Übungskatalog aufgeräumt** (1.2.58–1.2.60). `category`/`kind` entfernt,
   `equipment`/`tier` tragen die Rolle. Migrationen 0002/0003. Konzept:
   `docs/archive/Konzept-Typfelder-Aufraeumen.md`.

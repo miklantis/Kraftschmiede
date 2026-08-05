@@ -6,7 +6,7 @@ klar benanntes Feld überführen. Der globale Look bleibt; der **Coach-Rechenker
 unangetastet** (kein verändertes Empfehlungsverhalten).
 
 Dieses Vorhaben ist das im Workouts-Konzept angekündigte „eigene, separate Konzept" zum
-Aufräumen dieser Felder (siehe [`Konzept-Workouts-und-Journey-Zuordnung.md`](../Konzept-Workouts-und-Journey-Zuordnung.md),
+Aufräumen dieser Felder (siehe [`Konzept-Workouts-und-Journey-Zuordnung.md`](./Konzept-Workouts-und-Journey-Zuordnung.md),
 Abschnitt Ausgangslage).
 
 Verweise: Ist-Zustand in [`Architektur.md`](../Architektur.md), Schema in
