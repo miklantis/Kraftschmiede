@@ -193,21 +193,30 @@ function RmTestEnd({ s }: { s: RmTestSession }): React.ReactElement {
       <SummaryList entries={entries} />
       <div className="mb-3.5 rounded-[14px] bg-card p-4 shadow-card">
         <div className="text-[12px] font-semibold tracking-[0.3px] text-muted-foreground uppercase">
-          Neues 1RM
+          {result.estRm == null ? "Aktuelles 1RM" : "1RM"}
         </div>
-        {result.estRm == null ? (
-          <p className="mt-1 text-[14px] leading-snug text-muted-foreground">
-            Kein abgehakter Satz mit höchstens 5 Wiederholungen – es gibt nichts
-            zu speichern.
+        <div className="mt-1 flex flex-wrap items-baseline gap-2 font-mono text-[20px] font-semibold tabular-nums">
+          <span
+            className={
+              result.estRm == null ? "text-foreground" : "text-muted-foreground"
+            }
+          >
+            {s.previousRm != null ? fmtWeight(s.previousRm, unit) : "–"}
+          </span>
+          {result.estRm != null && (
+            <>
+              <span className="text-muted-foreground">→</span>
+              <span className="text-foreground">
+                {fmtWeight(result.estRm, unit)}
+              </span>
+            </>
+          )}
+        </div>
+        {result.estRm == null && (
+          <p className="mt-1 text-[13px] leading-snug text-muted-foreground">
+            Kein abgehakter Satz mit höchstens 5 Wiederholungen – dein Wert
+            bleibt, wie er ist.
           </p>
-        ) : (
-          <div className="mt-1 flex flex-wrap items-baseline gap-2 font-mono text-[20px] font-semibold text-foreground tabular-nums">
-            <span className="text-muted-foreground">
-              {s.previousRm != null ? fmtWeight(s.previousRm, unit) : "–"}
-            </span>
-            <span className="text-muted-foreground">→</span>
-            <span>{fmtWeight(result.estRm, unit)}</span>
-          </div>
         )}
       </div>
       <div className="mb-3.5 text-center text-xs text-muted-foreground">

@@ -140,31 +140,39 @@ function RmTestPanelContent({
       )}
       <div className="rounded-[14px] bg-card p-4 shadow-card">
         <div className="text-[12px] font-semibold tracking-[0.3px] text-muted-foreground uppercase">
-          Neues 1RM
+          {result.estRm == null ? "Aktuelles 1RM" : "1RM"}
+        </div>
+        <div className="mt-1 flex flex-wrap items-baseline gap-2 font-mono text-[20px] font-semibold tabular-nums">
+          <span
+            className={
+              result.estRm == null ? "text-foreground" : "text-muted-foreground"
+            }
+          >
+            {session.previousRm != null
+              ? fmtWeight(session.previousRm, unit)
+              : "–"}
+          </span>
+          {result.estRm != null && (
+            <>
+              <span className="text-muted-foreground">→</span>
+              <span className="text-foreground">
+                {fmtWeight(result.estRm, unit)}
+              </span>
+            </>
+          )}
         </div>
         {result.estRm == null ? (
-          <p className="mt-1 text-[14px] leading-snug text-muted-foreground">
-            Hak einen Satz ab (höchstens 5 Wiederholungen), dann steht hier dein
-            neuer Wert.
+          <p className="mt-1 text-[13px] leading-snug text-muted-foreground">
+            Dein aktueller Wert. Hak einen Satz ab (höchstens 5
+            Wiederholungen), dann steht rechts daneben der neue.
           </p>
         ) : (
-          <>
-            <div className="mt-1 flex flex-wrap items-baseline gap-2 font-mono text-[20px] font-semibold text-foreground tabular-nums">
-              <span className="text-muted-foreground">
-                {session.previousRm != null
-                  ? fmtWeight(session.previousRm, unit)
-                  : "–"}
-              </span>
-              <span className="text-muted-foreground">→</span>
-              <span>{fmtWeight(result.estRm, unit)}</span>
+          result.best && (
+            <div className="mt-1 font-mono text-[13px] text-muted-foreground tabular-nums">
+              bester Satz {fmtWeight(result.best.weight, unit)} ×{" "}
+              {result.best.reps}
             </div>
-            {result.best && (
-              <div className="mt-1 font-mono text-[13px] text-muted-foreground tabular-nums">
-                bester Satz {fmtWeight(result.best.weight, unit)} ×{" "}
-                {result.best.reps}
-              </div>
-            )}
-          </>
+          )
         )}
       </div>
     </div>

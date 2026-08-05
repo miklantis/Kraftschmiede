@@ -26,7 +26,7 @@ nicht erst ab einer bestimmten Anzahl Einträge.
 ## Aktueller Stand
 
 - **App im laufenden Betrieb**, funktional vollständig, installierbar (PWA), auf der
-  normalisierten Datenbank. Aktuelle Version: **1.7.2**.
+  normalisierten Datenbank. Aktuelle Version: **1.7.3**.
 - Pflege/Bugfixing laufend; neue Features nach Konzept vor Code.
 - **Offene Handgriffe deinerseits:**
   - Migration `0013_rm_tests.sql` im Supabase-SQL-Editor ausführen (neue Tabelle für die
@@ -138,6 +138,8 @@ wenige Worte). Detail steht im jeweiligen Commit. Abgeschlossene Vorhaben werden
 entfernt, sobald sie in „Abgeschlossene Vorhaben" stehen – Archiv je Halbjahr:
 `docs/archive/PLAN-Log-Archiv-2026-H1.md` (Jan–Jun), `docs/archive/PLAN-Log-Archiv-2026-H2.md`
 (Jul–Dez).
+
+2026-08-05 – 1.7.3 – 1RM-Test zeigt den aktuellen Wert ab Start.
 
 2026-08-05 – 1.7.2 – 1RM-Test in die bestehende Live-Schicht umgebaut (dritte
 Einheit-Art), Popup entfernt.

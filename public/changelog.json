@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.7.3",
+      "date": "2026-08-05",
+      "changes": [
+        "Im 1RM-Test steht dein aktueller Wert jetzt von Anfang an unter den Sätzen – auch bevor du etwas abgehakt hast. Sobald ein Satz sitzt, rückt er nach links und rechts daneben erscheint der neue Wert. Der Ende-Dialog zeigt es genauso."
+      ]
+    },
+    {
       "version": "1.7.2",
       "date": "2026-08-05",
       "changes": [
