@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Trash2, Target } from "lucide-react";
 import { Section } from "@/components/ui/section";
 import { useStartRmTest } from "@/hooks/useStartRmTest";
@@ -31,23 +32,27 @@ export function RmSection({
   const testsQ = useRmTests(exerciseId);
   const { remove, isPending } = useRmTestActions();
   const { start, blocked } = useStartRmTest();
+  // Welche Zeile fragt gerade nach (Inline-Rueckfrage wie im Verlauf).
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const rows = testsQ.data ?? [];
 
   // Beim juengsten Test nimmt das Loeschen den Rekord mit zurueck - das steht
-  // auch in der Rueckfrage, damit klar ist, was passiert.
-  const onDelete = (t: RmTestRow): void => {
+  // in der Rueckfrage, damit klar ist, was passiert.
+  const rollbackNote = (t: RmTestRow): string => {
     const restore = rollbackForDelete(rows, t.id);
-    const label = longDateShort(t.date);
-    const back =
-      restore == null
-        ? ""
-        : restore.rm != null
-          ? " und 1RM auf " + fmtWeight(restore.rm, unit) + " zurücksetzen"
-          : " und 1RM wieder leeren";
-    if (window.confirm("Test vom " + label + " löschen" + back + "?")) {
-      void remove({ id: t.id, exerciseId, restore });
-    }
+    if (restore == null) return "Test wird gelöscht – dein 1RM bleibt.";
+    return restore.rm != null
+      ? "Test wird gelöscht, 1RM geht zurück auf " +
+          fmtWeight(restore.rm, unit) +
+          " – sicher?"
+      : "Test wird gelöscht, die Übung hat danach wieder kein 1RM – sicher?";
+  };
+
+  const onDelete = async (t: RmTestRow): Promise<void> => {
+    const restore = rollbackForDelete(rows, t.id);
+    await remove({ id: t.id, exerciseId, restore });
+    setConfirmId(null);
   };
 
   // Richtung eines Tests gegenueber dem Rekord davor (null = erster Wert).
@@ -108,28 +113,57 @@ export function RmSection({
           {rows.map((t) => (
             <div
               key={t.id}
-              className="flex items-center gap-3 rounded-[14px] bg-card px-4 py-3 shadow-card"
+              className="rounded-[14px] bg-card px-4 py-3 shadow-card"
             >
-              <div className="min-w-0 flex-1">
-                <div className="text-[15px] font-semibold text-foreground">
-                  {longDateShort(t.date)}
+              <div className="flex items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="text-[15px] font-semibold text-foreground">
+                    {longDateShort(t.date)}
+                  </div>
+                  <div className="font-mono text-[14px] text-muted-foreground tabular-nums">
+                    {fmtWeight(t.weight, unit)} × {t.reps}
+                  </div>
                 </div>
-                <div className="font-mono text-[14px] text-muted-foreground tabular-nums">
-                  {fmtWeight(t.weight, unit)} × {t.reps}
-                </div>
+                <span className="font-mono text-[15px] font-semibold text-foreground tabular-nums">
+                  {direction(t)} {fmtWeight(t.est_rm, unit)}
+                </span>
+                {confirmId !== t.id && (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmId(t.id)}
+                    disabled={isPending}
+                    aria-label="Test löschen"
+                    className="-m-1.5 flex-none rounded-lg p-1.5 text-muted-foreground transition-colors hover:text-danger disabled:opacity-50"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                )}
               </div>
-              <span className="font-mono text-[15px] font-semibold text-foreground tabular-nums">
-                {direction(t)} {fmtWeight(t.est_rm, unit)}
-              </span>
-              <button
-                type="button"
-                onClick={() => onDelete(t)}
-                disabled={isPending}
-                aria-label="Test löschen"
-                className="-m-1.5 flex-none rounded-lg p-1.5 text-muted-foreground transition-colors hover:text-danger disabled:opacity-50"
-              >
-                <Trash2 className="size-4" />
-              </button>
+
+              {confirmId === t.id && (
+                <div className="flex flex-col gap-2.5 pt-3">
+                  <span className="text-[13px] text-muted-foreground">
+                    {rollbackNote(t)}
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setConfirmId(null)}
+                      className="rounded-control bg-secondary px-3.5 py-2 text-[13px] font-semibold text-foreground"
+                    >
+                      Abbrechen
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={() => void onDelete(t)}
+                      className="rounded-control bg-danger px-3.5 py-2 text-[13px] font-semibold text-danger-foreground disabled:opacity-50"
+                    >
+                      {isPending ? "Löschen …" : "Löschen"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.8.3",
+      "date": "2026-08-05",
+      "changes": [
+        "Das Löschen eines 1RM-Tests fragt jetzt direkt in der Karte nach, im gleichen Stil wie im Trainingsverlauf – kein Browser-Dialog mehr. Der Hinweistext sagt weiterhin, auf welchen Wert dein 1RM dabei zurückgeht."
+      ]
+    },
+    {
       "version": "1.8.2",
       "date": "2026-08-05",
       "changes": [

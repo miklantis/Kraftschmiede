@@ -26,7 +26,7 @@ nicht erst ab einer bestimmten Anzahl Einträge.
 ## Aktueller Stand
 
 - **App im laufenden Betrieb**, funktional vollständig, installierbar (PWA), auf der
-  normalisierten Datenbank. Aktuelle Version: **1.8.2**.
+  normalisierten Datenbank. Aktuelle Version: **1.8.3**.
 - Pflege/Bugfixing laufend; neue Features nach Konzept vor Code.
 - **Offene Handgriffe deinerseits:**
   - Migration `0013_rm_tests.sql` im Supabase-SQL-Editor ausführen (neue Tabelle für die
@@ -43,9 +43,7 @@ nicht erst ab einer bestimmten Anzahl Einträge.
 
 Laufend, ergibt sich im Betrieb. Einzelne Punkte kommen hierher, sobald sie auftauchen.
 
-- 1RM-Diagramm: Punkte aus Sätzen mit vielen Wiederholungen (Hypertrophie) sind
-  unzuverlässig. Idee: Kurve auf belastbare Sätze begrenzen oder unsichere Punkte
-  absetzen. Noch zu besprechen.
+- (noch keine offenen Punkte)
 
 ### Sprung beim Phasenwechsel auf 1RM-Basis (Punkt 2)
 
@@ -72,7 +70,7 @@ Bau bestätigen.
 
 Überblick der fertigen Vorhaben; der Verlauf steht im Log unten bzw. im Log-Archiv.
 
-- **1RM als Bestwert + 1RM-Test** (1.6.2–1.8.2). Das 1RM ist ein beweisgebundener Rekord:
+- **1RM als Bestwert + 1RM-Test** (1.6.2–1.8.3). Das 1RM ist ein beweisgebundener Rekord:
   die Automatik hebt ihn nur bei einem Satz mit ≤ 5 Wdh und senkt ihn nie. Dazu der
   bewusste 1RM-Test als dritte Art laufender Einheit in der Live-Schicht (Panel, Uhr,
   Mini-Streifen, Ende-Dialog), eigener 1RM-Block mit Test-Liste auf der Übungsseite,
@@ -118,8 +116,6 @@ wenige Worte). Detail steht im jeweiligen Commit. Abgeschlossene Vorhaben werden
 entfernt, sobald sie in „Abgeschlossene Vorhaben" stehen – Archiv je Halbjahr:
 `docs/archive/PLAN-Log-Archiv-2026-H1.md` (Jan–Jun), `docs/archive/PLAN-Log-Archiv-2026-H2.md`
 (Jul–Dez).
-
-2026-08-05 – 1.8.2 – Löschen des jüngsten 1RM-Tests nimmt den Rekord zurück.
 
 2026-08-05 – PLAN-Log-Struktur überarbeitet: Archiv nach Halbjahr gesplittet, Log auf
 Stichworte gekürzt, abgeschlossene Vorhaben wandern künftig sofort ins Archiv statt erst
