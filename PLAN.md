@@ -118,6 +118,11 @@ Bau bestätigen.
 Nur die jüngsten Einträge (Datum, Version, was, ein Satz warum). Tiefes Detail steht im
 jeweiligen Commit. Ältere Einträge im Archiv: `docs/archive/PLAN-Log-Archiv.md`.
 
+2026-08-05 – Doku: offene Frage im 1RM-Konzept beantwortet. Ein Test ist nur auf der
+Übungs-Detailseite (Test-Liste im 1RM-Block) löschbar, nicht aus dem Trainingsverlauf
+oder Kalender heraus (`docs/Konzept-1RM-Bestwert-und-Test.md`, Abschnitte 4.3, 4.4, 8).
+Reine Doku, noch nicht gebaut.
+
 2026-08-05 – Doku: Konzept Punkt 2 + Ablage aufgeräumt. Neues Konzept „Sprung beim
 Phasenwechsel auf 1RM-Basis" (`docs/Konzept-Phasenwechsel-Sprung.md`) als offenes Vorhaben
 aufgenommen, wird nach Punkt 1 gebaut. Fertiges Konzept „Workouts & Journey-Zuordnung" nach

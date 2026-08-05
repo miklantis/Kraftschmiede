@@ -94,6 +94,9 @@ die vertraute Satz-Eingabe aus dem Training (dieselben Satz-Karten). Ablauf:
   „Halten … im Ziel") und von der Statistik-Zeile. Der Block zeigt den aktuellen 1RM-Wert
   mit Datum, einen Test-Button und die Liste der bisherigen Tests (Datum, Gewicht × Wdh,
   daraus geschätztes 1RM).
+- Nur hier, in dieser Test-Liste auf der Übungs-Detailseite, ist ein Test löschbar (etwa
+  bei einer Fehleingabe). Das 1RM wird dabei **nicht** automatisch auf einen früheren Wert
+  zurückgerechnet – eine Korrektur läuft über einen neuen Test.
 - Im 1RM-Diagramm der Übung werden Test-Werte farblich abgesetzt dargestellt, damit die
   aus Tests kommenden Sprünge nach oben/unten unterscheidbar sind von den Werten aus dem
   normalen Training.
@@ -112,6 +115,10 @@ Häufigkeitsziel, „zuletzt trainiert", Erholung und das Workout-Ranking lesen 
 Einheiten – ein Test taucht dort in der Ansicht auf, zählt aber nie als Trainingseinheit.
 So bleibt der Coach unberührt und die Statistik sauber (die „Sessions"-Zahl auf der
 Detailseite zählt weiter nur Einheiten, nicht Tests).
+
+Im Trainingsverlauf und im Kalender ist ein Test-Eintrag **nicht löschbar** – dort ist er
+reine Rückschau. Löschen geht ausschließlich über die Test-Liste im 1RM-Block auf der
+Übungs-Detailseite (siehe 4.3).
 
 ### 4.5 Abgrenzung
 
@@ -178,7 +185,6 @@ Detailseite zählt weiter nur Einheiten, nicht Tests).
 - Aus welchem Anteil des aktuellen 1RM das Test-Gewicht vorbelegt wird (so, dass 3–5
   saubere Wiederholungen realistisch sind). Reine Vorbelegung, vom Nutzer frei
   anpassbar.
-- Ob ein Test aus dem Verlauf/Kalender heraus löschbar ist und, falls ja, was mit dem
-  1RM passiert. Vorschlag: löschbar (Fehleingabe), aber das 1RM wird dabei **nicht**
-  automatisch auf einen früheren Wert zurückgerechnet – Korrektur läuft über einen neuen
-  Test. 
+
+Geklärt: Ein Test ist nur auf der Übungs-Detailseite (Test-Liste im 1RM-Block) löschbar,
+nicht aus dem Trainingsverlauf oder Kalender heraus (siehe 4.3 und 4.4).
