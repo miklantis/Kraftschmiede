@@ -46,13 +46,28 @@ bewusster 1RM-Test als Live-Block auf der Übungs-Detailseite (eigener 1RM-Block
 Test-Liste, Live-Vorschau altes → neues 1RM, setzt hoch und runter), nur bei
 Gewichtsübungen, mit eigener DB-Tabelle. Konzept:
 `docs/Konzept-1RM-Bestwert-und-Test.md`. Punkt 2 (Sprung beim Phasenwechsel auf
-1RM-Basis) baut darauf auf und wird danach besprochen.
+1RM-Basis) baut darauf auf; Konzept: `docs/Konzept-Phasenwechsel-Sprung.md`, wird nach
+Punkt 1 gebaut.
 
 - [ ] Lieferung 1: Rekord-Regel im Rechenkern (Automatik hoch nur ≤ 5 Wdh, nie
       automatisch runter; beide Speicherstellen Beenden/Bearbeiten). Keine DB, keine UI.
 - [ ] Lieferung 2: eigener 1RM-Block + Test als Live-Block (Migration, Live-Vorschau,
       Test-Liste, nur Gewichtsübungen, Backup/Restore).
 - [ ] Lieferung 3: Test-Werte farblich abgesetzt im 1RM-Diagramm.
+
+### Sprung beim Phasenwechsel auf 1RM-Basis (Punkt 2)
+
+Konzept (Vorschlag), **wird nach Punkt 1 gebaut** und hängt an dessen sauberem 1RM. Beim
+Übergang in eine neue Phase mit deutlichem Repband-Wechsel (z. B. Hypertrophie 8–12 auf
+Maxkraft 4–6) soll die erste Einheit ihr Startgewicht aus dem aktuellen 1RM ziehen statt
+am zu leichten Vorphasen-Gewicht zu kleben; danach wieder normale Doppelprogression. Die
+Engine-Rechnung dafür existiert schon (`workWeightForPhase`), ist aber unverdrahtet.
+Konzept: `docs/Konzept-Phasenwechsel-Sprung.md`. Zentraler Ansatz und Feinwerte vor dem
+Bau bestätigen.
+
+- [ ] Lieferung 1: Bandwechsel erkennen + `workWeightForPhase` verdrahten (Startgewicht
+      der ersten Einheit aus dem 1RM), Hinweis „Einstieg". Engine-/Unit-Tests.
+- [ ] Lieferung 2 (optional): Ramp-up-/Tast-Sätze im neuen Band.
 
 ### Bewusst später
 
@@ -100,6 +115,11 @@ Gewichtsübungen, mit eigener DB-Tabelle. Konzept:
 
 Nur die jüngsten Einträge (Datum, Version, was, ein Satz warum). Tiefes Detail steht im
 jeweiligen Commit. Ältere Einträge im Archiv: `docs/archive/PLAN-Log-Archiv.md`.
+
+2026-08-05 – Doku: Konzept Punkt 2 + Ablage aufgeräumt. Neues Konzept „Sprung beim
+Phasenwechsel auf 1RM-Basis" (`docs/Konzept-Phasenwechsel-Sprung.md`) als offenes Vorhaben
+aufgenommen, wird nach Punkt 1 gebaut. Fertiges Konzept „Workouts & Journey-Zuordnung" nach
+`docs/archive/` verschoben (Verweise nachgezogen). Reine Doku.
 
 2026-08-05 – PLAN.md verschlankt und neues Konzept aufgenommen. „Aktueller Stand"
 entschlackt, fertige Meilenstein-/Kurzhantel-Vorhaben als Einzeiler nach „Abgeschlossene
