@@ -48,9 +48,11 @@ diesem Konzept auf und wird getrennt besprochen.
   nach unten, bewusste Korrektur über den Test.
 - Ein eigener 1RM-Bereich auf der Übungs-Detailseite mit Test-Funktion und einer Liste
   der gemachten Tests.
-- Tests bleiben dauerhaft in der Datenbank, erscheinen in der Liste und farblich
-  abgesetzt im 1RM-Diagramm der Übung, sodass die Sprünge nach oben/unten aus Tests
-  sichtbar sind.
+- Tests erscheinen wie eine Trainingseinheit im **Trainingslog**: auf dem Kalender und in
+  allen Verlaufs-Listen, klar als „Test" gekennzeichnet. So sind sie im normalen Rückblick
+  sichtbar, nicht nur auf der Übungsseite.
+- Zusätzlich erscheinen sie in der Test-Liste im 1RM-Block und farblich abgesetzt im
+  1RM-Diagramm der Übung, sodass die Sprünge nach oben/unten aus Tests erkennbar sind.
 - Alles nur bei Haupt- und Assistenzübungen (Gewichtsübungen). Core- und
   Körpergewichts-Übungen bekommen keinen 1RM-Test.
 
@@ -83,7 +85,8 @@ die vertraute Satz-Eingabe aus dem Training (dieselben Satz-Karten). Ablauf:
   „1RM 20 kg → 22,5 kg". So sieht der Nutzer die Änderung, bevor er den Test abschließt.
 - Das neue 1RM wird aus dem besten Schätzwert der Test-Sätze (mit ≤ 5 Wdh) gerechnet.
 - Beim Abschluss setzt der Test das 1RM der Übung auf diesen Wert – nach oben oder unten –
-  mit heutigem Datum, und speichert den Test als eigene Zeile.
+  mit heutigem Datum, und legt den Test als eigene kleine Einheit im Trainingslog ab
+  (eine Einheit vom neuen Typ „Test" mit dieser einen Übung und den Test-Sätzen).
 
 ### 4.3 Anzeige auf der Detailseite
 
@@ -95,7 +98,22 @@ die vertraute Satz-Eingabe aus dem Training (dieselben Satz-Karten). Ablauf:
   aus Tests kommenden Sprünge nach oben/unten unterscheidbar sind von den Werten aus dem
   normalen Training.
 
-### 4.4 Abgrenzung
+### 4.4 Im Trainingsverlauf und Kalender
+
+Zusätzlich zur Liste auf der Detailseite erscheint jeder Test auch im globalen
+Trainingsverlauf und im Kalender – dort, wo du siehst, was du an einem Tag gemacht hast.
+Er wird als **eigener, klar gekennzeichneter Eintragstyp** dargestellt (eigener Farbpunkt
+im Kalender, eigenes Label wie „1RM-Test"), neben den Einheiten. Ein Test-Eintrag zeigt
+Übung, bestes Gewicht × Wdh und das daraus gesetzte 1RM (samt Richtung hoch/runter).
+
+Wichtig und bewusst: Ein Test ist **keine Einheit**. Er bleibt sein eigener kleiner
+Datensatz und läuft nicht durch das Einheiten-Modell. Kalender, Journey-Woche,
+Häufigkeitsziel, „zuletzt trainiert", Erholung und das Workout-Ranking lesen die
+Einheiten – ein Test taucht dort in der Ansicht auf, zählt aber nie als Trainingseinheit.
+So bleibt der Coach unberührt und die Statistik sauber (die „Sessions"-Zahl auf der
+Detailseite zählt weiter nur Einheiten, nicht Tests).
+
+### 4.5 Abgrenzung
 
 - Nur Gewichtsübungen mit 1RM (strength-Profil). Kein Test-Bereich bei Core/Bodyweight.
 - Der Test verändert nur das 1RM (den Rekord). Das Arbeitsgewicht bleibt unangetastet,
@@ -119,6 +137,10 @@ die vertraute Satz-Eingabe aus dem Training (dieselben Satz-Karten). Ablauf:
   Live-Vorschau „aktuelles → neues 1RM".
 - **1RM-Block:** eigene Komponente auf der Detailseite (Wert, Datum, Test-Button, Liste).
 - **Diagramm:** additive, farblich abgesetzte Test-Marker im vorhandenen 1RM-Chart.
+- **Verlauf & Kalender:** die reine Verlaufs-Aufbereitung (`buildHistoryModel`/`useHistory`)
+  bekommt die Test-Datensätze als **zweite Quelle** neben den Einheiten und einen neuen
+  Eintragstyp (eigener Farbpunkt/Label). Bewusst getrennt vom Einheiten-Modell, damit der
+  Coach die Tests nie als Training liest.
 - **Backup/Restore:** die neue Tabelle wird in Sicherung und Wiederherstellung
   aufgenommen.
 
@@ -134,7 +156,10 @@ die vertraute Satz-Eingabe aus dem Training (dieselben Satz-Karten). Ablauf:
   Live-Block mit Live-Vorschau des neuen 1RM, Test-Liste, neue Tabelle (Migration),
   Beschränkung auf Gewichtsübungen, Backup/Restore. Beim Bauen ggf. weiter aufteilen,
   wenn der Schritt zu groß wird.
-- **Lieferung 3 – Tests im Diagramm.** Test-Werte farblich abgesetzt im 1RM-Chart der
+- **Lieferung 3 – Tests im Trainingsverlauf & Kalender.** Die Verlaufs-Aufbereitung liest
+  zusätzlich die Test-Datensätze und zeigt sie als eigenen Eintragstyp in Liste und
+  Kalender. Einheiten-Modell und Coach unberührt.
+- **Lieferung 4 – Tests im Diagramm.** Test-Werte farblich abgesetzt im 1RM-Chart der
   Übung.
 
 ---
@@ -155,3 +180,7 @@ die vertraute Satz-Eingabe aus dem Training (dieselben Satz-Karten). Ablauf:
   anpassbar.
 - Ob bei mehr als 5 Wiederholungen im Test ein dezenter Hinweis auf die geringere
   Verlässlichkeit erscheint oder der Test hart auf 5 begrenzt wird.
+- Ob ein Test aus dem Verlauf/Kalender heraus löschbar ist und, falls ja, was mit dem
+  1RM passiert. Vorschlag: löschbar (Fehleingabe), aber das 1RM wird dabei **nicht**
+  automatisch auf einen früheren Wert zurückgerechnet – Korrektur läuft über einen neuen
+  Test.

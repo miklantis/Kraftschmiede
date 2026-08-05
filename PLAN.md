@@ -53,7 +53,9 @@ Punkt 1 gebaut.
       automatisch runter; beide Speicherstellen Beenden/Bearbeiten). Keine DB, keine UI.
 - [ ] Lieferung 2: eigener 1RM-Block + Test als Live-Block (Migration, Live-Vorschau,
       Test-Liste, nur Gewichtsübungen, Backup/Restore).
-- [ ] Lieferung 3: Test-Werte farblich abgesetzt im 1RM-Diagramm.
+- [ ] Lieferung 3: Tests im Trainingsverlauf & Kalender als eigener Eintragstyp
+      (Verlaufs-Aufbereitung um die Test-Datensätze erweitert; Coach unberührt).
+- [ ] Lieferung 4: Test-Werte farblich abgesetzt im 1RM-Diagramm.
 
 ### Sprung beim Phasenwechsel auf 1RM-Basis (Punkt 2)
 
