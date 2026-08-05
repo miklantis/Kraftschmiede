@@ -26,7 +26,7 @@ nicht erst ab einer bestimmten Anzahl Einträge.
 ## Aktueller Stand
 
 - **App im laufenden Betrieb**, funktional vollständig, installierbar (PWA), auf der
-  normalisierten Datenbank. Aktuelle Version: **1.7.3**.
+  normalisierten Datenbank. Aktuelle Version: **1.7.4**.
 - Pflege/Bugfixing laufend; neue Features nach Konzept vor Code.
 - **Offene Handgriffe deinerseits:**
   - Migration `0013_rm_tests.sql` im Supabase-SQL-Editor ausführen (neue Tabelle für die
@@ -59,7 +59,7 @@ Punkt 1 gebaut.
 - [x] Lieferung 1: Rekord-Regel im Rechenkern (Automatik hoch nur ≤ 5 Wdh, nie
       automatisch runter; beide Speicherstellen Beenden/Bearbeiten). Keine DB, keine UI.
       Erstbefüllung bleibt möglich, solange eine Übung noch gar kein 1RM hat.
-- [ ] Lieferung 2: eigener 1RM-Block + Test als Live-Block (Migration, Live-Vorschau,
+- [x] Lieferung 2: eigener 1RM-Block + Test als Live-Block (Migration, Live-Vorschau,
       Test-Liste, nur Gewichtsübungen, Backup/Restore). In drei Teile zerlegt:
   - [x] Teil A: Tabelle `rm_tests` (Migration 0013), 1RM-Block mit Wert, Datum und
         Test-Liste (löschbar), 1RM aus der Statistik-Reihe entfernt. Test-Knopf noch ohne
@@ -70,7 +70,7 @@ Punkt 1 gebaut.
         Umgebaut in 1.7.2: der Test ist eine dritte Art laufender Einheit in der
         bestehenden Live-Schicht (Panel, Uhr, Mini-Streifen, Ende-Dialog) statt eines
         Popups; eigener Aufwärmblock, keine Aufwärmsätze an der Übung.
-  - [ ] Teil C: `rm_tests` in Backup und Wiederherstellung aufnehmen.
+  - [x] Teil C: `rm_tests` in Backup und Wiederherstellung aufnehmen.
 - [ ] Lieferung 3: Tests im Trainingsverlauf & Kalender als eigener Eintragstyp
       (Verlaufs-Aufbereitung um die Test-Datensätze erweitert; Coach unberührt).
 - [ ] Lieferung 4: Test-Werte farblich abgesetzt im 1RM-Diagramm.
@@ -138,6 +138,9 @@ wenige Worte). Detail steht im jeweiligen Commit. Abgeschlossene Vorhaben werden
 entfernt, sobald sie in „Abgeschlossene Vorhaben" stehen – Archiv je Halbjahr:
 `docs/archive/PLAN-Log-Archiv-2026-H1.md` (Jan–Jun), `docs/archive/PLAN-Log-Archiv-2026-H2.md`
 (Jul–Dez).
+
+2026-08-05 – 1.7.4 – 1RM-Tests in Sicherung und Wiederherstellung, Lieferung 2
+abgeschlossen.
 
 2026-08-05 – 1.7.3 – 1RM-Test zeigt den aktuellen Wert ab Start.
 

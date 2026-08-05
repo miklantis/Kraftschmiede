@@ -143,3 +143,19 @@ describe("parseRestore", () => {
     expect(res.tables.settings).toBeNull();
   });
 });
+
+describe("parseRestore – 1RM-Tests", () => {
+  it("uebernimmt rmTests in die Tabelle rm_tests, fehlend = leer", () => {
+    const exp = validExport();
+    exp.rmTests = [
+      { id: "t1", exercise_id: "e1", date: "2026-08-05", weight: 100, reps: 3, est_rm: 108 },
+    ];
+    const res = parseRestore(JSON.stringify(exp));
+    expect(res.tables.rm_tests).toHaveLength(1);
+    expect(res.tables.rm_tests[0]?.est_rm).toBe(108);
+
+    // Aeltere Sicherung ohne das Feld: Tabelle bleibt leer.
+    const without = parseRestore(JSON.stringify(validExport()));
+    expect(without.tables.rm_tests).toEqual([]);
+  });
+});

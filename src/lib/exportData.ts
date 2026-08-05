@@ -62,6 +62,8 @@ export interface RawExportData {
   composition: Row[];
   milestones: Row[];
   compositionMilestones: Row[];
+  /** 1RM-Tests (rm_tests) - eigenstaendige Messungen, keine Einheiten. */
+  rmTests: Row[];
   settings: Row | null;
 }
 
@@ -104,6 +106,7 @@ export interface KsExport {
   composition: Row[];
   milestones: Row[];
   compositionMilestones: Row[];
+  rmTests: Row[];
   settings: Row | null;
   _scoreScale: {
     note: string;
@@ -221,6 +224,7 @@ export function buildExport(
     composition: raw.composition,
     milestones: raw.milestones,
     compositionMilestones: raw.compositionMilestones,
+    rmTests: raw.rmTests,
     settings: raw.settings,
     _scoreScale: {
       note: SCORE_SCALE_NOTE,

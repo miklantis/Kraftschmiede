@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.7.4",
+      "date": "2026-08-05",
+      "changes": [
+        "Deine 1RM-Tests wandern jetzt in die Sicherung und kommen beim Wiederherstellen zurück. Ältere Sicherungsdateien ohne Tests lassen sich weiterhin einspielen – dann bleibt die Test-Liste einfach leer."
+      ]
+    },
+    {
       "version": "1.7.3",
       "date": "2026-08-05",
       "changes": [

@@ -36,6 +36,7 @@ export interface RestoreTables {
   composition: Row[];
   exercise_milestones: Row[];
   composition_milestones: Row[];
+  rm_tests: Row[];
   settings: Row | null;
 }
 
@@ -87,6 +88,7 @@ const zExport = z.looseObject({
   composition: z.array(zRow).optional(),
   milestones: z.array(zRow).optional(),
   compositionMilestones: z.array(zRow).optional(),
+  rmTests: z.array(zRow).optional(),
   settings: zRow.nullable().optional(),
 });
 
@@ -198,6 +200,8 @@ export function parseRestore(text: string): RestoreResult {
     composition: arr(exp.composition),
     exercise_milestones: arr(exp.milestones),
     composition_milestones: arr(exp.compositionMilestones),
+    // Aeltere Sicherungen kennen rm_tests nicht - dann bleibt die Liste leer.
+    rm_tests: arr(exp.rmTests),
     settings: exp.settings ?? null,
   };
 
