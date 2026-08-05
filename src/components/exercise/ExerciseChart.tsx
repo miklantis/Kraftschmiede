@@ -20,6 +20,7 @@ import {
   type ExHistoryEntry,
   type ExLineMetric,
   type ExMetric,
+  type ExRmTestPoint,
 } from "@/lib/exerciseHistory";
 
 // Verlaufschart einer Uebung, 1:1 aus V1 (charts.js drawExLine/drawExBars) auf
@@ -48,6 +49,9 @@ export interface ExerciseChartProps {
   // eine dezente Waagerechte auf Hoehe von value; erreichte werden gedimmt.
   // Leer/undefiniert => Chart verhaelt sich unveraendert.
   milestoneLines?: readonly { value: number; achieved: boolean; label: string }[];
+  // Bewusste 1RM-Tests, die in der 1RM-Ansicht als eigene, farblich abgesetzte
+  // Punkte in der Kurve mitlaufen. Leer/undefiniert => Chart wie bisher.
+  rmTests?: readonly ExRmTestPoint[];
 }
 
 export function ExerciseChart({
@@ -56,11 +60,12 @@ export function ExerciseChart({
   unit,
   height = 200,
   milestoneLines,
+  rmTests,
 }: ExerciseChartProps): React.ReactElement {
   const isVolume = metric === "volume";
   const linePoints = isVolume
     ? []
-    : exLineSeries(history, metric as ExLineMetric);
+    : exLineSeries(history, metric as ExLineMetric, rmTests ?? []);
   const bars = isVolume ? exVolumeSeries(history) : [];
   const n = isVolume ? bars.length : linePoints.length;
 
@@ -73,6 +78,9 @@ export function ExerciseChart({
 
       const ACC = readToken("--primary", "#0c9d77");
       const BAD = readToken("--danger", "#ef5b5b");
+      // Tests heben sich farblich von den Einheiten ab (Form gleich, Farbe traegt
+      // die Herkunft).
+      const TEST = readToken("--skill", "#3f7fb5");
       const GRID = readToken("--border", "#e4e4e8");
       const FAINT = readToken("--muted-foreground", "#8a8a8e");
       const INK = readToken("--foreground", "#1c1c1e");
@@ -126,7 +134,12 @@ export function ExerciseChart({
       const Y = (v: number) => ih - ((v - domLo) / (domHi - domLo)) * ih;
 
       // x-Position je Punkt einbacken (Helfer erwarten (d)=>number).
-      const co = pts.map((p, i) => ({ y: p.y, flag: p.flag, cx: px(i) }));
+      const co = pts.map((p, i) => ({
+        y: p.y,
+        flag: p.flag,
+        test: p.test === true,
+        cx: px(i),
+      }));
 
       // Grundlinie + Min/Max-Beschriftung links.
       g.append("line")
@@ -188,16 +201,18 @@ export function ExerciseChart({
         .attr("stroke-linecap", "round");
 
       // Punkte (letzter als offener Ring), Abweichung rot.
+      const dotColor = (p: (typeof co)[number]): string =>
+        p.test ? TEST : p.flag ? BAD : ACC;
       co.forEach((p, i) => {
         if (i === n - 1) return;
         g.append("circle")
           .attr("cx", p.cx)
           .attr("cy", Y(p.y))
-          .attr("r", p.flag ? 3.6 : 2.8)
-          .attr("fill", p.flag ? BAD : ACC);
+          .attr("r", p.flag || p.test ? 3.6 : 2.8)
+          .attr("fill", dotColor(p));
       });
       const last = co[n - 1];
-      appendEndpointRing(g, last.cx, Y(last.y), last.flag ? BAD : ACC);
+      appendEndpointRing(g, last.cx, Y(last.y), dotColor(last));
 
       // Tooltip je Punkt (Tippen/Hovern).
       let tipTO: ReturnType<typeof setTimeout> | null = null;
@@ -212,7 +227,9 @@ export function ExerciseChart({
           cx: co[i].cx,
           cy: Y(co[i].y),
           innerWidth: iw,
-          text: fmtLineVal(metric as ExLineMetric, co[i].y, unit),
+          text:
+            fmtLineVal(metric as ExLineMetric, co[i].y, unit) +
+            (co[i].test ? " · Test" : ""),
           bg: INK,
           fontFamily: CHART_MONO,
           fontSize: 14,
@@ -236,6 +253,7 @@ export function ExerciseChart({
           });
       });
     },
+    // rmTests wirkt ueber linePoints mit hinein.
     [linePoints, n, metric, unit, milestoneLines],
   );
 

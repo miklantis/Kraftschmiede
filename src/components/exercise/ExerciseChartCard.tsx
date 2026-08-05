@@ -3,6 +3,7 @@ import { ChipSwitch } from "@/components/ui/chip-switch";
 import { ExerciseChart } from "./ExerciseChart";
 import { usePinnedCharts } from "@/hooks/usePinnedCharts";
 import { useMilestones } from "@/hooks/useMilestones";
+import { useRmTests } from "@/hooks/useRmTests";
 import { fmtWeight } from "@/lib/format";
 import {
   EX_METRIC_TITLE,
@@ -45,7 +46,20 @@ export function ExerciseChartCard({
   // Ziel-Linien nur in der 1RM-Ansicht und nur wenn es Ziele und Datenpunkte
   // gibt. Der Toggle merkt sich seinen Zustand lokal (Standard aus).
   const milestones = useMilestones(exerciseId).data ?? [];
-  const rmPoints = useMemo(() => exLineSeries(history, "rm"), [history]);
+
+  // Bewusste 1RM-Tests laufen in der 1RM-Ansicht als abgesetzte Punkte in der
+  // Kurve mit (Lieferung 4). In den anderen Metriken bleiben sie aussen vor.
+  const tests = useRmTests(exerciseId).data ?? [];
+  const rmTests = useMemo(
+    () => tests.map((t) => ({ date: t.date, estRm: t.est_rm })),
+    [tests],
+  );
+  const showTests = active === "rm" && rmTests.length > 0;
+
+  const rmPoints = useMemo(
+    () => exLineSeries(history, "rm", rmTests),
+    [history, rmTests],
+  );
   const goalsAvailable =
     milestones.length > 0 && active === "rm" && rmPoints.length > 0;
   const [showGoals, setShowGoals] = useState(false);
@@ -112,9 +126,16 @@ export function ExerciseChartCard({
       <ExerciseChart
         history={history}
         metric={active}
+        rmTests={showTests ? rmTests : undefined}
         unit={unit}
         milestoneLines={milestoneLines}
       />
+      {showTests && (
+        <div className="mt-2 flex items-center gap-1.5 text-[12px] text-muted-foreground">
+          <span className="size-[7px] rounded-full bg-skill" />
+          1RM-Test
+        </div>
+      )}
     </div>
   );
 }

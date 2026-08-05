@@ -26,7 +26,7 @@ nicht erst ab einer bestimmten Anzahl Einträge.
 ## Aktueller Stand
 
 - **App im laufenden Betrieb**, funktional vollständig, installierbar (PWA), auf der
-  normalisierten Datenbank. Aktuelle Version: **1.8.0**.
+  normalisierten Datenbank. Aktuelle Version: **1.8.1**.
 - Pflege/Bugfixing laufend; neue Features nach Konzept vor Code.
 - **Offene Handgriffe deinerseits:**
   - Migration `0013_rm_tests.sql` im Supabase-SQL-Editor ausführen (neue Tabelle für die
@@ -44,37 +44,6 @@ nicht erst ab einer bestimmten Anzahl Einträge.
 Laufend, ergibt sich im Betrieb. Einzelne Punkte kommen hierher, sobald sie auftauchen.
 
 - (noch keine offenen Punkte)
-
-### 1RM als Bestwert + 1RM-Test
-
-Konzept besprochen, **noch nicht gebaut**. Das 1RM soll ein beweisgebundener Rekord
-werden (Automatik hebt nur bei einem Satz mit ≤ 5 Wdh, senkt nie von allein), dazu ein
-bewusster 1RM-Test als Live-Block auf der Übungs-Detailseite (eigener 1RM-Block,
-Test-Liste, Live-Vorschau altes → neues 1RM, setzt hoch und runter), nur bei
-Gewichtsübungen, mit eigener DB-Tabelle. Konzept:
-`docs/Konzept-1RM-Bestwert-und-Test.md`. Punkt 2 (Sprung beim Phasenwechsel auf
-1RM-Basis) baut darauf auf; Konzept: `docs/Konzept-Phasenwechsel-Sprung.md`, wird nach
-Punkt 1 gebaut.
-
-- [x] Lieferung 1: Rekord-Regel im Rechenkern (Automatik hoch nur ≤ 5 Wdh, nie
-      automatisch runter; beide Speicherstellen Beenden/Bearbeiten). Keine DB, keine UI.
-      Erstbefüllung bleibt möglich, solange eine Übung noch gar kein 1RM hat.
-- [x] Lieferung 2: eigener 1RM-Block + Test als Live-Block (Migration, Live-Vorschau,
-      Test-Liste, nur Gewichtsübungen, Backup/Restore). In drei Teile zerlegt:
-  - [x] Teil A: Tabelle `rm_tests` (Migration 0013), 1RM-Block mit Wert, Datum und
-        Test-Liste (löschbar), 1RM aus der Statistik-Reihe entfernt. Test-Knopf noch ohne
-        Funktion.
-  - [x] Teil B: der Test selbst als Live-Block (Vorbelegung 90 % des 1RM, zwei Sätze
-        5/3, weitere per Knopf, höchstens 5 Wdh je Satz, Live-Vorschau altes → neues
-        1RM, setzt hoch und runter). Vorschau erscheint ab dem ersten abgehakten Satz.
-        Umgebaut in 1.7.2: der Test ist eine dritte Art laufender Einheit in der
-        bestehenden Live-Schicht (Panel, Uhr, Mini-Streifen, Ende-Dialog) statt eines
-        Popups; eigener Aufwärmblock, keine Aufwärmsätze an der Übung.
-  - [x] Teil C: `rm_tests` in Backup und Wiederherstellung aufnehmen.
-- [x] Lieferung 3: Tests im Trainingsverlauf & Kalender als eigener Eintragstyp
-      (Verlaufs-Aufbereitung um die Test-Datensätze erweitert; Coach unberührt).
-      Test-Einträge sind im Verlauf schreibgeschützt (Verwaltung im 1RM-Block).
-- [ ] Lieferung 4: Test-Werte farblich abgesetzt im 1RM-Diagramm.
 
 ### Sprung beim Phasenwechsel auf 1RM-Basis (Punkt 2)
 
@@ -101,6 +70,12 @@ Bau bestätigen.
 
 Überblick der fertigen Vorhaben; der Verlauf steht im Log unten bzw. im Log-Archiv.
 
+- **1RM als Bestwert + 1RM-Test** (1.6.2–1.8.1). Das 1RM ist ein beweisgebundener Rekord:
+  die Automatik hebt ihn nur bei einem Satz mit ≤ 5 Wdh und senkt ihn nie. Dazu der
+  bewusste 1RM-Test als dritte Art laufender Einheit in der Live-Schicht (Panel, Uhr,
+  Mini-Streifen, Ende-Dialog), eigener 1RM-Block mit Test-Liste auf der Übungsseite,
+  Tests in Verlauf, Kalender, Diagramm und Sicherung. Migration 0013 ausgeführt. Coach
+  und Arbeitsgewicht unberührt. Konzept: `docs/archive/Konzept-1RM-Bestwert-und-Test.md`.
 - **Meilensteine pro Körpermetrik** (1.6.0–1.6.1). Je Mess-Metrik eigene Zielwerte anlegen;
   Ziel-Linien im Mess-Diagramm; Backup/Restore und gerätelokale Mess-Ansicht. Migration
   0012 ausgeführt. Coach unberührt.
@@ -139,25 +114,6 @@ wenige Worte). Detail steht im jeweiligen Commit. Abgeschlossene Vorhaben werden
 entfernt, sobald sie in „Abgeschlossene Vorhaben" stehen – Archiv je Halbjahr:
 `docs/archive/PLAN-Log-Archiv-2026-H1.md` (Jan–Jun), `docs/archive/PLAN-Log-Archiv-2026-H2.md`
 (Jul–Dez).
-
-2026-08-05 – 1.8.0 – 1RM-Tests als eigener Eintragstyp in Verlauf und Kalender,
-Lieferung 3.
-
-2026-08-05 – 1.7.4 – 1RM-Tests in Sicherung und Wiederherstellung, Lieferung 2
-abgeschlossen.
-
-2026-08-05 – 1.7.3 – 1RM-Test zeigt den aktuellen Wert ab Start.
-
-2026-08-05 – 1.7.2 – 1RM-Test in die bestehende Live-Schicht umgebaut (dritte
-Einheit-Art), Popup entfernt.
-
-2026-08-05 – 1.7.1 – 1RM-Test als Live-Block mit Vorschau, Teil B von Lieferung 2.
-
-2026-08-05 – 1.7.0 – 1RM-Block auf der Übungsseite, Tabelle rm_tests (Migration 0013),
-Teil A von Lieferung 2.
-
-2026-08-05 – 1.6.2 – 1RM als Rekord: Automatik hebt nur bei ≤ 5 Wdh, senkt nie
-(Beenden + Bearbeiten), Lieferung 1 von vier.
 
 2026-08-05 – PLAN-Log-Struktur überarbeitet: Archiv nach Halbjahr gesplittet, Log auf
 Stichworte gekürzt, abgeschlossene Vorhaben wandern künftig sofort ins Archiv statt erst

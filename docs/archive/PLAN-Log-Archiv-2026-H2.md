@@ -11,6 +11,27 @@ Eintraege bleiben historisch unveraendert, neueste zuerst.
 
 ---
 
+2026-08-05 – 1.8.1 – Test-Punkte im 1RM-Diagramm, Lieferung 4.
+
+2026-08-05 – 1.8.0 – 1RM-Tests als eigener Eintragstyp in Verlauf und Kalender,
+Lieferung 3.
+
+2026-08-05 – 1.7.4 – 1RM-Tests in Sicherung und Wiederherstellung, Lieferung 2
+abgeschlossen.
+
+2026-08-05 – 1.7.3 – 1RM-Test zeigt den aktuellen Wert ab Start.
+
+2026-08-05 – 1.7.2 – 1RM-Test in die bestehende Live-Schicht umgebaut (dritte
+Einheit-Art), Popup entfernt.
+
+2026-08-05 – 1.7.1 – 1RM-Test als Live-Block mit Vorschau, Teil B von Lieferung 2.
+
+2026-08-05 – 1.7.0 – 1RM-Block auf der Übungsseite, Tabelle rm_tests (Migration 0013),
+Teil A von Lieferung 2.
+
+2026-08-05 – 1.6.2 – 1RM als Rekord: Automatik hebt nur bei ≤ 5 Wdh, senkt nie
+(Beenden + Bearbeiten), Lieferung 1 von vier.
+
 2026-08-04 – Körper-Meilensteine in Backup/Restore + Mess-Ansicht gerätelokal (1.6.1).
 `composition_milestones` in Export/Restore aufgenommen; die Mess-Ansicht merkt sich pro
 Gerät Metrik und „Ziele"-Zustand. Coach unberührt.

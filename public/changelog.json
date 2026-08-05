@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.8.1",
+      "date": "2026-08-05",
+      "changes": [
+        "Im 1RM-Diagramm einer Übung laufen deine Tests jetzt als eigene, blau abgesetzte Punkte in der Kurve mit – chronologisch zwischen den Einheiten. Beim Antippen steht „· Test“ am Wert, und unter dem Diagramm erklärt eine kleine Legende die Farbe.",
+        "Die übrigen Ansichten (Top-Gewicht, Wiederholungen, Volumen) bleiben unverändert, ebenso angeheftete Diagramme."
+      ]
+    },
+    {
       "version": "1.8.0",
       "date": "2026-08-05",
       "changes": [

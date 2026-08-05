@@ -269,6 +269,14 @@ export function exDefaultMetric(
 export interface ExLinePoint {
   y: number;
   flag: boolean; // Abweichung in dieser Einheit
+  /** Punkt stammt aus einem bewussten 1RM-Test, nicht aus einer Einheit. */
+  test?: boolean;
+}
+
+/** Ein 1RM-Test fuer die Chart-Reihe (aus rm_tests). */
+export interface ExRmTestPoint {
+  date: string;
+  estRm: number;
 }
 
 export interface ExBar {
@@ -280,11 +288,29 @@ export interface ExBar {
 export function exLineSeries(
   h: readonly ExHistoryEntry[],
   metric: ExLineMetric,
+  rmTests: readonly ExRmTestPoint[] = [],
 ): ExLinePoint[] {
   if (metric === "rm") {
-    return h
+    // Einheiten und Tests bilden eine gemeinsame Kurve, chronologisch gemischt.
+    // Bei gleichem Datum steht der Test hinter der Einheit (stabile Sortierung),
+    // weil er in aller Regel danach gemacht wird.
+    const fromSessions = h
       .filter((x) => x.est1RM != null)
-      .map((x) => ({ y: x.est1RM as number, flag: x.dev }));
+      .map((x) => ({
+        date: x.date,
+        y: x.est1RM as number,
+        flag: x.dev,
+        test: false,
+      }));
+    const fromTests = rmTests.map((t) => ({
+      date: t.date,
+      y: t.estRm,
+      flag: false,
+      test: true,
+    }));
+    return [...fromSessions, ...fromTests]
+      .sort((a, b) => dateMs(a.date) - dateMs(b.date))
+      .map((p) => ({ y: p.y, flag: p.flag, test: p.test }));
   }
   const pick =
     metric === "weight"

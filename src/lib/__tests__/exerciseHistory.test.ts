@@ -391,3 +391,24 @@ describe("buildExerciseHistory – Skill-Anbindung", () => {
     expect(h[1].skill).toBeUndefined();
   });
 });
+
+describe("exLineSeries – 1RM-Tests", () => {
+  const h = [
+    { date: "2026-06-01", topW: 100, reps: 15, vol: 1500, sec: 0, score: 3, est1RM: 110, dev: false, sets: [] },
+    { date: "2026-06-20", topW: 105, reps: 12, vol: 1260, sec: 0, score: 3, est1RM: 115, dev: false, sets: [] },
+  ];
+
+  it("mischt Test-Punkte chronologisch in die 1RM-Reihe und markiert sie", () => {
+    const pts = exLineSeries(h, "rm", [{ date: "2026-06-10", estRm: 108 }]);
+    expect(pts.map((p) => p.y)).toEqual([110, 108, 115]);
+    expect(pts.map((p) => p.test === true)).toEqual([false, true, false]);
+  });
+
+  it("ohne Tests unveraendert", () => {
+    expect(exLineSeries(h, "rm")).toHaveLength(2);
+  });
+
+  it("andere Metriken bleiben ohne Test-Punkte", () => {
+    expect(exLineSeries(h, "weight", [{ date: "2026-06-10", estRm: 108 }])).toHaveLength(2);
+  });
+});

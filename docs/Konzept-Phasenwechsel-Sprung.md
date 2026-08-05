@@ -3,7 +3,7 @@
 Status: Konzept (Vorschlag). Wird **nach** dem Vorhaben „1RM als Bestwert + 1RM-Test"
 gebaut und hängt an dessen sauberem 1RM. Der zentrale Ansatz (Abschnitt 4.2) ist ein
 Vorschlag und wird vor dem Bau bestätigt; die offenen Feinentscheidungen stehen in
-Abschnitt 8. Konzept zu Punkt 1: `Konzept-1RM-Bestwert-und-Test.md`.
+Abschnitt 8. Konzept zu Punkt 1: `archive/Konzept-1RM-Bestwert-und-Test.md` (umgesetzt).
 
 ---
 
