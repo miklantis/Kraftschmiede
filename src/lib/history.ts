@@ -60,7 +60,21 @@ export interface HistoryLookups {
   skillName: (id: string) => string | undefined;
 }
 
-export type HistoryKind = "kraft" | "skill" | "yoga" | "dev";
+export type HistoryKind = "kraft" | "skill" | "yoga" | "dev" | "rmtest";
+
+// Ein 1RM-Test, wie ihn der Verlauf braucht (aus rm_tests). Bewusst KEINE
+// Einheit: er zaehlt nicht als Training, taucht aber als eigener Eintragstyp in
+// Liste und Kalender auf, damit die Rueckschau vollstaendig ist.
+export interface HistoryRmTestInput {
+  id: string;
+  date: string;
+  exerciseId: string;
+  weight: number;
+  reps: number;
+  estRm: number;
+  /** Rekord vor dem Test (null = erster Wert). */
+  previousRm: number | null;
+}
 
 export interface DetailRow {
   label: string;
@@ -78,6 +92,9 @@ export interface HistorySession {
   dateLabel: string; // "Mo., 22. Juni"
   durationLabel: string; // "45 min" oder ""
   detail: DetailRow[];
+  /** Eintraege ohne Einheit dahinter (1RM-Test) sind aus dem Verlauf heraus
+   *  weder loesch- noch bearbeitbar - das laeuft ueber die Uebungsseite. */
+  readOnly?: boolean;
 }
 
 // Ein Punkt im Kalender (Typklasse + kurzes Label).
@@ -219,9 +236,46 @@ export function buildHistorySession(
   };
 }
 
+/** Richtungszeichen eines Tests gegenueber dem Rekord davor. */
+function rmDirection(t: HistoryRmTestInput): string {
+  if (t.previousRm == null) return "";
+  if (t.estRm > t.previousRm) return " ↑";
+  if (t.estRm < t.previousRm) return " ↓";
+  return " =";
+}
+
+/** Anzeigefertiger Verlaufseintrag eines 1RM-Tests: bester Satz und der Sprung
+ *  vom alten auf den neuen Rekord. */
+export function buildHistoryRmTest(
+  t: HistoryRmTestInput,
+  lk: HistoryLookups,
+): HistorySession {
+  const name = lk.exerciseName(t.exerciseId) || "Übung";
+  const from = t.previousRm != null ? fmtKg(t.previousRm) + " kg" : "–";
+  return {
+    id: t.id,
+    date: t.date,
+    kind: "rmtest",
+    title: "1RM-Test · " + name,
+    dateLabel: longDateShort(t.date),
+    durationLabel: "",
+    detail: [
+      {
+        label: name,
+        lines: [
+          t.reps + " × " + fmtKg(t.weight) + " kg",
+          from + " → " + fmtKg(t.estRm) + " kg" + rmDirection(t),
+        ],
+      },
+    ],
+    readOnly: true,
+  };
+}
+
 export function buildHistoryModel(
   sessions: HistorySessionInput[],
   lk: HistoryLookups,
+  rmTests: HistoryRmTestInput[] = [],
 ): HistoryModel {
   // Aelteste zuerst hereingereicht; Liste zeigt neueste zuerst.
   const ordered = sessions
@@ -236,7 +290,23 @@ export function buildHistoryModel(
     });
   });
 
-  const list = ordered.map((s) => buildHistorySession(s, lk)).reverse();
+  // Tests kommen als eigene Eintraege dazu - im Kalender als eigener Punkt, in
+  // der Liste nach Datum zwischen die Einheiten einsortiert (neueste zuerst).
+  const tests = rmTests.slice();
+  tests.forEach((t) => {
+    (byDate[t.date] = byDate[t.date] || []).push({
+      kind: "rmtest",
+      // Kalenderzellen sind schmal - kurzes Label wie bei den Einheiten.
+      label: "1RM",
+    });
+  });
+
+  const list = [
+    ...ordered.map((s) => buildHistorySession(s, lk)),
+    ...tests.map((t) => buildHistoryRmTest(t, lk)),
+  ]
+    .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
+    .reverse();
 
   return { sessions: list, byDate };
 }

@@ -26,7 +26,7 @@ nicht erst ab einer bestimmten Anzahl Einträge.
 ## Aktueller Stand
 
 - **App im laufenden Betrieb**, funktional vollständig, installierbar (PWA), auf der
-  normalisierten Datenbank. Aktuelle Version: **1.7.4**.
+  normalisierten Datenbank. Aktuelle Version: **1.8.0**.
 - Pflege/Bugfixing laufend; neue Features nach Konzept vor Code.
 - **Offene Handgriffe deinerseits:**
   - Migration `0013_rm_tests.sql` im Supabase-SQL-Editor ausführen (neue Tabelle für die
@@ -71,8 +71,9 @@ Punkt 1 gebaut.
         bestehenden Live-Schicht (Panel, Uhr, Mini-Streifen, Ende-Dialog) statt eines
         Popups; eigener Aufwärmblock, keine Aufwärmsätze an der Übung.
   - [x] Teil C: `rm_tests` in Backup und Wiederherstellung aufnehmen.
-- [ ] Lieferung 3: Tests im Trainingsverlauf & Kalender als eigener Eintragstyp
+- [x] Lieferung 3: Tests im Trainingsverlauf & Kalender als eigener Eintragstyp
       (Verlaufs-Aufbereitung um die Test-Datensätze erweitert; Coach unberührt).
+      Test-Einträge sind im Verlauf schreibgeschützt (Verwaltung im 1RM-Block).
 - [ ] Lieferung 4: Test-Werte farblich abgesetzt im 1RM-Diagramm.
 
 ### Sprung beim Phasenwechsel auf 1RM-Basis (Punkt 2)
@@ -138,6 +139,9 @@ wenige Worte). Detail steht im jeweiligen Commit. Abgeschlossene Vorhaben werden
 entfernt, sobald sie in „Abgeschlossene Vorhaben" stehen – Archiv je Halbjahr:
 `docs/archive/PLAN-Log-Archiv-2026-H1.md` (Jan–Jun), `docs/archive/PLAN-Log-Archiv-2026-H2.md`
 (Jul–Dez).
+
+2026-08-05 – 1.8.0 – 1RM-Tests als eigener Eintragstyp in Verlauf und Kalender,
+Lieferung 3.
 
 2026-08-05 – 1.7.4 – 1RM-Tests in Sicherung und Wiederherstellung, Lieferung 2
 abgeschlossen.

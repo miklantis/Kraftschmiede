@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.8.0",
+      "date": "2026-08-05",
+      "changes": [
+        "Deine 1RM-Tests tauchen jetzt im Trainingsverlauf auf – als eigener Eintragstyp mit Zielscheiben-Symbol, einsortiert nach Datum zwischen den Einheiten. Aufgeklappt siehst du den besten Satz und den Sprung vom alten auf den neuen Wert samt Richtung.",
+        "Im Kalender bekommt ein Test einen eigenen Punkt mit der Kurzform „1RM“. Ändern oder löschen lässt sich ein Test weiterhin nur im 1RM-Block der Übung – im Verlauf steht dort ein Hinweis statt der Knöpfe.",
+        "Ein Test bleibt bewusst keine Trainingseinheit: Er zählt nicht als Einheit und lässt Coach, Journey-Woche und Häufigkeitsziel unberührt."
+      ]
+    },
+    {
       "version": "1.7.4",
       "date": "2026-08-05",
       "changes": [

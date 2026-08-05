@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ComponentType } from "react";
-import { ChevronDown, ChevronUp, Pencil, Trash2, Zap } from "lucide-react";
+import { ChevronDown, ChevronUp, Pencil, Target, Trash2, Zap } from "lucide-react";
 import { WorkoutIcon, YogaIcon } from "@/components/ui/training-icons";
 import type { HistorySession, HistoryKind } from "@/lib/history";
 
@@ -19,6 +19,7 @@ const ICON: Record<HistoryKind, ComponentType<{ className?: string }>> = {
   skill: Zap,
   yoga: YogaIcon,
   dev: WorkoutIcon,
+  rmtest: Target,
 };
 
 const TONE: Record<HistoryKind, string> = {
@@ -26,6 +27,7 @@ const TONE: Record<HistoryKind, string> = {
   skill: "text-skill",
   yoga: "text-yoga",
   dev: "text-deviation",
+  rmtest: "text-primary",
 };
 
 export function SessionLogCard({
@@ -123,6 +125,12 @@ export function SessionLogCard({
                 </button>
               </div>
             </div>
+          ) : session.readOnly ? (
+            // 1RM-Test: aus dem Verlauf heraus bewusst nicht aenderbar - er wird
+            // auf der Uebungsseite im 1RM-Block verwaltet.
+            <p className="pt-2.5 text-right text-[12px] text-muted-foreground">
+              Verwaltung im 1RM-Block der Übung
+            </p>
           ) : (
             <div className="flex items-center justify-end gap-2 pt-2.5">
               {onEdit &&

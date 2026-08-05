@@ -150,3 +150,36 @@ describe("Modellaufbau", () => {
     expect(model.byDate["2026-06-20"][0].kind).toBe("kraft");
   });
 });
+
+describe("buildHistoryModel – 1RM-Tests", () => {
+  const lk = {
+    exerciseName: (id: string) => (id === "e1" ? "Kniebeuge" : undefined),
+    templateName: () => undefined,
+    skillName: () => undefined,
+  };
+
+  it("nimmt Tests als eigenen Eintragstyp in Liste und Kalender auf", () => {
+    const m = buildHistoryModel([], lk, [
+      {
+        id: "t1",
+        date: "2026-08-05",
+        exerciseId: "e1",
+        weight: 100,
+        reps: 3,
+        estRm: 108,
+        previousRm: 100,
+      },
+    ]);
+    expect(m.sessions).toHaveLength(1);
+    const row = m.sessions[0]!;
+    expect(row.kind).toBe("rmtest");
+    expect(row.title).toBe("1RM-Test · Kniebeuge");
+    expect(row.readOnly).toBe(true);
+    expect(row.detail[0]?.lines[1]).toContain("→");
+    expect(m.byDate["2026-08-05"]?.[0]?.kind).toBe("rmtest");
+  });
+
+  it("ohne Tests bleibt das Modell unveraendert", () => {
+    expect(buildHistoryModel([], lk).sessions).toEqual([]);
+  });
+});

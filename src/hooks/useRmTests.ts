@@ -23,3 +23,21 @@ export function useRmTests(exerciseId: string) {
     },
   });
 }
+
+/** Alle 1RM-Tests des Nutzers (fuer Verlauf und Kalender), juengste zuerst. */
+export function useAllRmTests() {
+  const userId = useUserId();
+  return useQuery({
+    queryKey: ["rmTests", userId, "alle"],
+    enabled: userId !== null,
+    queryFn: async (): Promise<RmTestRow[]> => {
+      const { data, error } = await supabase
+        .from("rm_tests")
+        .select("*")
+        .order("date", { ascending: false })
+        .order("created_at", { ascending: false });
+      if (error) throw new Error(error.message);
+      return (data ?? []) as RmTestRow[];
+    },
+  });
+}
