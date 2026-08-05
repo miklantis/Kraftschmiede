@@ -7,9 +7,13 @@ import { useSettings } from "@/hooks/useSettings";
 import { computeActive, progressInfo } from "@/lib/liveFlow";
 import type {
   WorkoutSession,
+  RmTestSession,
   SkillSession,
   SkillLiveExercise,
 } from "@/lib/liveSession";
+import { testResult, asRmFormula } from "@/lib/rmTest";
+import { fmtWeight } from "@/lib/format";
+import type { RmFormula } from "@/engine/types";
 import type { AudioPrefs } from "@/lib/liveAudio";
 import { useLiveClock } from "./useLiveClock";
 import { useGripDrag } from "./useGripDrag";
@@ -71,6 +75,98 @@ function PanelContent({
           onCyclePlate={() => live.cyclePlateMode(i)}
         />
       ))}
+    </div>
+  );
+}
+
+/** Inhalt des 1RM-Tests: allgemeines Aufwaermen wie beim Workout, darunter die
+ *  eine getestete Uebung in der vertrauten Satz-Karte (ohne RIR-Spalte, ohne
+ *  Aufwaermsaetze) und die Vorschau „altes → neues 1RM“, sobald ein Satz
+ *  abgehakt ist. */
+function RmTestPanelContent({
+  session,
+  live,
+  plates,
+  bars,
+  unit,
+  formula,
+}: {
+  session: RmTestSession;
+  live: UseLiveSession;
+  plates: number[];
+  bars: { id: string; name: string; weight: number }[];
+  unit: string;
+  formula: RmFormula;
+}): React.ReactElement {
+  const active = computeActive(session.entries);
+  const entry = session.entries[0];
+  const result = testResult(
+    (entry?.sets ?? []).map((x) => ({
+      reps: x.reps,
+      weight: x.weight,
+      done: x.done,
+    })),
+    formula,
+  );
+  return (
+    <div className="flex flex-col gap-3">
+      <GeneralWarmupCard
+        sets={session.generalWarmup.sets}
+        onToggle={live.toggleGeneralWarmup}
+        onMinutes={live.commitGeneralWarmupMinutes}
+        onMode={live.setGeneralWarmupMode}
+        onAdd={live.addGeneralWarmup}
+        onDel={live.delGeneralWarmup}
+      />
+      {entry && (
+        <ExerciseLiveCard
+          entry={entry}
+          ei={0}
+          active={active}
+          plateMode={live.plateShow[0] ?? 0}
+          plates={plates}
+          bars={bars}
+          unit={unit}
+          onToggleWarm={() => {}}
+          onToggleSet={(si) => live.toggleWorkSet(0, si)}
+          onWarmValue={() => {}}
+          onSetValue={(si, kind, v) => live.commitSetValue(0, si, kind, v)}
+          onAddSet={() => live.addSet(0)}
+          onDelSet={() => live.delSet(0)}
+          onChangeBar={(bar) => live.changeBar(0, bar)}
+          onCyclePlate={() => live.cyclePlateMode(0)}
+          hideScore
+        />
+      )}
+      <div className="rounded-[14px] bg-card p-4 shadow-card">
+        <div className="text-[12px] font-semibold tracking-[0.3px] text-muted-foreground uppercase">
+          Neues 1RM
+        </div>
+        {result.estRm == null ? (
+          <p className="mt-1 text-[14px] leading-snug text-muted-foreground">
+            Hak einen Satz ab (höchstens 5 Wiederholungen), dann steht hier dein
+            neuer Wert.
+          </p>
+        ) : (
+          <>
+            <div className="mt-1 flex flex-wrap items-baseline gap-2 font-mono text-[20px] font-semibold text-foreground tabular-nums">
+              <span className="text-muted-foreground">
+                {session.previousRm != null
+                  ? fmtWeight(session.previousRm, unit)
+                  : "–"}
+              </span>
+              <span className="text-muted-foreground">→</span>
+              <span>{fmtWeight(result.estRm, unit)}</span>
+            </div>
+            {result.best && (
+              <div className="mt-1 font-mono text-[13px] text-muted-foreground tabular-nums">
+                bester Satz {fmtWeight(result.best.weight, unit)} ×{" "}
+                {result.best.reps}
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -193,12 +289,28 @@ export function LivePanel(): React.ReactElement | null {
   const title = isSkill ? "Skill " + s.title : s.title;
   const prog = s.kind === "skill" ? skillProgressInfo(s.exercises) : progressInfo(s.entries);
   const exCount = s.kind === "skill" ? s.exercises.length : s.entries.length;
-  const subtitle = exCount > 0 ? prog.curLabel + " · " + prog.progress : "läuft";
-  const content = s.kind === "skill" ? (
-    <SkillPanelContent session={s} live={live} audioPrefs={audioPrefs} />
-  ) : (
-    <PanelContent session={s} live={live} plates={plates} bars={bars} unit={unit} />
-  );
+  const subtitle =
+    s.kind === "rmtest"
+      ? prog.progress
+      : exCount > 0
+        ? prog.curLabel + " · " + prog.progress
+        : "läuft";
+  const formula = asRmFormula(settingsQ.data?.rm_formula);
+  const content =
+    s.kind === "skill" ? (
+      <SkillPanelContent session={s} live={live} audioPrefs={audioPrefs} />
+    ) : s.kind === "rmtest" ? (
+      <RmTestPanelContent
+        session={s}
+        live={live}
+        plates={plates}
+        bars={bars}
+        unit={unit}
+        formula={formula}
+      />
+    ) : (
+      <PanelContent session={s} live={live} plates={plates} bars={bars} unit={unit} />
+    );
 
   const restBar =
     live.rest && !live.collapsed ? (

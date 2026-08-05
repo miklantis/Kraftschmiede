@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.7.2",
+      "date": "2026-08-05",
+      "changes": [
+        "Der 1RM-Test läuft jetzt wie ein Workout: Er startet vom 1RM-Block der Übung und fährt als gewohntes Live-Panel herein – mit laufender Uhr, Minimieren zum Streifen über der Navigation, Beenden-Knopf und dem üblichen Ende-Dialog mit Speichern oder Verwerfen. Das frühere Popup ist weg.",
+        "Im Test findest du einen Aufwärmblock (Art und Dauer frei wählbar, wie beim Workout) und darunter die getestete Übung in der vertrauten Satz-Karte – ohne RIR, mit Deckel bei 5 Wiederholungen. Die Vorschau „altes → neues 1RM“ steht direkt darunter und noch einmal im Ende-Dialog.",
+        "Es läuft immer nur eine Einheit gleichzeitig: Während eines Workouts oder einer Skill-Einheit ist der Test-Knopf gesperrt und umgekehrt. Verwerfen lässt dein 1RM unangetastet."
+      ]
+    },
+    {
       "version": "1.7.1",
       "date": "2026-08-05",
       "changes": [

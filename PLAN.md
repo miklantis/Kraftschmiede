@@ -26,7 +26,7 @@ nicht erst ab einer bestimmten Anzahl Einträge.
 ## Aktueller Stand
 
 - **App im laufenden Betrieb**, funktional vollständig, installierbar (PWA), auf der
-  normalisierten Datenbank. Aktuelle Version: **1.7.1**.
+  normalisierten Datenbank. Aktuelle Version: **1.7.2**.
 - Pflege/Bugfixing laufend; neue Features nach Konzept vor Code.
 - **Offene Handgriffe deinerseits:**
   - Migration `0013_rm_tests.sql` im Supabase-SQL-Editor ausführen (neue Tabelle für die
@@ -67,6 +67,9 @@ Punkt 1 gebaut.
   - [x] Teil B: der Test selbst als Live-Block (Vorbelegung 90 % des 1RM, zwei Sätze
         5/3, weitere per Knopf, höchstens 5 Wdh je Satz, Live-Vorschau altes → neues
         1RM, setzt hoch und runter). Vorschau erscheint ab dem ersten abgehakten Satz.
+        Umgebaut in 1.7.2: der Test ist eine dritte Art laufender Einheit in der
+        bestehenden Live-Schicht (Panel, Uhr, Mini-Streifen, Ende-Dialog) statt eines
+        Popups; eigener Aufwärmblock, keine Aufwärmsätze an der Übung.
   - [ ] Teil C: `rm_tests` in Backup und Wiederherstellung aufnehmen.
 - [ ] Lieferung 3: Tests im Trainingsverlauf & Kalender als eigener Eintragstyp
       (Verlaufs-Aufbereitung um die Test-Datensätze erweitert; Coach unberührt).
@@ -135,6 +138,9 @@ wenige Worte). Detail steht im jeweiligen Commit. Abgeschlossene Vorhaben werden
 entfernt, sobald sie in „Abgeschlossene Vorhaben" stehen – Archiv je Halbjahr:
 `docs/archive/PLAN-Log-Archiv-2026-H1.md` (Jan–Jun), `docs/archive/PLAN-Log-Archiv-2026-H2.md`
 (Jul–Dez).
+
+2026-08-05 – 1.7.2 – 1RM-Test in die bestehende Live-Schicht umgebaut (dritte
+Einheit-Art), Popup entfernt.
 
 2026-08-05 – 1.7.1 – 1RM-Test als Live-Block mit Vorschau, Teil B von Lieferung 2.
 

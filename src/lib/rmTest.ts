@@ -105,3 +105,10 @@ export function clampTestReps(reps: number): number {
   if (r > RECORD_MAX_REPS) return RECORD_MAX_REPS;
   return r;
 }
+
+const RM_FORMULAS: RmFormula[] = ["brzycki", "epley", "wathan", "mean"];
+
+/** Formel aus den Einstellungen absichern (Rueckfall auf den Mittelwert). */
+export function asRmFormula(v: string | null | undefined): RmFormula {
+  return RM_FORMULAS.includes(v as RmFormula) ? (v as RmFormula) : "mean";
+}

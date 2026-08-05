@@ -172,3 +172,49 @@ describe("liveSession", () => {
     });
   });
 });
+
+describe("parseLive – 1RM-Test", () => {
+  it("stellt eine laufende Test-Einheit samt Uebung wieder her", () => {
+    const raw = JSON.stringify({
+      collapsed: true,
+      session: {
+        id: "live_1",
+        kind: "rmtest",
+        title: "1RM-Test · Kniebeuge",
+        startedAt: 1000,
+        exerciseId: "ex1",
+        previousRm: 100,
+        generalWarmup: { sets: [{ minutes: 5, mode: "vario", done: false }] },
+        entries: [
+          {
+            exerciseId: "ex1",
+            exerciseName: "Kniebeuge",
+            equipment: "barbell",
+            tag: "1RM 100 kg",
+            barId: null,
+            barName: null,
+            barWeight: 20,
+            warmupSets: [],
+            sets: [{ reps: 5, weight: 90, done: true }],
+          },
+        ],
+      },
+    });
+    const p = parseLive(raw);
+    expect(p.collapsed).toBe(true);
+    expect(p.session?.kind).toBe("rmtest");
+    if (p.session && p.session.kind === "rmtest") {
+      expect(p.session.exerciseId).toBe("ex1");
+      expect(p.session.previousRm).toBe(100);
+      expect(p.session.entries[0]?.sets[0]?.done).toBe(true);
+      expect(p.session.generalWarmup.sets).toHaveLength(1);
+    }
+  });
+
+  it("verwirft eine Test-Einheit ohne Uebungs-ID", () => {
+    const raw = JSON.stringify({
+      session: { id: "live_2", kind: "rmtest", title: "x", startedAt: 1 },
+    });
+    expect(parseLive(raw).session).toBeNull();
+  });
+});

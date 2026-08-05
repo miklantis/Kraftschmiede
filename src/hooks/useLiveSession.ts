@@ -4,12 +4,15 @@ import {
   newLiveId,
   parseLive,
   serializeLive,
+  hasEntries,
   type LiveEntry,
   type LiveSession,
   type WorkoutSession,
+  type RmTestSession,
   type SkillSession,
   type SkillLiveExercise,
 } from "@/lib/liveSession";
+import { clampTestReps } from "@/lib/rmTest";
 import { appendedSet, restAfterSet } from "@/lib/liveFlow";
 import { clickTick, ensureAudio } from "@/lib/liveAudio";
 
@@ -220,6 +223,41 @@ function openStartSkill(input: StartSkillInput): void {
   set({ pending });
 }
 
+export interface StartRmTestInput {
+  exerciseId: string;
+  /** Anzeigename der Uebung (Kopf, Mini-Streifen, Dialoge). */
+  exerciseName: string;
+  /** Rekord vor dem Test. */
+  previousRm: number | null;
+  entry: LiveEntry;
+  generalWarmup: RmTestSession["generalWarmup"];
+}
+
+/** 1RM-Test starten. Bewusst ohne Start-Popup: der Test wird auf der
+ *  Uebungsseite ausgeloest und faehrt direkt als Panel herein. */
+function startRmTest(input: StartRmTestInput): void {
+  if (state.session) return; // nur eine laufende Einheit zugleich
+  set({
+    session: {
+      id: newLiveId(),
+      kind: "rmtest",
+      title: "1RM-Test · " + input.exerciseName,
+      startedAt: Date.now(),
+      exerciseId: input.exerciseId,
+      previousRm: input.previousRm,
+      generalWarmup: input.generalWarmup,
+      entries: [input.entry],
+    },
+    pending: null,
+    ending: false,
+    collapsed: false,
+    entering: !isDesktop(),
+    rest: null,
+    plateShow: {},
+    skillWatch: null,
+  });
+}
+
 /**
  * Starten bestaetigen: Popup ausfahren lassen, danach das Panel aufgeklappt
  * hereinfahren. Die Startzeit wird erst jetzt gesetzt (Vorschau-Zeit zaehlt
@@ -293,7 +331,7 @@ function syncPrefs(p: LivePrefs): void {
 /** Eine Uebung immutabel ersetzen. */
 function patchEntry(ei: number, fn: (e: LiveEntry) => LiveEntry): void {
   const s = state.session;
-  if (!s || s.kind !== "workout") return;
+  if (!hasEntries(s)) return;
   const entries = s.entries.map((e, i) => (i === ei ? fn(e) : e));
   set({ session: { ...s, entries } });
 }
@@ -321,7 +359,7 @@ function skipRest(): void {
 /** Arbeitssatz abhaken/loesen; bei Abhaken ggf. Auto-Pause (V1 onSetCompleted). */
 function toggleWorkSet(ei: number, si: number): void {
   const s = state.session;
-  if (!s || s.kind !== "workout") return;
+  if (!hasEntries(s)) return;
   const cur = s.entries[ei]?.sets[si];
   if (!cur) return;
   const nextDone = !cur.done;
@@ -347,7 +385,7 @@ function toggleWorkSet(ei: number, si: number): void {
 /** Aufwaermsatz abhaken/loesen (kein Pausen-Timer). */
 function toggleWarmSet(ei: number, wi: number): void {
   const s = state.session;
-  if (!s || s.kind !== "workout") return;
+  if (!hasEntries(s)) return;
   const cur = s.entries[ei]?.warmupSets[wi];
   if (!cur) return;
   const nextDone = !cur.done;
@@ -362,7 +400,7 @@ function toggleWarmSet(ei: number, wi: number): void {
 /** Allgemeines Aufwaermen (Cardio) abhaken/loesen. */
 function toggleGeneralWarmup(si: number): void {
   const s = state.session;
-  if (!s || s.kind !== "workout") return;
+  if (!hasEntries(s)) return;
   const cur = s.generalWarmup.sets[si];
   if (!cur) return;
   const nextDone = !cur.done;
@@ -385,7 +423,15 @@ function commitSetValue(
     ...e,
     sets: e.sets.map((x, j) => {
       if (j !== si) return x;
-      if (kind === "reps") return { ...x, reps: Math.max(0, Math.round(value) || 0) };
+      if (kind === "reps") {
+        // Im 1RM-Test nimmt ein Satz hoechstens RECORD_MAX_REPS Wiederholungen -
+        // darueber ist eine 1RM-Schaetzung nicht mehr belastbar.
+        const reps =
+          state.session?.kind === "rmtest"
+            ? clampTestReps(value)
+            : Math.max(0, Math.round(value) || 0);
+        return { ...x, reps };
+      }
       if (kind === "weight") {
         // Weicht das Gewicht vom geplanten Ziel ab, wird der Satz als angepasst
         // vermerkt (relevant fuer den Verlauf in Lieferung 4) - wie V1 markAdjust.
@@ -447,7 +493,7 @@ function patchGeneralWarmup(
   fn: (sets: WorkoutSession["generalWarmup"]["sets"]) => WorkoutSession["generalWarmup"]["sets"],
 ): void {
   const s = state.session;
-  if (!s || s.kind !== "workout") return;
+  if (!hasEntries(s)) return;
   set({ session: { ...s, generalWarmup: { sets: fn(s.generalWarmup.sets) } } });
 }
 
@@ -542,6 +588,7 @@ export interface LiveBarChoice {
 export interface UseLiveSession extends LiveState {
   openStartWorkout: (input: StartWorkoutInput) => void;
   openStartSkill: (input: StartSkillInput) => void;
+  startRmTest: (input: StartRmTestInput) => void;
   cancelStart: () => void;
   confirmStart: () => void;
   clearEntering: () => void;
@@ -587,6 +634,7 @@ export function useLiveSession(): UseLiveSession {
     ...snap,
     openStartWorkout,
     openStartSkill,
+    startRmTest,
     cancelStart,
     confirmStart,
     clearEntering,

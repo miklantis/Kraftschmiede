@@ -5,7 +5,15 @@ import { useFinishSession } from "@/hooks/useFinishSession";
 import { useFinishSkill } from "@/hooks/useFinishSkill";
 import { liveEndSummary } from "@/lib/liveFinish";
 import { skillEndSummary } from "@/lib/skillFinish";
-import type { SkillSession, WorkoutSession } from "@/lib/liveSession";
+import type {
+  RmTestSession,
+  SkillSession,
+  WorkoutSession,
+} from "@/lib/liveSession";
+import { useRmTestActions } from "@/hooks/useRmTestActions";
+import { useSettings } from "@/hooks/useSettings";
+import { asRmFormula, testResult } from "@/lib/rmTest";
+import { todayISO, fmtWeight } from "@/lib/format";
 import { useLiveClock } from "./useLiveClock";
 
 // Ende-Popup, Optik 1:1 wie V1 (live.js buildEndInner / klar-app.css kl-end-*):
@@ -139,6 +147,90 @@ function SkillEnd({ s }: { s: SkillSession }): React.ReactElement {
   );
 }
 
+/** Ende des 1RM-Tests: statt einer Einheit wird die Test-Zeile geschrieben und
+ *  der Rekord der Uebung gesetzt - nach oben wie nach unten. Verwerfen laesst
+ *  alles unberuehrt (kein Eintrag, Rekord bleibt), wie beim Workout. */
+function RmTestEnd({ s }: { s: RmTestSession }): React.ReactElement {
+  const live = useLiveSession();
+  const settingsQ = useSettings();
+  const { add, isPending } = useRmTestActions();
+  const unit = settingsQ.data?.unit ?? "kg";
+  const formula = asRmFormula(settingsQ.data?.rm_formula);
+  const entry = s.entries[0];
+  const sets = entry?.sets ?? [];
+  const result = testResult(
+    sets.map((x) => ({ reps: x.reps, weight: x.weight, done: x.done })),
+    formula,
+  );
+  const entries: SummaryEntry[] = entry
+    ? [
+        {
+          name: entry.exerciseName,
+          count: sets.filter((x) => x.done).length + " / " + sets.length,
+          chips: sets.map((x) => ({
+            label: x.reps + " × " + x.weight,
+            done: x.done,
+          })),
+        },
+      ]
+    : [];
+
+  async function onSave(): Promise<void> {
+    if (result.estRm == null || result.best == null) return;
+    await add({
+      exerciseId: s.exerciseId,
+      date: todayISO(),
+      weight: result.best.weight,
+      reps: result.best.reps,
+      estRm: result.estRm,
+      previousRm: s.previousRm,
+    });
+    live.clear();
+  }
+
+  return (
+    <>
+      <SummaryList entries={entries} />
+      <div className="mb-3.5 rounded-[14px] bg-card p-4 shadow-card">
+        <div className="text-[12px] font-semibold tracking-[0.3px] text-muted-foreground uppercase">
+          Neues 1RM
+        </div>
+        {result.estRm == null ? (
+          <p className="mt-1 text-[14px] leading-snug text-muted-foreground">
+            Kein abgehakter Satz mit höchstens 5 Wiederholungen – es gibt nichts
+            zu speichern.
+          </p>
+        ) : (
+          <div className="mt-1 flex flex-wrap items-baseline gap-2 font-mono text-[20px] font-semibold text-foreground tabular-nums">
+            <span className="text-muted-foreground">
+              {s.previousRm != null ? fmtWeight(s.previousRm, unit) : "–"}
+            </span>
+            <span className="text-muted-foreground">→</span>
+            <span>{fmtWeight(result.estRm, unit)}</span>
+          </div>
+        )}
+      </div>
+      <div className="mb-3.5 text-center text-xs text-muted-foreground">
+        Speichern setzt dein 1RM auf den Testwert und legt den Test ab.
+      </div>
+      <Button
+        onClick={() => void onSave()}
+        disabled={isPending || result.estRm == null}
+        className="h-auto w-full rounded-[14px] py-3.5 text-base leading-tight"
+      >
+        Speichern
+      </Button>
+      <Button
+        variant="destructive"
+        onClick={live.discard}
+        className="mt-2 h-auto w-full rounded-[14px] py-3.5 text-base leading-tight"
+      >
+        Verwerfen
+      </Button>
+    </>
+  );
+}
+
 export function EndModal(): React.ReactElement {
   const live = useLiveSession();
   const s = live.session;
@@ -153,7 +245,14 @@ export function EndModal(): React.ReactElement {
       title={s ? (isSkill ? "Skill " + s.title : s.title) + " beenden" : undefined}
       headerTrailing={open ? <ClockChip clock={clock} /> : undefined}
     >
-      {s && (s.kind === "skill" ? <SkillEnd s={s} /> : <WorkoutEnd s={s} />)}
+      {s &&
+        (s.kind === "skill" ? (
+          <SkillEnd s={s} />
+        ) : s.kind === "rmtest" ? (
+          <RmTestEnd s={s} />
+        ) : (
+          <WorkoutEnd s={s} />
+        ))}
     </Overlay>
   );
 }

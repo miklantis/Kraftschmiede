@@ -33,8 +33,11 @@ export function fmtDur(sec: number): string {
 
 // ---- Live-Session-Objekt ----------------------------------------------------
 
-/** Art der laufenden Einheit: gefuehrtes Kraft-Workout oder Skill-Einheit. */
-export type LiveKind = "workout" | "skill";
+/** Art der laufenden Einheit: gefuehrtes Kraft-Workout, Skill-Einheit oder
+ *  1RM-Test. Der Test laeuft bewusst in derselben Live-Schicht wie ein Workout
+ *  (Panel, Uhr, Mini-Streifen, Ende-Dialog) - er ist aber KEINE Einheit und
+ *  landet beim Abschluss nicht in sessions, sondern als Test-Zeile. */
+export type LiveKind = "workout" | "skill" | "rmtest";
 
 /**
  * Ein Arbeitssatz der laufenden Einheit. Geplant (target*) vs. tatsaechlich;
@@ -129,6 +132,22 @@ export interface WorkoutSession extends LiveSessionBase {
   entries: LiveEntry[];
 }
 
+/** Laufender 1RM-Test: genau eine Uebung, keine Aufwaermsaetze an der Uebung,
+ *  aber ein eigener allgemeiner Aufwaermblock (Cardio) wie beim Workout. Traegt
+ *  den Rekord VOR dem Test, damit der Ende-Dialog „altes → neues 1RM“ zeigen
+ *  und die Test-Zeile die Richtung festhalten kann. */
+export interface RmTestSession extends LiveSessionBase {
+  kind: "rmtest";
+  /** Katalog-ID der getesteten Uebung. */
+  exerciseId: string;
+  /** Rekord vor dem Test (null, wenn es noch keinen gab). */
+  previousRm: number | null;
+  generalWarmup: { sets: LiveGeneralWarmupSet[] };
+  /** Genau eine Uebung - dieselbe Form wie im Workout, damit die Satz-Karte und
+   *  die Satz-Aktionen unveraendert wiederverwendet werden. */
+  entries: LiveEntry[];
+}
+
 /** Laufende Skill-Einheit (Lieferung 5). Traegt den Skill-Bezug und die
  *  Uebungen der aktuellen Phase; beim Beenden werden Fortschritt (Konsekutiv-
  *  Logik) und die erledigten Saetze fortgeschrieben. */
@@ -143,7 +162,16 @@ export interface SkillSession extends LiveSessionBase {
   exercises: SkillLiveExercise[];
 }
 
-export type LiveSession = WorkoutSession | SkillSession;
+export type LiveSession = WorkoutSession | SkillSession | RmTestSession;
+
+/** Die Arten mit Uebungs-Eintraegen und allgemeinem Aufwaermen (Workout und
+ *  1RM-Test). Alle Satz-Aktionen des Live-Stores arbeiten auf dieser Menge. */
+export type EntrySession = WorkoutSession | RmTestSession;
+
+/** Traegt die laufende Einheit Uebungs-Eintraege (Workout oder 1RM-Test)? */
+export function hasEntries(s: LiveSession | null): s is EntrySession {
+  return s != null && (s.kind === "workout" || s.kind === "rmtest");
+}
 
 // ---- Lokale Persistenz ------------------------------------------------------
 // Wie die angehefteten Charts (usePinnedCharts) ueber localStorage: synchron,
@@ -187,6 +215,21 @@ export function parseLive(raw: string | null): PersistedLive {
           phaseIndex: num(sr.phaseIndex, 0),
           mastered: bool(sr.mastered),
           exercises: parseSkillExercises(sr.exercises),
+        },
+        collapsed,
+      };
+    }
+    if (sr.kind === "rmtest" && typeof sr.exerciseId === "string") {
+      return {
+        session: {
+          id: sr.id,
+          kind: "rmtest",
+          title: sr.title,
+          startedAt: sr.startedAt,
+          exerciseId: sr.exerciseId,
+          previousRm: typeof sr.previousRm === "number" ? sr.previousRm : null,
+          generalWarmup: parseGeneralWarmup(sr.generalWarmup),
+          entries: parseEntries(sr.entries),
         },
         collapsed,
       };
@@ -242,7 +285,7 @@ function parseEntries(v: unknown): LiveEntry[] {
       const rawEq = o.equipment;
       const equipment: LiveEntry["equipment"] =
         rawEq === "barbell" || rawEq === "plate" || rawEq === "bar" ||
-        rawEq === "band" || rawEq === "bodyweight"
+        rawEq === "band" || rawEq === "bodyweight" || rawEq === "dumbbell"
           ? rawEq
           : "barbell";
       const warmupSets = (Array.isArray(o.warmupSets) ? o.warmupSets : []).map(

@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { Trash2, Target } from "lucide-react";
 import { Section } from "@/components/ui/section";
-import { RmTestModal } from "./RmTestModal";
+import { useStartRmTest } from "@/hooks/useStartRmTest";
 import { useRmTests } from "@/hooks/useRmTests";
 import { useRmTestActions } from "@/hooks/useRmTestActions";
 import { longDateShort, fmtWeight } from "@/lib/format";
@@ -30,7 +29,7 @@ export function RmSection({
   const rmAsOf = exercise.rm_as_of;
   const testsQ = useRmTests(exerciseId);
   const { remove, isPending } = useRmTestActions();
-  const [testOpen, setTestOpen] = useState(false);
+  const { start, blocked } = useStartRmTest();
 
   const rows = testsQ.data ?? [];
 
@@ -68,10 +67,19 @@ export function RmSection({
           Rekord aus wenigen Wiederholungen. Das Training hebt ihn nur an; mit
           einem Test misst du deinen Stand bewusst neu.
         </p>
+        {blocked && (
+          <p className="mt-2 text-[13px] text-muted-foreground">
+            Es läuft bereits eine Einheit – beende sie zuerst.
+          </p>
+        )}
 
         <button
           type="button"
-          onClick={() => setTestOpen(true)}
+          onClick={() => start(exercise)}
+          disabled={blocked}
+          title={
+            blocked ? "Es läuft bereits eine Einheit." : undefined
+          }
           className="mt-3.5 flex w-full items-center justify-center gap-2 rounded-[13px] border border-border bg-card py-3 text-[15px] font-semibold text-foreground shadow-card transition-[filter] hover:brightness-95 disabled:cursor-not-allowed disabled:text-muted-foreground disabled:shadow-none"
         >
           <Target className="size-4" />
@@ -116,13 +124,6 @@ export function RmSection({
           ))}
         </div>
       )}
-
-      <RmTestModal
-        exercise={exercise}
-        unit={unit}
-        open={testOpen}
-        onClose={() => setTestOpen(false)}
-      />
     </Section>
   );
 }

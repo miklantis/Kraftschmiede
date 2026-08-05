@@ -162,7 +162,13 @@ export function StartModal(): React.ReactElement {
     >
       {p && (
         <>
-          {p.kind === "skill" ? <SkillPreview p={p} /> : <WorkoutPreview p={p} />}
+          {/* Der 1RM-Test hat kein Start-Popup (er startet direkt von der
+              Uebungsseite) - hier kommen nur Workout und Skill an. */}
+          {p.kind === "skill" ? (
+            <SkillPreview p={p} />
+          ) : p.kind === "workout" ? (
+            <WorkoutPreview p={p} />
+          ) : null}
 
           <Button
             onClick={live.confirmStart}
