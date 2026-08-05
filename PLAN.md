@@ -11,8 +11,15 @@ testen. Bei jeder Auslieferung die Version in `public/changelog.json` fortschrei
 
 Weitere Quellen: `docs/Architektur.md` (Schema, Leitplanken), `docs/adr/`
 (Entscheidungen, Betriebs-Lernpunkte), `docs/Designsystem.md`, `docs/Muskel-Map.md`,
-`docs/archive/` (fertige Konzepte, Log-Archiv). Der nutzerverständliche Verlauf je
-Version liegt in `public/changelog.json`.
+`docs/archive/` (fertige Konzepte, Log-Archiv je Halbjahr). Der nutzerverständliche
+Verlauf je Version liegt in `public/changelog.json`.
+
+Log-Konvention: das Log unten führt nur Stichwort-Einträge (Datum, Version, wenige
+Worte) zu laufenden bzw. gerade fertiggestellten Vorhaben – Begründung/Detail steht im
+jeweiligen Commit, nicht nochmal hier. Sobald ein Vorhaben komplett abgeschlossen ist
+(Zeile unter „Abgeschlossene Vorhaben" gesetzt), wandern seine Log-Einträge im selben
+Zug ins Archiv (`docs/archive/PLAN-Log-Archiv-<Jahr>-H1/H2.md`, je nach Halbjahr) –
+nicht erst ab einer bestimmten Anzahl Einträge.
 
 ---
 
@@ -115,49 +122,20 @@ Bau bestätigen.
 
 ## Erledigt (Log)
 
-Nur die jüngsten Einträge (Datum, Version, was, ein Satz warum). Tiefes Detail steht im
-jeweiligen Commit. Ältere Einträge im Archiv: `docs/archive/PLAN-Log-Archiv.md`.
+Stichwort-Einträge zu laufenden/gerade fertiggestellten Vorhaben (Datum, Version,
+wenige Worte). Detail steht im jeweiligen Commit. Abgeschlossene Vorhaben werden hier
+entfernt, sobald sie in „Abgeschlossene Vorhaben" stehen – Archiv je Halbjahr:
+`docs/archive/PLAN-Log-Archiv-2026-H1.md` (Jan–Jun), `docs/archive/PLAN-Log-Archiv-2026-H2.md`
+(Jul–Dez).
 
-2026-08-05 – Doku: offene Frage im 1RM-Konzept beantwortet. Ein Test ist nur auf der
-Übungs-Detailseite (Test-Liste im 1RM-Block) löschbar, nicht aus dem Trainingsverlauf
-oder Kalender heraus (`docs/Konzept-1RM-Bestwert-und-Test.md`, Abschnitte 4.3, 4.4, 8).
-Reine Doku, noch nicht gebaut.
+2026-08-05 – PLAN-Log-Struktur überarbeitet: Archiv nach Halbjahr gesplittet, Log auf
+Stichworte gekürzt, abgeschlossene Vorhaben wandern künftig sofort ins Archiv statt erst
+ab zehn Einträgen.
 
-2026-08-05 – Doku: Konzept Punkt 2 + Ablage aufgeräumt. Neues Konzept „Sprung beim
-Phasenwechsel auf 1RM-Basis" (`docs/Konzept-Phasenwechsel-Sprung.md`) als offenes Vorhaben
-aufgenommen, wird nach Punkt 1 gebaut. Fertiges Konzept „Workouts & Journey-Zuordnung" nach
-`docs/archive/` verschoben (Verweise nachgezogen). Reine Doku.
+2026-08-05 – Doku: 1RM-Konzept, Lösch-Frage geklärt (Test nur auf Übungs-Detailseite
+löschbar).
 
-2026-08-05 – PLAN.md verschlankt und neues Konzept aufgenommen. „Aktueller Stand"
-entschlackt, fertige Meilenstein-/Kurzhantel-Vorhaben als Einzeiler nach „Abgeschlossene
-Vorhaben" gezogen, die drei ältesten Log-Einträge (Kurzhanteln, 13.07.) ins Log-Archiv
-verschoben. Neues offenes Vorhaben „1RM als Bestwert + 1RM-Test" samt Konzeptdokument
-`docs/Konzept-1RM-Bestwert-und-Test.md` (noch nicht gebaut). Reine Doku.
+2026-08-05 – Doku: Konzept „Phasenwechsel-Sprung" aufgenommen, „Workouts & Journey"-Konzept
+archiviert.
 
-2026-08-04 – Körper-Meilensteine in Backup/Restore + Mess-Ansicht gerätelokal (1.6.1).
-`composition_milestones` in Export/Restore aufgenommen; die Mess-Ansicht merkt sich pro
-Gerät Metrik und „Ziele"-Zustand. Coach unberührt.
-
-2026-08-04 – Meilensteine pro Körpermetrik, Lieferung 1 (1.6.0). Neue Tabelle
-`composition_milestones` (Migration 0012), Schema/Hooks, Section + Ziel-Linien im
-Mess-Diagramm. Coach unberührt.
-
-2026-08-02 – Ziele-Zustand angehefteter Kacheln gerätelokal gemerkt (1.5.5). Neuer Store
-`usePinnedGoals` (localStorage), sonst wie zuvor. Nicht synchronisiert.
-
-2026-08-02 – Ziel-Linien auf angehefteten Kacheln, Schritt 2 (1.5.4). Kachel in eigene
-Komponente `PinnedChartTile` gezogen; „Ziele"-Toggle wie auf der Detailseite. Coach
-unberührt.
-
-2026-08-02 – Ziel-Linien im Übungs-Chart, Schritt 1 (1.5.3). `ExerciseChart` bekommt die
-optionale Prop `milestoneLines`; Toggle „Ziele" im Detail-Chart. Rein additiv.
-
-2026-08-02 – Meilensteine in Backup/Restore und Coach-Export (1.5.2). `exercise_milestones`
-in Export/Restore; Coach-Export je Übung, dabei den veralteten `active`-Filter entfernt
-(Bugfix: lieferte zuletzt keine Übungen mehr). Coach-Rechenkern unberührt.
-
-2026-08-02 – Meilensteine unter das Diagramm verschoben (1.5.1). Rein optisch.
-
-2026-08-02 – Meilensteine je Übung, Lieferung 1 (1.5.0). Neue Tabelle `exercise_milestones`
-(Migration 0011), Schema/Hooks, wiederverwendbare Komponente „Fortschritt-zu-Ziel",
-Section auf der Detailseite. Coach unberührt.
+2026-08-05 – PLAN.md verschlankt, 1RM-Konzept aufgenommen.
