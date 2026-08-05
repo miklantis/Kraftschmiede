@@ -178,9 +178,7 @@ Detailseite zählt weiter nur Einheiten, nicht Tests).
 - Aus welchem Anteil des aktuellen 1RM das Test-Gewicht vorbelegt wird (so, dass 3–5
   saubere Wiederholungen realistisch sind). Reine Vorbelegung, vom Nutzer frei
   anpassbar.
-- Ob bei mehr als 5 Wiederholungen im Test ein dezenter Hinweis auf die geringere
-  Verlässlichkeit erscheint oder der Test hart auf 5 begrenzt wird.
 - Ob ein Test aus dem Verlauf/Kalender heraus löschbar ist und, falls ja, was mit dem
   1RM passiert. Vorschlag: löschbar (Fehleingabe), aber das 1RM wird dabei **nicht**
   automatisch auf einen früheren Wert zurückgerechnet – Korrektur läuft über einen neuen
-  Test.
+  Test. 
