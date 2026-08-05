@@ -12,6 +12,7 @@ import { PageReveal } from "@/components/ui/page-reveal";
 import { ExerciseChartCard } from "@/components/exercise/ExerciseChartCard";
 import { ExerciseEditModal } from "@/components/exercise/ExerciseEditModal";
 import { MilestonesSection } from "@/components/exercise/MilestonesSection";
+import { RmSection } from "@/components/exercise/RmSection";
 import { useExerciseDetail } from "@/hooks/useExerciseDetail";
 import { profileLabel, equipmentLabel, tierLabel } from "@/lib/labels";
 import { longDateShort, fmtWeight } from "@/lib/format";
@@ -138,8 +139,8 @@ function ExerciseDetailPage(): React.ReactElement {
       )}
 
       <PageReveal>
-        {/* Mobil ein Stapel in fester Reihenfolge (Statistik, Diagramm, Muskeln,
-          Verlauf). Ab 960px zwei unabhaengig fliessende Spalten wie V1: links
+        {/* Mobil ein Stapel in fester Reihenfolge (Statistik, Diagramm, 1RM,
+          Meilensteine, Muskeln, Verlauf). Ab 960px zwei unabhaengig fliessende Spalten wie V1: links
           (breiter) Diagramm + Verlauf, rechts Statistik + Muskeln. Bewusst KEIN
           gemeinsames Zeilenraster - jede Spalte stapelt ihre Bloecke fuer sich,
           sodass die Muskeln direkt unter der Statistik folgen (keine Luecke).
@@ -166,6 +167,17 @@ function ExerciseDetailPage(): React.ReactElement {
 
           {!isBodyweight && (
             <div className="order-3 min-w-0 min-[960px]:order-none">
+              <RmSection
+                exerciseId={exercise.id}
+                currentRm={exercise.rm}
+                rmAsOf={exercise.rm_as_of}
+                unit={unit}
+              />
+            </div>
+          )}
+
+          {!isBodyweight && (
+            <div className="order-4 min-w-0 min-[960px]:order-none">
               <MilestonesSection
                 exerciseId={exercise.id}
                 currentRm={exercise.rm}
@@ -176,7 +188,7 @@ function ExerciseDetailPage(): React.ReactElement {
 
           <Section
             eyebrow="Verlauf"
-            className="order-5 min-w-0 min-[960px]:order-none"
+            className="order-6 min-w-0 min-[960px]:order-none"
           >
             {verlauf.length === 0 ? (
               <p className="text-[15px] text-muted-foreground">
@@ -208,7 +220,7 @@ function ExerciseDetailPage(): React.ReactElement {
         <div className="contents min-w-0 min-[960px]:flex min-[960px]:flex-1 min-[960px]:flex-col min-[960px]:gap-7">
           <Section
             eyebrow="Beanspruchte Muskeln"
-            className="order-4 min-[960px]:order-none"
+            className="order-5 min-[960px]:order-none"
           >
             {/* Figur nimmt ~78% der Breite (V1-Wert), zentriert - so bleibt
                 Abstand zwischen Rand und Illustration, Desktop wie Mobile.
@@ -220,11 +232,11 @@ function ExerciseDetailPage(): React.ReactElement {
           </Section>
 
           {/* "Uebung anpassen": Desktop unten in der rechten Spalte, mobil ganz
-              am Ende (order-5, nach dem Verlauf) - wie V1. */}
+              am Ende (nach dem Verlauf) - wie V1. */}
           <button
             type="button"
             onClick={() => setEditOpen(true)}
-            className="order-6 flex w-full items-center justify-center gap-2 rounded-[13px] border border-border bg-card py-3.5 text-[15px] font-semibold text-foreground shadow-card transition-[filter] hover:brightness-95 min-[960px]:order-none"
+            className="order-7 flex w-full items-center justify-center gap-2 rounded-[13px] border border-border bg-card py-3.5 text-[15px] font-semibold text-foreground shadow-card transition-[filter] hover:brightness-95 min-[960px]:order-none"
           >
             <Pencil className="size-4" />
             Übung anpassen

@@ -116,6 +116,13 @@ Begründung in ADR-0003.
   readiness, pain_flag, pain_note, notes, `unique(user_id, date)`
 - **composition** – InBody-/BIA-Messung: date, weight, body_fat_kg, body_fat_pct,
   skeletal_muscle_kg, tbw_kg, phase_angle, visceral_fat, `unique(user_id, date)`
+- **exercise_milestones** – Ziele je Übung: exercise_id (FK), name, target_rm,
+  achieved_at (Erreichen-Datum, nullable), position (Migration 0011)
+- **composition_milestones** – Ziele je Mess-Metrik: metric (weight/fat/muscle/water/phase),
+  name, target, position (Migration 0012)
+- **rm_tests** – bewusste 1RM-Tests je Übung: exercise_id (FK), date, weight, reps, est_rm,
+  previous_rm (Rekord vor dem Test, nullable), created_at (Migration 0013). Bewusst ohne
+  Bezug zu `sessions`: ein Test ist keine Trainingseinheit und zählt nirgends als solche
 - **settings** – user_id (PK), rm_formula, weekly_frequency_target, weight_step, unit,
   recovery_windows (jsonb), timers (jsonb)
 

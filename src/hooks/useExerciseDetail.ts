@@ -158,11 +158,9 @@ export function useExerciseDetail(exerciseId: string): ExerciseDetailView {
     } else {
       const best = exBestSet(history);
       const pct = exSixWeekPct(history);
+      // Das 1RM steht seit dem eigenen 1RM-Block (RmSection) nicht mehr in der
+      // Statistik-Reihe, damit es nur an einer Stelle lebt.
       stats = [
-        {
-          value: exercise.rm != null ? fmtWeight(exercise.rm, unit) : "–",
-          label: "1RM",
-        },
         {
           value: best ? `${fmtNum(best.weight)}×${best.reps}` : "–",
           label: "bestes Set",

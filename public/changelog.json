@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.7.0",
+      "date": "2026-08-05",
+      "changes": [
+        "Neu: ein eigener 1RM-Block auf der Übungsseite. Er zeigt deinen aktuellen Rekord mit Datum und darunter die Liste deiner 1RM-Tests (Datum, Gewicht × Wiederholungen, daraus geschätztes 1RM, Richtung). Nur bei Gewichtsübungen.",
+        "Der Knopf „1RM testen“ ist schon sichtbar, aber noch ohne Funktion – der Test selbst kommt im nächsten Schritt. Einen Test löschen kannst du ausschließlich hier; dein 1RM wird dabei bewusst nicht zurückgerechnet.",
+        "Das 1RM steht damit nicht mehr in der Statistik-Zeile, sondern nur noch an einer Stelle."
+      ]
+    },
+    {
       "version": "1.6.2",
       "date": "2026-08-05",
       "changes": [

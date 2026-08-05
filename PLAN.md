@@ -26,11 +26,14 @@ nicht erst ab einer bestimmten Anzahl Einträge.
 ## Aktueller Stand
 
 - **App im laufenden Betrieb**, funktional vollständig, installierbar (PWA), auf der
-  normalisierten Datenbank. Aktuelle Version: **1.6.2**.
+  normalisierten Datenbank. Aktuelle Version: **1.7.0**.
 - Pflege/Bugfixing laufend; neue Features nach Konzept vor Code.
-- **Offene Handgriffe deinerseits:** Migrationen 0009, 0010 und 0012 sind ausgeführt
-  (Stand 2026-08-05). Offen nur noch: im Workout-Editor in Workout E den bisherigen Curl
-  gegen „Curl (Kurzhantel)" tauschen (reiner App-Handgriff, kein SQL).
+- **Offene Handgriffe deinerseits:**
+  - Migration `0013_rm_tests.sql` im Supabase-SQL-Editor ausführen (neue Tabelle für die
+    1RM-Tests).
+  - Im Workout-Editor in Workout E den bisherigen Curl gegen „Curl (Kurzhantel)" tauschen
+    (reiner App-Handgriff, kein SQL).
+  - Migrationen 0009, 0010 und 0012 sind ausgeführt (Stand 2026-08-05).
 
 ---
 
@@ -57,7 +60,14 @@ Punkt 1 gebaut.
       automatisch runter; beide Speicherstellen Beenden/Bearbeiten). Keine DB, keine UI.
       Erstbefüllung bleibt möglich, solange eine Übung noch gar kein 1RM hat.
 - [ ] Lieferung 2: eigener 1RM-Block + Test als Live-Block (Migration, Live-Vorschau,
-      Test-Liste, nur Gewichtsübungen, Backup/Restore).
+      Test-Liste, nur Gewichtsübungen, Backup/Restore). In drei Teile zerlegt:
+  - [x] Teil A: Tabelle `rm_tests` (Migration 0013), 1RM-Block mit Wert, Datum und
+        Test-Liste (löschbar), 1RM aus der Statistik-Reihe entfernt. Test-Knopf noch ohne
+        Funktion.
+  - [ ] Teil B: der Test selbst als Live-Block (Vorbelegung 90 % des 1RM, zwei Sätze
+        5/3, weitere per Knopf, höchstens 5 Wdh je Satz, Live-Vorschau altes → neues
+        1RM, setzt hoch und runter).
+  - [ ] Teil C: `rm_tests` in Backup und Wiederherstellung aufnehmen.
 - [ ] Lieferung 3: Tests im Trainingsverlauf & Kalender als eigener Eintragstyp
       (Verlaufs-Aufbereitung um die Test-Datensätze erweitert; Coach unberührt).
 - [ ] Lieferung 4: Test-Werte farblich abgesetzt im 1RM-Diagramm.
@@ -125,6 +135,9 @@ wenige Worte). Detail steht im jeweiligen Commit. Abgeschlossene Vorhaben werden
 entfernt, sobald sie in „Abgeschlossene Vorhaben" stehen – Archiv je Halbjahr:
 `docs/archive/PLAN-Log-Archiv-2026-H1.md` (Jan–Jun), `docs/archive/PLAN-Log-Archiv-2026-H2.md`
 (Jul–Dez).
+
+2026-08-05 – 1.7.0 – 1RM-Block auf der Übungsseite, Tabelle rm_tests (Migration 0013),
+Teil A von Lieferung 2.
 
 2026-08-05 – 1.6.2 – 1RM als Rekord: Automatik hebt nur bei ≤ 5 Wdh, senkt nie
 (Beenden + Bearbeiten), Lieferung 1 von vier.
