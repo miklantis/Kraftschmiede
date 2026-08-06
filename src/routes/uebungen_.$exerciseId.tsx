@@ -161,6 +161,7 @@ function ExerciseDetailPage(): React.ReactElement {
                 options={metricOptions}
                 defaultMetric={defaultMetric}
                 unit={unit}
+                currentRm={exercise.rm}
               />
             </div>
           )}

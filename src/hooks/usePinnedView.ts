@@ -15,6 +15,7 @@ export interface PinnedCard {
   metric: ExMetric;
   title: string; // "Übungsname · Metrik"
   history: ExHistoryEntry[];
+  rm: number | null; // gespeicherter Rekord (bindet das Ende der 1RM-Treppe)
 }
 
 export interface PinnedView {
@@ -49,6 +50,7 @@ export function usePinnedView(): PinnedView {
         metric: pin.metric,
         title: ex.name + " · " + EX_METRIC_SHORT[pin.metric],
         history: buildExerciseHistory(ex.id, sessionsQ.data, rmFormula),
+        rm: ex.rm,
       });
     }
   }

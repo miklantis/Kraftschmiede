@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { select, type Selection } from "d3-selection";
-import { area, curveCatmullRom, line } from "d3-shape";
+import { area, curveCatmullRom, curveStepAfter, line } from "d3-shape";
 import { cn } from "@/lib/utils";
 
 // Generisches Chart-Fundament (D3-getrieben). Kapselt die Mechanik, die alle
@@ -60,6 +60,20 @@ export function smoothArea<T>(
     .y0(y0)
     .y1(y1)
     .curve(curveCatmullRom.alpha(0.5));
+}
+
+// Treppe (Stufe nach dem Punkt): Wert bleibt flach bis zur naechsten Aenderung
+// und springt dann. Fuer beweisgebundene Rekord-Verlaeufe (1RM), die zwischen
+// den Aenderungen konstant sind.
+export function stepLine<T>(x: (d: T) => number, y: (d: T) => number) {
+  return line<T>().x(x).y(y).curve(curveStepAfter);
+}
+export function stepArea<T>(
+  x: (d: T) => number,
+  y0: number,
+  y1: (d: T) => number,
+) {
+  return area<T>().x(x).y0(y0).y1(y1).curve(curveStepAfter);
 }
 
 // Vertikaler Verlauf (oben getoent, unten transparent oder schwach) als

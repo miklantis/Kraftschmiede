@@ -9,6 +9,8 @@ import {
   readToken,
   smoothArea,
   smoothLine,
+  stepArea,
+  stepLine,
   topRoundedBarPath,
   type ChartDims,
   type ChartSvg,
@@ -17,6 +19,7 @@ import { fmtNum, fmtWeight } from "@/lib/format";
 import {
   exLineSeries,
   exVolumeSeries,
+  recordSeries,
   type ExHistoryEntry,
   type ExLineMetric,
   type ExMetric,
@@ -35,7 +38,8 @@ const PER_POINT = 26; // Mindestbreite je Punkt; darunter wird der Chart scrollb
 const PER_BAR = 30;
 
 function fmtLineVal(metric: ExLineMetric, v: number, unit: string): string {
-  if (metric === "rm" || metric === "weight") return fmtWeight(v, unit);
+  if (metric === "rm" || metric === "trend" || metric === "weight")
+    return fmtWeight(v, unit);
   if (metric === "duration") return fmtNum(v) + " s";
   return fmtNum(v);
 }
@@ -49,9 +53,12 @@ export interface ExerciseChartProps {
   // eine dezente Waagerechte auf Hoehe von value; erreichte werden gedimmt.
   // Leer/undefiniert => Chart verhaelt sich unveraendert.
   milestoneLines?: readonly { value: number; achieved: boolean; label: string }[];
-  // Bewusste 1RM-Tests, die in der 1RM-Ansicht als eigene, farblich abgesetzte
-  // Punkte in der Kurve mitlaufen. Leer/undefiniert => Chart wie bisher.
+  // Bewusste 1RM-Tests. In der 1RM-Ansicht (Rekord-Treppe) setzen sie eigene,
+  // farblich abgesetzte Stufen. Leer/undefiniert => nur Trainings-PRs.
   rmTests?: readonly ExRmTestPoint[];
+  // Gespeicherter Rekord der Uebung (exercises.rm). Bindet das Ende der
+  // 1RM-Treppe an die Zahl im 1RM-Block. Nur fuer metric="rm" relevant.
+  recordRm?: number | null;
 }
 
 export function ExerciseChart({
@@ -61,11 +68,15 @@ export function ExerciseChart({
   height = 200,
   milestoneLines,
   rmTests,
+  recordRm,
 }: ExerciseChartProps): React.ReactElement {
   const isVolume = metric === "volume";
+  const isRecord = metric === "rm";
   const linePoints = isVolume
     ? []
-    : exLineSeries(history, metric as ExLineMetric, rmTests ?? []);
+    : isRecord
+      ? recordSeries(history, rmTests ?? [], recordRm ?? null)
+      : exLineSeries(history, metric as ExLineMetric);
   const bars = isVolume ? exVolumeSeries(history) : [];
   const n = isVolume ? bars.length : linePoints.length;
 
@@ -186,14 +197,17 @@ export function ExerciseChart({
           .text(gl.label);
       });
 
-      // Flaeche + Kurve.
+      // Flaeche + Linie. Der 1RM-Rekord ist zwischen den Aenderungen konstant und
+      // wird als Treppe gezeichnet; alle anderen Metriken als weiche Kurve.
+      const mkArea = isRecord ? stepArea : smoothArea;
+      const mkLine = isRecord ? stepLine : smoothLine;
       const gid = "exarea" + Math.random().toString(36).slice(2, 7);
       appendAreaGradient(svg.append("defs"), gid, ACC, 0.18);
       g.append("path")
-        .attr("d", smoothArea<(typeof co)[number]>((d) => d.cx, ih, (d) => Y(d.y))(co) ?? "")
+        .attr("d", mkArea<(typeof co)[number]>((d) => d.cx, ih, (d) => Y(d.y))(co) ?? "")
         .attr("fill", `url(#${gid})`);
       g.append("path")
-        .attr("d", smoothLine<(typeof co)[number]>((d) => d.cx, (d) => Y(d.y))(co) ?? "")
+        .attr("d", mkLine<(typeof co)[number]>((d) => d.cx, (d) => Y(d.y))(co) ?? "")
         .attr("fill", "none")
         .attr("stroke", ACC)
         .attr("stroke-width", 2.5)

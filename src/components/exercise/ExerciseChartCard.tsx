@@ -7,7 +7,7 @@ import { useRmTests } from "@/hooks/useRmTests";
 import { fmtWeight } from "@/lib/format";
 import {
   EX_METRIC_TITLE,
-  exLineSeries,
+  recordSeries,
   type ExHistoryEntry,
   type ExMetric,
   type ExMetricOption,
@@ -25,6 +25,9 @@ export interface ExerciseChartCardProps {
   options: readonly ExMetricOption[];
   defaultMetric: ExMetric;
   unit: string;
+  // Gespeicherter Rekord der Uebung (exercises.rm) - bindet das Ende der
+  // 1RM-Rekord-Treppe an die Zahl im 1RM-Block.
+  currentRm: number | null;
 }
 
 export function ExerciseChartCard({
@@ -33,6 +36,7 @@ export function ExerciseChartCard({
   options,
   defaultMetric,
   unit,
+  currentRm,
 }: ExerciseChartCardProps): React.ReactElement {
   const [metric, setMetric] = useState<ExMetric>(defaultMetric);
   // Falls der Standard nicht in den Optionen liegt, auf die erste zurueckfallen.
@@ -57,8 +61,8 @@ export function ExerciseChartCard({
   const showTests = active === "rm" && rmTests.length > 0;
 
   const rmPoints = useMemo(
-    () => exLineSeries(history, "rm", rmTests),
-    [history, rmTests],
+    () => recordSeries(history, rmTests, currentRm),
+    [history, rmTests, currentRm],
   );
   const goalsAvailable =
     milestones.length > 0 && active === "rm" && rmPoints.length > 0;
@@ -127,13 +131,22 @@ export function ExerciseChartCard({
         history={history}
         metric={active}
         rmTests={showTests ? rmTests : undefined}
+        recordRm={currentRm}
         unit={unit}
         milestoneLines={milestoneLines}
       />
-      {showTests && (
-        <div className="mt-2 flex items-center gap-1.5 text-[12px] text-muted-foreground">
-          <span className="size-[7px] rounded-full bg-skill" />
-          1RM-Test
+      {active === "rm" && (
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <span className="size-[7px] rounded-full bg-primary" />
+            Rekord aus Training
+          </span>
+          {rmTests.length > 0 && (
+            <span className="flex items-center gap-1.5">
+              <span className="size-[7px] rounded-full bg-skill" />
+              Test
+            </span>
+          )}
         </div>
       )}
     </div>

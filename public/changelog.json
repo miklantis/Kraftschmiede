@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.9.0",
+      "date": "2026-08-06",
+      "changes": [
+        "Das 1RM einer Übung hat jetzt zwei getrennte Diagramme. „1RM“ zeigt deinen echten Rekord als Treppe: Sie bleibt flach und springt nur, wenn ein Test oder ein sauberer Satz mit höchstens 5 Wiederholungen einen neuen Bestwert bringt. So passt die Kurve immer zur Zahl im 1RM-Block.",
+        "„Trend“ ist die bekannte weiche Kurve aus jedem Workout – eine Schätzung deiner Leistung, die mit dem Wiederholungsbereich rauf und runter geht. Sie dient dem Verlauf, nicht dem Rekord.",
+        "In der 1RM-Treppe sind Rekorde aus dem Training (grün) und aus bewussten Tests (blau) verschieden markiert; eine Legende erklärt die Farben. Angeheftete 1RM-Diagramme zeigen ebenfalls die Treppe."
+      ]
+    },
+    {
       "version": "1.8.3",
       "date": "2026-08-05",
       "changes": [

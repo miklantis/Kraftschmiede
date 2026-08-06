@@ -7,6 +7,8 @@ import {
   exDefaultMetric,
   exLineSeries,
   exVolumeSeries,
+  recordSeries,
+  type ExHistoryEntry,
 } from "@/lib/exerciseHistory";
 import type { HistorySessionInput, HistoryExercise } from "@/lib/history";
 
@@ -165,9 +167,10 @@ describe("exSixWeekPct", () => {
 });
 
 describe("exMetricOptions / exDefaultMetric", () => {
-  it("Hauptuebung: vier Metriken, Standard 1RM", () => {
+  it("Hauptuebung: fuenf Metriken (1RM, Trend, ...), Standard 1RM", () => {
     expect(exMetricOptions("strength", null).map((o) => o.key)).toEqual([
       "rm",
+      "trend",
       "weight",
       "reps",
       "volume",
@@ -392,23 +395,64 @@ describe("buildExerciseHistory – Skill-Anbindung", () => {
   });
 });
 
-describe("exLineSeries – 1RM-Tests", () => {
-  const h = [
-    { date: "2026-06-01", topW: 100, reps: 15, vol: 1500, sec: 0, score: 3, est1RM: 110, dev: false, sets: [] },
-    { date: "2026-06-20", topW: 105, reps: 12, vol: 1260, sec: 0, score: 3, est1RM: 115, dev: false, sets: [] },
-  ];
-
-  it("mischt Test-Punkte chronologisch in die 1RM-Reihe und markiert sie", () => {
-    const pts = exLineSeries(h, "rm", [{ date: "2026-06-10", estRm: 108 }]);
-    expect(pts.map((p) => p.y)).toEqual([110, 108, 115]);
-    expect(pts.map((p) => p.test === true)).toEqual([false, true, false]);
+describe("recordSeries – 1RM-Rekord-Treppe", () => {
+  // Minimale Einheit mit gesetztem Rekord-Kandidaten (<=5-Wdh-Bestwert der
+  // Einheit). record1RM=null => Einheit ohne tauglichen Satz.
+  const rEntry = (date: string, record1RM: number | null): ExHistoryEntry => ({
+    date,
+    topW: 0,
+    reps: 0,
+    vol: 0,
+    sec: 0,
+    score: null,
+    est1RM: record1RM,
+    record1RM,
+    dev: false,
+    sets: [],
   });
 
-  it("ohne Tests unveraendert", () => {
-    expect(exLineSeries(h, "rm")).toHaveLength(2);
+  it("steigt nur bei hoeherem <=5-Kandidaten, senkt nicht von allein", () => {
+    const h = [
+      rEntry("2026-01-01", 100),
+      rEntry("2026-01-08", 95), // niedriger -> keine Stufe
+      rEntry("2026-01-15", 110),
+    ];
+    const pts = recordSeries(h, [], 110);
+    expect(pts.map((p) => p.y)).toEqual([100, 110]);
+    expect(pts.every((p) => p.test === false)).toBe(true);
   });
 
-  it("andere Metriken bleiben ohne Test-Punkte", () => {
-    expect(exLineSeries(h, "weight", [{ date: "2026-06-10", estRm: 108 }])).toHaveLength(2);
+  it("Test setzt den Rekord hoch und runter, je als Stufe", () => {
+    const h = [rEntry("2026-01-01", 100)];
+    const tests = [
+      { date: "2026-01-05", estRm: 120 },
+      { date: "2026-02-01", estRm: 90 },
+    ];
+    const pts = recordSeries(h, tests, 90);
+    expect(pts.map((p) => p.y)).toEqual([100, 120, 90]);
+    expect(pts.map((p) => p.test === true)).toEqual([false, true, true]);
+  });
+
+  it("Test am selben Tag steht hinter der Einheit", () => {
+    const h = [rEntry("2026-01-01", 100)];
+    const pts = recordSeries(h, [{ date: "2026-01-01", estRm: 130 }], 130);
+    expect(pts.map((p) => p.y)).toEqual([100, 130]);
+    expect(pts.map((p) => p.test === true)).toEqual([false, true]);
+  });
+
+  it("bindet das Ende an den gespeicherten Rekord (Altwert hoeher)", () => {
+    const h = [rEntry("2026-01-01", 100), rEntry("2026-01-08", 105)];
+    const pts = recordSeries(h, [], 140);
+    expect(pts.map((p) => p.y)).toEqual([100, 105, 140]);
+    expect(pts[pts.length - 1].test).toBe(false);
+  });
+
+  it("leere Historie mit gespeichertem Rekord: ein Punkt auf dem Blockwert", () => {
+    const pts = recordSeries([], [], 120);
+    expect(pts.map((p) => p.y)).toEqual([120]);
+  });
+
+  it("ohne Kandidaten und ohne gespeicherten Rekord: keine Punkte", () => {
+    expect(recordSeries([rEntry("2026-01-01", null)], [], null)).toHaveLength(0);
   });
 });

@@ -478,3 +478,15 @@ jetzt auch ohne Coach-Status, solange Kennzahlen vorliegen. Rechte Spalte nur no
 Muskel-Figur + „Uebung anpassen“; die Figur rueckt nach oben. Geaendert:
 routes/uebungen_.$exerciseId.tsx, hooks/useExerciseDetail.ts (Labels), changelog.json.
 StatRow-Primitive bleibt erhalten, aktuell ungenutzt.
+
+2026-08-06 — 1RM & Trend als zwei Diagramme (Version 1.9.0). Der bisherige
+1RM-Verlauf ist geteilt: „1RM“ zeigt den Rekord als Treppe (neue recordSeries-Reihe;
+steigt nur bei Test oder sauberem ≤5-Wdh-Bestwert, gleiche Regel wie die Automatik;
+Ende an exercises.rm gebunden, damit Grafik und Block übereinstimmen), „Trend“ die
+weiche est1RM-Schätzkurve je Einheit. Rekorde aus Training (grün) und Test (blau) in
+der Treppe farblich getrennt, mit Legende. Geändert: lib/exerciseHistory.ts (record1RM
+je Einheit, Metrik „trend“, recordSeries), components/ui/chart.tsx (stepLine/stepArea),
+components/exercise/ExerciseChart.tsx (Treppe + recordRm), ExerciseChartCard.tsx,
+PinnedChartTile.tsx, hooks/usePinnedView.ts, routes/uebungen_.$exerciseId.tsx,
+changelog.json; Tests in lib/__tests__/exerciseHistory.test.ts (recordSeries).
+Coach, Arbeitsgewicht und der 1RM-Block unberührt.

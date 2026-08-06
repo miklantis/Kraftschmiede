@@ -2,8 +2,9 @@ import { useMemo } from "react";
 import { ExerciseChart } from "./ExerciseChart";
 import { useMilestones } from "@/hooks/useMilestones";
 import { usePinnedGoals } from "@/hooks/usePinnedGoals";
+import { useRmTests } from "@/hooks/useRmTests";
 import { fmtWeight } from "@/lib/format";
-import { exLineSeries } from "@/lib/exerciseHistory";
+import { recordSeries } from "@/lib/exerciseHistory";
 import type { PinnedCard } from "@/hooks/usePinnedView";
 
 // Eine angeheftete Verlaufs-Kachel. Eigene Komponente, damit useMilestones je
@@ -21,7 +22,15 @@ export function PinnedChartTile({
   height: number;
 }): React.ReactElement {
   const milestones = useMilestones(card.exerciseId).data ?? [];
-  const rmPoints = useMemo(() => exLineSeries(card.history, "rm"), [card.history]);
+  const tests = useRmTests(card.exerciseId).data ?? [];
+  const rmTests = useMemo(
+    () => tests.map((t) => ({ date: t.date, estRm: t.est_rm })),
+    [tests],
+  );
+  const rmPoints = useMemo(
+    () => recordSeries(card.history, rmTests, card.rm),
+    [card.history, rmTests, card.rm],
+  );
   const goalsAvailable =
     milestones.length > 0 && card.metric === "rm" && rmPoints.length > 0;
 
@@ -66,6 +75,8 @@ export function PinnedChartTile({
         unit={unit}
         height={height}
         milestoneLines={milestoneLines}
+        rmTests={card.metric === "rm" && rmTests.length > 0 ? rmTests : undefined}
+        recordRm={card.rm}
       />
     </div>
   );

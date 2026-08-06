@@ -26,7 +26,7 @@ nicht erst ab einer bestimmten Anzahl Einträge.
 ## Aktueller Stand
 
 - **App im laufenden Betrieb**, funktional vollständig, installierbar (PWA), auf der
-  normalisierten Datenbank. Aktuelle Version: **1.8.3**.
+  normalisierten Datenbank. Aktuelle Version: **1.9.0**.
 - Pflege/Bugfixing laufend; neue Features nach Konzept vor Code.
 - **Offene Handgriffe deinerseits:**
   - Migration `0013_rm_tests.sql` im Supabase-SQL-Editor ausführen (neue Tabelle für die
@@ -70,6 +70,14 @@ Bau bestätigen.
 
 Überblick der fertigen Vorhaben; der Verlauf steht im Log unten bzw. im Log-Archiv.
 
+- **1RM & Trend als zwei Diagramme** (1.9.0). Der 1RM-Verlauf ist in zwei Ansichten
+  geteilt: „1RM" zeigt den beweisgebundenen Rekord als Treppe (steigt nur bei Test oder
+  sauberem ≤5-Wdh-Bestwert, mit derselben Regel wie die Automatik; Ende an den
+  gespeicherten Rekord im Block gebunden), „Trend" die weiche Schätzkurve je Einheit
+  (est1RM, ohne Rep-Tor). Rekorde aus Training (grün) und aus Test (blau) sind in der
+  Treppe getrennt markiert samt Legende; angeheftete 1RM-Kacheln zeigen ebenfalls die
+  Treppe. Neue `recordSeries`-Reihe und `record1RM` je Einheit; Stufen-Zeichnung im Chart.
+  Coach, Arbeitsgewicht und der 1RM-Block bleiben unberührt.
 - **1RM als Bestwert + 1RM-Test** (1.6.2–1.8.3). Das 1RM ist ein beweisgebundener Rekord:
   die Automatik hebt ihn nur bei einem Satz mit ≤ 5 Wdh und senkt ihn nie. Dazu der
   bewusste 1RM-Test als dritte Art laufender Einheit in der Live-Schicht (Panel, Uhr,

@@ -6,7 +6,7 @@
 // die Skill-Definition kommt als eigener Schritt.
 
 import type { HistorySessionInput } from "./history";
-import { best1RMFromSets } from "@/engine/oneRM";
+import { best1RMFromSets, record1RMFromSets } from "@/engine/oneRM";
 import type { EngineSet, RmFormula } from "@/engine/types";
 
 export interface ExHistorySet {
@@ -23,7 +23,12 @@ export interface ExHistoryEntry {
   vol: number; // Summe reps*weight
   sec: number; // beste Haltezeit (Sek.), 0 wenn keine Dauer
   score: number | null; // Mittel der Arbeitssatz-Scores
-  est1RM: number | null; // je Einheit aus den Arbeitssaetzen geschaetztes 1RM
+  est1RM: number | null; // je Einheit aus den Arbeitssaetzen geschaetztes 1RM (Trend)
+  // Rekord-Kandidat der Einheit: bestes geschaetztes 1RM aus sauberen Saetzen
+  // mit hoechstens RECORD_MAX_REPS (5) Wiederholungen. null, wenn kein solcher
+  // Satz vorliegt. Traegt die 1RM-Rekord-Treppe (nur ein <=5-Satz hebt den
+  // Rekord, exakt wie die Automatik beim Beenden/Bearbeiten).
+  record1RM: number | null;
   dev: boolean; // Abweichung (mind. ein angepasster Satz)
   sets: ExHistorySet[];
   // Skill-Einheiten (ueber die Skill-Definition zugeordnet): kein Gewicht/1RM/
@@ -99,6 +104,7 @@ export function buildExerciseHistory(
         reps: x.reps ?? 0,
       }));
       const est1RM = best1RMFromSets(engineSets, formula).value;
+      const record1RM = record1RMFromSets(engineSets, formula);
 
       out.push({
         date: s.date,
@@ -108,6 +114,7 @@ export function buildExerciseHistory(
         sec,
         score,
         est1RM,
+        record1RM,
         dev: work.some((x) => x.adjusted),
         sets: work.map((x) => ({
           weight: x.weight,
@@ -148,6 +155,7 @@ export function buildExerciseHistory(
           sec: topSec,
           score: null,
           est1RM: null,
+          record1RM: null,
           dev: anyMiss,
           sets: done.map((x) => ({
             weight: null,
@@ -211,7 +219,10 @@ export function exSixWeekPct(h: readonly ExHistoryEntry[]): string | null {
 import { isoWeekKey } from "@/engine/journey";
 
 // Linien-Metriken (eine Kurve je Einheit). "volume" ist gesondert (Balken).
-export type ExLineMetric = "rm" | "weight" | "reps" | "duration";
+// "rm" = beweisgebundener Rekord (Treppe, siehe recordSeries). "trend" = die
+// weiche Kurve aus dem geschaetzten 1RM je Einheit (est1RM), ohne Rep-Tor -
+// Verlauf der Leistung, kein Rekord.
+export type ExLineMetric = "rm" | "trend" | "weight" | "reps" | "duration";
 export type ExMetric = ExLineMetric | "volume";
 
 export interface ExMetricOption {
@@ -221,7 +232,8 @@ export interface ExMetricOption {
 
 // Kartentitel je Metrik (V1 METRIC_LABELS).
 export const EX_METRIC_TITLE: Record<ExMetric, string> = {
-  rm: "1RM-Verlauf",
+  rm: "1RM (Rekord)",
+  trend: "Leistungstrend",
   weight: "Arbeitsgewicht (Top-Satz)",
   reps: "Wiederholungen (Summe Arbeitssätze)",
   duration: "Haltezeit (Sek., bester Satz)",
@@ -231,6 +243,7 @@ export const EX_METRIC_TITLE: Record<ExMetric, string> = {
 // Kurzbezeichnung je Metrik fuer den Pin-Titel "Übung · Metrik" (V1 EX_METRIC_SHORT).
 export const EX_METRIC_SHORT: Record<ExMetric, string> = {
   rm: "1RM",
+  trend: "Trend",
   weight: "Arbeitsgewicht",
   reps: "Wiederholungen",
   duration: "Haltezeit",
@@ -251,6 +264,7 @@ export function exMetricOptions(
   }
   return [
     { key: "rm", label: "1RM" },
+    { key: "trend", label: "Trend" },
     { key: "weight", label: "Top-Gewicht" },
     { key: "reps", label: "Wdh" },
     { key: "volume", label: "Volumen" },
@@ -284,33 +298,19 @@ export interface ExBar {
   value: number;
 }
 
-// Linienpunkte je Einheit (aelteste zuerst). Beim 1RM nur Einheiten mit Wert.
+// Linienpunkte je Einheit (aelteste zuerst). "trend" zeichnet das geschaetzte
+// 1RM je Einheit als weiche Kurve (nur Einheiten mit Wert), ohne Tests - der
+// Rekord laeuft ueber recordSeries. "rm" wird hier nicht bedient (die Aufrufer
+// nutzen dafuer recordSeries); als sichere Rueckfalllinie liefert es dieselbe
+// Trend-Kurve.
 export function exLineSeries(
   h: readonly ExHistoryEntry[],
   metric: ExLineMetric,
-  rmTests: readonly ExRmTestPoint[] = [],
 ): ExLinePoint[] {
-  if (metric === "rm") {
-    // Einheiten und Tests bilden eine gemeinsame Kurve, chronologisch gemischt.
-    // Bei gleichem Datum steht der Test hinter der Einheit (stabile Sortierung),
-    // weil er in aller Regel danach gemacht wird.
-    const fromSessions = h
+  if (metric === "rm" || metric === "trend") {
+    return h
       .filter((x) => x.est1RM != null)
-      .map((x) => ({
-        date: x.date,
-        y: x.est1RM as number,
-        flag: x.dev,
-        test: false,
-      }));
-    const fromTests = rmTests.map((t) => ({
-      date: t.date,
-      y: t.estRm,
-      flag: false,
-      test: true,
-    }));
-    return [...fromSessions, ...fromTests]
-      .sort((a, b) => dateMs(a.date) - dateMs(b.date))
-      .map((p) => ({ y: p.y, flag: p.flag, test: p.test }));
+      .map((x) => ({ y: x.est1RM as number, flag: x.dev }));
   }
   const pick =
     metric === "weight"
@@ -319,6 +319,60 @@ export function exLineSeries(
         ? (x: ExHistoryEntry) => x.reps
         : (x: ExHistoryEntry) => x.sec || 0;
   return h.map((x) => ({ y: pick(x), flag: x.dev }));
+}
+
+// Die 1RM-Rekord-Treppe: der beweisgebundene Rekord ueber die Zeit. Sie steigt
+// nur an Tagen mit einem sauberen <=5-Wdh-Satz, der den bisherigen Rekord
+// schlaegt (record1RM der Einheit), und wird von einem bewussten Test hoch ODER
+// runter gesetzt. Zwischen den Aenderungen bleibt sie flach (die Komponente
+// zeichnet sie als Stufen). Jeder Punkt traegt test=true, wenn er aus einem Test
+// stammt, sonst false (Trainings-PR) - so lassen sich beide optisch trennen.
+//
+// Ende an den Block gebunden: steht ein gespeicherter Rekord (storedRm) und
+// weicht der nachgerechnete Endwert davon ab (z. B. Altdaten, deren Rekord aus
+// einem Satz mit vielen Wiederholungen stammt), wird zuletzt ein Punkt auf
+// storedRm ergaenzt. So endet die Treppe garantiert auf der Zahl im 1RM-Block.
+export function recordSeries(
+  h: readonly ExHistoryEntry[],
+  rmTests: readonly ExRmTestPoint[] = [],
+  storedRm: number | null = null,
+): ExLinePoint[] {
+  const EPS = 1e-6;
+  type Ev = { date: string; y: number; test: boolean };
+  const evs: Ev[] = [
+    ...h
+      .filter((x) => x.record1RM != null)
+      .map((x) => ({ date: x.date, y: x.record1RM as number, test: false })),
+    ...rmTests.map((t) => ({ date: t.date, y: t.estRm, test: true })),
+  ];
+  // Chronologisch; bei gleichem Datum steht der Test hinter der Einheit (er wird
+  // in aller Regel danach gemacht und darf den Rekord dann setzen).
+  evs.sort((a, b) => {
+    const d = dateMs(a.date) - dateMs(b.date);
+    if (d !== 0) return d;
+    return (a.test ? 1 : 0) - (b.test ? 1 : 0);
+  });
+
+  const pts: ExLinePoint[] = [];
+  let rec: number | null = null;
+  for (const ev of evs) {
+    if (ev.test) {
+      // Bewusster Test: setzt den Rekord hoch oder runter, immer eine Stufe.
+      rec = ev.y;
+      pts.push({ y: rec, flag: false, test: true });
+    } else if (rec == null || ev.y > rec + EPS) {
+      // Trainings-PR: hebt den Rekord an (nie senken).
+      rec = ev.y;
+      pts.push({ y: rec, flag: false, test: false });
+    }
+  }
+
+  if (storedRm != null) {
+    if (pts.length === 0 || Math.abs(pts[pts.length - 1].y - storedRm) > EPS) {
+      pts.push({ y: storedRm, flag: false, test: false });
+    }
+  }
+  return pts;
 }
 
 // Wochenvolumen als Balken (Summe reps*weight je ISO-Woche, chronologisch).
