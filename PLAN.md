@@ -59,10 +59,6 @@ Bau bestätigen.
       der ersten Einheit aus dem 1RM), Hinweis „Einstieg". Engine-/Unit-Tests.
 - [ ] Lieferung 2 (optional): Ramp-up-/Tast-Sätze im neuen Band.
 
-### Bewusst später
-
-- Meilensteine pro Übung: Marker im Verlauf am Erreichen-Tag.
-- Meilensteine pro Übung: automatische Vorschläge aus der alten Excel-Bestwerte-Liste.
 
 ---
 
