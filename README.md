@@ -9,10 +9,11 @@ bewussten Update-Hinweis uebernommen.
 
 So ist die Doku organisiert: **Architektur** beschreibt den Ist-Zustand (wie das System
 gebaut ist), die **ADRs** das Warum (je eine getroffene Entscheidung), das
-**Designsystem** die wiederverwendbaren Bausteine. **PLAN.md** führt allein den
-Fortschritt.
+**Designsystem** die wiederverwendbaren Bausteine. Fortschritt und offene Vorhaben
+laufen über die GitHub Issues dieses Repos, Konventionen dazu siehe
+**docs/Issue-Konventionen.md**.
 
-- **[PLAN.md](./PLAN.md)** – laufende und offene Vorhaben, aktueller Stand, Log
+- **[docs/Issue-Konventionen.md](./docs/Issue-Konventionen.md)** – Struktur und Ablauf der Issue-basierten Fortschrittsführung
 - **[docs/Architektur.md](./docs/Architektur.md)** – Datenbank-Schema, Architektur-Leitplanken, Ist-Zustand
 - **[docs/adr/](./docs/adr/README.md)** – Architektur-Entscheidungen (ADRs): je Entscheidung eine kleine Datei mit Kontext und Begründung
 - **[docs/Designsystem.md](./docs/Designsystem.md)** – wiederverwendbare UI-Bausteine und Design-Tokens
@@ -21,4 +22,5 @@ Fortschritt.
 
 ## Stand
 
-Aktive App im laufenden Betrieb. Fortschritt und naechste Schritte siehe PLAN.md.
+Aktive App im laufenden Betrieb. Fortschritt und naechste Schritte siehe die
+offenen Issues dieses Repos.
