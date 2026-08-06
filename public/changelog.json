@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.10.1",
+      "date": "2026-08-06",
+      "changes": [
+        "Angeheftete Diagramme auf der Übungsübersicht lassen sich jetzt direkt lösen: oben rechts an jeder Kachel ein kleines X, ein Tippen entfernt die Anheftung sofort – ohne Umweg über die Übungs-Detailseite. Wieder anheften geht dort weiterhin jederzeit."
+      ]
+    },
+    {
       "version": "1.10.0",
       "date": "2026-08-06",
       "changes": [

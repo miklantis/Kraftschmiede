@@ -26,7 +26,7 @@ nicht erst ab einer bestimmten Anzahl Einträge.
 ## Aktueller Stand
 
 - **App im laufenden Betrieb**, funktional vollständig, installierbar (PWA), auf der
-  normalisierten Datenbank. Aktuelle Version: **1.10.0**.
+  normalisierten Datenbank. Aktuelle Version: **1.10.1**.
 - Pflege/Bugfixing laufend; neue Features nach Konzept vor Code.
 - **Offene Handgriffe deinerseits:**
   - Im Workout-Editor in Workout E den bisherigen Curl gegen „Curl (Kurzhantel)" tauschen
@@ -49,6 +49,12 @@ Laufend, ergibt sich im Betrieb. Einzelne Punkte kommen hierher, sobald sie auft
 
 Überblick der fertigen Vorhaben; der Verlauf steht im Log unten bzw. im Log-Archiv.
 
+- **Anheftung direkt aus der Übersicht lösen** (1.10.1). Jede angeheftete Kachel auf
+  der Übungsübersicht hat oben rechts (neben dem optionalen „Ziele"-Knopf) ein kleines
+  X, das die Anheftung sofort ohne Rückfrage entfernt – kein Umweg über die Detailseite.
+  Läuft über denselben gerätelokalen Pin-Store wie die Detailseite
+  (`usePinnedCharts.toggle`), inklusive Sync; reversibel über die Detailseite. Nur
+  `PinnedChartTile` berührt, keine DB.
 - **Sprung beim Phasenwechsel auf 1RM-Basis** (1.10.0). Beim Übergang in eine Phase mit
   deutlich getrenntem Repband (z. B. Hypertrophie 8–12 auf Maxkraft 4–6) zieht die erste
   Einheit einer Langhantelübung ihr Startgewicht einmalig aus dem beweisgebundenen 1RM
@@ -115,4 +121,4 @@ entfernt, sobald sie in „Abgeschlossene Vorhaben" stehen – Archiv je Halbjah
 `docs/archive/PLAN-Log-Archiv-2026-H1.md` (Jan–Jun), `docs/archive/PLAN-Log-Archiv-2026-H2.md`
 (Jul–Dez).
 
-(keine laufenden Vorhaben – zuletzt fertiggestellt: Phasenwechsel-Einstieg 1.10.0, siehe Log-Archiv H2)
+(keine laufenden Vorhaben – zuletzt fertiggestellt: Anheftung aus Übersicht lösen 1.10.1, siehe Log-Archiv H2)

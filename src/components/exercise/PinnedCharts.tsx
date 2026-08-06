@@ -6,8 +6,9 @@ import type { PinnedCard } from "@/hooks/usePinnedView";
 // Angeheftet-Sektion ganz oben auf der Uebungsliste (V1 ub-pinned). Zeigt die
 // angehefteten Verlaufs-Charts als flache Kacheln. Desktop zweispaltiges
 // Raster, Handy einspaltige Liste (V1 ub-pin-grid/ub-pin-list). Leer -> kurzer
-// Hinweistext (wie V1). Verwaltet wird ueber den Umschalter auf der
-// Detailseite; hier gibt es bewusst kein Sortieren/Entfernen (V1-Paritaet).
+// Hinweistext (wie V1). Angeheftet wird ueber den Umschalter auf der
+// Detailseite; geloest werden kann direkt hier ueber den X je Kachel (siehe
+// PinnedChartTile). Sortieren gibt es weiterhin bewusst nicht.
 
 export interface PinnedChartsProps {
   cards: readonly PinnedCard[];

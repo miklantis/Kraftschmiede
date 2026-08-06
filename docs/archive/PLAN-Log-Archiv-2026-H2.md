@@ -511,3 +511,11 @@ components/exercise/ExerciseChart.tsx (Treppe + recordRm), ExerciseChartCard.tsx
 PinnedChartTile.tsx, hooks/usePinnedView.ts, routes/uebungen_.$exerciseId.tsx,
 changelog.json; Tests in lib/__tests__/exerciseHistory.test.ts (recordSeries).
 Coach, Arbeitsgewicht und der 1RM-Block unberührt.
+
+2026-08-06 – 1.10.1 – Angeheftete Diagramme direkt aus der Übungsübersicht lösbar:
+je Kachel oben rechts ein X (neben dem optionalen „Ziele“-Knopf), das die Anheftung
+sofort ohne Rückfrage entfernt – über denselben gerätelokalen Pin-Store wie die
+Detailseite (usePinnedCharts.toggle), Sync inklusive. Geändert:
+components/exercise/PinnedChartTile.tsx (X-Knopf, togglePin), PinnedCharts.tsx
+(Kommentar), changelog.json. Kein neuer Datenweg, keine DB-Berührung; reversibel über
+die Detailseite.
