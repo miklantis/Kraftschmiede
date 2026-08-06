@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/calendar";
 import { SessionLogCard } from "@/components/history/SessionLogCard";
 import { SessionEditPanel } from "@/components/history/SessionEditPanel";
+import { ZeitraeumeSection } from "@/components/history/ZeitraeumeSection";
 import { useHistory } from "@/hooks/useHistory";
 import { useDeleteSession } from "@/hooks/useDeleteSession";
 import type { HistoryKind } from "@/lib/history";
@@ -132,6 +133,8 @@ export function HistorySection(): React.ReactElement {
       </div>
 
       <Section eyebrow="Letzte Einheiten">{list}</Section>
+
+      <ZeitraeumeSection />
 
       <SessionEditPanel
         sessionId={editId}

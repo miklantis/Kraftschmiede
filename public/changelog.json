@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.11.0",
+      "date": "2026-08-06",
+      "changes": [
+        "Neuer Block „Zeiträume“ im Verlauf: Trage besondere Phasen wie Heilfasten, Urlaub, Pause, Krankheit oder Verletzung mit Start, Ende und einer kurzen Notiz ein. Das Ende darfst du offen lassen, solange die Phase noch läuft („läuft noch“). Die Liste zeigt jeden Zeitraum mit farbigem Typ-Punkt und Spanne; anlegen, bearbeiten und löschen geht direkt dort. So bekommt deine Historie Kontext – etwa „hier lagen zwei Wochen Fasten, kaum Training“. Die Anzeige als Band im Monatskalender folgt als nächster Schritt."
+      ]
+    },
+    {
       "version": "1.10.1",
       "date": "2026-08-06",
       "changes": [

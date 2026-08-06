@@ -10,6 +10,7 @@ export * from "./inventory";
 export * from "./exercises";
 export * from "./milestones";
 export * from "./rmTests";
+export * from "./zeitraeume";
 export * from "./templates";
 export * from "./journeyWorkouts";
 export * from "./journeyTemplates";
