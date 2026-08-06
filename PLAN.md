@@ -26,14 +26,12 @@ nicht erst ab einer bestimmten Anzahl Einträge.
 ## Aktueller Stand
 
 - **App im laufenden Betrieb**, funktional vollständig, installierbar (PWA), auf der
-  normalisierten Datenbank. Aktuelle Version: **1.9.0**.
+  normalisierten Datenbank. Aktuelle Version: **1.10.0**.
 - Pflege/Bugfixing laufend; neue Features nach Konzept vor Code.
 - **Offene Handgriffe deinerseits:**
-  - Migration `0013_rm_tests.sql` im Supabase-SQL-Editor ausführen (neue Tabelle für die
-    1RM-Tests).
   - Im Workout-Editor in Workout E den bisherigen Curl gegen „Curl (Kurzhantel)" tauschen
     (reiner App-Handgriff, kein SQL).
-  - Migrationen 0009, 0010 und 0012 sind ausgeführt (Stand 2026-08-05).
+  - Migrationen bis einschließlich 0013 sind ausgeführt (Stand 2026-08-06).
 
 ---
 
@@ -45,27 +43,23 @@ Laufend, ergibt sich im Betrieb. Einzelne Punkte kommen hierher, sobald sie auft
 
 - (noch keine offenen Punkte)
 
-### Sprung beim Phasenwechsel auf 1RM-Basis (Punkt 2)
-
-Konzept (Vorschlag), **wird nach Punkt 1 gebaut** und hängt an dessen sauberem 1RM. Beim
-Übergang in eine neue Phase mit deutlichem Repband-Wechsel (z. B. Hypertrophie 8–12 auf
-Maxkraft 4–6) soll die erste Einheit ihr Startgewicht aus dem aktuellen 1RM ziehen statt
-am zu leichten Vorphasen-Gewicht zu kleben; danach wieder normale Doppelprogression. Die
-Engine-Rechnung dafür existiert schon (`workWeightForPhase`), ist aber unverdrahtet.
-Konzept: `docs/Konzept-Phasenwechsel-Sprung.md`. Zentraler Ansatz und Feinwerte vor dem
-Bau bestätigen.
-
-- [ ] Lieferung 1: Bandwechsel erkennen + `workWeightForPhase` verdrahten (Startgewicht
-      der ersten Einheit aus dem 1RM), Hinweis „Einstieg". Engine-/Unit-Tests.
-- [ ] Lieferung 2 (optional): Ramp-up-/Tast-Sätze im neuen Band.
-
-
 ---
 
 ## Abgeschlossene Vorhaben
 
 Überblick der fertigen Vorhaben; der Verlauf steht im Log unten bzw. im Log-Archiv.
 
+- **Sprung beim Phasenwechsel auf 1RM-Basis** (1.10.0). Beim Übergang in eine Phase mit
+  deutlich getrenntem Repband (z. B. Hypertrophie 8–12 auf Maxkraft 4–6) zieht die erste
+  Einheit einer Langhantelübung ihr Startgewicht einmalig aus dem beweisgebundenen 1RM
+  (`workWeightForPhase`), statt am zu leichten Vorphasen-Gewicht zu kleben; Hinweis
+  „Einstieg" auf der Live-Karte. Nach oben gedeckelt (12 %) und abgerundet, nach unten
+  frei gesenkt; ohne sauberes 1RM oder bei überlappendem Band kein Sprung. Selbstbegrenzt:
+  ab der zweiten Einheit liegt das letzte Band in der neuen Zone. Verdrahtung in
+  `lib/liveBuild.ts` (Erkennung über die Ziel-Wdh der letzten Einheit gegen das
+  Phasen-Repband), Marker durch `LiveEntry.phaseEntry`; Engine-Rechenkern und Coach
+  unberührt. Ramp-up-/Tast-Sätze (frühere Lieferung 2) entfallen als nicht benötigt.
+  Konzept: `docs/archive/Konzept-Phasenwechsel-Sprung.md`.
 - **1RM & Trend als zwei Diagramme** (1.9.0). Der 1RM-Verlauf ist in zwei Ansichten
   geteilt: „1RM" zeigt den beweisgebundenen Rekord als Treppe (steigt nur bei Test oder
   sauberem ≤5-Wdh-Bestwert, mit derselben Regel wie die Automatik; Ende an den
@@ -121,14 +115,4 @@ entfernt, sobald sie in „Abgeschlossene Vorhaben" stehen – Archiv je Halbjah
 `docs/archive/PLAN-Log-Archiv-2026-H1.md` (Jan–Jun), `docs/archive/PLAN-Log-Archiv-2026-H2.md`
 (Jul–Dez).
 
-2026-08-05 – PLAN-Log-Struktur überarbeitet: Archiv nach Halbjahr gesplittet, Log auf
-Stichworte gekürzt, abgeschlossene Vorhaben wandern künftig sofort ins Archiv statt erst
-ab zehn Einträgen.
-
-2026-08-05 – Doku: 1RM-Konzept, Lösch-Frage geklärt (Test nur auf Übungs-Detailseite
-löschbar).
-
-2026-08-05 – Doku: Konzept „Phasenwechsel-Sprung" aufgenommen, „Workouts & Journey"-Konzept
-archiviert.
-
-2026-08-05 – PLAN.md verschlankt, 1RM-Konzept aufgenommen.
+(keine laufenden Vorhaben – zuletzt fertiggestellt: Phasenwechsel-Einstieg 1.10.0, siehe Log-Archiv H2)

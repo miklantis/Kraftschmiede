@@ -150,4 +150,75 @@ describe("buildLiveEntries", () => {
     expect(sq.barWeight).toBe(20);
     expect(sq.sets[0]?.weight).toBe(60);
   });
+
+  it("Phasenwechsel: erste Einheit im getrennten Band startet aus dem 1RM (Einstieg)", () => {
+    // Letzte Einheit im Hypertrophie-Band (12 Wdh), neue Phase Maxkraft 4..6:
+    // Baender getrennt, 1RM 120 vorhanden -> Einstieg. Aufwaerts auf +12% ueber
+    // dem getragenen 60 gedeckelt und abgerundet -> 65. Ziel-Wdh am oberen Band.
+    const r = buildLiveEntries(
+      input({
+        exerciseIds: ["squat"],
+        phaseRepTarget: [4, 6],
+        lastEntryByExercise: {
+          squat: {
+            sets: [
+              { type: "work", weight: 60, reps: 12, targetReps: 12, targetWeight: 60, done: true },
+            ],
+          },
+        },
+      }),
+    );
+    const sq = r.entries.find((e) => e.exerciseId === "squat")!;
+    expect(sq.phaseEntry).toBe(true);
+    expect(sq.sets[0]?.weight).toBe(65);
+    expect(sq.sets[0]?.targetReps).toBe(6);
+    // Aufwaermrampe richtet sich am Einstiegsgewicht aus, nicht am alten 60.
+    expect(sq.warmupSets.length).toBeGreaterThan(0);
+  });
+
+  it("Phasenwechsel: ueberlappendes Band -> kein Einstieg, normale Progression", () => {
+    const r = buildLiveEntries(
+      input({
+        exerciseIds: ["squat"],
+        phaseRepTarget: [6, 10],
+        lastEntryByExercise: {
+          squat: {
+            sets: [
+              { type: "work", weight: 60, reps: 8, targetReps: 8, targetWeight: 60, done: true },
+            ],
+          },
+        },
+      }),
+    );
+    const sq = r.entries.find((e) => e.exerciseId === "squat")!;
+    expect(sq.phaseEntry).toBeFalsy();
+  });
+
+  it("Phasenwechsel: ohne sauberes 1RM kein Einstieg", () => {
+    const noRm: LiveBuildExercise = { ...squat, rm: null };
+    const r = buildLiveEntries(
+      input({
+        exerciseIds: ["squat"],
+        exercisesById: { squat: noRm },
+        phaseRepTarget: [4, 6],
+        lastEntryByExercise: {
+          squat: {
+            sets: [
+              { type: "work", weight: 60, reps: 12, targetReps: 12, targetWeight: 60, done: true },
+            ],
+          },
+        },
+      }),
+    );
+    const sq = r.entries.find((e) => e.exerciseId === "squat")!;
+    expect(sq.phaseEntry).toBeFalsy();
+  });
+
+  it("Phasenwechsel: ohne letzte Einheit kein Einstieg (Startfall)", () => {
+    const r = buildLiveEntries(
+      input({ exerciseIds: ["squat"], phaseRepTarget: [4, 6] }),
+    );
+    const sq = r.entries.find((e) => e.exerciseId === "squat")!;
+    expect(sq.phaseEntry).toBeFalsy();
+  });
 });

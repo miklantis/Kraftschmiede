@@ -5,7 +5,7 @@
 // hier nur das Zusammensetzen. Die Zustandsbeschaffung (letzter Eintrag, Phase,
 // Stangen/Scheiben) macht der Daten-Hook useLiveBuilder.
 
-import { repTargetForFocus } from "@/engine";
+import { repTargetForFocus, workWeightForPhase } from "@/engine";
 import type { SetEntry, VolumePhase } from "@/engine/types";
 import {
   suggestWithBar,
@@ -72,6 +72,36 @@ export function activeRepTarget(
   return phaseRepTarget ?? repTargetForFocus(phaseFocus?.focus ?? "") ?? null;
 }
 
+// Repband, in dem die letzte Einheit gerechnet wurde: Spanne der Ziel-Wdh der
+// Arbeitssaetze (Aufwaermen ausgenommen); faellt auf die tatsaechlichen Wdh
+// zurueck, wenn keine Ziel-Wdh gespeichert sind. null ohne verwertbaren Satz.
+function lastBand(lastEntry: SetEntry | null): [number, number] | null {
+  const ws = (lastEntry?.sets ?? []).filter((s) => s.type !== "warmup");
+  const reps = ws
+    .map((s) => (s.targetReps != null && s.targetReps > 0 ? s.targetReps : s.reps))
+    .filter((n): n is number => typeof n === "number" && n > 0);
+  if (!reps.length) return null;
+  return [Math.min(...reps), Math.max(...reps)];
+}
+
+// Zwei Repbaender sind echt getrennt, wenn sie sich nicht einmal an einer
+// Wiederholung beruehren (Ueberlappung -> kein Sprung).
+function bandsSeparated(a: [number, number], b: [number, number]): boolean {
+  return Math.max(a[0], b[0]) > Math.min(a[1], b[1]);
+}
+
+// Schwerster Arbeitssatz der letzten Einheit (getragenes Gewicht) als Bezug fuer
+// die Aufwaerts-Deckelung des Einstiegs. null ohne verwertbaren Satz.
+function topWorkWeight(lastEntry: SetEntry | null): number | null {
+  const ws = (lastEntry?.sets ?? []).filter((s) => s.type !== "warmup");
+  let top: number | null = null;
+  for (const st of ws) {
+    const w = typeof st.weight === "number" ? st.weight : null;
+    if (w != null && (top == null || w > top)) top = w;
+  }
+  return top;
+}
+
 // Kartenkopf-Tag: getestetes 1RM, sonst die Muskelgruppen.
 function tagFor(exo: LiveBuildExercise, unit: string): string {
   if (exo.rm != null) return "1RM " + fmtNum(exo.rm) + " " + unit;
@@ -117,10 +147,36 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
       repTarget,
     });
 
+    // Phasenwechsel-Einstieg: springt die Zielzone der neuen Phase deutlich (echt
+    // getrennt) vom Repband der letzten Einheit weg und liegt ein sauberes 1RM
+    // vor, zieht die erste Einheit ihr Startgewicht einmalig aus dem 1RM statt aus
+    // der Doppelprogression. Nur Langhantel (Scheiben-Rechnung). Verletzungs-
+    // bewusst gedeckelt und abgerundet (workWeightForPhase). Selbstbegrenzt: ab
+    // der zweiten Einheit liegt das letzte Band in der neuen Zone -> kein Sprung.
+    let wWeight = sug.weight;
+    let wReps = sug.targetReps;
+    let phaseEntry = false;
+    if (exo.profile === "strength" && repTarget && bar && exo.rm != null && exo.rm > 0) {
+      const prev = lastBand(lastEntry);
+      if (prev && bandsSeparated(prev, repTarget)) {
+        const carried = topWorkWeight(lastEntry) ?? sug.weight;
+        const res = workWeightForPhase(exo.rm, repTarget, {
+          bar: { weight: bar.weight },
+          plates: input.plates,
+          currentWeight: carried,
+        });
+        if (res.decision !== "hold") {
+          wWeight = res.weight;
+          wReps = repTarget[1]; // konservativ am leichteren (oberen) Bandende einsteigen
+          phaseEntry = true;
+        }
+      }
+    }
+
     const setN = exo.profile === "core" ? 3 : setNDefault;
     const warm = warmupFor(
       exo,
-      sug.weight,
+      wWeight,
       bar ? { weight: bar.weight } : null,
       idx === 0,
       input.plates,
@@ -129,11 +185,11 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
     const sets: LiveSet[] = [];
     for (let k = 0; k < Math.max(1, setN); k++) {
       sets.push({
-        reps: sug.targetReps,
-        weight: sug.weight,
+        reps: wReps,
+        weight: wWeight,
         score: exo.targetScore,
-        targetReps: sug.targetReps,
-        targetWeight: sug.weight,
+        targetReps: wReps,
+        targetWeight: wWeight,
         done: false,
         failed: false,
         adjusted: false,
@@ -146,6 +202,7 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
       exerciseName: exo.name,
       equipment: exo.equipment,
       tag: tagFor(exo, input.unit),
+      phaseEntry,
       barId: bar?.id ?? null,
       barName: bar?.name ?? null,
       barWeight: bar?.weight ?? null,

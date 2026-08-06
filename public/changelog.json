@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.10.0",
+      "date": "2026-08-06",
+      "changes": [
+        "Beim Wechsel in eine Phase mit deutlich anderem Wiederholungsbereich (z. B. von Hypertrophie auf Maximalkraft) startet die erste Einheit einer Langhantelübung jetzt mit einem Gewicht, das aus deinem aktuellen 1RM abgeleitet ist – statt am oft zu leichten Gewicht der Vorphase zu kleben. Die Karte zeigt dazu den Hinweis „Einstieg“.",
+        "Der Einstieg ist bewusst vorsichtig: nach oben ist der Sprung gedeckelt und abgerundet, nach unten wird ein zu schweres Gewicht direkt auf die neue Zone gesenkt. Ab der zweiten Einheit greift wieder die normale Progression aus deinen echten Sätzen.",
+        "Überlappen sich alter und neuer Bereich nur leicht, oder fehlt ein gültiges 1RM, bleibt alles wie bisher – der Einstieg springt dann nicht an."
+      ]
+    },
+    {
       "version": "1.9.0",
       "date": "2026-08-06",
       "changes": [

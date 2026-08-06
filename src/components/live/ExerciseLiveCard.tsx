@@ -100,6 +100,11 @@ export function ExerciseLiveCard({
           <div className="text-[18px] font-bold text-foreground">
             {entry.exerciseName}
           </div>
+          {entry.phaseEntry && (
+            <span className="mt-1 inline-flex items-center rounded-full bg-primary/12 px-2 py-0.5 text-[11px] font-semibold text-primary">
+              Einstieg
+            </span>
+          )}
           {entry.tag && (
             <div className="mt-0.5 text-[12px] text-muted-foreground">{entry.tag}</div>
           )}

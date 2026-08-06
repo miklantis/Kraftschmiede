@@ -98,6 +98,8 @@ export interface LiveEntry {
   equipment: "barbell" | "plate" | "bar" | "band" | "bodyweight" | "dumbbell";
   /** Kurzkennung im Kartenkopf: "1RM 120 kg" bzw. Muskelgruppen. */
   tag: string;
+  /** Einmaliger Phasenwechsel-Einstieg: Startgewicht aus dem 1RM statt Progression. */
+  phaseEntry?: boolean;
   /** Stange (nur Langhantel) - aufgeloest fuer Anzeige und Scheiben-Aufteilung. */
   barId: string | null;
   barName: string | null;
@@ -313,6 +315,7 @@ function parseEntries(v: unknown): LiveEntry[] {
         exerciseName: str(o.exerciseName),
         equipment,
         tag: str(o.tag),
+        phaseEntry: bool(o.phaseEntry),
         barId: typeof o.barId === "string" ? o.barId : null,
         barName: typeof o.barName === "string" ? o.barName : null,
         barWeight: typeof o.barWeight === "number" ? o.barWeight : null,

@@ -11,6 +11,27 @@ Eintraege bleiben historisch unveraendert, neueste zuerst.
 
 ---
 
+2026-08-06 – 1.10.0 – Phasenwechsel-Einstieg verdrahtet: springt das Phasen-Repband deutlich
+(echt getrennt) vom Band der letzten Einheit weg und liegt ein sauberes 1RM vor, startet die
+erste Langhantel-Einheit einmalig aus dem 1RM (workWeightForPhase, +12 % gedeckelt/abgerundet,
+runter frei); Hinweis „Einstieg“ (LiveEntry.phaseEntry). Erkennung in lib/liveBuild.ts über die
+Ziel-Wdh der letzten Einheit gegen das aktive Repband, selbstbegrenzt. Engine-Rechenkern und
+Coach unberührt; Ramp-up-/Tast-Sätze entfallen. Vier neue liveBuild-Tests; zwei liveSession-
+Parser-Erwartungen um phaseEntry ergänzt. Validierung grün: tsc --noEmit, vitest run (422),
+vite build.
+
+2026-08-05 – PLAN-Log-Struktur überarbeitet: Archiv nach Halbjahr gesplittet, Log auf
+Stichworte gekürzt, abgeschlossene Vorhaben wandern künftig sofort ins Archiv statt erst
+ab zehn Einträgen.
+
+2026-08-05 – Doku: 1RM-Konzept, Lösch-Frage geklärt (Test nur auf Übungs-Detailseite
+löschbar).
+
+2026-08-05 – Doku: Konzept „Phasenwechsel-Sprung“ aufgenommen, „Workouts & Journey“-Konzept
+archiviert.
+
+2026-08-05 – PLAN.md verschlankt, 1RM-Konzept aufgenommen.
+
 2026-08-05 – 1.8.3 – Löschen eines 1RM-Tests fragt inline nach (Verlaufs-Muster).
 
 2026-08-05 – 1.8.2 – Löschen des jüngsten 1RM-Tests nimmt den Rekord zurück.
