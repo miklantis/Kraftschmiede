@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.16.0",
+      "date": "2026-08-07",
+      "changes": [
+        "Koerpermessungen lassen sich jetzt direkt von Hand pflegen: ueber der Mess-Liste gibt es einen Knopf zum Hinzufuegen, und jede Messung kann bearbeitet oder geloescht werden. Das Popup fuehrt alle Werte (Gewicht, Koerperfett, Muskelmasse, Wasserwerte inkl. ECW/ICW, Phasenwinkel, Viszeralfett); leere Felder sind erlaubt. Loeschen fragt kurz nach. Pro Tag bleibt eine Messung; ein bereits belegtes Datum wird nicht ueberschrieben."
+      ]
+    },
+    {
       "version": "1.15.0",
       "date": "2026-08-07",
       "changes": [
