@@ -20,7 +20,8 @@ import { cn } from "@/lib/utils";
 
 // Uebungs-Detail. Eigenstaendige Vollseite (entschachtelt mit _), ersetzt die
 // Liste wie in V1. Zeigt Kopf, Statistik-Reihe, Verlaufsdiagramm, die Muscle-Map
-// (beanspruchte Muskeln), den Trainingsverlauf und "Uebung anpassen" (Popup).
+// (beanspruchte Muskeln) und den Trainingsverlauf. "Uebung anpassen" sitzt als
+// Stift-Icon oben rechts in der Coach-Card und oeffnet das Popup.
 // Der Anheften-Umschalter sitzt im Kopf der Chartkarte.
 export const Route = createFileRoute("/uebungen_/$exerciseId")({
   component: ExerciseDetailPage,
@@ -96,7 +97,16 @@ function ExerciseDetailPage(): React.ReactElement {
 
       {(coach || stats.length > 0) && (
         <Section eyebrow="Coach" className="mb-5 min-[960px]:mb-6">
-          <div className="rounded-[18px] bg-card p-4 shadow-card min-[960px]:p-5">
+          <div className="relative rounded-[18px] bg-card p-4 shadow-card min-[960px]:p-5">
+            <button
+              type="button"
+              aria-label="Übung anpassen"
+              onClick={() => setEditOpen(true)}
+              className="absolute right-2 top-2.5 flex size-7 items-center justify-center rounded-[10px] text-muted-foreground transition-[filter,color] hover:text-foreground hover:brightness-95"
+            >
+              <Pencil className="size-4" />
+            </button>
+            <div className="pr-9">
             {coach && (
               <>
                 <div className="flex flex-wrap items-center gap-2.5">
@@ -134,6 +144,7 @@ function ExerciseDetailPage(): React.ReactElement {
                 ))}
               </div>
             )}
+            </div>
           </div>
         </Section>
       )}
@@ -211,8 +222,8 @@ function ExerciseDetailPage(): React.ReactElement {
           </Section>
         </div>
 
-        {/* Rechte Spalte: Muskeln + Uebung anpassen (Statistik wanderte in den
-            Coach-Block oben). */}
+        {/* Rechte Spalte: nur Muskeln (Statistik wanderte in den Coach-Block
+            oben, "Uebung anpassen" sitzt jetzt als Stift-Icon in der Coach-Card). */}
         <div className="contents min-w-0 min-[960px]:flex min-[960px]:flex-1 min-[960px]:flex-col min-[960px]:gap-7">
           <Section
             eyebrow="Beanspruchte Muskeln"
@@ -226,17 +237,6 @@ function ExerciseDetailPage(): React.ReactElement {
               className="mx-auto mt-3 w-[78%] max-w-[300px]"
             />
           </Section>
-
-          {/* "Uebung anpassen": Desktop unten in der rechten Spalte, mobil ganz
-              am Ende (nach dem Verlauf) - wie V1. */}
-          <button
-            type="button"
-            onClick={() => setEditOpen(true)}
-            className="order-7 flex w-full items-center justify-center gap-2 rounded-[13px] border border-border bg-card py-3.5 text-[15px] font-semibold text-foreground shadow-card transition-[filter] hover:brightness-95 min-[960px]:order-none"
-          >
-            <Pencil className="size-4" />
-            Übung anpassen
-          </button>
         </div>
         </div>
       </PageReveal>

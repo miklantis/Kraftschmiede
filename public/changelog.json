@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.17.4",
+      "date": "2026-08-07",
+      "changes": [
+        "Übungs-Detailseite: \"Übung anpassen\" sitzt jetzt als Stift-Icon oben rechts in der Coach-Karte – direkt an den Werten, die es ändert. Der breite Button unten entfällt."
+      ]
+    },
+    {
       "version": "1.17.3",
       "date": "2026-08-07",
       "changes": [
