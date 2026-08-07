@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.17.3",
+      "date": "2026-08-07",
+      "changes": [
+        "Kurzhanteln lassen sich jetzt auch in 1er-Schritten von 2 bis 10 kg im Inventar hinzufuegen (bisher nur gerade Werte). Die fehlenden Gewichte 3, 5, 7 und 9 kg werden mit der Datenbank-Aktualisierung direkt ergaenzt. Werte ueber 10 kg bleiben in 2er-Schritten."
+      ]
+    },
+    {
       "version": "1.17.2",
       "date": "2026-08-07",
       "changes": [
