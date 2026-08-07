@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.13.1",
+      "date": "2026-08-07",
+      "changes": [
+        "Die mehrtägigen Zeitraum-Bänder im Monatskalender sehen jetzt genauso aus wie die Workout-Markierungen in den Tageszellen: gleiche Höhe, gleicher Abstand zum Zellenrand und gleiche Eckenrundung. Sie werden weiterhin durchgehend über ihre Tage gezogen."
+      ]
+    },
+    {
       "version": "1.13.0",
       "date": "2026-08-07",
       "changes": [

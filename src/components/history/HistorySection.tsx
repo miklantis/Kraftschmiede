@@ -48,10 +48,21 @@ const CAL_DOT: Record<HistoryKind, string> = {
 // wirkt und die Fortsetzung an Wochengrenzen sichtbar bleibt. Vollstaendige
 // Tailwind-Literale, kein Laufzeit-Zusammenbau der Klassennamen.
 function bandRadius(isStart: boolean, isEnd: boolean): string {
-  if (isStart && isEnd) return "rounded-[4px]";
-  if (isStart) return "rounded-l-[4px]";
-  if (isEnd) return "rounded-r-[4px]";
+  if (isStart && isEnd) return "rounded-[4px] min-[960px]:rounded-[5px]";
+  if (isStart) return "rounded-l-[4px] min-[960px]:rounded-l-[5px]";
+  if (isEnd) return "rounded-r-[4px] min-[960px]:rounded-r-[5px]";
   return "rounded-none";
+}
+
+// Seitliche Luft zum Zellenrand analog zum Innenabstand der Workout-Badges,
+// aber nur am echten Start-/Endtag eines Zeitraums. An Wochen-/Monatsuebergaengen
+// (rounded-none-Kanten) bleibt der Balken buendig, damit die Fortsetzung ueber die
+// Kalenderzeilen sichtbar bleibt (Verhalten laut Ticket unveraendert).
+function bandInset(isStart: boolean, isEnd: boolean): string {
+  if (isStart && isEnd) return "mx-[3px] min-[960px]:mx-[5px]";
+  if (isStart) return "ml-[3px] min-[960px]:ml-[5px]";
+  if (isEnd) return "mr-[3px] min-[960px]:mr-[5px]";
+  return "";
 }
 
 
@@ -111,10 +122,12 @@ export function HistorySection(): React.ReactElement {
               gridRow: seg.slot + 2,
             }}
             className={
-              "block truncate px-1 text-left text-[8.5px] font-bold leading-[15px] text-white min-[960px]:px-1.5 min-[960px]:text-[9.5px] min-[960px]:leading-[18px] " +
+              "block truncate px-[3px] py-px text-left text-[8.5px] font-bold leading-[1.25] text-white min-[960px]:px-1 min-[960px]:py-0.5 min-[960px]:text-[9.5px] min-[960px]:leading-[1.3] " +
               ZEITRAUM_FARBE[seg.typ] +
               " " +
-              bandRadius(seg.isStart, seg.isEnd)
+              bandRadius(seg.isStart, seg.isEnd) +
+              " " +
+              bandInset(seg.isStart, seg.isEnd)
             }
           >
             {seg.label}
