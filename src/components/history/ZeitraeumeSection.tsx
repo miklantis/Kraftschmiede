@@ -9,7 +9,7 @@ import { zeitraumLabel, zeitraumSpanne, ZEITRAUM_FARBE } from "@/lib/zeitraeume"
 import type { ZeitraumRow } from "@/schemas";
 
 // Sektion „Zeiträume“ im Verlauf-Block, direkt nach „Letzte Einheiten“. Zeigt die
-// angelegten Marker (Typ-Punkt, Beschriftung, Spanne, Notiz) und erlaubt Anlegen,
+// angelegten Marker (Typ-Kreis, Name/Typ, Spanne, Notiz) und erlaubt Anlegen,
 // Bearbeiten und Loeschen. Loeschen ist zweistufig (kurzes Nachfragen in der
 // Zeile), weil es ohne weitere Verknuepfung sofort greift. Anlegen/Bearbeiten
 // laeuft ueber das gemeinsame Formular-Popup.
@@ -65,15 +65,17 @@ export function ZeitraeumeSection(): React.ReactElement {
               <span
                 aria-hidden
                 className={
-                  "size-2.5 flex-none rounded-full " + ZEITRAUM_FARBE[z.typ]
+                  "flex size-9 flex-none items-center justify-center rounded-full " +
+                  ZEITRAUM_FARBE[z.typ]
                 }
               />
               <div className="min-w-0 flex-1">
-                <div className="text-[15px] font-semibold text-foreground">
-                  {zeitraumLabel(z.typ)}
+                <div className="truncate text-[15px] font-semibold text-foreground">
+                  {z.name ?? zeitraumLabel(z.typ)}
                 </div>
                 <div className="truncate text-[13px] text-muted-foreground">
                   {zeitraumSpanne(z.start_datum, z.end_datum)}
+                  {z.name ? " · " + zeitraumLabel(z.typ) : ""}
                   {z.notiz ? " · " + z.notiz : ""}
                 </div>
               </div>

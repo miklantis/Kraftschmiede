@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.14.1",
+      "date": "2026-08-07",
+      "changes": [
+        "Die Zeitraum-Karten im Verlauf zeigen jetzt oben den vergebenen Namen (z. B. \"Urlaub in Freiburg\") und darunter Datum · Typ. Ist kein Name gesetzt, steht wie bisher der Typ oben und darunter nur das Datum. Optisch sind die Karten an die Einheiten-Karten angeglichen: der frühere kleine Farbpunkt ist jetzt ein farbiger Kreis im jeweiligen Typ-Ton."
+      ]
+    },
+    {
       "version": "1.14.0",
       "date": "2026-08-07",
       "changes": [
