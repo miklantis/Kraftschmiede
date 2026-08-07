@@ -8,13 +8,12 @@ import { BodyStateCard } from "@/components/body/BodyStateCard";
 import { BodyHistoryCard } from "@/components/body/BodyHistoryCard";
 import { BodyMeasurePanel } from "@/components/body/BodyMeasurePanel";
 import { BodyMeasureList } from "@/components/body/BodyMeasureList";
-import { BodyImportCard } from "@/components/body/BodyImportCard";
 import { useBodyView } from "@/hooks/useBodyView";
 import { useComposition } from "@/hooks/useComposition";
 
 // Koerper-Seite. Zwei Haelften: links das taegliche Befinden (Empfehlungs-
 // Banner volle Breite oben, dann Muskelkater-Figur, Eingabe, Verlauf), rechts
-// die Koerpermessung (Metrik-Chart, Mess-Liste, JSON-Import). Mobil ein Stapel
+// die Koerpermessung (Metrik-Chart, Mess-Liste mit Pflege von Hand). Mobil ein Stapel
 // in derselben Reihenfolge (Befinden zuerst, dann Messung), wie V1.
 export const Route = createFileRoute("/koerper")({
   component: KoerperPage,
@@ -72,7 +71,6 @@ function KoerperPage(): React.ReactElement {
           <div data-reveal-group className="flex min-w-0 flex-col gap-4">
             <BodyMeasurePanel rows={comp} />
             <BodyMeasureList rows={comp} />
-            <BodyImportCard />
           </div>
         </div>
       </PageReveal>

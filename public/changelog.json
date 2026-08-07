@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.16.2",
+      "date": "2026-08-07",
+      "changes": [
+        "Der alte JSON-Import fuer Koerpermessungen ist entfallen. Messungen werden jetzt ausschliesslich von Hand gepflegt (Hinzufuegen, Bearbeiten, Loeschen direkt in der Mess-Liste) – das ist einfacher und vermeidet, dass ein Import versehentlich bereits erfasste Werte eines Messtags ueberschreibt."
+      ]
+    },
+    {
       "version": "1.16.1",
       "date": "2026-08-07",
       "changes": [

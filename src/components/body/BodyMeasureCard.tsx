@@ -9,8 +9,9 @@ import {
 import type { CompositionRow } from "@/schemas";
 
 // Mess-Karte: Metrik-Umschalter (Gewicht/Fett/Muskel/Wasser/Phasenwinkel) plus
-// Verlaufslinie der gewaehlten Metrik. Bei gar keiner Messung ein Hinweis (der
-// Import liegt direkt darunter). Die gewaehlte Metrik haelt das umgebende Panel
+// Verlaufslinie der gewaehlten Metrik. Bei gar keiner Messung ein Hinweis (die
+// Mess-Liste zur Pflege von Hand liegt direkt darunter). Die gewaehlte Metrik
+// haelt das umgebende Panel
 // (damit der Meilenstein-Abschnitt derselben Metrik folgt); optional werden die
 // Ziel-Linien der Metrik eingeblendet und ueber den „Ziele“-Umschalter gesteuert.
 export function BodyMeasureCard({
@@ -33,8 +34,8 @@ export function BodyMeasureCard({
   if (!rows.length) {
     return (
       <div className="rounded-[18px] bg-card p-5 text-[14px] text-muted-foreground shadow-card">
-        Noch keine Messung. Screenshots über den InBody-Skill in ein JSON wandeln
-        und unten einspielen.
+        Noch keine Messung. Trage deine erste unten in der Mess-Liste von Hand
+        ein.
       </div>
     );
   }
