@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.13.2",
+      "date": "2026-08-07",
+      "changes": [
+        "Nachtrag zur Kalender-Angleichung: Die Zeitraum-Bänder haben jetzt auch dieselbe Höhe wie die Workout-Markierungen – sie werden nicht mehr auf die volle Zellenhöhe gestreckt."
+      ]
+    },
+    {
       "version": "1.13.1",
       "date": "2026-08-07",
       "changes": [
