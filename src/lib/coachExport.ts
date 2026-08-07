@@ -108,6 +108,7 @@ export interface CoachMeasurement {
   waterKg?: number;
   phaseAngle?: number;
   visceralFat?: number;
+  bmr?: number;
 }
 
 export interface CoachZeitraum {
@@ -514,6 +515,8 @@ export function buildCoachExport(
       if (pa != null) m.phaseAngle = pa;
       const vf = num(r, "visceral_fat");
       if (vf != null) m.visceralFat = vf;
+      const bmr = num(r, "bmr_kcal");
+      if (bmr != null) m.bmr = bmr;
       return m;
     });
 

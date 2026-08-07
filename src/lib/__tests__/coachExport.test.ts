@@ -208,6 +208,7 @@ describe("buildCoachExport - Skill und Yoga", () => {
         tbw_kg: 53.4,
         phase_angle: 6.1,
         visceral_fat: 9,
+        bmr_kcal: 1780,
       },
     ];
     const out = buildCoachExport(raw, { weeks: null, today: TODAY });
@@ -220,6 +221,7 @@ describe("buildCoachExport - Skill und Yoga", () => {
       waterKg: 53.4,
       phaseAngle: 6.1,
       visceralFat: 9,
+      bmr: 1780,
     });
   });
 });

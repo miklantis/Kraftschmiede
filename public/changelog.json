@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.17.1",
+      "date": "2026-08-07",
+      "changes": [
+        "Der Grundumsatz (BMR) wird jetzt auch im Coach-Export mitgegeben, sodass der Coach den Wert je Messung sieht."
+      ]
+    },
+    {
       "version": "1.17.0",
       "date": "2026-08-07",
       "changes": [
