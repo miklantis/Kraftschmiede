@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.17.2",
+      "date": "2026-08-07",
+      "changes": [
+        "Mess-Liste auf der Koerperseite: Die Liste der einzelnen Messungen hat jetzt eine eigene Ueberschrift „Messungen“. Der Knopf „Messung hinzufuegen“ sitzt nun unten unter der Liste und sieht genauso aus wie „Meilenstein hinzufuegen“."
+      ]
+    },
+    {
       "version": "1.17.1",
       "date": "2026-08-07",
       "changes": [
