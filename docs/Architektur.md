@@ -115,7 +115,8 @@ Begründung in ADR-0003.
 - **body_log** – Tages-Befinden: date, legs, upper_body, overall (Muskelkater 0..3),
   readiness, pain_flag, pain_note, notes, `unique(user_id, date)`
 - **composition** – InBody-/BIA-Messung: date, weight, body_fat_kg, body_fat_pct,
-  skeletal_muscle_kg, tbw_kg, phase_angle, visceral_fat, `unique(user_id, date)`
+  skeletal_muscle_kg, tbw_kg, phase_angle, visceral_fat, ecw_kg, icw_kg,
+  `unique(user_id, date)` (ecw_kg/icw_kg = extra-/intrazellulaeres Wasser, Rohwerte)
 - **exercise_milestones** – Ziele je Übung: exercise_id (FK), name, target_rm,
   achieved_at (Erreichen-Datum, nullable), position (Migration 0011)
 - **composition_milestones** – Ziele je Mess-Metrik: metric (weight/fat/muscle/water/phase),

@@ -63,6 +63,8 @@ export function compChips(e: CompositionRow): string[] {
   if (e.skeletal_muscle_kg != null)
     v.push("Muskel " + fmtScore(e.skeletal_muscle_kg) + " kg");
   if (e.tbw_kg != null) v.push("Wasser " + fmtScore(e.tbw_kg) + " kg");
+  if (e.ecw_kg != null) v.push("ECW " + fmtScore(e.ecw_kg) + " kg");
+  if (e.icw_kg != null) v.push("ICW " + fmtScore(e.icw_kg) + " kg");
   if (e.phase_angle != null) v.push("Phasenw. " + fmtScore(e.phase_angle) + "°");
   if (e.visceral_fat != null) v.push("Viszeral " + fmtScore(e.visceral_fat));
   return v;
@@ -83,6 +85,8 @@ export interface CompImportRow {
   tbw_kg: number | null;
   phase_angle: number | null;
   visceral_fat: number | null;
+  ecw_kg: number | null;
+  icw_kg: number | null;
 }
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -123,6 +127,8 @@ export function normalizeCompositionRows(raw: unknown): CompImportRow[] {
       tbw_kg: numOrNull(o, "tbwKg", "tbw_kg"),
       phase_angle: numOrNull(o, "phaseAngle", "phase_angle"),
       visceral_fat: numOrNull(o, "visceralFat", "visceral_fat"),
+      ecw_kg: numOrNull(o, "ecwKg", "ecw_kg"),
+      icw_kg: numOrNull(o, "icwKg", "icw_kg"),
     });
   }
   return out;
@@ -159,6 +165,8 @@ export const COMPOSITION_EXAMPLE = JSON.stringify(
         tbwKg: 48.4,
         phaseAngle: 6.2,
         visceralFat: 8,
+        ecwKg: 14.9,
+        icwKg: 33.5,
       },
     ],
   },

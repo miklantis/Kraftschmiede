@@ -43,6 +43,8 @@ export const compositionRow = z.object({
   tbw_kg: z.number().nullable(),
   phase_angle: z.number().nullable(),
   visceral_fat: z.number().nullable(),
+  ecw_kg: z.number().nullable(),
+  icw_kg: z.number().nullable(),
 });
 export type CompositionRow = z.infer<typeof compositionRow>;
 
@@ -56,5 +58,7 @@ export const compositionInsert = compositionRow
     tbw_kg: true,
     phase_angle: true,
     visceral_fat: true,
+    ecw_kg: true,
+    icw_kg: true,
   });
 export type CompositionInsert = z.infer<typeof compositionInsert>;

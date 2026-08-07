@@ -19,6 +19,8 @@ function row(p: Partial<CompositionRow>): CompositionRow {
     tbw_kg: null,
     phase_angle: null,
     visceral_fat: null,
+    ecw_kg: null,
+    icw_kg: null,
     ...p,
   };
 }
@@ -50,6 +52,12 @@ describe("compChips", () => {
     expect(chips).toContain("79,8 kg");
     expect(chips.some((c) => c.startsWith("Fett") && c.includes("%"))).toBe(true);
     expect(chips.some((c) => c.startsWith("Fett") && c.includes("kg"))).toBe(false);
+  });
+
+  it("zeigt ECW/ICW, wenn vorhanden", () => {
+    const chips = compChips(row({ ecw_kg: 14.9, icw_kg: 33.5 }));
+    expect(chips).toContain("ECW 14,9 kg");
+    expect(chips).toContain("ICW 33,5 kg");
   });
 });
 
@@ -89,6 +97,19 @@ describe("normalizeCompositionRows", () => {
       { date: "2026-06-15", body_fat_kg: 15.7 },
     ]);
     expect(rows[0].body_fat_kg).toBe(15.7);
+  });
+
+  it("liest ECW/ICW aus camelCase und snake_case", () => {
+    const cc = normalizeCompositionRows([
+      { date: "2026-06-15", ecwKg: 14.9, icwKg: 33.5 },
+    ]);
+    expect(cc[0].ecw_kg).toBe(14.9);
+    expect(cc[0].icw_kg).toBe(33.5);
+    const sc = normalizeCompositionRows([
+      { date: "2026-06-15", ecw_kg: 15.1, icw_kg: 33.9 },
+    ]);
+    expect(sc[0].ecw_kg).toBe(15.1);
+    expect(sc[0].icw_kg).toBe(33.9);
   });
 
   it("verwirft Eintraege ohne gueltiges ISO-Datum", () => {

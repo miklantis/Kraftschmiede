@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.15.0",
+      "date": "2026-08-07",
+      "changes": [
+        "Koerpermessungen koennen jetzt zusaetzlich die Wasserwerte ECW (extrazellulaer) und ICW (intrazellulaer) tragen. Sind sie fuer eine Messung vorhanden, erscheinen sie in der Mess-Liste als eigene Chips. Aeltere Messungen ohne diese Werte bleiben unveraendert."
+      ]
+    },
+    {
       "version": "1.14.2",
       "date": "2026-08-07",
       "changes": [
