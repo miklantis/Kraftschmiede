@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.17.0",
+      "date": "2026-08-07",
+      "changes": [
+        "Neuer Koerpermesswert: Grundumsatz (BMR) in kcal/Tag. Du kannst ihn im Mess-Popup von Hand eintragen (auch fuer alte Messungen), er erscheint als Chip in der Mess-Liste, laesst sich als eigene Kurve im Chart anzeigen und mit einem Zielwert (Meilenstein) versehen."
+      ]
+    },
+    {
       "version": "1.16.2",
       "date": "2026-08-07",
       "changes": [

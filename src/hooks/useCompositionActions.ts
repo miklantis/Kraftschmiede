@@ -26,6 +26,7 @@ export interface CompositionFelder {
   icw_kg: number | null;
   phase_angle: number | null;
   visceral_fat: number | null;
+  bmr_kcal: number | null;
 }
 
 type CompositionAction =

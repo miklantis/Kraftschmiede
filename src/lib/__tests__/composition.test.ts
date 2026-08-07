@@ -16,6 +16,7 @@ function row(p: Partial<CompositionRow>): CompositionRow {
     visceral_fat: null,
     ecw_kg: null,
     icw_kg: null,
+    bmr_kcal: null,
     ...p,
   };
 }
@@ -53,5 +54,10 @@ describe("compChips", () => {
     const chips = compChips(row({ ecw_kg: 14.9, icw_kg: 33.5 }));
     expect(chips).toContain("ECW 14,9 kg");
     expect(chips).toContain("ICW 33,5 kg");
+  });
+
+  it("zeigt den BMR-Chip in kcal", () => {
+    const chips = compChips(row({ bmr_kcal: 1780 }));
+    expect(chips).toContain("BMR 1780 kcal");
   });
 });

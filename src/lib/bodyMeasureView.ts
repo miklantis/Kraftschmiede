@@ -26,6 +26,7 @@ const VALID_METRICS: readonly BodyMetric[] = [
   "muscle",
   "water",
   "phase",
+  "bmr",
 ];
 
 function isValidMetric(m: unknown): m is BodyMetric {

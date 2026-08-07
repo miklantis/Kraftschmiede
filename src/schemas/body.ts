@@ -45,6 +45,7 @@ export const compositionRow = z.object({
   visceral_fat: z.number().nullable(),
   ecw_kg: z.number().nullable(),
   icw_kg: z.number().nullable(),
+  bmr_kcal: z.number().nullable(),
 });
 export type CompositionRow = z.infer<typeof compositionRow>;
 
@@ -60,5 +61,6 @@ export const compositionInsert = compositionRow
     visceral_fat: true,
     ecw_kg: true,
     icw_kg: true,
+    bmr_kcal: true,
   });
 export type CompositionInsert = z.infer<typeof compositionInsert>;

@@ -7,7 +7,7 @@ import { fmtScore } from "@/lib/format";
 import type { CompositionRow } from "@/schemas";
 
 // Anzeige-Metriken des Mess-Charts -> DB-Spalte, Einheit, Achsen-Polster.
-export type BodyMetric = "weight" | "fat" | "muscle" | "water" | "phase";
+export type BodyMetric = "weight" | "fat" | "muscle" | "water" | "phase" | "bmr";
 
 interface MetricDef {
   field: keyof CompositionRow;
@@ -23,10 +23,11 @@ export const BODY_METRIC: Record<BodyMetric, MetricDef> = {
   muscle: { field: "skeletal_muscle_kg", unit: "kg", pad: 0.3, label: "Muskelmasse", short: "Muskel" },
   water: { field: "tbw_kg", unit: "kg", pad: 0.3, label: "Körperwasser", short: "Wasser" },
   phase: { field: "phase_angle", unit: "°", pad: 0.15, label: "Phasenwinkel", short: "Phasenw." },
+  bmr: { field: "bmr_kcal", unit: "kcal", pad: 25, label: "BMR", short: "BMR" },
 };
 
 export const BODY_METRIC_OPTIONS: ReadonlyArray<{ key: BodyMetric; label: string }> = (
-  ["weight", "fat", "muscle", "water", "phase"] as const
+  ["weight", "fat", "muscle", "water", "phase", "bmr"] as const
 ).map((k) => ({ key: k, label: BODY_METRIC[k].short }));
 
 export interface BodyMetricSeries {
@@ -67,5 +68,6 @@ export function compChips(e: CompositionRow): string[] {
   if (e.icw_kg != null) v.push("ICW " + fmtScore(e.icw_kg) + " kg");
   if (e.phase_angle != null) v.push("Phasenw. " + fmtScore(e.phase_angle) + "°");
   if (e.visceral_fat != null) v.push("Viszeral " + fmtScore(e.visceral_fat));
+  if (e.bmr_kcal != null) v.push("BMR " + fmtScore(e.bmr_kcal) + " kcal");
   return v;
 }

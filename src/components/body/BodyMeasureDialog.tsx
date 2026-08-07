@@ -37,6 +37,7 @@ const WERT_FELDER: ReadonlyArray<{
   { key: "icw_kg", label: "Intrazellulärwasser (ICW)", suffix: "kg" },
   { key: "phase_angle", label: "Phasenwinkel", suffix: "°" },
   { key: "visceral_fat", label: "Viszeralfett", suffix: "" },
+  { key: "bmr_kcal", label: "Grundumsatz (BMR)", suffix: "kcal" },
 ];
 
 type WertKey = (typeof WERT_FELDER)[number]["key"];
@@ -54,6 +55,7 @@ const LEER_ENTWURF: WerteEntwurf = {
   icw_kg: "",
   phase_angle: "",
   visceral_fat: "",
+  bmr_kcal: "",
 };
 
 function textVon(value: number | null): string {
@@ -100,6 +102,7 @@ export function BodyMeasureDialog({
         icw_kg: textVon(row.icw_kg),
         phase_angle: textVon(row.phase_angle),
         visceral_fat: textVon(row.visceral_fat),
+        bmr_kcal: textVon(row.bmr_kcal),
       });
     } else {
       setDate(todayISO());
@@ -135,6 +138,7 @@ export function BodyMeasureDialog({
       icw_kg: zahlVon(werte.icw_kg),
       phase_angle: zahlVon(werte.phase_angle),
       visceral_fat: zahlVon(werte.visceral_fat),
+      bmr_kcal: zahlVon(werte.bmr_kcal),
     };
     if (row) await update(row.id, felder);
     else await add(felder);
