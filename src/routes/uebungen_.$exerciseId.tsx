@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 // Uebungs-Detail. Eigenstaendige Vollseite (entschachtelt mit _), ersetzt die
 // Liste wie in V1. Zeigt Kopf, Statistik-Reihe, Verlaufsdiagramm, die Muscle-Map
 // (beanspruchte Muskeln) und den Trainingsverlauf. "Uebung anpassen" sitzt als
-// Stift-Icon oben rechts in der Coach-Card und oeffnet das Popup.
+// Rahmen-Button rechts in der Coach-Card (vertikal zentriert) und oeffnet das Popup.
 // Der Anheften-Umschalter sitzt im Kopf der Chartkarte.
 export const Route = createFileRoute("/uebungen_/$exerciseId")({
   component: ExerciseDetailPage,
@@ -97,16 +97,8 @@ function ExerciseDetailPage(): React.ReactElement {
 
       {(coach || stats.length > 0) && (
         <Section eyebrow="Coach" className="mb-5 min-[960px]:mb-6">
-          <div className="relative rounded-[18px] bg-card p-4 shadow-card min-[960px]:p-5">
-            <button
-              type="button"
-              aria-label="Übung anpassen"
-              onClick={() => setEditOpen(true)}
-              className="absolute right-2 top-2.5 flex size-7 items-center justify-center rounded-[10px] text-muted-foreground transition-[filter,color] hover:text-foreground hover:brightness-95"
-            >
-              <Pencil className="size-4" />
-            </button>
-            <div className="pr-9">
+          <div className="flex items-center justify-between gap-4 rounded-[18px] bg-card p-4 shadow-card min-[960px]:gap-5 min-[960px]:p-5">
+            <div className="min-w-0 flex-1">
             {coach && (
               <>
                 <div className="flex flex-wrap items-center gap-2.5">
@@ -145,6 +137,15 @@ function ExerciseDetailPage(): React.ReactElement {
               </div>
             )}
             </div>
+            <button
+              type="button"
+              aria-label="Übung anpassen"
+              onClick={() => setEditOpen(true)}
+              className="inline-flex flex-none items-center gap-2 rounded-control border border-primary/40 bg-card px-3 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/10 min-[960px]:px-3.5"
+            >
+              <Pencil className="size-[15px]" />
+              <span className="hidden min-[960px]:inline">Anpassen</span>
+            </button>
           </div>
         </Section>
       )}

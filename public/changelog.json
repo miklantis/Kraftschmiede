@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.17.5",
+      "date": "2026-08-07",
+      "changes": [
+        "Übungsseite: \"Anpassen\" ist jetzt ein klarer Rahmen-Button rechts in der Coach-Karte (vertikal zentriert), im selben Stil wie \"Bearbeiten\" auf der Journey-Seite – statt des kleinen Icons. Die Trennlinie in der Karte läuft wieder sauber durch."
+      ]
+    },
+    {
       "version": "1.17.4",
       "date": "2026-08-07",
       "changes": [
