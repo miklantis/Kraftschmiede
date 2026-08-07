@@ -41,17 +41,23 @@ export const ZEITRAUM_FARBE: Record<ZeitraumTyp, string> = {
   sonstiges: "bg-[#6b5fb8]",
 };
 
-// Ein Balken-Segment eines Zeitraums an einem einzelnen Kalendertag. Der Kalender
-// zeichnet je Tag alle hier gelisteten Segmente als schmale farbige Streifen. Die
-// Rundungs-Flags erzeugen die Bandwirkung: nur der echte Start-/Endtag wird an der
-// jeweiligen Seite abgerundet, dazwischen (auch ueber Wochen- und Monatsgrenzen)
-// bleibt der Streifen eckig, sodass er wie ein durchgehendes Band ueber die Tage
-// laeuft.
-export interface ZeitraumBand {
+// Ein Wochen-Segment eines Zeitraums: ein durchgehender, beschrifteter Balken
+// ueber die betroffenen Spalten EINER Kalenderwoche. Laeuft ein Zeitraum ueber
+// den Wochenwechsel, entsteht je Woche ein eigenes Segment (und wird dort erneut
+// beschriftet). colStart/colSpan sind 1-basierte Grid-Spalten (Montag = 1); slot
+// ist die ueber den ganzen Monat stabile Stapel-Ebene, damit ein mehrwoechiges
+// Band vertikal auf einer Hoehe bleibt. isStart/isEnd markieren nur den echten
+// Anfang/das echte Ende (fuer die Abrundung); an Wochengrenzen bleibt die Kante
+// eckig, sodass die Fortsetzung sichtbar ist.
+export interface ZeitraumWochenSegment {
   id: string;
   typ: ZeitraumTyp;
-  isStart: boolean; // echter Starttag des Zeitraums faellt auf diesen Tag
-  isEnd: boolean; // echter Endtag des Zeitraums faellt auf diesen Tag
+  label: string; // Notiz des Zeitraums; leer -> Typ-Bezeichnung als Rueckfall
+  colStart: number; // 1..7
+  colSpan: number; // 1..7
+  slot: number; // 0-basierte Stapel-Ebene, ueber den Monat stabil
+  isStart: boolean; // echter Starttag faellt auf den ersten Tag dieses Segments
+  isEnd: boolean; // echter Endtag faellt auf den letzten Tag dieses Segments
 }
 
 // Minimaler Zeitraum-Ausschnitt, den die Band-Berechnung braucht (entkoppelt vom
@@ -61,6 +67,7 @@ interface ZeitraumSpan {
   typ: ZeitraumTyp;
   start_datum: string;
   end_datum: string | null;
+  notiz: string | null;
 }
 
 function pad2(n: number): string {
@@ -71,20 +78,26 @@ function isoDay(y: number, mZero: number, day: number): string {
   return y + "-" + pad2(mZero + 1) + "-" + pad2(day);
 }
 
-// Bildet fuer den angezeigten Monat (y, mZero 0-basiert) je Tag (ISO) die aktiven
-// Band-Segmente ab. Ein laufender Zeitraum ohne Ende faerbt bis zum Monatsende
-// weiter (und in Folgemonaten erneut ab dem Ersten). ISO-Datumsstrings sind
-// lexikografisch vergleichbar, daher reicht der String-Vergleich. Reihenfolge der
-// Segmente je Tag ist stabil (nach Start, dann id), damit sich ueberlappende
-// Baender ruhig stapeln.
-export function zeitraumBaenderImMonat(
+// Bildet fuer den angezeigten Monat (y, mZero 0-basiert) die Zeitraum-Baender je
+// Kalenderwoche als durchgehende Segmente ab. Rueckgabe: Wochenindex (0 = erste
+// Gitterzeile) -> Segmente. Die Wochen-/Spalteneinteilung ist identisch zum
+// Calendar-Baustein (Montag als erste Spalte). Ein laufender Zeitraum ohne Ende
+// faerbt bis zum Monatsende weiter (und in Folgemonaten erneut ab dem Ersten).
+// ISO-Datumsstrings sind lexikografisch vergleichbar, daher reicht der
+// String-Vergleich. Zeitraeume werden nach Start, dann id sortiert, damit die
+// Slot-Zuweisung stabil ist.
+export function zeitraumWochenBaender(
   zeitraeume: readonly ZeitraumSpan[],
   y: number,
   mZero: number,
-): Record<string, ZeitraumBand[]> {
+): Record<number, ZeitraumWochenSegment[]> {
   const tageImMonat = new Date(y, mZero + 1, 0).getDate();
   const ersterTag = isoDay(y, mZero, 1);
   const letzterTag = isoDay(y, mZero, tageImMonat);
+  const startDow = (new Date(y, mZero, 1).getDay() + 6) % 7; // Montag = 0
+
+  const wocheVonTag = (tag: number): number => Math.floor((startDow + tag - 1) / 7);
+  const spalteVonTag = (tag: number): number => ((startDow + tag - 1) % 7) + 1; // 1..7
 
   const sortiert = [...zeitraeume].sort((a, b) => {
     if (a.start_datum !== b.start_datum) {
@@ -93,26 +106,58 @@ export function zeitraumBaenderImMonat(
     return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
   });
 
-  const out: Record<string, ZeitraumBand[]> = {};
+  // Slot-Zuweisung ueber den ganzen Monat: niedrigster Slot, der ueber die
+  // sichtbare Spanne (in Tagnummern) frei ist.
+  const slotBelegung: { von: number; bis: number }[][] = [];
+  const out: Record<number, ZeitraumWochenSegment[]> = {};
+
   for (const z of sortiert) {
-    // Sichtbares Ende im Monat: echtes Ende, sonst (laufend) das Monatsende.
     const sichtbaresEnde = z.end_datum ?? letzterTag;
-    // Ausserhalb des Monats -> ueberspringen.
     if (z.start_datum > letzterTag || sichtbaresEnde < ersterTag) continue;
 
     const vonTag = z.start_datum > ersterTag ? Number(z.start_datum.slice(8, 10)) : 1;
     const bisTag =
       sichtbaresEnde < letzterTag ? Number(sichtbaresEnde.slice(8, 10)) : tageImMonat;
 
-    for (let d = vonTag; d <= bisTag; d++) {
-      const iso = isoDay(y, mZero, d);
-      const band: ZeitraumBand = {
+    let slot = 0;
+    for (;;) {
+      const belegt = slotBelegung[slot] ?? [];
+      const kollision = belegt.some((iv) => vonTag <= iv.bis && bisTag >= iv.von);
+      if (!kollision) {
+        (slotBelegung[slot] ??= []).push({ von: vonTag, bis: bisTag });
+        break;
+      }
+      slot++;
+    }
+
+    const label = (z.notiz ?? "").trim() || zeitraumLabel(z.typ);
+    const echterStartTag =
+      z.start_datum >= ersterTag && z.start_datum <= letzterTag
+        ? Number(z.start_datum.slice(8, 10))
+        : null;
+    const echterEndTag =
+      z.end_datum !== null && z.end_datum >= ersterTag && z.end_datum <= letzterTag
+        ? Number(z.end_datum.slice(8, 10))
+        : null;
+
+    // Sichtbare Tage in Wochen-Abschnitte zerlegen.
+    let t = vonTag;
+    while (t <= bisTag) {
+      const woche = wocheVonTag(t);
+      const colStart = spalteVonTag(t);
+      let ende = t;
+      while (ende + 1 <= bisTag && wocheVonTag(ende + 1) === woche) ende++;
+      (out[woche] ??= []).push({
         id: z.id,
         typ: z.typ,
-        isStart: iso === z.start_datum,
-        isEnd: z.end_datum !== null && iso === z.end_datum,
-      };
-      (out[iso] ??= []).push(band);
+        label,
+        colStart,
+        colSpan: ende - t + 1,
+        slot,
+        isStart: echterStartTag === t,
+        isEnd: echterEndTag === ende,
+      });
+      t = ende + 1;
     }
   }
   return out;

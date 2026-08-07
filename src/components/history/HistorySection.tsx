@@ -13,7 +13,7 @@ import { ZeitraeumeSection } from "@/components/history/ZeitraeumeSection";
 import { useHistory } from "@/hooks/useHistory";
 import { useZeitraeume } from "@/hooks/useZeitraeume";
 import {
-  zeitraumBaenderImMonat,
+  zeitraumWochenBaender,
   zeitraumLabel,
   ZEITRAUM_FARBE,
 } from "@/lib/zeitraeume";
@@ -44,14 +44,46 @@ const CAL_DOT: Record<HistoryKind, string> = {
 };
 
 // Rundung eines Band-Segments: nur am echten Start-/Endtag abrunden, sonst eckig,
-// damit sich die Streifen benachbarter Tage zu einem durchgehenden Band fuegen.
-// Vollstaendige Tailwind-Literale, kein Laufzeit-Zusammenbau der Klassennamen.
+// damit ein ueber mehrere Tage/Wochen laufender Zeitraum als durchgehendes Band
+// wirkt und die Fortsetzung an Wochengrenzen sichtbar bleibt. Vollstaendige
+// Tailwind-Literale, kein Laufzeit-Zusammenbau der Klassennamen.
 function bandRadius(isStart: boolean, isEnd: boolean): string {
-  if (isStart && isEnd) return "rounded-[3px]";
-  if (isStart) return "rounded-l-[3px]";
-  if (isEnd) return "rounded-r-[3px]";
+  if (isStart && isEnd) return "rounded-[4px]";
+  if (isStart) return "rounded-l-[4px]";
+  if (isEnd) return "rounded-r-[4px]";
   return "rounded-none";
 }
+
+// Vollstaendige Klassenliterale fuer die Grid-Platzierung der Baender (1-basiert).
+// Ein Balken belegt colStart..colStart+colSpan-1 und liegt in seiner Slot-Zeile.
+const COL_START = [
+  "",
+  "col-start-1",
+  "col-start-2",
+  "col-start-3",
+  "col-start-4",
+  "col-start-5",
+  "col-start-6",
+  "col-start-7",
+];
+const COL_SPAN = [
+  "",
+  "col-span-1",
+  "col-span-2",
+  "col-span-3",
+  "col-span-4",
+  "col-span-5",
+  "col-span-6",
+  "col-span-7",
+];
+const ROW_START = [
+  "row-start-1",
+  "row-start-2",
+  "row-start-3",
+  "row-start-4",
+  "row-start-5",
+  "row-start-6",
+];
 
 const EYEBROW =
   "mb-2.5 text-[13px] font-semibold tracking-[0.6px] text-muted-foreground uppercase min-[960px]:mb-3 min-[960px]:text-[12px] min-[960px]:tracking-[0.7px]";
@@ -86,8 +118,9 @@ export function HistorySection(): React.ReactElement {
     );
   }
 
-  // Zeitraum-Baender fuer den gerade angezeigten Monat, je Tag vorberechnet.
-  const baender = zeitraumBaenderImMonat(zeitraeume.data ?? [], month.y, month.m);
+  // Zeitraum-Baender fuer den angezeigten Monat, je Kalenderwoche als
+  // durchgehende Segmente vorberechnet.
+  const wochenBaender = zeitraumWochenBaender(zeitraeume.data ?? [], month.y, month.m);
 
   const calendar = (
     <Calendar
@@ -95,29 +128,36 @@ export function HistorySection(): React.ReactElement {
       onPrev={() => setMonth((c) => shiftMonth(c, -1))}
       onNext={() => setMonth((c) => shiftMonth(c, 1))}
       onToday={() => setMonth(currentMonth())}
+      renderWeekBands={(_week, weekIndex) => {
+        const segs = wochenBaender[weekIndex];
+        if (!segs || segs.length === 0) return null;
+        return segs.map((seg) => (
+          <span
+            key={seg.id + "-" + seg.colStart}
+            title={zeitraumLabel(seg.typ)}
+            className={
+              "block truncate px-1 text-left text-[8.5px] font-bold leading-[15px] text-white min-[960px]:px-1.5 min-[960px]:text-[9.5px] min-[960px]:leading-[18px] " +
+              ZEITRAUM_FARBE[seg.typ] +
+              " " +
+              bandRadius(seg.isStart, seg.isEnd) +
+              " " +
+              COL_START[seg.colStart] +
+              " " +
+              COL_SPAN[seg.colSpan] +
+              " " +
+              ROW_START[Math.min(seg.slot, 5)]
+            }
+          >
+            {seg.label}
+          </span>
+        ));
+      }}
       renderCell={(iso) => {
-        const tagBaender = baender[iso];
         const entries = data.byDate[iso];
-        if (!tagBaender && !entries) return null;
+        if (!entries) return null;
         return (
           <>
-            {tagBaender && (
-              <div className="flex flex-col gap-0.5">
-                {tagBaender.map((b) => (
-                  <span
-                    key={b.id}
-                    title={zeitraumLabel(b.typ)}
-                    className={
-                      "h-[5px] min-[960px]:h-1.5 " +
-                      ZEITRAUM_FARBE[b.typ] +
-                      " " +
-                      bandRadius(b.isStart, b.isEnd)
-                    }
-                  />
-                ))}
-              </div>
-            )}
-            {entries?.map((e, i) => (
+            {entries.map((e, i) => (
               <span
                 key={i}
                 className={
