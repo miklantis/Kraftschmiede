@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.17.6",
+      "date": "2026-08-07",
+      "changes": [
+        "Übungsseite: Auf dem Handy sitzt der Anpassen-Button jetzt oben rechts an der Statuszeile statt mittig; auf großen Bildschirmen bleibt er vertikal zentriert."
+      ]
+    },
+    {
       "version": "1.17.5",
       "date": "2026-08-07",
       "changes": [

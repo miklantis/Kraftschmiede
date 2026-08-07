@@ -21,7 +21,8 @@ import { cn } from "@/lib/utils";
 // Uebungs-Detail. Eigenstaendige Vollseite (entschachtelt mit _), ersetzt die
 // Liste wie in V1. Zeigt Kopf, Statistik-Reihe, Verlaufsdiagramm, die Muscle-Map
 // (beanspruchte Muskeln) und den Trainingsverlauf. "Uebung anpassen" sitzt als
-// Rahmen-Button rechts in der Coach-Card (vertikal zentriert) und oeffnet das Popup.
+// Rahmen-Button rechts in der Coach-Card: mobil oben (an der Statuszeile), ab
+// 960px vertikal zentriert. Oeffnet das Popup.
 // Der Anheften-Umschalter sitzt im Kopf der Chartkarte.
 export const Route = createFileRoute("/uebungen_/$exerciseId")({
   component: ExerciseDetailPage,
@@ -97,7 +98,7 @@ function ExerciseDetailPage(): React.ReactElement {
 
       {(coach || stats.length > 0) && (
         <Section eyebrow="Coach" className="mb-5 min-[960px]:mb-6">
-          <div className="flex items-center justify-between gap-4 rounded-[18px] bg-card p-4 shadow-card min-[960px]:gap-5 min-[960px]:p-5">
+          <div className="flex items-start justify-between gap-4 rounded-[18px] bg-card p-4 shadow-card min-[960px]:items-center min-[960px]:gap-5 min-[960px]:p-5">
             <div className="min-w-0 flex-1">
             {coach && (
               <>
