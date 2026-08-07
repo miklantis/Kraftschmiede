@@ -35,6 +35,7 @@ function emptyRaw(): RawExportData {
     milestones: [],
     compositionMilestones: [],
   rmTests: [],
+  zeitraeume: [],
     settings: null,
   };
 }
@@ -269,5 +270,57 @@ describe("buildCoachExport - Uebungskatalog & Meilensteine", () => {
     expect(ms).toHaveLength(2);
     expect(ms?.[0]).toEqual({ name: "100 kg", targetRm: 100, gap: 10 });
     expect(ms?.[1]).toEqual({ name: "80 kg", targetRm: 80, achieved: "2026-06-01" });
+  });
+
+  it("nimmt Zeitraeume mit Label, Name und Notiz auf, sortiert nach Start", () => {
+    const raw = emptyRaw();
+    raw.zeitraeume = [
+      {
+        id: "z2",
+        typ: "pause",
+        start_datum: "2026-07-20",
+        end_datum: "2026-07-24",
+        name: null,
+        notiz: "Beruflich unterwegs",
+      },
+      {
+        id: "z1",
+        typ: "verletzung",
+        start_datum: "2026-07-13",
+        end_datum: "2026-07-19",
+        name: "Ellenbogen",
+        notiz: null,
+      },
+    ];
+    const out = buildCoachExport(raw, { weeks: null, today: TODAY });
+    expect(out.zeitraeume).toEqual([
+      {
+        typ: "Verletzung",
+        name: "Ellenbogen",
+        from: "2026-07-13",
+        to: "2026-07-19",
+      },
+      {
+        typ: "Pause",
+        from: "2026-07-20",
+        to: "2026-07-24",
+        notes: "Beruflich unterwegs",
+      },
+    ]);
+  });
+
+  it("filtert Zeitraeume auf die Spanne, behaelt beruehrende und laufende", () => {
+    const raw = emptyRaw();
+    // Spanne = TODAY (2026-06-24) minus 8 Wochen = ab 2026-04-29.
+    raw.zeitraeume = [
+      // endet vor dem Spannenbeginn -> raus
+      { id: "a", typ: "urlaub", start_datum: "2026-01-01", end_datum: "2026-01-10", name: null, notiz: null },
+      // beginnt vor der Spanne, endet drin -> drin
+      { id: "b", typ: "verletzung", start_datum: "2026-04-01", end_datum: "2026-05-10", name: null, notiz: null },
+      // laufend (kein Ende) -> drin
+      { id: "c", typ: "krankheit", start_datum: "2026-06-01", end_datum: null, name: null, notiz: null },
+    ];
+    const out = buildCoachExport(raw, { weeks: 8, today: TODAY });
+    expect(out.zeitraeume.map((z) => z.typ)).toEqual(["Verletzung", "Krankheit"]);
   });
 });

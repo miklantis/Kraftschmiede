@@ -64,6 +64,8 @@ export interface RawExportData {
   compositionMilestones: Row[];
   /** 1RM-Tests (rm_tests) - eigenstaendige Messungen, keine Einheiten. */
   rmTests: Row[];
+  /** Zeitraeume (Timeline-Marker: Urlaub, Pause, Verletzung usw.). */
+  zeitraeume: Row[];
   settings: Row | null;
 }
 
@@ -107,6 +109,7 @@ export interface KsExport {
   milestones: Row[];
   compositionMilestones: Row[];
   rmTests: Row[];
+  zeitraeume: Row[];
   settings: Row | null;
   _scoreScale: {
     note: string;
@@ -225,6 +228,7 @@ export function buildExport(
     milestones: raw.milestones,
     compositionMilestones: raw.compositionMilestones,
     rmTests: raw.rmTests,
+    zeitraeume: raw.zeitraeume,
     settings: raw.settings,
     _scoreScale: {
       note: SCORE_SCALE_NOTE,

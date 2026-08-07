@@ -8,6 +8,7 @@
 import { SCORE_MAP, scoreInfo, type ScoreInfo } from "@/engine/score";
 import { journeyPlacement, type JourneySession } from "@/engine/journey";
 import { todayISO } from "@/lib/format";
+import { zeitraumLabel } from "@/lib/zeitraeume";
 import type {
   RawExportData,
   RawSessionExercise,
@@ -109,6 +110,14 @@ export interface CoachMeasurement {
   visceralFat?: number;
 }
 
+export interface CoachZeitraum {
+  typ: string; // Label, z. B. "Verletzung"
+  name?: string;
+  from: string;
+  to: string | null; // null = laeuft noch
+  notes?: string;
+}
+
 export interface CoachExport {
   app: "Kraftschmiede";
   kind: "coach";
@@ -126,6 +135,7 @@ export interface CoachExport {
   activeJourney: CoachJourney | null;
   exercises: CoachExerciseCat[];
   sessions: CoachSession[];
+  zeitraeume: CoachZeitraum[];
   skills: CoachSkill[];
   bodyTrend: CoachBodyDay[];
   measurements: CoachMeasurement[];
@@ -418,6 +428,35 @@ export function buildCoachExport(
       return out;
     });
 
+  // ---- Zeitraeume (Timeline-Marker) in der Spanne ----
+  // Aufgenommen wird jeder Zeitraum, der die Spanne beruehrt: laufend (kein Ende)
+  // oder Ende am/nach dem Spannenbeginn. Startet er vor der Spanne, bleibt er
+  // trotzdem drin, damit z. B. eine vor der Spanne begonnene Verletzung sichtbar
+  // ist. Sortiert nach Startdatum.
+  const zeitraeume: CoachZeitraum[] = [...raw.zeitraeume]
+    .filter((z) => {
+      const ende = str(z, "end_datum");
+      if (from == null) return true;
+      return ende == null || ende >= from;
+    })
+    .sort((a, b) => {
+      const sa = str(a, "start_datum") ?? "";
+      const sb = str(b, "start_datum") ?? "";
+      return sa < sb ? -1 : sa > sb ? 1 : 0;
+    })
+    .map((z) => {
+      const out: CoachZeitraum = {
+        typ: zeitraumLabel(str(z, "typ") ?? "sonstiges"),
+        from: str(z, "start_datum") ?? "",
+        to: str(z, "end_datum"),
+      };
+      const name = str(z, "name");
+      if (name != null && name.trim() !== "") out.name = name.trim();
+      const notiz = str(z, "notiz");
+      if (notiz != null && notiz.trim() !== "") out.notes = notiz.trim();
+      return out;
+    });
+
   // ---- Skill-Fortschritt ----
   const skills: CoachSkill[] = raw.skillProgress.map((sp) => {
     const sid = str(sp, "skill_id") ?? "";
@@ -495,6 +534,7 @@ export function buildCoachExport(
     activeJourney,
     exercises,
     sessions,
+    zeitraeume,
     skills,
     bodyTrend,
     measurements,

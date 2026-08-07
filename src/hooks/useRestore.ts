@@ -36,6 +36,7 @@ const DELETE_ORDER: string[] = [
   "body_log",
   "composition",
   "composition_milestones",
+  "zeitraeume",
   "inventory_equipment",
   "inventory_kettlebells",
   "inventory_dumbbells",
@@ -71,6 +72,7 @@ const INSERT_ORDER: (keyof RestoreTables)[] = [
   "body_log",
   "composition",
   "composition_milestones",
+  "zeitraeume",
 ];
 
 function withUser(rows: Row[], userId: string): Row[] {

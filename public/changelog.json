@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.14.0",
+      "date": "2026-08-07",
+      "changes": [
+        "Deine Zeiträume (Urlaub, Pause, Krankheit, Verletzung usw. mit Name, Zeitspanne und Notiz) werden jetzt mit exportiert – sowohl im vollständigen Backup als auch im Coach-Export. Beim Wiederherstellen eines Backups kommen sie ebenfalls zurück. Im Coach-Export erscheinen alle Zeiträume, die in den gewählten Zeitraum fallen oder ihn berühren, damit Trainingspausen nachvollziehbar bleiben."
+      ]
+    },
+    {
       "version": "1.13.3",
       "date": "2026-08-07",
       "changes": [
