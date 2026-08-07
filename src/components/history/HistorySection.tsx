@@ -15,7 +15,7 @@ import { useZeitraeume } from "@/hooks/useZeitraeume";
 import {
   zeitraumWochenBaender,
   zeitraumLabel,
-  ZEITRAUM_FARBE,
+  ZEITRAUM_CHIP,
 } from "@/lib/zeitraeume";
 import { useDeleteSession } from "@/hooks/useDeleteSession";
 import type { HistoryKind } from "@/lib/history";
@@ -122,8 +122,8 @@ export function HistorySection(): React.ReactElement {
               gridRow: seg.slot + 2,
             }}
             className={
-              "block self-start truncate px-[3px] py-px text-left text-[8.5px] font-bold leading-[1.25] text-white min-[960px]:px-1 min-[960px]:py-0.5 min-[960px]:text-[9.5px] min-[960px]:leading-[1.3] " +
-              ZEITRAUM_FARBE[seg.typ] +
+              "block self-start truncate px-[3px] py-px text-left text-[8.5px] font-bold leading-[1.25] min-[960px]:px-1 min-[960px]:py-0.5 min-[960px]:text-[9.5px] min-[960px]:leading-[1.3] " +
+              ZEITRAUM_CHIP[seg.typ] +
               " " +
               bandRadius(seg.isStart, seg.isEnd) +
               " " +

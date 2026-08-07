@@ -41,6 +41,20 @@ export const ZEITRAUM_FARBE: Record<ZeitraumTyp, string> = {
   sonstiges: "bg-[#6b5fb8]",
 };
 
+// Pastell-Variante je Typ fuer das Kalender-Band: heller Hintergrund im Farbton
+// (Grundfarbe bei ~15 % Deckkraft, wie die Tageszellen-Chips) plus dunkle Schrift
+// im selben Farbton. Ruhigere Anmutung als die solide Fuellfarbe oben, bei
+// erhaltener Typ-Unterscheidung. Vollstaendige Klassenliterale, damit der
+// Tailwind-Compiler sie erfasst (kein Laufzeit-Zusammenbau).
+export const ZEITRAUM_CHIP: Record<ZeitraumTyp, string> = {
+  heilfasten: "bg-[#2f9e78]/15 text-[#1f6e53]",
+  urlaub: "bg-[#3f7fb5]/15 text-[#2c587f]",
+  pause: "bg-[#9a9aa0]/20 text-[#5f5f66]",
+  krankheit: "bg-[#c25f77]/15 text-[#8a3f52]",
+  verletzung: "bg-[#c0803f]/15 text-[#855626]",
+  sonstiges: "bg-[#6b5fb8]/15 text-[#4a3f82]",
+};
+
 // Ein Wochen-Segment eines Zeitraums: ein durchgehender, beschrifteter Balken
 // ueber die betroffenen Spalten EINER Kalenderwoche. Laeuft ein Zeitraum ueber
 // den Wochenwechsel, entsteht je Woche ein eigenes Segment (und wird dort erneut

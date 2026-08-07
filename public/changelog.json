@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.13.3",
+      "date": "2026-08-07",
+      "changes": [
+        "Die Zeitraum-Bänder im Monatskalender (z. B. Urlaub, Verletzung) haben jetzt dieselbe ruhige Anmutung wie die Workout-Markierungen: heller Hintergrund im jeweiligen Farbton mit dunkler Schrift statt kräftiger Vollfläche. Jeder Zeitraum-Typ behält seine eigene Farbe."
+      ]
+    },
+    {
       "version": "1.13.2",
       "date": "2026-08-07",
       "changes": [
