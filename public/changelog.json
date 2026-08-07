@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.14.2",
+      "date": "2026-08-07",
+      "changes": [
+        "Der farbige Kreis auf den Zeitraum-Karten ist wieder kleiner und dezenter."
+      ]
+    },
+    {
       "version": "1.14.1",
       "date": "2026-08-07",
       "changes": [

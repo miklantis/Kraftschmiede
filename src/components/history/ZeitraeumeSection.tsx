@@ -65,7 +65,7 @@ export function ZeitraeumeSection(): React.ReactElement {
               <span
                 aria-hidden
                 className={
-                  "flex size-9 flex-none items-center justify-center rounded-full " +
+                  "size-3 flex-none rounded-full " +
                   ZEITRAUM_FARBE[z.typ]
                 }
               />
