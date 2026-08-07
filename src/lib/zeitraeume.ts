@@ -41,6 +41,83 @@ export const ZEITRAUM_FARBE: Record<ZeitraumTyp, string> = {
   sonstiges: "bg-[#6b5fb8]",
 };
 
+// Ein Balken-Segment eines Zeitraums an einem einzelnen Kalendertag. Der Kalender
+// zeichnet je Tag alle hier gelisteten Segmente als schmale farbige Streifen. Die
+// Rundungs-Flags erzeugen die Bandwirkung: nur der echte Start-/Endtag wird an der
+// jeweiligen Seite abgerundet, dazwischen (auch ueber Wochen- und Monatsgrenzen)
+// bleibt der Streifen eckig, sodass er wie ein durchgehendes Band ueber die Tage
+// laeuft.
+export interface ZeitraumBand {
+  id: string;
+  typ: ZeitraumTyp;
+  isStart: boolean; // echter Starttag des Zeitraums faellt auf diesen Tag
+  isEnd: boolean; // echter Endtag des Zeitraums faellt auf diesen Tag
+}
+
+// Minimaler Zeitraum-Ausschnitt, den die Band-Berechnung braucht (entkoppelt vom
+// vollen Row-Typ, damit der Helfer leicht testbar bleibt).
+interface ZeitraumSpan {
+  id: string;
+  typ: ZeitraumTyp;
+  start_datum: string;
+  end_datum: string | null;
+}
+
+function pad2(n: number): string {
+  return n < 10 ? "0" + n : String(n);
+}
+
+function isoDay(y: number, mZero: number, day: number): string {
+  return y + "-" + pad2(mZero + 1) + "-" + pad2(day);
+}
+
+// Bildet fuer den angezeigten Monat (y, mZero 0-basiert) je Tag (ISO) die aktiven
+// Band-Segmente ab. Ein laufender Zeitraum ohne Ende faerbt bis zum Monatsende
+// weiter (und in Folgemonaten erneut ab dem Ersten). ISO-Datumsstrings sind
+// lexikografisch vergleichbar, daher reicht der String-Vergleich. Reihenfolge der
+// Segmente je Tag ist stabil (nach Start, dann id), damit sich ueberlappende
+// Baender ruhig stapeln.
+export function zeitraumBaenderImMonat(
+  zeitraeume: readonly ZeitraumSpan[],
+  y: number,
+  mZero: number,
+): Record<string, ZeitraumBand[]> {
+  const tageImMonat = new Date(y, mZero + 1, 0).getDate();
+  const ersterTag = isoDay(y, mZero, 1);
+  const letzterTag = isoDay(y, mZero, tageImMonat);
+
+  const sortiert = [...zeitraeume].sort((a, b) => {
+    if (a.start_datum !== b.start_datum) {
+      return a.start_datum < b.start_datum ? -1 : 1;
+    }
+    return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+  });
+
+  const out: Record<string, ZeitraumBand[]> = {};
+  for (const z of sortiert) {
+    // Sichtbares Ende im Monat: echtes Ende, sonst (laufend) das Monatsende.
+    const sichtbaresEnde = z.end_datum ?? letzterTag;
+    // Ausserhalb des Monats -> ueberspringen.
+    if (z.start_datum > letzterTag || sichtbaresEnde < ersterTag) continue;
+
+    const vonTag = z.start_datum > ersterTag ? Number(z.start_datum.slice(8, 10)) : 1;
+    const bisTag =
+      sichtbaresEnde < letzterTag ? Number(sichtbaresEnde.slice(8, 10)) : tageImMonat;
+
+    for (let d = vonTag; d <= bisTag; d++) {
+      const iso = isoDay(y, mZero, d);
+      const band: ZeitraumBand = {
+        id: z.id,
+        typ: z.typ,
+        isStart: iso === z.start_datum,
+        isEnd: z.end_datum !== null && iso === z.end_datum,
+      };
+      (out[iso] ??= []).push(band);
+    }
+  }
+  return out;
+}
+
 // Kurzes Datum, z. B. „12. März“.
 function tagMonat(iso: string): string {
   try {

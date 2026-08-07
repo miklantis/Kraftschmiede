@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.11.1",
+      "date": "2026-08-07",
+      "changes": [
+        "Deine Zeiträume erscheinen jetzt auch im Monatskalender: über den betroffenen Tagen läuft ein durchgehendes farbiges Band, je Typ (Heilfasten, Urlaub, Pause, Krankheit, Verletzung, Sonstiges) in eigener Farbe – abgesetzt von den Session-Markierungen darunter. Ein noch laufender Zeitraum ohne Ende färbt bis zum Monatsende weiter. So siehst du auf einen Blick, in welchen Phasen etwas Besonderes lief."
+      ]
+    },
+    {
       "version": "1.11.0",
       "date": "2026-08-06",
       "changes": [

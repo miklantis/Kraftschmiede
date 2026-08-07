@@ -11,6 +11,12 @@ import { SessionLogCard } from "@/components/history/SessionLogCard";
 import { SessionEditPanel } from "@/components/history/SessionEditPanel";
 import { ZeitraeumeSection } from "@/components/history/ZeitraeumeSection";
 import { useHistory } from "@/hooks/useHistory";
+import { useZeitraeume } from "@/hooks/useZeitraeume";
+import {
+  zeitraumBaenderImMonat,
+  zeitraumLabel,
+  ZEITRAUM_FARBE,
+} from "@/lib/zeitraeume";
 import { useDeleteSession } from "@/hooks/useDeleteSession";
 import type { HistoryKind } from "@/lib/history";
 
@@ -37,6 +43,16 @@ const CAL_DOT: Record<HistoryKind, string> = {
   rmtest: "text-primary bg-primary/15",
 };
 
+// Rundung eines Band-Segments: nur am echten Start-/Endtag abrunden, sonst eckig,
+// damit sich die Streifen benachbarter Tage zu einem durchgehenden Band fuegen.
+// Vollstaendige Tailwind-Literale, kein Laufzeit-Zusammenbau der Klassennamen.
+function bandRadius(isStart: boolean, isEnd: boolean): string {
+  if (isStart && isEnd) return "rounded-[3px]";
+  if (isStart) return "rounded-l-[3px]";
+  if (isEnd) return "rounded-r-[3px]";
+  return "rounded-none";
+}
+
 const EYEBROW =
   "mb-2.5 text-[13px] font-semibold tracking-[0.6px] text-muted-foreground uppercase min-[960px]:mb-3 min-[960px]:text-[12px] min-[960px]:tracking-[0.7px]";
 
@@ -46,6 +62,7 @@ const PAGE_SIZE = 5;
 
 export function HistorySection(): React.ReactElement {
   const { isLoading, isError, data } = useHistory();
+  const zeitraeume = useZeitraeume();
   const del = useDeleteSession();
   const [month, setMonth] = useState<CalendarMonth>(currentMonth);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -69,6 +86,9 @@ export function HistorySection(): React.ReactElement {
     );
   }
 
+  // Zeitraum-Baender fuer den gerade angezeigten Monat, je Tag vorberechnet.
+  const baender = zeitraumBaenderImMonat(zeitraeume.data ?? [], month.y, month.m);
+
   const calendar = (
     <Calendar
       month={month}
@@ -76,19 +96,40 @@ export function HistorySection(): React.ReactElement {
       onNext={() => setMonth((c) => shiftMonth(c, 1))}
       onToday={() => setMonth(currentMonth())}
       renderCell={(iso) => {
+        const tagBaender = baender[iso];
         const entries = data.byDate[iso];
-        if (!entries) return null;
-        return entries.map((e, i) => (
-          <span
-            key={i}
-            className={
-              "truncate rounded-[4px] px-[3px] py-px text-center text-[8.5px] font-bold leading-[1.25] min-[960px]:rounded-[5px] min-[960px]:px-1 min-[960px]:py-0.5 min-[960px]:text-[9.5px] min-[960px]:leading-[1.3] " +
-              CAL_DOT[e.kind]
-            }
-          >
-            {e.label}
-          </span>
-        ));
+        if (!tagBaender && !entries) return null;
+        return (
+          <>
+            {tagBaender && (
+              <div className="flex flex-col gap-0.5">
+                {tagBaender.map((b) => (
+                  <span
+                    key={b.id}
+                    title={zeitraumLabel(b.typ)}
+                    className={
+                      "h-[5px] min-[960px]:h-1.5 " +
+                      ZEITRAUM_FARBE[b.typ] +
+                      " " +
+                      bandRadius(b.isStart, b.isEnd)
+                    }
+                  />
+                ))}
+              </div>
+            )}
+            {entries?.map((e, i) => (
+              <span
+                key={i}
+                className={
+                  "truncate rounded-[4px] px-[3px] py-px text-center text-[8.5px] font-bold leading-[1.25] min-[960px]:rounded-[5px] min-[960px]:px-1 min-[960px]:py-0.5 min-[960px]:text-[9.5px] min-[960px]:leading-[1.3] " +
+                  CAL_DOT[e.kind]
+                }
+              >
+                {e.label}
+              </span>
+            ))}
+          </>
+        );
       }}
     />
   );
