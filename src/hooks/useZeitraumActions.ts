@@ -11,6 +11,7 @@ export interface ZeitraumFelder {
   typ: ZeitraumTyp;
   startDatum: string;
   endDatum: string | null;
+  name: string | null;
   notiz: string | null;
 }
 
@@ -39,6 +40,7 @@ export function useZeitraumActions(): {
           typ: action.felder.typ,
           start_datum: action.felder.startDatum,
           end_datum: action.felder.endDatum,
+          name: action.felder.name,
           notiz: action.felder.notiz,
         });
         if (error) throw new Error(error.message);
@@ -52,6 +54,7 @@ export function useZeitraumActions(): {
             typ: action.felder.typ,
             start_datum: action.felder.startDatum,
             end_datum: action.felder.endDatum,
+            name: action.felder.name,
             notiz: action.felder.notiz,
           })
           .eq("id", action.id);

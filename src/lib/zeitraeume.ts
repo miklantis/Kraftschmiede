@@ -52,7 +52,7 @@ export const ZEITRAUM_FARBE: Record<ZeitraumTyp, string> = {
 export interface ZeitraumWochenSegment {
   id: string;
   typ: ZeitraumTyp;
-  label: string; // Notiz des Zeitraums; leer -> Typ-Bezeichnung als Rueckfall
+  label: string; // Name des Zeitraums; leer -> Typ-Bezeichnung als Rueckfall
   colStart: number; // 1..7
   colSpan: number; // 1..7
   slot: number; // 0-basierte Stapel-Ebene, ueber den Monat stabil
@@ -67,7 +67,7 @@ interface ZeitraumSpan {
   typ: ZeitraumTyp;
   start_datum: string;
   end_datum: string | null;
-  notiz: string | null;
+  name: string | null;
 }
 
 function pad2(n: number): string {
@@ -130,7 +130,7 @@ export function zeitraumWochenBaender(
       slot++;
     }
 
-    const label = (z.notiz ?? "").trim() || zeitraumLabel(z.typ);
+    const label = (z.name ?? "").trim() || zeitraumLabel(z.typ);
     const echterStartTag =
       z.start_datum >= ersterTag && z.start_datum <= letzterTag
         ? Number(z.start_datum.slice(8, 10))

@@ -54,36 +54,6 @@ function bandRadius(isStart: boolean, isEnd: boolean): string {
   return "rounded-none";
 }
 
-// Vollstaendige Klassenliterale fuer die Grid-Platzierung der Baender (1-basiert).
-// Ein Balken belegt colStart..colStart+colSpan-1 und liegt in seiner Slot-Zeile.
-const COL_START = [
-  "",
-  "col-start-1",
-  "col-start-2",
-  "col-start-3",
-  "col-start-4",
-  "col-start-5",
-  "col-start-6",
-  "col-start-7",
-];
-const COL_SPAN = [
-  "",
-  "col-span-1",
-  "col-span-2",
-  "col-span-3",
-  "col-span-4",
-  "col-span-5",
-  "col-span-6",
-  "col-span-7",
-];
-const ROW_START = [
-  "row-start-1",
-  "row-start-2",
-  "row-start-3",
-  "row-start-4",
-  "row-start-5",
-  "row-start-6",
-];
 
 const EYEBROW =
   "mb-2.5 text-[13px] font-semibold tracking-[0.6px] text-muted-foreground uppercase min-[960px]:mb-3 min-[960px]:text-[12px] min-[960px]:tracking-[0.7px]";
@@ -131,26 +101,26 @@ export function HistorySection(): React.ReactElement {
       renderWeekBands={(_week, weekIndex) => {
         const segs = wochenBaender[weekIndex];
         if (!segs || segs.length === 0) return null;
-        return segs.map((seg) => (
+        const rows = segs.reduce((max, s) => Math.max(max, s.slot), 0) + 1;
+        const content = segs.map((seg) => (
           <span
             key={seg.id + "-" + seg.colStart}
             title={zeitraumLabel(seg.typ)}
+            style={{
+              gridColumn: seg.colStart + " / span " + seg.colSpan,
+              gridRow: seg.slot + 2,
+            }}
             className={
               "block truncate px-1 text-left text-[8.5px] font-bold leading-[15px] text-white min-[960px]:px-1.5 min-[960px]:text-[9.5px] min-[960px]:leading-[18px] " +
               ZEITRAUM_FARBE[seg.typ] +
               " " +
-              bandRadius(seg.isStart, seg.isEnd) +
-              " " +
-              COL_START[seg.colStart] +
-              " " +
-              COL_SPAN[seg.colSpan] +
-              " " +
-              ROW_START[Math.min(seg.slot, 5)]
+              bandRadius(seg.isStart, seg.isEnd)
             }
           >
             {seg.label}
           </span>
         ));
+        return { rows, content };
       }}
       renderCell={(iso) => {
         const entries = data.byDate[iso];

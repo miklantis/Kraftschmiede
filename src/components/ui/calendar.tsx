@@ -70,12 +70,17 @@ export function Calendar({
   onToday: () => void;
   // Inhalt einer Tageszelle unter der Tagesnummer (z. B. Session-Markierungen).
   renderCell?: (iso: string) => ReactNode;
-  // Durchgehende Baender ueber einer Kalenderwoche. Bekommt die sieben ISO-Tage
-  // der Woche (null = Leerzelle ausserhalb des Monats) und den Wochenindex und
-  // liefert die Balken-Elemente; sie werden in ein 7-Spalten-Gitter gelegt, das
-  // spaltengenau zu den Tageszellen darunter passt (col-start/col-span je Balken).
-  // Gibt der Aufrufer null zurueck, entfaellt die Band-Zone dieser Woche.
-  renderWeekBands?: (weekIsos: (string | null)[], weekIndex: number) => ReactNode;
+  // Durchgehende Baender einer Kalenderwoche, die UNTER den Tagesnummern und
+  // UEBER den Session-Markierungen liegen. Der Aufrufer erhaelt die sieben
+  // ISO-Tage der Woche (null = Leerzelle) und den Wochenindex und liefert die
+  // Balken-Elemente samt Zeilenzahl. Die Balken platzieren sich selbst per
+  // gridColumn (colStart / span) und gridRow (Slot ab Zeile 2); der Baustein
+  // reserviert `rows` Zeilen und schiebt die Session-Markierungen entsprechend
+  // nach unten. Rueckgabe null -> die Woche hat keine Baender.
+  renderWeekBands?: (
+    weekIsos: (string | null)[],
+    weekIndex: number,
+  ) => { rows: number; content: ReactNode } | null;
 }): React.ReactElement {
   const today = todayISO();
   const { y, m } = month;
@@ -84,7 +89,8 @@ export function Calendar({
   const days = new Date(y, m + 1, 0).getDate();
 
   // Tage in Wochenzeilen zerlegen (fuehrende/abschliessende Leerzellen = null),
-  // damit ueber jeder Woche eine spaltengenaue Band-Zone liegen kann.
+  // damit jede Woche ein eigenes Gitter aus Nummern, Band-Ebene und Zellinhalt
+  // bildet.
   const cells: (string | null)[] = [];
   for (let i = 0; i < startDay; i++) cells.push(null);
   for (let d = 1; d <= days; d++) cells.push(isoOf(y, m, d));
@@ -131,39 +137,63 @@ export function Calendar({
 
       <div className="flex flex-col gap-1 min-[960px]:gap-1.5">
         {weeks.map((week, wi) => {
-          const bands = renderWeekBands?.(week, wi);
+          const wb = renderWeekBands?.(week, wi) ?? null;
+          const bandRows = wb?.rows ?? 0;
+          // Zeilenaufbau je Woche: Zeile 1 Nummer, Zeilen 2..(1+bandRows) Baender,
+          // Zeile (2+bandRows) Zellinhalt. Der graue Zellhintergrund spannt alle.
+          const inhaltRow = bandRows + 2;
+          const bgEndLine = bandRows + 3;
           return (
-            <div key={"w" + wi}>
-              {bands ? (
-                <div className="mb-1 grid auto-rows-[15px] grid-cols-7 gap-x-1 gap-y-[3px] min-[960px]:mb-1.5 min-[960px]:auto-rows-[18px] min-[960px]:gap-x-1.5">
-                  {bands}
-                </div>
-              ) : null}
-              <div className="grid grid-cols-7 gap-1 min-[960px]:gap-1.5">
-                {week.map((iso, ci) =>
-                  iso === null ? (
-                    <div key={"e" + wi + "-" + ci} />
-                  ) : (
-                    <div
-                      key={iso}
-                      className={
-                        "flex min-h-[54px] flex-col gap-0.5 overflow-hidden rounded-lg px-[3px] py-1 min-[960px]:min-h-[72px] min-[960px]:rounded-[10px] min-[960px]:px-[5px] min-[960px]:py-1.5 " +
-                        (iso === today ? "bg-primary/10" : "bg-[#f7f7f9]")
-                      }
-                    >
-                      <span
-                        className={
-                          "text-center text-[11px] font-medium min-[960px]:text-[12px] " +
-                          (iso === today ? "font-bold text-primary" : "text-foreground")
-                        }
-                      >
-                        {Number(iso.slice(8, 10))}
-                      </span>
-                      {renderCell?.(iso)}
-                    </div>
-                  ),
-                )}
-              </div>
+            <div
+              key={"w" + wi}
+              className="grid grid-cols-7 gap-x-1 gap-y-[3px] min-[960px]:gap-x-1.5"
+            >
+              {/* Graue Tages-Hintergruende (bleiben getrennt; Baender laufen
+                  darueber durchgehend hinweg). */}
+              {week.map((iso, ci) =>
+                iso === null ? null : (
+                  <div
+                    key={"bg" + wi + "-" + ci}
+                    style={{ gridColumn: ci + 1, gridRow: "1 / " + bgEndLine }}
+                    className={
+                      "min-h-[54px] rounded-lg min-[960px]:min-h-[72px] min-[960px]:rounded-[10px] " +
+                      (iso === today ? "bg-primary/10" : "bg-[#f7f7f9]")
+                    }
+                  />
+                ),
+              )}
+
+              {/* Tagesnummern (Zeile 1). */}
+              {week.map((iso, ci) =>
+                iso === null ? null : (
+                  <span
+                    key={"n" + iso}
+                    style={{ gridColumn: ci + 1, gridRow: 1 }}
+                    className={
+                      "pt-1 text-center text-[11px] font-medium min-[960px]:pt-1.5 min-[960px]:text-[12px] " +
+                      (iso === today ? "font-bold text-primary" : "text-foreground")
+                    }
+                  >
+                    {Number(iso.slice(8, 10))}
+                  </span>
+                ),
+              )}
+
+              {/* Band-Ebene (Zeilen ab 2) – durchgehende Zeitraum-Balken. */}
+              {wb?.content}
+
+              {/* Zellinhalt (Session-Markierungen) unter den Baendern. */}
+              {week.map((iso, ci) =>
+                iso === null ? null : (
+                  <div
+                    key={"c" + iso}
+                    style={{ gridColumn: ci + 1, gridRow: inhaltRow }}
+                    className="flex flex-col gap-0.5 overflow-hidden px-[3px] pb-1 min-[960px]:px-[5px] min-[960px]:pb-1.5"
+                  >
+                    {renderCell?.(iso)}
+                  </div>
+                ),
+              )}
             </div>
           );
         })}

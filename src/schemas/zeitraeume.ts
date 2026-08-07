@@ -16,7 +16,7 @@ export const zeitraumTypEnum = z.enum([
 export type ZeitraumTyp = z.infer<typeof zeitraumTypEnum>;
 
 // zeitraeume – je Zeile ein Timeline-Marker: Typ, Startdatum, optionales
-// Enddatum (null = laeuft noch) und kurze Notiz. Reiner Rueckschau-Kontext,
+// Enddatum (null = laeuft noch), kurzem Namen und Notiz. Reiner Rueckschau-Kontext,
 // haengt bewusst nicht an sessions, Messungen oder Coach.
 export const zeitraumRow = z.object({
   id: uuid,
@@ -24,6 +24,8 @@ export const zeitraumRow = z.object({
   typ: zeitraumTypEnum,
   start_datum: isoDate,
   end_datum: isoDate.nullable(),
+  // Kurzer Titel des Zeitraums (Kalender-Band). Fehlt er, zeigt das Band den Typ.
+  name: z.string().nullable(),
   notiz: z.string().nullable(),
   created_at: isoTimestamp,
 });
@@ -31,5 +33,5 @@ export type ZeitraumRow = z.infer<typeof zeitraumRow>;
 
 export const zeitraumInsert = zeitraumRow
   .omit({ id: true, created_at: true })
-  .partial({ end_datum: true, notiz: true });
+  .partial({ end_datum: true, name: true, notiz: true });
 export type ZeitraumInsert = z.infer<typeof zeitraumInsert>;

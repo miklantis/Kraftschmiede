@@ -9,9 +9,9 @@ function z(
   typ: ZeitraumTyp,
   start: string,
   ende: string | null,
-  notiz: string | null = null,
+  name: string | null = null,
 ) {
-  return { id, typ, start_datum: start, end_datum: ende, notiz };
+  return { id, typ, start_datum: start, end_datum: ende, name };
 }
 
 describe("zeitraumWochenBaender", () => {
@@ -44,7 +44,7 @@ describe("zeitraumWochenBaender", () => {
     expect(b[3][0]).toMatchObject({ colStart: 1, colSpan: 3, isStart: false, isEnd: true });
   });
 
-  it("nutzt die Notiz als Beschriftung, sonst den Typ", () => {
+  it("nutzt den Namen als Beschriftung, sonst den Typ", () => {
     const mitNotiz = zeitraumWochenBaender(
       [z("a", "urlaub", "2026-03-10", "2026-03-11", "Malta")],
       2026,

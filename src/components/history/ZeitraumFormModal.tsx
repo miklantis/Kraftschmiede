@@ -10,8 +10,8 @@ import { cn } from "@/lib/utils";
 import type { ZeitraumRow, ZeitraumTyp } from "@/schemas";
 
 // Popup zum Anlegen und Bearbeiten eines Zeitraums. Ohne `zeitraum` legt es neu
-// an, mit `zeitraum` bearbeitet es diesen. Felder: Typ (feste Liste), Start,
-// Ende und eine kurze Notiz. Das Ende ist optional: der Schalter „läuft noch“
+// an, mit `zeitraum` bearbeitet es diesen. Felder: Typ (feste Liste), Name
+// (Titel im Kalender-Band), Start, Ende und eine kurze Notiz. Das Ende ist optional: der Schalter „läuft noch“
 // laesst es offen (gespeichert als null), sonst ist ein Enddatum Pflicht und
 // darf nicht vor dem Start liegen. Nutzt das generische Overlay-Fundament.
 
@@ -29,6 +29,7 @@ export function ZeitraumFormModal({
 }): React.ReactElement {
   const { add, update, isPending } = useZeitraumActions();
   const [typ, setTyp] = useState<ZeitraumTyp>("heilfasten");
+  const [name, setName] = useState("");
   const [startDatum, setStartDatum] = useState(todayISO());
   const [laeuftNoch, setLaeuftNoch] = useState(false);
   const [endDatum, setEndDatum] = useState(todayISO());
@@ -40,12 +41,14 @@ export function ZeitraumFormModal({
     if (!open) return;
     if (zeitraum) {
       setTyp(zeitraum.typ);
+      setName(zeitraum.name ?? "");
       setStartDatum(zeitraum.start_datum);
       setLaeuftNoch(zeitraum.end_datum === null);
       setEndDatum(zeitraum.end_datum ?? zeitraum.start_datum);
       setNotiz(zeitraum.notiz ?? "");
     } else {
       setTyp("heilfasten");
+      setName("");
       setStartDatum(todayISO());
       setLaeuftNoch(false);
       setEndDatum(todayISO());
@@ -63,6 +66,7 @@ export function ZeitraumFormModal({
       typ,
       startDatum,
       endDatum: laeuftNoch ? null : endDatum,
+      name: name.trim() === "" ? null : name.trim(),
       notiz: notiz.trim() === "" ? null : notiz.trim(),
     };
     if (zeitraum) await update(zeitraum.id, felder);
@@ -85,6 +89,17 @@ export function ZeitraumFormModal({
             onChange={(v) => setTyp(v as ZeitraumTyp)}
             options={ZEITRAUM_TYPEN}
             className="w-full"
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <span className={FELD_LABEL}>Name</span>
+          <Input
+            type="text"
+            aria-label="Name"
+            placeholder="optional – erscheint im Kalender-Band"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
           />
         </div>
 
