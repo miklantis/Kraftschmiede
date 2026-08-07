@@ -155,6 +155,7 @@ export function BodyMeasureDialog({
             aria-label="Datum"
             value={date}
             onChange={(e) => setDate(e.target.value)}
+            className="w-full min-w-0 max-w-full"
           />
           {datumKollision && (
             <span className="text-[12px] text-danger">

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.16.1",
+      "date": "2026-08-07",
+      "changes": [
+        "Mess-Popup auf dem Handy: Das Datumsfeld war breiter als das Popup, wodurch sich der Inhalt seitlich verschieben liess. Das Feld passt sich jetzt der Breite an, seitliches Verrutschen ist behoben."
+      ]
+    },
+    {
       "version": "1.16.0",
       "date": "2026-08-07",
       "changes": [
