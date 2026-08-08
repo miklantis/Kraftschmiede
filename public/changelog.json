@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.19.0",
+      "date": "2026-08-08",
+      "changes": [
+        "Archiv: Unter der aktiven Journey listet die Journey-Seite jetzt alle abgeschlossenen Journeys mit Name, Zeitraum und Dauer – auch dann, wenn gerade keine Journey aktiv ist.",
+        "Bei älteren Journeys ohne gespeichertes Enddatum wird der Zeitraum aus der ersten und letzten Einheit abgeleitet."
+      ]
+    },
+    {
       "version": "1.18.0",
       "date": "2026-08-08",
       "changes": [

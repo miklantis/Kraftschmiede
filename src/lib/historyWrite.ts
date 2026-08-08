@@ -108,6 +108,7 @@ export const HISTORY_INVALIDATE = {
     ["sessions-detailed"],
     ["exercises"],
     ["activeJourney"],
+    ["archivedJourneys"],
   ],
   finishSkill: [
     ["sessions"],

@@ -7,6 +7,7 @@ import { PeriodizationChart } from "@/components/journey/PeriodizationChart";
 import { PhaseList } from "@/components/journey/PhaseList";
 import { JourneyEmpty } from "@/components/journey/JourneyEmpty";
 import { JourneyWorkoutsSection } from "@/components/journey/JourneyWorkoutsSection";
+import { ArchivedJourneyList } from "@/components/journey/ArchivedJourneyList";
 import { useJourneyView } from "@/hooks/useJourneyView";
 
 // Journey: aktive Journey, Periodisierungskurve und Phasen-Ablauf. Reine Anzeige
@@ -17,7 +18,17 @@ export const Route = createFileRoute("/journey")({
 });
 
 function JourneyPage(): React.ReactElement {
-  const { isLoading, isError, error, data, hasJourney } = useJourneyView();
+  const { isLoading, isError, error, data, hasJourney, archive } =
+    useJourneyView();
+
+  // Archiv haengt nicht an der aktiven Journey: es steht unter der aktiven Karte
+  // ebenso wie unter dem Leerzustand.
+  const archiveSection =
+    archive.length > 0 ? (
+      <Section eyebrow="Abgeschlossene Journeys">
+        <ArchivedJourneyList entries={archive} />
+      </Section>
+    ) : null;
 
   if (isLoading) {
     return (
@@ -44,7 +55,10 @@ function JourneyPage(): React.ReactElement {
     return (
       <div>
         <PageHeader title="Journey" />
-        <JourneyEmpty />
+        <PageReveal className="flex flex-col gap-7 min-[960px]:gap-8">
+          <JourneyEmpty />
+          {archiveSection}
+        </PageReveal>
       </div>
     );
   }
@@ -72,6 +86,7 @@ function JourneyPage(): React.ReactElement {
           <PhaseList phases={data.phases} />
         </Section>
         <JourneyWorkoutsSection />
+        {archiveSection}
       </PageReveal>
     </div>
   );

@@ -29,6 +29,8 @@ export function useJourneyActions(): {
 
   const invalidate = (): void => {
     void queryClient.invalidateQueries({ queryKey: ["activeJourney", userId] });
+    // Die abgeloeste Journey landet im Archiv – Liste mit auffrischen.
+    void queryClient.invalidateQueries({ queryKey: ["archivedJourneys"] });
   };
 
   const create = useMutation({

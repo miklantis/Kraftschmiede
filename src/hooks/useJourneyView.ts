@@ -6,11 +6,16 @@ import {
   type PhaseView,
 } from "@/lib/journey";
 import { buildPeriodization, type PeriodizationData } from "@/lib/periodization";
+import {
+  buildArchivedJourneys,
+  type ArchivedJourneyView,
+} from "@/lib/journeyArchive";
 import { longDateYearDE, todayISO } from "@/lib/format";
 import { useActiveJourney } from "./useJourney";
 import { useSessions } from "./useSessions";
 import { useSettings } from "./useSettings";
 import { useJourneyTemplates } from "./useJourneyTemplates";
+import { useArchivedJourneys } from "./useArchivedJourneys";
 
 // Anzeigefertiges Modell der Journey-Seite. Komponenten kennen weder Supabase
 // noch die Engine – sie bekommen Name, Meta-Zeile, fertige Phasen-Modelle und das
@@ -31,13 +36,16 @@ export function useJourneyView(): {
   error: unknown;
   data: JourneyView | null;
   hasJourney: boolean;
+  /** Abgeschlossene Journeys – unabhaengig davon, ob gerade eine aktiv ist. */
+  archive: ArchivedJourneyView[];
 } {
   const journeyQ = useActiveJourney();
   const sessionsQ = useSessions();
   const settingsQ = useSettings();
   const templatesQ = useJourneyTemplates();
+  const archivedQ = useArchivedJourneys();
 
-  const queries = [journeyQ, sessionsQ, settingsQ, templatesQ];
+  const queries = [journeyQ, sessionsQ, settingsQ, templatesQ, archivedQ];
   const isLoading = queries.some((q) => q.isLoading);
   const isError = queries.some((q) => q.isError);
   const error = queries.find((q) => q.isError)?.error ?? null;
@@ -99,11 +107,29 @@ export function useJourneyView(): {
     templatesQ.data,
   ]);
 
+  const archive = useMemo<ArchivedJourneyView[]>(() => {
+    if (isLoading || isError) return [];
+    return buildArchivedJourneys(
+      (archivedQ.data ?? []).map((j) => ({
+        id: j.id,
+        name: j.name,
+        startDate: j.start_date,
+        endDate: j.end_date,
+      })),
+      (sessionsQ.data ?? []).map((s) => ({
+        date: s.date,
+        status: s.status,
+        journeyId: s.journey_id,
+      })),
+    );
+  }, [isLoading, isError, archivedQ.data, sessionsQ.data]);
+
   return {
     isLoading,
     isError,
     error,
     data,
     hasJourney: !isLoading && !isError && journey !== null,
+    archive,
   };
 }
