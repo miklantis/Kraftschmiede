@@ -174,12 +174,15 @@ export interface CoachSuggestion {
   note: string;
 }
 
-// Begleituebung/Koerpergewicht: keine Doppelprogression. Vorbelegung = letzter
-// Arbeitssatz mit dem hoechsten Gewicht samt dessen Wdh.; ohne Vordaten Start-
-// gewicht + oberes Repband-Ende.
-export function coreCarry(
+// Uebernahme ohne Progression: Vorbelegung = letzter Arbeitssatz mit dem
+// hoechsten Gewicht samt dessen Wdh.; ohne Vordaten Startgewicht + oberes
+// Repband-Ende. Gemeinsamer Kern fuer Begleituebungen (coreCarry) und fuer das
+// freie Training ohne Journey (freeCarry) - unterschiedlich ist nur der Text.
+function carrySuggestion(
   exo: CoachBuildExercise,
   lastEntry: SetEntry | null,
+  noteCarried: string,
+  noteStart: string,
 ): CoachSuggestion {
   const range = exo.repRange ?? [12, 20];
   const ws = lastEntry
@@ -194,15 +197,50 @@ export function coreCarry(
       weight: top.weight != null ? top.weight : exo.workWeight || 0,
       targetReps: top.reps || range[1],
       decision: "carry",
-      note: "Begleitübung – letztes Mal übernommen, frei anpassbar",
+      note: noteCarried,
     };
   }
   return {
     weight: exo.workWeight || 0,
     targetReps: range[1],
     decision: "carry",
-    note: "Begleitübung – Startwert, frei anpassbar",
+    note: noteStart,
   };
+}
+
+// Begleituebung/Koerpergewicht: keine Doppelprogression.
+export function coreCarry(
+  exo: CoachBuildExercise,
+  lastEntry: SetEntry | null,
+): CoachSuggestion {
+  return carrySuggestion(
+    exo,
+    lastEntry,
+    "Begleitübung – letztes Mal übernommen, frei anpassbar",
+    "Begleitübung – Startwert, frei anpassbar",
+  );
+}
+
+// Freies Training (keine aktive Journey): der Coach gibt nichts vor. Jede Uebung
+// bekommt die Werte der letzten Einheit als reine Vorbelegung - kein Steigern,
+// kein Senken, kein aktives Halten.
+export function freeCarry(
+  exo: CoachBuildExercise,
+  lastEntry: SetEntry | null,
+): CoachSuggestion {
+  return carrySuggestion(
+    exo,
+    lastEntry,
+    "Freies Training – Werte vom letzten Mal, frei anpassbar",
+    "Freies Training – Startwert, frei anpassbar",
+  );
+}
+
+// Arbeitssatzzahl der letzten Einheit einer Uebung (Aufwaermen ausgenommen).
+// null ohne Vordaten. Grundlage der Satzzahl im freien Training.
+export function lastWorkSetCount(lastEntry: SetEntry | null): number | null {
+  const ws = (lastEntry?.sets ?? []).filter((s) => s.type !== "warmup");
+  return ws.length > 0 ? ws.length : null;
 }
 
 export interface SuggestBuildCtx {
@@ -214,6 +252,8 @@ export interface SuggestBuildCtx {
   dumbbells?: number[];
   // Ueberschreibt das Repband der Uebung (Ziel-Repband der aktiven Phase).
   repTarget?: [number, number] | null;
+  // Freies Training ohne aktive Journey: keine Progression, nur Uebernahme.
+  freeMode?: boolean;
 }
 
 // Gewichts-/Wdh.-Vorschlag. Core/Bodyweight -> coreCarry; sonst Doppelprogression
@@ -225,6 +265,9 @@ export function suggestForExercise(
 ): CoachSuggestion {
   if (exo.profile === "core" || exo.profile === "bodyweight") {
     return coreCarry(exo, ctx.lastEntry);
+  }
+  if (ctx.freeMode) {
+    return freeCarry(exo, ctx.lastEntry);
   }
   const focus = ctx.phase ? ctx.phase.focus : null;
   const exUse: SuggestExercise = {
@@ -277,6 +320,8 @@ export interface SuggestWithBarInput<B extends { weight: number }> {
   // Vorhandene Kurzhantel-Stufen; nur fuer Kurzhantel-Uebungen genutzt.
   dumbbells: number[];
   repTarget: [number, number] | null;
+  // Freies Training ohne aktive Journey (Vorbelegung statt Progression).
+  freeMode?: boolean;
 }
 
 export interface SuggestWithBarResult<B> {
@@ -299,6 +344,7 @@ export function suggestWithBar<B extends { weight: number }>(
       bar: { weight: lightest.weight },
       plates: input.plates,
       repTarget: input.repTarget,
+      freeMode: input.freeMode,
     });
     const bar = pickBarForTarget(rawSug.weight, input.bars);
     const suggestion = suggestForExercise(exo, {
@@ -307,6 +353,7 @@ export function suggestWithBar<B extends { weight: number }>(
       bar: { weight: bar.weight },
       plates: input.plates,
       repTarget: input.repTarget,
+      freeMode: input.freeMode,
     });
     return { suggestion, bar };
   }
@@ -320,6 +367,7 @@ export function suggestWithBar<B extends { weight: number }>(
       plates: input.plates,
       dumbbells: input.dumbbells,
       repTarget: input.repTarget,
+      freeMode: input.freeMode,
     });
     return { suggestion, bar: null };
   }
@@ -329,6 +377,7 @@ export function suggestWithBar<B extends { weight: number }>(
     bar: undefined,
     plates: input.plates,
     repTarget: input.repTarget,
+    freeMode: input.freeMode,
   });
   return { suggestion, bar: null };
 }

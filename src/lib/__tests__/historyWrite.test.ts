@@ -41,6 +41,25 @@ describe("writeFinishStrength", () => {
     ]);
   });
 
+  it("archiviert die Journey, wenn die Einheit sie abschliesst", async () => {
+    const { store, log } = createMemoryHistoryStore();
+    await writeFinishStrength(
+      store,
+      finishPayload({
+        journeyArchive: { journeyId: "j1", endDate: "2026-06-20" },
+      }),
+    );
+    expect(log.archivedJourneys).toEqual([
+      { id: "j1", endDate: "2026-06-20" },
+    ]);
+  });
+
+  it("laesst die Journey ohne Abschluss unberuehrt", async () => {
+    const { store, log } = createMemoryHistoryStore();
+    await writeFinishStrength(store, finishPayload());
+    expect(log.archivedJourneys).toHaveLength(0);
+  });
+
   it("ueberspringt leere Uebungs- und Satz-Listen", async () => {
     const { store, log } = createMemoryHistoryStore();
     await writeFinishStrength(

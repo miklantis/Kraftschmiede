@@ -49,12 +49,15 @@ export interface SkillCard {
 
 export interface TrainingOverview {
   date: string;
+  /** Journey-Streifen oben. Ohne aktive Journey der Hinweis auf das freie
+   *  Training - gleicher Baustein, nur ohne Wochenpunkte. */
   journey: {
     title: string;
     subtitle: string;
     filled: number;
     total: number;
-  } | null;
+    showDots: boolean;
+  };
   hero: WorkoutCard | null;
   others: WorkoutCard[];
   /** Empfehlung faellt mangels nutzbarer Journey-Zuweisung auf die ganze
@@ -143,7 +146,13 @@ export function useTrainingOverview(): {
 
     // Aktuelle Phase aus der Platzierung.
     let phaseFocus: { focus?: string } | null = null;
-    let journeyView: TrainingOverview["journey"] = null;
+    let journeyView: TrainingOverview["journey"] = {
+      title: "Freies Training",
+      subtitle: "Keine aktive Journey – der Coach gibt nichts vor",
+      filled: 0,
+      total: 0,
+      showDots: false,
+    };
     if (journey) {
       const placement = journeyPlacement(
         { id: journey.id, phases: journey.phases },
@@ -188,6 +197,7 @@ export function useTrainingOverview(): {
           " Einheiten diese Woche",
         filled: wp.units,
         total: wp.target,
+        showDots: true,
       };
     }
 

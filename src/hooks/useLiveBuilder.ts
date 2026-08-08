@@ -142,6 +142,7 @@ export function useLiveBuilder(): UseLiveBuilder {
         volumePhase: base.volumePhase,
         weekInPhase: base.weekInPhase,
         recoveryGreen: base.green,
+        freeMode: base.journeyId === null,
         lastEntryByExercise: base.lastEntryByExercise,
         bars: base.bars,
         plates: base.plates,

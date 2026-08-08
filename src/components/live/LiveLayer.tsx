@@ -5,6 +5,7 @@ import { useWakeLock } from "@/hooks/useWakeLock";
 import { LivePanel } from "./LivePanel";
 import { StartModal } from "./StartModal";
 import { EndModal } from "./EndModal";
+import { JourneyDoneModal } from "./JourneyDoneModal";
 
 // Global gemountete Live-Schicht (in der App-Huelle). Buendelt das Panel und die
 // beiden Dialoge und schaltet zwei Body-Klassen, an denen die App-Huelle haengt:
@@ -38,6 +39,7 @@ export function LiveLayer(): React.ReactElement {
       <LivePanel />
       <StartModal />
       <EndModal />
+      <JourneyDoneModal />
     </>
   );
 }

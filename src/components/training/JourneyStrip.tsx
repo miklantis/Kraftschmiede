@@ -10,11 +10,15 @@ export function JourneyStrip({
   subtitle,
   filled,
   total,
+  showDots = true,
 }: {
   title: string;
   subtitle: string;
   filled: number;
   total: number;
+  /** Wochenpunkte anzeigen. Ohne aktive Journey gibt es kein Pensum, dann
+   *  bleibt der Streifen bewusst ohne Punkte. */
+  showDots?: boolean;
 }): React.ReactElement {
   return (
     <Link
@@ -32,7 +36,7 @@ export function JourneyStrip({
           {subtitle}
         </div>
       </div>
-      <ProgressDots filled={filled} total={total} />
+      {showDots && <ProgressDots filled={filled} total={total} />}
       <ChevronRight className="hidden size-[18px] flex-none text-[#a0a0a5] min-[960px]:block" />
     </Link>
   );

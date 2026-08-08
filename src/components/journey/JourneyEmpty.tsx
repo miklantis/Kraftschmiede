@@ -6,11 +6,13 @@ export function JourneyEmpty(): React.ReactElement {
   return (
     <div className="rounded-[20px] bg-card px-6 py-7 shadow-card min-[960px]:px-7">
       <div className="text-[17px] font-semibold text-foreground">
-        Noch keine Journey
+        Keine aktive Journey
       </div>
       <div className="mt-1.5 mb-[18px] max-w-[520px] text-[14px] leading-[1.55] text-muted-foreground">
-        Eine Journey gibt deinem Training über Wochen einen roten Faden. Wähle
-        eine Vorlage, die zu deinem Ziel passt.
+        Du trainierst gerade frei: Der Coach gibt nichts vor und übernimmt in
+        jeder Einheit nur die Werte vom letzten Mal. Eine Journey gibt deinem
+        Training über Wochen wieder einen roten Faden – wähle eine Vorlage, die
+        zu deinem Ziel passt.
       </div>
       <Link
         to="/journey/waehlen"

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildLiveEntries } from "../liveBuild";
 import type { LiveBuildExercise, LiveBuildInput } from "../liveBuild";
+import type { SetEntry } from "@/engine/types";
 
 const squat: LiveBuildExercise = {
   id: "squat",
@@ -40,6 +41,7 @@ function input(overrides: Partial<LiveBuildInput> = {}): LiveBuildInput {
     volumePhase: { setsStart: 3, setsEnd: 3, weeks: 4, deloadWeek: null },
     weekInPhase: 0,
     recoveryGreen: true,
+    freeMode: false,
     lastEntryByExercise: {},
     bars: [{ id: "bar1", name: "Olympia", weight: 20 }],
     plates: PLATES,
@@ -220,5 +222,83 @@ describe("buildLiveEntries", () => {
     );
     const sq = r.entries.find((e) => e.exerciseId === "squat")!;
     expect(sq.phaseEntry).toBeFalsy();
+  });
+});
+
+describe("freies Training (keine aktive Journey)", () => {
+  const lastSquat: SetEntry = {
+    sets: [
+      {
+        type: "work",
+        weight: 70,
+        reps: 10,
+        score: 4,
+        failed: false,
+        done: true,
+        targetReps: 10,
+        targetWeight: 70,
+      },
+      {
+        type: "work",
+        weight: 70,
+        reps: 10,
+        score: 4,
+        failed: false,
+        done: true,
+        targetReps: 10,
+        targetWeight: 70,
+      },
+    ],
+  };
+
+  it("uebernimmt Gewicht und Wdh. der letzten Einheit ohne Progression", () => {
+    const r = buildLiveEntries(
+      input({
+        exerciseIds: ["squat"],
+        exercisesById: { squat },
+        freeMode: true,
+        phaseFocus: null,
+        phaseRepTarget: null,
+        volumePhase: null,
+        lastEntryByExercise: { squat: lastSquat },
+      }),
+    );
+    const e = r.entries[0]!;
+    expect(e.sets[0]!.weight).toBe(70);
+    expect(e.sets[0]!.reps).toBe(10);
+    expect(e.phaseEntry).toBe(false);
+  });
+
+  it("nimmt die Satzzahl der letzten Einheit", () => {
+    const r = buildLiveEntries(
+      input({
+        exerciseIds: ["squat"],
+        exercisesById: { squat },
+        freeMode: true,
+        phaseFocus: null,
+        phaseRepTarget: null,
+        volumePhase: null,
+        lastEntryByExercise: { squat: lastSquat },
+      }),
+    );
+    expect(r.entries[0]!.sets).toHaveLength(2);
+  });
+
+  it("faellt ohne Vordaten auf Arbeitsgewicht und Standard-Satzzahl zurueck", () => {
+    const r = buildLiveEntries(
+      input({
+        exerciseIds: ["squat"],
+        exercisesById: { squat },
+        freeMode: true,
+        phaseFocus: null,
+        phaseRepTarget: null,
+        volumePhase: null,
+        lastEntryByExercise: {},
+      }),
+    );
+    const e = r.entries[0]!;
+    expect(e.sets).toHaveLength(3);
+    expect(e.sets[0]!.weight).toBe(60);
+    expect(e.sets[0]!.reps).toBe(12);
   });
 });

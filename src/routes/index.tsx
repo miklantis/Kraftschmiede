@@ -189,14 +189,13 @@ function TrainingPage(): React.ReactElement {
       <PageHeader title="Training" />
       <PageReveal className="flex flex-col gap-[18px] min-[960px]:gap-[26px]">
         <UpdateBanner />
-        {data.journey && (
-          <JourneyStrip
-            title={data.journey.title}
-            subtitle={data.journey.subtitle}
-            filled={data.journey.filled}
-            total={data.journey.total}
-          />
-        )}
+        <JourneyStrip
+          title={data.journey.title}
+          subtitle={data.journey.subtitle}
+          filled={data.journey.filled}
+          total={data.journey.total}
+          showDots={data.journey.showDots}
+        />
         <TwoColumn main={trainingColumn} side={<HistorySection />} />
       </PageReveal>
       <YogaEntryModal open={yogaOpen} onClose={() => setYogaOpen(false)} />

@@ -11,6 +11,7 @@ import {
   suggestWithBar,
   warmupFor,
   plannedSets,
+  lastWorkSetCount,
   type CoachBuildExercise,
 } from "./coach";
 import { fmtNum } from "./format";
@@ -46,6 +47,9 @@ export interface LiveBuildInput {
   // Woche innerhalb der Phase, 0-basiert.
   weekInPhase: number;
   recoveryGreen: boolean;
+  // Freies Training: keine aktive Journey. Der Coach gibt dann nichts vor -
+  // Gewicht, Wdh. und Satzzahl kommen unveraendert aus der letzten Einheit.
+  freeMode: boolean;
   // Letzter Krafteintrag je Uebung (Saetze) als Vordaten fuer den Vorschlag.
   lastEntryByExercise: Record<string, SetEntry | null>;
   bars: LiveBuildBar[];
@@ -145,6 +149,7 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
       plates: input.plates,
       dumbbells: input.dumbbells,
       repTarget,
+      freeMode: input.freeMode,
     });
 
     // Phasenwechsel-Einstieg: springt die Zielzone der neuen Phase deutlich (echt
@@ -173,7 +178,11 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
       }
     }
 
-    const setN = exo.profile === "core" ? 3 : setNDefault;
+    // Satzzahl: Core fix 3; im freien Training die Satzzahl der letzten Einheit
+    // dieser Uebung (ohne Vordaten der Standard), sonst die Phasen-Rampe.
+    let setN = setNDefault;
+    if (exo.profile === "core") setN = 3;
+    else if (input.freeMode) setN = lastWorkSetCount(lastEntry) ?? setNDefault;
     const warm = warmupFor(
       exo,
       wWeight,

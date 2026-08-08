@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.18.0",
+      "date": "2026-08-08",
+      "changes": [
+        "Journey-Abschluss: Die Einheit, die die letzte geplante Woche vollmacht, schließt die Journey ab. Sie wandert ins Archiv, und ein Hinweis führt entweder direkt zur nächsten Journey oder ins freie Training.",
+        "Freies Training: Ohne aktive Journey gibt der Coach nichts mehr vor. Jede Übung startet mit Gewicht, Wiederholungen und Satzzahl der letzten Einheit als reine Vorbelegung – frei anpassbar.",
+        "Der Streifen oben auf der Trainingsseite benennt den Zustand jetzt als „Freies Training“ und führt weiterhin zur Journey-Seite."
+      ]
+    },
+    {
       "version": "1.17.6",
       "date": "2026-08-07",
       "changes": [

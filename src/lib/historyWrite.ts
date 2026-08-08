@@ -44,6 +44,14 @@ export async function writeFinishStrength(
   for (const p of payload.exercisePatches) {
     await store.updateExercise(p.id, exercisePatchToRecord(p));
   }
+  // Journey-Abschluss haengt bewusst an derselben Folge: eine offline pausierte
+  // Einheit archiviert die Journey erst, wenn sie tatsaechlich geschrieben ist.
+  if (payload.journeyArchive) {
+    await store.archiveJourney(
+      payload.journeyArchive.journeyId,
+      payload.journeyArchive.endDate,
+    );
+  }
 }
 
 /** Skill-Einheit beenden: Einfuegen wie bei Kraft, danach Skill-Fortschritt
@@ -95,7 +103,12 @@ export async function writeEditSession(
  *  Stelle, damit Beenden/Bearbeiten/Skill nicht je eigene Schluessel pflegen.
  *  Die Mutationen lesen diese Schluessel in ihrer onSuccess. */
 export const HISTORY_INVALIDATE = {
-  finishStrength: [["sessions"], ["sessions-detailed"], ["exercises"]],
+  finishStrength: [
+    ["sessions"],
+    ["sessions-detailed"],
+    ["exercises"],
+    ["activeJourney"],
+  ],
   finishSkill: [
     ["sessions"],
     ["sessions-detailed"],

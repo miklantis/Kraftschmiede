@@ -52,7 +52,11 @@ export function useJourneyActions(): {
         previousJourneyId = (current as { id: string }).id;
         const { error: deErr } = await supabase
           .from("journeys")
-          .update({ active: false })
+          .update({
+            active: false,
+            status: "archived",
+            end_date: todayISO(),
+          })
           .eq("id", previousJourneyId);
         if (deErr) throw new Error(deErr.message);
       }

@@ -8,6 +8,8 @@ import {
   weekProgress,
   repTargetForFocus,
   phaseRepBand,
+  totalJourneyWeeks,
+  completesJourney,
   type JourneySession,
 } from "../journey";
 
@@ -179,5 +181,67 @@ describe("phaseRepBand", () => {
 
   it("ohne Grenzen und ohne passenden Fokus null", () => {
     expect(phaseRepBand(null, null, "maintenance")).toBeNull();
+  });
+});
+
+describe("completesJourney", () => {
+  // Journey ueber 2 Wochen, Frequenzziel 2.
+  const j = { id: "j1", phases: [{ id: "p1", weeks: 2 }] };
+
+  it("summiert die Phasenwochen", () => {
+    expect(
+      totalJourneyWeeks([
+        { id: "a", weeks: 3 },
+        { id: "b", weeks: 4 },
+      ]),
+    ).toBe(7);
+  });
+
+  it("schliesst nicht ab, solange fruehere Wochen laufen", () => {
+    // KW02: erste Journey-Woche, zweite Einheit -> Woche 1 von 2.
+    const before: JourneySession[] = [s("2026-01-05")];
+    expect(completesJourney(j, before, 2, "2026-01-06")).toBe(false);
+  });
+
+  it("schliesst nicht ab, wenn das Wochen-Pensum noch fehlt", () => {
+    // KW02 erfuellt (2 Einheiten) -> die Einheit in KW03 ist Woche 2, aber
+    // allein erfuellt sie das Pensum von 2 noch nicht.
+    const before: JourneySession[] = [s("2026-01-05"), s("2026-01-07")];
+    expect(completesJourney(j, before, 2, "2026-01-12")).toBe(false);
+  });
+
+  it("schliesst mit der Einheit ab, die die letzte Woche vollmacht", () => {
+    const before: JourneySession[] = [
+      s("2026-01-05"),
+      s("2026-01-07"),
+      s("2026-01-12"),
+    ];
+    expect(completesJourney(j, before, 2, "2026-01-14")).toBe(true);
+  });
+
+  it("holt eine laengst ueberfaellige Journey nach", () => {
+    // Vier erfuellte Wochen bei nur zwei geplanten -> naechste erfuellte Woche
+    // schliesst ab (Woche >= Gesamtwochen).
+    const before: JourneySession[] = [
+      s("2026-01-05"),
+      s("2026-01-07"),
+      s("2026-01-12"),
+      s("2026-01-14"),
+      s("2026-01-19"),
+      s("2026-01-21"),
+      s("2026-01-26"),
+    ];
+    expect(completesJourney(j, before, 2, "2026-01-28")).toBe(true);
+  });
+
+  it("ignoriert Einheiten anderer Journeys", () => {
+    const before: JourneySession[] = [s("2026-01-05", "j2"), s("2026-01-07", "j2")];
+    expect(completesJourney(j, before, 2, "2026-01-08")).toBe(false);
+  });
+
+  it("ohne Phasen kein Abschluss", () => {
+    expect(completesJourney({ id: "j1", phases: [] }, [], 2, "2026-01-05")).toBe(
+      false,
+    );
   });
 });

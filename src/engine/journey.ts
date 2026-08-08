@@ -201,6 +201,35 @@ export function journeyPlacement(
   return { ...p, globalWeek: gw };
 }
 
+// Summe aller Phasenwochen einer Journey = geplante Gesamtdauer in Wochen.
+export function totalJourneyWeeks(phases: PhaseLike[]): number {
+  return (phases || []).reduce((sum, p) => sum + (p.weeks || 0), 0);
+}
+
+// Schliesst die neue Einheit die Journey ab? Wahr, wenn die Einheit in der
+// letzten geplanten Journey-Woche (oder darueber hinaus) liegt UND mit ihr das
+// Wochen-Pensum dieser Kalenderwoche erfuellt ist.
+//
+// `sessionsBefore` enthaelt den Verlauf OHNE die gerade beendete Einheit; deren
+// Datum kommt als `date`. Die Journey-Wochennummer zaehlt nur Wochen STRIKT VOR
+// der laufenden, ist also unabhaengig davon, ob die neue Einheit schon
+// mitgezaehlt wird. Das ">= Gesamtwochen" faengt zugleich Journeys ab, die
+// laengst ueberfaellig sind: sie schliessen mit der naechsten erfuellten Woche.
+export function completesJourney(
+  journey: JourneyLike,
+  sessionsBefore: JourneySession[],
+  freqTarget: number,
+  date: string,
+): boolean {
+  const total = totalJourneyWeeks(journey.phases || []);
+  if (total <= 0) return false;
+  const target = Math.max(1, freqTarget || 1);
+  const week = journeyWeekForDate(date, sessionsBefore, journey.id, target);
+  if (week < total) return false;
+  const wp = weekProgress(sessionsBefore, journey.id, target, date);
+  return wp.units + 1 >= target;
+}
+
 // Fortschritt der Kalenderwoche, in der dateStr liegt: gezaehlte Einheiten,
 // Frequenzziel und ob erfuellt. Reine Anzahl abgeschlossener Einheiten (kein
 // Score), Reihenfolge egal. journeyWeek = globale Journey-Wochennummer dieser KW.

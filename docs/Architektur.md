@@ -94,7 +94,8 @@ Begründung in ADR-0003.
 ### 3.3 Nutzerzustand
 
 - **journeys** – name, active, status (active/archived), source_template_id (FK), start_date,
-  created_at. Invariante: Partial Unique Index `journeys_one_active_per_user` auf
+  end_date (nullable, gesetzt beim Abschluss bzw. beim Wechsel), created_at. Invariante:
+  Partial Unique Index `journeys_one_active_per_user` auf
   `user_id where active` -> genau eine aktive Journey pro Nutzer (ADR-0004)
 - **phases** – journey_id (FK), name, focus, weeks, sets_start, sets_end, deload_week
   (nullable), rep_target_min/max, position

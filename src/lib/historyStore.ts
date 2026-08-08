@@ -40,6 +40,8 @@ export interface HistoryStore {
   setTested1RM(sessionExerciseId: string, value: number | null): Promise<void>;
   /** Katalog-Zeile fortschreiben (Arbeitsgewicht, optional 1RM). */
   updateExercise(id: string, patch: Record<string, unknown>): Promise<void>;
+  /** Journey abschliessen: inaktiv, Status archiviert, Enddatum setzen. */
+  archiveJourney(id: string, endDate: string): Promise<void>;
   /** Skill-Fortschritt schreiben: anlegen (isNew) oder fortschreiben. */
   writeSkillProgress(write: SkillProgressWrite): Promise<void>;
 }
@@ -86,6 +88,14 @@ export const supabaseHistoryStore: HistoryStore = {
   async updateExercise(id, patch) {
     must(await supabase.from("exercises").update(patch).eq("id", id));
   },
+  async archiveJourney(id, endDate) {
+    must(
+      await supabase
+        .from("journeys")
+        .update({ active: false, status: "archived", end_date: endDate })
+        .eq("id", id),
+    );
+  },
   async writeSkillProgress(write) {
     if (write.isNew) {
       must(
@@ -127,6 +137,7 @@ export interface MemoryHistoryLog {
   tested1RM: Array<{ sessionExerciseId: string; value: number | null }>;
   exercisePatches: Array<{ id: string; patch: Record<string, unknown> }>;
   skillProgress: SkillProgressWrite[];
+  archivedJourneys: Array<{ id: string; endDate: string }>;
 }
 
 /** Erzeugt einen Verlauf-Speicher, der nichts schreibt, sondern jeden Handgriff
@@ -144,6 +155,7 @@ export function createMemoryHistoryStore(): {
     tested1RM: [],
     exercisePatches: [],
     skillProgress: [],
+    archivedJourneys: [],
   };
   const store: HistoryStore = {
     async insertSession(row) {
@@ -169,6 +181,9 @@ export function createMemoryHistoryStore(): {
     },
     async writeSkillProgress(write) {
       log.skillProgress.push(write);
+    },
+    async archiveJourney(id, endDate) {
+      log.archivedJourneys.push({ id, endDate });
     },
   };
   return { store, log };

@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { journeyWeekForDate } from "@/engine/journey";
+import { completesJourney, journeyWeekForDate } from "@/engine/journey";
 import { nextRecord1RM } from "@/engine/oneRM";
 import type { RmFormula } from "@/engine/types";
 import { todayISO } from "@/lib/format";
@@ -17,6 +17,8 @@ import { useSettings } from "./useSettings";
 import { useSessions } from "./useSessions";
 import { useExercises } from "./useExercises";
 import { useBodyLog } from "./useBodyLog";
+import { useActiveJourney } from "./useJourney";
+import { notifyJourneyDone } from "@/lib/journeyDone";
 
 const RM_FORMULAS: RmFormula[] = ["brzycki", "epley", "wathan", "mean"];
 function asRmFormula(v: string | null | undefined): RmFormula {
@@ -36,6 +38,7 @@ export function useFinishSession(): UseFinishSession {
   const sessionsQ = useSessions();
   const exercisesQ = useExercises();
   const bodyQ = useBodyLog();
+  const journeyQ = useActiveJourney();
 
   const mutation = useMutation<void, Error, FinishPayload>({
     mutationKey: FINISH_MUTATION_KEY,
@@ -63,8 +66,11 @@ export function useFinishSession(): UseFinishSession {
           }
         : { legs: 0, upper_body: 0, overall: 0, readiness: 3, pain_flag: false, pain_note: "", notes: "" };
 
-      // Globale Journey-Woche einfrieren (nur Journey-Einheiten).
+      // Globale Journey-Woche einfrieren (nur Journey-Einheiten). Im selben
+      // Zug pruefen, ob diese Einheit das Pensum der letzten Journey-Woche
+      // erfuellt und die Journey damit durchlaufen ist.
       let week: number | null = null;
+      let journeyArchive: { journeyId: string; endDate: string } | undefined;
       if (session.journeyId) {
         const sessions = (sessionsQ.data ?? []).map((s) => ({
           date: s.date,
@@ -73,6 +79,19 @@ export function useFinishSession(): UseFinishSession {
           journeyId: s.journey_id,
         }));
         week = journeyWeekForDate(date, sessions, session.journeyId, freqTarget);
+        const journey = journeyQ.data;
+        if (
+          journey &&
+          journey.id === session.journeyId &&
+          completesJourney(
+            { id: journey.id, phases: journey.phases },
+            sessions,
+            freqTarget,
+            date,
+          )
+        ) {
+          journeyArchive = { journeyId: journey.id, endDate: date };
+        }
       }
 
       const rows = buildFinishRows({
@@ -114,9 +133,25 @@ export function useFinishSession(): UseFinishSession {
         exerciseRows: rows.exerciseRows,
         setRows: rows.setRows,
         exercisePatches,
+        journeyArchive,
       });
+
+      // Meldung anstossen, sobald das Schreib-Paket abgeschickt ist. Der Hinweis
+      // haengt an der Entscheidung, nicht am Netz: offline wird die Journey
+      // spaeter archiviert, fuer den Nutzer ist sie jetzt durchlaufen.
+      if (journeyArchive && journeyQ.data) {
+        notifyJourneyDone(journeyQ.data.name);
+      }
     },
-    [userId, settingsQ.data, sessionsQ.data, exercisesQ.data, bodyQ.data, mutation],
+    [
+      userId,
+      settingsQ.data,
+      sessionsQ.data,
+      exercisesQ.data,
+      bodyQ.data,
+      journeyQ.data,
+      mutation,
+    ],
   );
 
   return { finishWorkout, isSaving: mutation.isPending };

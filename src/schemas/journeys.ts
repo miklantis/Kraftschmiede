@@ -17,6 +17,8 @@ export const journeyRow = z.object({
   status: journeyStatusEnum,
   source_template_id: uuid.nullable(),
   start_date: isoDate.nullable(),
+  // Enddatum: gesetzt beim Abschluss bzw. beim Wechsel auf eine neue Journey.
+  end_date: isoDate.nullable(),
   created_at: isoTimestamp,
 });
 export type JourneyRow = z.infer<typeof journeyRow>;
@@ -28,6 +30,7 @@ export const journeyInsert = journeyRow
     status: true,
     source_template_id: true,
     start_date: true,
+    end_date: true,
   });
 export type JourneyInsert = z.infer<typeof journeyInsert>;
 

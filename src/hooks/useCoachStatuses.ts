@@ -85,6 +85,9 @@ export function useCoachStatuses(): UseCoachStatuses {
       todayISO(),
     );
     const hasPhase = ph.volumePhase != null;
+    // Ohne aktive Journey trainiert der Nutzer frei: der Coach gibt nichts vor,
+    // die Statusanzeige zeigt entsprechend "frei anpassbar".
+    const freeMode = ph.journeyId === null;
 
     for (const e of exercisesQ.data ?? []) {
       const exo: CoachBuildExercise = {
@@ -114,6 +117,7 @@ export function useCoachStatuses(): UseCoachStatuses {
         plates,
         dumbbells,
         repTarget,
+        freeMode,
       });
       out[e.id] = coachStatusFromSuggestion(suggestion, hadPriorData);
     }
