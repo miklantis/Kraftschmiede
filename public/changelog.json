@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.20.0",
+      "date": "2026-08-08",
+      "changes": [
+        "Rückschau: Ein Tippen auf eine Journey im Archiv öffnet sie als eigene Seite – mit Kopfzeile, den Phasen und allen absolvierten Einheiten je Phase. Zurück geht es oben links wie beim Vorlagen-Wähler.",
+        "Einheiten ohne Phasenbezug (aus der Zeit vor der Phasen-Zuordnung) werden am Ende gesammelt statt weggelassen."
+      ]
+    },
+    {
       "version": "1.19.0",
       "date": "2026-08-08",
       "changes": [

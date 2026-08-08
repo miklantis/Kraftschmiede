@@ -21,6 +21,7 @@ import { Route as UebungenExerciseIdRouteImport } from './routes/uebungen_.$exer
 import { Route as JourneyWaehlenRouteImport } from './routes/journey_.waehlen'
 import { Route as EinstellungenVersionRouteImport } from './routes/einstellungen_.version'
 import { Route as WorkoutsTemplateIdBearbeitenRouteImport } from './routes/workouts_.$templateId_.bearbeiten'
+import { Route as JourneyArchivJourneyIdRouteImport } from './routes/journey_.archiv.$journeyId'
 
 const WorkoutsRoute = WorkoutsRouteImport.update({
   id: '/workouts',
@@ -83,6 +84,11 @@ const WorkoutsTemplateIdBearbeitenRoute =
     path: '/workouts/$templateId/bearbeiten',
     getParentRoute: () => rootRouteImport,
   } as any)
+const JourneyArchivJourneyIdRoute = JourneyArchivJourneyIdRouteImport.update({
+  id: '/journey_/archiv/$journeyId',
+  path: '/journey/archiv/$journeyId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/journey/waehlen': typeof JourneyWaehlenRoute
   '/uebungen/$exerciseId': typeof UebungenExerciseIdRoute
   '/workouts/neu': typeof WorkoutsNeuRoute
+  '/journey/archiv/$journeyId': typeof JourneyArchivJourneyIdRoute
   '/workouts/$templateId/bearbeiten': typeof WorkoutsTemplateIdBearbeitenRoute
 }
 export interface FileRoutesByTo {
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/journey/waehlen': typeof JourneyWaehlenRoute
   '/uebungen/$exerciseId': typeof UebungenExerciseIdRoute
   '/workouts/neu': typeof WorkoutsNeuRoute
+  '/journey/archiv/$journeyId': typeof JourneyArchivJourneyIdRoute
   '/workouts/$templateId/bearbeiten': typeof WorkoutsTemplateIdBearbeitenRoute
 }
 export interface FileRoutesById {
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/journey_/waehlen': typeof JourneyWaehlenRoute
   '/uebungen_/$exerciseId': typeof UebungenExerciseIdRoute
   '/workouts_/neu': typeof WorkoutsNeuRoute
+  '/journey_/archiv/$journeyId': typeof JourneyArchivJourneyIdRoute
   '/workouts_/$templateId_/bearbeiten': typeof WorkoutsTemplateIdBearbeitenRoute
 }
 export interface FileRouteTypes {
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/journey/waehlen'
     | '/uebungen/$exerciseId'
     | '/workouts/neu'
+    | '/journey/archiv/$journeyId'
     | '/workouts/$templateId/bearbeiten'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/journey/waehlen'
     | '/uebungen/$exerciseId'
     | '/workouts/neu'
+    | '/journey/archiv/$journeyId'
     | '/workouts/$templateId/bearbeiten'
   id:
     | '__root__'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/journey_/waehlen'
     | '/uebungen_/$exerciseId'
     | '/workouts_/neu'
+    | '/journey_/archiv/$journeyId'
     | '/workouts_/$templateId_/bearbeiten'
   fileRoutesById: FileRoutesById
 }
@@ -184,6 +196,7 @@ export interface RootRouteChildren {
   JourneyWaehlenRoute: typeof JourneyWaehlenRoute
   UebungenExerciseIdRoute: typeof UebungenExerciseIdRoute
   WorkoutsNeuRoute: typeof WorkoutsNeuRoute
+  JourneyArchivJourneyIdRoute: typeof JourneyArchivJourneyIdRoute
   WorkoutsTemplateIdBearbeitenRoute: typeof WorkoutsTemplateIdBearbeitenRoute
 }
 
@@ -273,6 +286,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkoutsTemplateIdBearbeitenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/journey_/archiv/$journeyId': {
+      id: '/journey_/archiv/$journeyId'
+      path: '/journey/archiv/$journeyId'
+      fullPath: '/journey/archiv/$journeyId'
+      preLoaderRoute: typeof JourneyArchivJourneyIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -288,6 +308,7 @@ const rootRouteChildren: RootRouteChildren = {
   JourneyWaehlenRoute: JourneyWaehlenRoute,
   UebungenExerciseIdRoute: UebungenExerciseIdRoute,
   WorkoutsNeuRoute: WorkoutsNeuRoute,
+  JourneyArchivJourneyIdRoute: JourneyArchivJourneyIdRoute,
   WorkoutsTemplateIdBearbeitenRoute: WorkoutsTemplateIdBearbeitenRoute,
 }
 export const routeTree = rootRouteImport
