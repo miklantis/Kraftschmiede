@@ -398,3 +398,29 @@ describe("buildCoachExport - Journey-Filter", () => {
     expect(out.sessions).toHaveLength(2);
   });
 });
+
+describe("buildCoachExport - laufende Journey als Filter", () => {
+  it("laesst das Ende offen und behaelt Woche und Phase", () => {
+    const raw = emptyRaw();
+    raw.journeys = [
+      { id: "j2", name: "Laufend", active: true, start_date: "2026-05-04" },
+    ] as unknown as RawExportData["journeys"];
+    raw.phases = [
+      {
+        id: "p2",
+        journey_id: "j2",
+        name: "Basis",
+        focus: "hypertrophie",
+        weeks: 8,
+        position: 0,
+      },
+    ] as unknown as RawExportData["phases"];
+    raw.sessions = [
+      { id: "b", date: "2026-05-06", type: "strength", journey_id: "j2" },
+    ] as unknown as RawSession[];
+    const out = buildCoachExport(raw, { weeks: null, journeyId: "j2", today: TODAY });
+    expect(out.range.to).toBeNull();
+    expect(out.activeJourney?.name).toBe("Laufend");
+    expect(out.activeJourney?.currentPhase).not.toBeNull();
+  });
+});

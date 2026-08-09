@@ -21,6 +21,7 @@ import { useArchivedJourneys } from "./useArchivedJourneys";
 // noch die Engine – sie bekommen Name, Meta-Zeile, fertige Phasen-Modelle und das
 // fertige Kurven-Modell (Periodisierung).
 export interface JourneyView {
+  id: string;
   name: string;
   templateName: string | null;
   startLong: string | null;
@@ -91,6 +92,7 @@ export function useJourneyView(): {
     const periodization = buildPeriodization(phaseInputs, placement.globalWeek);
 
     return {
+      id: journey.id,
       name: journey.name,
       templateName,
       startLong: journey.start_date ? longDateYearDE(journey.start_date) : null,

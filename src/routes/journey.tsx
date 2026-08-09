@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Section } from "@/components/ui/section";
 import { PageReveal } from "@/components/ui/page-reveal";
 import { ActiveJourneyCard } from "@/components/journey/ActiveJourneyCard";
+import { JourneyCoachExport } from "@/components/journey/JourneyCoachExport";
 import { PeriodizationChart } from "@/components/journey/PeriodizationChart";
 import { PhaseList } from "@/components/journey/PhaseList";
 import { JourneyEmpty } from "@/components/journey/JourneyEmpty";
@@ -76,6 +77,12 @@ function JourneyPage(): React.ReactElement {
       <PageReveal className="flex flex-col gap-7 min-[960px]:gap-8">
         <Section eyebrow="Aktive Journey">
           <ActiveJourneyCard name={data.name} metaLine={metaLine} />
+          <div className="mt-4">
+            <JourneyCoachExport
+              journeyId={data.id}
+              description="Kopiert die laufende Journey als schlankes JSON: Phasen, bisherige Einheiten mit Sätzen und Zuordnung sowie Körperwerte seit dem Start."
+            />
+          </div>
         </Section>
         {data.periodization.weeks.length > 0 && (
           <Section eyebrow="Periodisierung">

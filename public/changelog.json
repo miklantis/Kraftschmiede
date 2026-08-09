@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.21.1",
+      "date": "2026-08-09",
+      "changes": [
+        "Coach-Export auch für die laufende Journey: direkt auf der Journey-Seite unter der aktiven Journey. Das Ende bleibt offen, aktuelle Woche und Phase stehen im Export."
+      ]
+    },
+    {
       "version": "1.21.0",
       "date": "2026-08-09",
       "changes": [

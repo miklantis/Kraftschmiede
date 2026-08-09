@@ -8,8 +8,10 @@ import { useCoachExport } from "@/hooks/useCoachExport";
 // genau ihrem Fenster). Nur Zwischenablage, kein Datei-Download.
 export function JourneyCoachExport({
   journeyId,
+  description = "Kopiert diese Journey als schlankes JSON: Phasen, alle Einheiten mit Sätzen und Zuordnung sowie Körperwerte aus ihrem Zeitraum.",
 }: {
   journeyId: string;
+  description?: string;
 }): React.ReactElement {
   const { copyForCoaching, isPending, done, error } = useCoachExport();
 
@@ -19,8 +21,7 @@ export function JourneyCoachExport({
         Mit dem Coach besprechen
       </div>
       <p className="mt-1 mb-3 text-[13px] leading-[1.55] text-muted-foreground">
-        Kopiert diese Journey als schlankes JSON: Phasen, alle Einheiten mit
-        Sätzen und Zuordnung sowie Körperwerte aus ihrem Zeitraum.
+        {description}
       </p>
       <Button
         variant="outline"

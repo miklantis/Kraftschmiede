@@ -246,7 +246,10 @@ export function buildCoachExport(
       .map((s) => s.date)
       .sort();
     jFrom = str(filterRow, "start_date") ?? dates[0] ?? null;
-    jTo = str(filterRow, "end_date") ?? dates[dates.length - 1] ?? null;
+    // Laufende Journey: offenes Ende, damit auch heutige Werte drin sind.
+    jTo = flag(filterRow, "active")
+      ? null
+      : (str(filterRow, "end_date") ?? dates[dates.length - 1] ?? null);
   }
 
   const from = filterRow != null ? jFrom : rangeStart(today, opts.weeks);
