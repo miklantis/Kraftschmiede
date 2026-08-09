@@ -2,7 +2,7 @@ import type { PhaseState } from "@/lib/journey";
 
 // Runder Statuspunkt je Phase. Vergangen: dunkelgrau mit Haken; aktuell:
 // Akzentgruen mit weissem Innenpunkt; kuenftig: hellgrau mit weissem Innenpunkt.
-// Farben 1:1 aus V1 (jph-dot: --text2 / accent / #d8d8dc).
+// Farben ueber Tokens (--foreground-secondary / --primary / --marker-idle).
 export function PhaseDot({
   state,
   mark,
@@ -21,10 +21,10 @@ export function PhaseDot({
   }
   if (state === "future") {
     return (
-      <span className={base + " bg-[#d8d8dc]"}>
+      <span className={base + " bg-marker-idle"}>
         <span className="size-2.5 rounded-full bg-white" />
       </span>
     );
   }
-  return <span className={base + " bg-[#5c5c61]"}>{mark}</span>;
+  return <span className={base + " bg-foreground-secondary"}>{mark}</span>;
 }

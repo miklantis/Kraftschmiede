@@ -8,32 +8,37 @@
 
 import { MUSCLES, regionsForSection } from "@/lib/muscles";
 
-// Skala gruen -> grau. Kater 0 (gut) gruen ... 3 (schlecht) dunkelgrau. Diese
-// Hexwerte sind bewusst aus V1 uebernommen (kein Token-Bezug); sie sind die
-// einzige Justierstelle der Kater-Farbe und werden der generischen RatingScale
-// (Buttons) und der MuscleMap (colorFn) hereingereicht.
-export const KATER_HEX = ["#0c9d77", "#8a8f99", "#5a606b", "#33373f"] as const;
+// Skala gruen -> grau. Kater 0 (gut) gruen ... 3 (schlecht) dunkelgrau. Die
+// Farbwerte selbst stehen als Bewertungs-Skala in den Design-Tokens
+// (--rating-*); hier steht nur, welche Stufe welchen Ton bekommt. Sie werden der
+// generischen RatingScale (Buttons) und der MuscleMap (colorFn) hereingereicht.
+export const KATER_HEX = [
+  "var(--rating-good)",
+  "var(--rating-1)",
+  "var(--rating-2)",
+  "var(--rating-4)",
+] as const;
 export const KATER_LIGHT = [
-  "rgba(12,157,119,.12)",
-  "rgba(138,143,153,.14)",
-  "rgba(90,96,107,.14)",
-  "rgba(51,55,63,.12)",
+  "var(--rating-good-tint)",
+  "var(--rating-1-tint)",
+  "var(--rating-2-tint)",
+  "var(--rating-4-tint)",
 ] as const;
 
 // Readiness 5 (gut) gruen ... 1 (schlecht) dunkelgrau.
 export const READY_HEX: Record<number, string> = {
-  5: "#0c9d77",
-  4: "#8a8f99",
-  3: "#5a606b",
-  2: "#43474f",
-  1: "#33373f",
+  5: "var(--rating-good)",
+  4: "var(--rating-1)",
+  3: "var(--rating-2)",
+  2: "var(--rating-3)",
+  1: "var(--rating-4)",
 };
 export const READY_LIGHT: Record<number, string> = {
-  5: "rgba(12,157,119,.12)",
-  4: "rgba(138,143,153,.14)",
-  3: "rgba(90,96,107,.14)",
-  2: "rgba(67,71,79,.13)",
-  1: "rgba(51,55,63,.12)",
+  5: "var(--rating-good-tint)",
+  4: "var(--rating-1-tint)",
+  3: "var(--rating-2-tint)",
+  2: "var(--rating-3-tint)",
+  1: "var(--rating-4-tint)",
 };
 
 function clampInt(v: number, lo: number, hi: number): number {
@@ -48,7 +53,7 @@ export function soreButtonColors(v: number, selected: boolean): {
 } {
   const i = clampInt(v, 0, 3);
   return selected
-    ? { bg: KATER_HEX[i], fg: "#ffffff" }
+    ? { bg: KATER_HEX[i], fg: "var(--primary-foreground)" }
     : { bg: KATER_LIGHT[i], fg: KATER_HEX[i] };
 }
 
@@ -59,7 +64,7 @@ export function readyButtonColors(v: number, selected: boolean): {
 } {
   const i = clampInt(v, 1, 5);
   return selected
-    ? { bg: READY_HEX[i], fg: "#ffffff" }
+    ? { bg: READY_HEX[i], fg: "var(--primary-foreground)" }
     : { bg: READY_LIGHT[i], fg: READY_HEX[i] };
 }
 

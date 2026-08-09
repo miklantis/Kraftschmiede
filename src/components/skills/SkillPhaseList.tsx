@@ -31,7 +31,7 @@ export function SkillPhaseList({
                 ? "bg-skill text-white"
                 : p.state === "done"
                   ? "bg-skill/20 text-skill-foreground"
-                  : "bg-secondary text-[#a0a0a5]")
+                  : "bg-secondary text-foreground-subtle")
             }
           >
             {i + 1}
@@ -42,14 +42,14 @@ export function SkillPhaseList({
                 className={
                   "text-[14px] font-semibold " +
                   (p.state === "future"
-                    ? "text-[#a0a0a5]"
+                    ? "text-foreground-subtle"
                     : "text-foreground")
                 }
               >
                 {p.label}
               </span>
               {p.equipmentMissing && (
-                <Lock size={13} className="flex-none text-[#a0a0a5]" />
+                <Lock size={13} className="flex-none text-foreground-subtle" />
               )}
               {p.isCurrent && (
                 <span className="flex-none rounded-pill bg-skill/15 px-2 py-px text-[10px] font-semibold text-skill-foreground">

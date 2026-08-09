@@ -52,7 +52,7 @@ export function BodyMeasureList({
                 type="button"
                 aria-label={longDateYearDE(e.date) + " bearbeiten"}
                 onClick={() => oeffnenBearbeiten(e)}
-                className="flex w-full cursor-pointer items-center gap-3 border-t border-[#f0f0f2] p-[14px_16px] text-left transition-colors first:border-t-0 hover:bg-primary/5 min-[960px]:p-[14px_18px]"
+                className="flex w-full cursor-pointer items-center gap-3 border-t border-muted p-[14px_16px] text-left transition-colors first:border-t-0 hover:bg-primary/5 min-[960px]:p-[14px_18px]"
               >
                 <div className="min-w-0 flex-1">
                   <div className="mb-2 text-[14px] font-semibold text-foreground">
@@ -69,7 +69,7 @@ export function BodyMeasureList({
                     ))}
                   </div>
                 </div>
-                <ChevronRight className="size-[18px] flex-none text-[#a0a0a5]" />
+                <ChevronRight className="size-[18px] flex-none text-foreground-subtle" />
               </button>
             ))}
           </List>

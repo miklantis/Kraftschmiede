@@ -44,7 +44,7 @@ export function TemplateCard({
         </div>
       )}
       {model.forWhom !== "" && (
-        <div className="mb-1.5 text-[12px] leading-[1.5] text-[#a0a0a5] min-[960px]:text-[13px]">
+        <div className="mb-1.5 text-[12px] leading-[1.5] text-foreground-subtle min-[960px]:text-[13px]">
           <strong className="font-semibold text-muted-foreground">Für:</strong>{" "}
           {model.forWhom}
         </div>

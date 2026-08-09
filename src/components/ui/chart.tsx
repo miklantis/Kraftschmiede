@@ -38,7 +38,7 @@ export type ChartDefs = Selection<SVGDefsElement, unknown, null, undefined>;
 
 // Liest eine CSS-Theme-Variable (z. B. "--primary") vom Wurzelelement, mit
 // Rueckfallwert. So nutzt D3 dieselben Tokens wie der Rest der Oberflaeche.
-export function readToken(name: string, fallback: string): string {
+export function readToken(name: string, fallback = "currentColor"): string {
   if (typeof window === "undefined") return fallback;
   const v = getComputedStyle(document.documentElement)
     .getPropertyValue(name)

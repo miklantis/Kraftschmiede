@@ -68,7 +68,7 @@ export function PhaseList({
               "flex flex-col rounded-[16px] border p-4 " +
               (p.isCurrent
                 ? "border-primary/30 bg-primary/10"
-                : "border-[#ececef] bg-card")
+                : "border-line-soft bg-card")
             }
           >
             <div className="mb-3">
@@ -77,12 +77,12 @@ export function PhaseList({
             <div
               className={
                 "text-[16px] font-semibold " +
-                (p.state === "future" ? "text-[#a0a0a5]" : "text-foreground")
+                (p.state === "future" ? "text-foreground-subtle" : "text-foreground")
               }
             >
               {p.name}
             </div>
-            <div className="mt-0.5 text-[12.5px] text-[#a0a0a5]">{p.meta}</div>
+            <div className="mt-0.5 text-[12.5px] text-foreground-subtle">{p.meta}</div>
             <DetailRows phase={p} layout="grid" />
           </div>
         ))}
@@ -97,7 +97,7 @@ export function PhaseList({
               "overflow-hidden rounded-[16px] border " +
               (p.isCurrent
                 ? "border-primary/30 bg-primary/10"
-                : "border-[#ececef] bg-card")
+                : "border-line-soft bg-card")
             }
           >
             <div className="flex items-center gap-3.5 px-4 py-[15px]">
@@ -107,13 +107,13 @@ export function PhaseList({
                   className={
                     "text-[15px] font-semibold " +
                     (p.state === "future"
-                      ? "text-[#a0a0a5]"
+                      ? "text-foreground-subtle"
                       : "text-foreground")
                   }
                 >
                   {p.name}
                 </div>
-                <div className="text-[12px] text-[#a0a0a5]">{p.meta}</div>
+                <div className="text-[12px] text-foreground-subtle">{p.meta}</div>
               </div>
             </div>
             {p.isCurrent && (

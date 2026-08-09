@@ -87,14 +87,14 @@ export function ExerciseChart({
         .append("g")
         .attr("transform", `translate(${margin.l},${margin.t})`);
 
-      const ACC = readToken("--primary", "#0c9d77");
-      const BAD = readToken("--danger", "#ef5b5b");
+      const ACC = readToken("--primary");
+      const BAD = readToken("--danger");
       // Tests heben sich farblich von den Einheiten ab (Form gleich, Farbe traegt
       // die Herkunft).
-      const TEST = readToken("--skill", "#3f7fb5");
-      const GRID = readToken("--border", "#e4e4e8");
-      const FAINT = readToken("--muted-foreground", "#8a8a8e");
-      const INK = readToken("--foreground", "#1c1c1e");
+      const TEST = readToken("--skill");
+      const GRID = readToken("--border");
+      const FAINT = readToken("--muted-foreground");
+      const INK = readToken("--foreground");
 
       if (n === 0) {
         g.append("text")
@@ -278,9 +278,9 @@ export function ExerciseChart({
         .append("g")
         .attr("transform", `translate(${margin.l},${margin.t})`);
 
-      const ACC = readToken("--primary", "#0c9d77");
-      const GRID = readToken("--border", "#e4e4e8");
-      const FAINT = readToken("--muted-foreground", "#8a8a8e");
+      const ACC = readToken("--primary");
+      const GRID = readToken("--border");
+      const FAINT = readToken("--muted-foreground");
 
       if (n === 0) {
         g.append("text")
