@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useLiveSession } from "@/hooks/useLiveSession";
 import { useSettings } from "@/hooks/useSettings";
 import { useWakeLock } from "@/hooks/useWakeLock";
+import { useScrollLock } from "@/hooks/useScrollLock";
 import { LivePanel } from "./LivePanel";
 import { StartModal } from "./StartModal";
 import { EndModal } from "./EndModal";
@@ -23,6 +24,11 @@ export function LiveLayer(): React.ReactElement {
   const settingsQ = useSettings();
   const wakeWanted = settingsQ.data?.timers?.wakeLock === true;
   useWakeLock(active && wakeWanted);
+
+  // Aufgeklapptes Panel deckt den Bildschirm ab: die Seite dahinter wird
+  // stillgelegt, damit nur der Panel-Inhalt scrollt. Eingeklappt (Mini-Streifen)
+  // gehoert die Seite wieder dem Nutzer.
+  useScrollLock(active && !collapsed);
 
   useEffect(() => {
     const b = document.body;

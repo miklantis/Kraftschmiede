@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
+import { useScrollLock } from "@/hooks/useScrollLock";
 import { cn } from "@/lib/utils";
 
 // Wiederverwendbares Popup-Fundament (1:1 aus dem V1-Verhalten abgeleitet:
@@ -81,20 +82,19 @@ export function Overlay({
     return () => window.cancelAnimationFrame(id);
   }, [open, mounted]);
 
-  // Escape schliesst; Body-Scroll sperren, solange das Overlay im DOM ist.
+  // Escape schliesst.
   useEffect(() => {
     if (!mounted) return undefined;
     const onKey = (e: KeyboardEvent): void => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
-    };
+    return () => window.removeEventListener("keydown", onKey);
   }, [mounted, onClose]);
+
+  // Seite dahinter stilllegen, solange das Overlay im DOM ist (iOS-fest, zaehlt
+  // verschachtelte Sperren mit - etwa Popup ueber laufendem Live-Panel).
+  useScrollLock(mounted);
 
   if (!mounted || typeof document === "undefined") return null;
 
