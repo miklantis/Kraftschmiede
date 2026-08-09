@@ -116,12 +116,14 @@ Begründung in ADR-0003.
 - **body_log** – Tages-Befinden: date, legs, upper_body, overall (Muskelkater 0..3),
   readiness, pain_flag, pain_note, notes, `unique(user_id, date)`
 - **composition** – InBody-/BIA-Messung: date, weight, body_fat_kg, body_fat_pct,
-  skeletal_muscle_kg, tbw_kg, phase_angle, visceral_fat, ecw_kg, icw_kg,
-  `unique(user_id, date)` (ecw_kg/icw_kg = extra-/intrazellulaeres Wasser, Rohwerte)
+  skeletal_muscle_kg, muscle_mass_kg, tbw_kg, phase_angle, visceral_fat, ecw_kg, icw_kg,
+  bmr_kcal, `unique(user_id, date)` (ecw_kg/icw_kg = extra-/intrazellulaeres Wasser,
+  muscle_mass_kg = Muskelmasse inkl. glatter Muskulatur, alles Rohwerte)
 - **exercise_milestones** – Ziele je Übung: exercise_id (FK), name, target_rm,
   achieved_at (Erreichen-Datum, nullable), position (Migration 0011)
-- **composition_milestones** – Ziele je Mess-Metrik: metric (weight/fat/muscle/water/phase),
-  name, target, position (Migration 0012)
+- **composition_milestones** – Ziele je Mess-Metrik: metric
+  (weight/fat/muscle/muscle_mass/water/phase/bmr), name, target, position
+  (Migration 0012, erweitert in 0021)
 - **rm_tests** – bewusste 1RM-Tests je Übung: exercise_id (FK), date, weight, reps, est_rm,
   previous_rm (Rekord vor dem Test, nullable), created_at (Migration 0013). Bewusst ohne
   Bezug zu `sessions`: ein Test ist keine Trainingseinheit und zählt nirgends als solche

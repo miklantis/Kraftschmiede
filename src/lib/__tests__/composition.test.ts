@@ -11,6 +11,7 @@ function row(p: Partial<CompositionRow>): CompositionRow {
     body_fat_kg: null,
     body_fat_pct: null,
     skeletal_muscle_kg: null,
+    muscle_mass_kg: null,
     tbw_kg: null,
     phase_angle: null,
     visceral_fat: null,
@@ -54,6 +55,13 @@ describe("compChips", () => {
     const chips = compChips(row({ ecw_kg: 14.9, icw_kg: 33.5 }));
     expect(chips).toContain("ECW 14,9 kg");
     expect(chips).toContain("ICW 33,5 kg");
+  });
+
+  it("trennt Skelettmuskelmasse und Muskelmasse", () => {
+    const chips = compChips(row({ skeletal_muscle_kg: 38.9, muscle_mass_kg: 42.4 }));
+    expect(chips).toContain("SMM 38,9 kg");
+    expect(chips).toContain("Muskel 42,4 kg");
+    expect(chips.indexOf("SMM 38,9 kg")).toBeLessThan(chips.indexOf("Muskel 42,4 kg"));
   });
 
   it("zeigt den BMR-Chip in kcal", () => {

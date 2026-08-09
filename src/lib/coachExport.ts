@@ -105,6 +105,7 @@ export interface CoachMeasurement {
   bodyFatKg?: number;
   fatPct?: number;
   muscleKg?: number;
+  muscleMassKg?: number;
   waterKg?: number;
   phaseAngle?: number;
   visceralFat?: number;
@@ -558,6 +559,8 @@ export function buildCoachExport(
       if (f != null) m.fatPct = f;
       const mu = num(r, "skeletal_muscle_kg");
       if (mu != null) m.muscleKg = mu;
+      const mm = num(r, "muscle_mass_kg");
+      if (mm != null) m.muscleMassKg = mm;
       const tbw = num(r, "tbw_kg");
       if (tbw != null) m.waterKg = tbw;
       const pa = num(r, "phase_angle");
