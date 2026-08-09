@@ -46,8 +46,9 @@ Datenbank (ADR-0002), Skill-Definitionen (ADR-0003).
 
 ## 3. Datenbank-Schema (umgesetzt)
 
-Umgesetzt als `supabase/migrations/0001_initial_schema.sql`. 23 Tabellen,
-jede mit `user_id` und Row Level Security (vier Policies select/insert/update/delete
+Angelegt als `supabase/migrations/0001_initial_schema.sql` mit 23 Tabellen; durch spätere
+Migrationen sind es inzwischen 29 (die vollständige Liste führt das Bestandsregister,
+siehe 3.4). Jede Tabelle mit `user_id` und Row Level Security (vier Policies select/insert/update/delete
 strikt auf `auth.uid() = user_id`), Zugriff für Rolle `authenticated` freigegeben.
 Definitionen werden beim ersten Start pro Nutzer aus einem Seed befüllt. Tabellen mit
 stabilem Seed-Identifikator haben ein `key`-Feld (`unique(user_id, key)`); Fremdschlüssel
@@ -130,8 +131,43 @@ Begründung in ADR-0003.
 - **settings** – user_id (PK), rm_formula, weekly_frequency_target, weight_step, unit,
   recovery_windows (jsonb), timers (jsonb)
 
-Sicherung der Nutzerdaten läuft über JSON-Export/Import. Einen Scheiben-Bestandszähler
-gibt es bewusst nicht.
+Einen Scheiben-Bestandszähler gibt es bewusst nicht.
+
+### 3.4 Bestandsregister (Sicherung der Nutzerdaten)
+
+Sicherung und Wiederherstellung laufen über JSON-Export/Import. Welche Tabellen zum
+Datenbestand eines Nutzers gehören, steht an genau einer Stelle:
+`src/lib/bestandsregister.ts`. Vorher war diese Liste an acht Stellen von Hand
+aufgezählt – wurde eine vergessen, fiel die Tabelle still aus der Sicherung heraus und
+bemerkt wurde es erst beim Wiederherstellen.
+
+Jeder Eintrag führt:
+
+- **tabelle** – Name in der Datenbank (z. B. `composition_milestones`)
+- **key** – Schlüssel im Export-JSON (z. B. `compositionMilestones`)
+- **tiefe** – Fremdschlüssel-Tiefe (0 = hängt an keiner anderen Tabelle des Bestands).
+  Daraus werden Einfüge- (Eltern zuerst) und Löschreihenfolge (Kinder zuerst) berechnet,
+  statt sie getrennt zu pflegen.
+- **ablage** – wo die Zeilen im Export liegen: eigene Liste, Inventar-Block, die
+  Einheiten selbst, oder geschachtelt in den Einheiten (Übungen und Sätze)
+- **einzelzeile** – `settings` ist eine Zeile pro Nutzer und wird per Upsert ersetzt
+- **schema** – Name des zugehörigen Row-Schemas in `src/schemas`
+
+Daraus lesen: `exportSource.ts` (Abruf), `exportData.ts` (Aufbau des Export-JSON),
+`restoreData.ts` (Prüfung und Aufbereitung) und `useRestore.ts` (Löschen/Einfügen).
+Die Reihenfolge der Einträge im Register ist zugleich die Reihenfolge der Schlüssel im
+Export-JSON – nach Themen gruppiert, damit die Datei lesbar bleibt.
+
+Abgesichert durch Tests in `src/lib/__tests__/bestandsregister.test.ts`: Register und
+Row-Schemas müssen deckungsgleich sein, die abgeleiteten Reihenfolgen müssen Eltern vor
+Kinder stellen, und ein Rundlauf Export → Wiederherstellen (ohne Datenbank, reine
+Funktionen) muss jede Tabelle zurückbringen.
+
+Das Export-Format bleibt abwärtskompatibel: Sicherungen der Schemaversionen v2 und v3
+sind weiterhin einspielbar. Kennt eine ältere Sicherung einen Schlüssel nicht, bleibt die
+betroffene Tabelle beim Wiederherstellen leer.
+
+**Neue Tabelle heißt: einen Eintrag im Register ergänzen, sonst nichts.**
 
 ---
 

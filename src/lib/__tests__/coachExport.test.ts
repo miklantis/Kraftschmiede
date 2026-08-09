@@ -34,8 +34,9 @@ function emptyRaw(): RawExportData {
     composition: [],
     milestones: [],
     compositionMilestones: [],
-  rmTests: [],
-  zeitraeume: [],
+    rmTests: [],
+    zeitraeume: [],
+    journeyWorkouts: [],
     settings: null,
   };
 }

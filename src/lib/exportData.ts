@@ -9,6 +9,13 @@
 
 import { scoreInfo, SCORE_MAP, type ScoreInfo } from "@/engine/score";
 import { todayISO } from "@/lib/format";
+import {
+  BESTANDSREGISTER,
+  type EinzelKey,
+  type InventarKey,
+  type ListenKey,
+  type ListeKey,
+} from "@/lib/bestandsregister";
 
 export const EXPORT_SCHEMA_VERSION = "v3";
 
@@ -36,37 +43,21 @@ export interface RawSession extends Row {
 }
 
 // Roh-Eingabe: alle Tabellen des Nutzers als Listen (settings als Einzelzeile).
-export interface RawExportData {
-  bars: Row[];
-  plates: Row[];
-  kettlebells: Row[];
-  dumbbells: Row[];
-  equipment: Row[];
-  exercises: Row[];
-  exerciseMuscles: Row[];
-  templates: Row[];
-  templateExercises: Row[];
-  journeyTemplates: Row[];
-  journeyTemplatePhases: Row[];
-  skills: Row[];
-  skillPhases: Row[];
-  skillPhaseExercises: Row[];
-  skillPhaseEquipment: Row[];
-  journeys: Row[];
-  phases: Row[];
+// Die Feldliste faellt aus dem Bestandsregister heraus; nur die drei Tabellen
+// rund um die Einheiten sind hier enger getippt, weil der Aufbau sie anfasst.
+export type RawExportData = Record<
+  Exclude<ListenKey, "sessions" | "sessionExercises" | "sets">,
+  Row[]
+> & {
   sessions: RawSession[];
   sessionExercises: RawSessionExercise[];
   sets: RawSet[];
-  skillProgress: Row[];
-  bodyLog: Row[];
-  composition: Row[];
-  milestones: Row[];
-  compositionMilestones: Row[];
-  /** 1RM-Tests (rm_tests) - eigenstaendige Messungen, keine Einheiten. */
-  rmTests: Row[];
-  /** Zeitraeume (Timeline-Marker: Urlaub, Pause, Verletzung usw.). */
-  zeitraeume: Row[];
-  settings: Row | null;
+} & Record<EinzelKey, Row | null>;
+
+// Zugriff auf eine Roh-Liste ueber den Register-Schluessel. Einmal zentral, damit
+// die Typen an den Raendern eng bleiben.
+function rohListe(raw: RawExportData, key: string): Row[] {
+  return (raw as unknown as Record<string, Row[] | undefined>)[key] ?? [];
 }
 
 export type ExportSet = Row;
@@ -79,43 +70,20 @@ export interface ExportSession extends Row {
   entries: ExportEntry[];
 }
 
-export interface KsExport {
+// Form des Export-JSON. Die Listen und der Inventar-Block leiten sich aus dem
+// Bestandsregister ab; die Einheiten und die Kopfdaten stehen fest.
+export type KsExport = {
   app: "Kraftschmiede";
   schemaVersion: string;
   exportedAt: string;
-  inventory: {
-    bars: Row[];
-    plates: Row[];
-    kettlebells: Row[];
-    dumbbells: Row[];
-    equipment: Row[];
-  };
-  exercises: Row[];
-  exerciseMuscles: Row[];
-  templates: Row[];
-  templateExercises: Row[];
-  journeyTemplates: Row[];
-  journeyTemplatePhases: Row[];
-  skills: Row[];
-  skillPhases: Row[];
-  skillPhaseExercises: Row[];
-  skillPhaseEquipment: Row[];
-  journeys: Row[];
-  phases: Row[];
+  inventory: Record<InventarKey, Row[]>;
   sessions: ExportSession[];
-  skillProgress: Row[];
-  bodyLog: Row[];
-  composition: Row[];
-  milestones: Row[];
-  compositionMilestones: Row[];
-  rmTests: Row[];
-  zeitraeume: Row[];
   settings: Row | null;
   _scoreScale: {
     note: string;
     map: Record<number, ScoreInfo>;
   };
-}
+} & Record<ListeKey, Row[]>;
 
 const SCORE_SCALE_NOTE =
   "score (1-5) ist die gepflegte Groesse; rir/rpe/scoreLabel je Satz sind daraus " +
@@ -198,43 +166,40 @@ export function buildExport(
     entries: entriesBySession.get(s.id) ?? [],
   }));
 
+  // Inventar-Block und die uebrigen Schluessel aus dem Register fuellen, in
+  // dessen Reihenfolge - so bleibt die Datei lesbar gruppiert. Uebungen in
+  // Einheiten und Saetze stecken schon geschachtelt in sessions.
+  const inventar: Record<string, Row[]> = {};
+  const listen: Record<string, Row[] | Row | null> = {};
+  for (const e of BESTANDSREGISTER) {
+    if (e.ablage === "in_einheit") continue;
+    if (e.ablage === "inventar") {
+      inventar[e.key] = rohListe(raw, e.key);
+    } else if (e.ablage === "einheiten") {
+      listen[e.key] = sessions;
+    } else if (e.einzelzeile) {
+      listen[e.key] = raw.settings;
+    } else {
+      listen[e.key] =
+        e.tabelle === "exercises"
+          ? stripLegacyExerciseFields(rohListe(raw, e.key))
+          : rohListe(raw, e.key);
+    }
+  }
+
+  // Einmalige Zusicherung: die Schluessel kommen aus dem Register, das die Form
+  // von KsExport ohnehin bestimmt. Der Rundlauf-Test sichert das ab.
   return {
     app: "Kraftschmiede",
     schemaVersion: EXPORT_SCHEMA_VERSION,
     exportedAt: now.toISOString(),
-    inventory: {
-      bars: raw.bars,
-      plates: raw.plates,
-      kettlebells: raw.kettlebells,
-      dumbbells: raw.dumbbells,
-      equipment: raw.equipment,
-    },
-    exercises: stripLegacyExerciseFields(raw.exercises),
-    exerciseMuscles: raw.exerciseMuscles,
-    templates: raw.templates,
-    templateExercises: raw.templateExercises,
-    journeyTemplates: raw.journeyTemplates,
-    journeyTemplatePhases: raw.journeyTemplatePhases,
-    skills: raw.skills,
-    skillPhases: raw.skillPhases,
-    skillPhaseExercises: raw.skillPhaseExercises,
-    skillPhaseEquipment: raw.skillPhaseEquipment,
-    journeys: raw.journeys,
-    phases: raw.phases,
-    sessions,
-    skillProgress: raw.skillProgress,
-    bodyLog: raw.bodyLog,
-    composition: raw.composition,
-    milestones: raw.milestones,
-    compositionMilestones: raw.compositionMilestones,
-    rmTests: raw.rmTests,
-    zeitraeume: raw.zeitraeume,
-    settings: raw.settings,
+    inventory: inventar,
+    ...listen,
     _scoreScale: {
       note: SCORE_SCALE_NOTE,
       map: cloneScoreMap(),
     },
-  };
+  } as KsExport;
 }
 
 // Lesbares JSON mit Einrueckung wie V1.

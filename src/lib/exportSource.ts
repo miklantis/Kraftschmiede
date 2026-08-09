@@ -1,15 +1,11 @@
 import { supabase } from "@/lib/supabase";
-import type {
-  RawExportData,
-  RawSession,
-  RawSessionExercise,
-  RawSet,
-  Row,
-} from "@/lib/exportData";
+import { BESTANDSREGISTER } from "@/lib/bestandsregister";
+import type { RawExportData, Row } from "@/lib/exportData";
 
 // Eine Quelle fuer alle Export-Wege: holt den kompletten Bestand des Nutzers
 // (RLS schraenkt automatisch auf die eigene user_id ein). Bewusst kein Hook,
-// damit Voll-Export und Coach-Export dieselbe Abfrage teilen.
+// damit Voll-Export und Coach-Export dieselbe Abfrage teilen. Welche Tabellen
+// dazugehoeren, steht ausschliesslich im Bestandsregister.
 
 async function selectAll(table: string): Promise<Row[]> {
   const { data, error } = await supabase.from(table).select("*");
@@ -18,94 +14,19 @@ async function selectAll(table: string): Promise<Row[]> {
 }
 
 export async function fetchAllData(): Promise<RawExportData> {
-  const [
-    bars,
-    plates,
-    kettlebells,
-    dumbbells,
-    equipment,
-    exercises,
-    exerciseMuscles,
-    templates,
-    templateExercises,
-    journeyTemplates,
-    journeyTemplatePhases,
-    skills,
-    skillPhases,
-    skillPhaseExercises,
-    skillPhaseEquipment,
-    journeys,
-    phases,
-    sessions,
-    sessionExercises,
-    sets,
-    skillProgress,
-    bodyLog,
-    composition,
-    milestones,
-    compositionMilestones,
-    rmTests,
-    zeitraeume,
-    settingsRows,
-  ] = await Promise.all([
-    selectAll("inventory_bars"),
-    selectAll("inventory_plates"),
-    selectAll("inventory_kettlebells"),
-    selectAll("inventory_dumbbells"),
-    selectAll("inventory_equipment"),
-    selectAll("exercises"),
-    selectAll("exercise_muscles"),
-    selectAll("templates"),
-    selectAll("template_exercises"),
-    selectAll("journey_templates"),
-    selectAll("journey_template_phases"),
-    selectAll("skills"),
-    selectAll("skill_phases"),
-    selectAll("skill_phase_exercises"),
-    selectAll("skill_phase_equipment"),
-    selectAll("journeys"),
-    selectAll("phases"),
-    selectAll("sessions"),
-    selectAll("session_exercises"),
-    selectAll("sets"),
-    selectAll("skill_progress"),
-    selectAll("body_log"),
-    selectAll("composition"),
-    selectAll("exercise_milestones"),
-    selectAll("composition_milestones"),
-    selectAll("rm_tests"),
-    selectAll("zeitraeume"),
-    selectAll("settings"),
-  ]);
+  // Alle Tabellen parallel, Reihenfolge des Registers.
+  const listen = await Promise.all(
+    BESTANDSREGISTER.map((e) => selectAll(e.tabelle)),
+  );
 
-  return {
-    bars,
-    plates,
-    kettlebells,
-    dumbbells,
-    equipment,
-    exercises,
-    exerciseMuscles,
-    templates,
-    templateExercises,
-    journeyTemplates,
-    journeyTemplatePhases,
-    skills,
-    skillPhases,
-    skillPhaseExercises,
-    skillPhaseEquipment,
-    journeys,
-    phases,
-    sessions: sessions as RawSession[],
-    sessionExercises: sessionExercises as RawSessionExercise[],
-    sets: sets as RawSet[],
-    skillProgress,
-    bodyLog,
-    composition,
-    milestones,
-    compositionMilestones,
-    rmTests,
-    zeitraeume,
-    settings: settingsRows[0] ?? null,
-  };
+  const roh: Record<string, Row[] | Row | null> = {};
+  BESTANDSREGISTER.forEach((e, i) => {
+    const rows = listen[i] ?? [];
+    // settings ist eine Einzelzeile pro Nutzer, kein Listenfeld.
+    roh[e.key] = e.einzelzeile ? (rows[0] ?? null) : rows;
+  });
+
+  // Die Schluessel stammen aus dem Register, das die Form von RawExportData
+  // bestimmt - deshalb hier eine einmalige Zusicherung statt 28 Handgriffen.
+  return roh as RawExportData;
 }

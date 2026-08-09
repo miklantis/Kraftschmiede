@@ -4,6 +4,10 @@ import { supabase } from "@/lib/supabase";
 import { useUserId } from "./useUserId";
 import type { RestoreTables } from "@/lib/restoreData";
 import type { Row } from "@/lib/exportData";
+import {
+  EINFUEGE_REIHENFOLGE,
+  LOESCH_REIHENFOLGE,
+} from "@/lib/bestandsregister";
 
 // Voll-Restore: ersetzt den kompletten Bestand des Nutzers durch den Inhalt
 // eines eigenen V2-Exports. Kein Anhaengen/Aktualisieren. Ablauf: erst alle
@@ -13,67 +17,9 @@ import type { Row } from "@/lib/exportData";
 // Beziehungen halten. settings wird per Upsert ersetzt (eine Zeile pro Nutzer).
 // Die Komponente kennt Supabase nicht direkt.
 
-// Loeschen: Kinder zuerst (settings nicht, das wird geupsertet).
-const DELETE_ORDER: string[] = [
-  "sets",
-  "session_exercises",
-  "sessions",
-  "skill_progress",
-  "phases",
-  "journeys",
-  "skill_phase_equipment",
-  "skill_phase_exercises",
-  "skill_phases",
-  "skills",
-  "journey_template_phases",
-  "journey_templates",
-  "template_exercises",
-  "templates",
-  "exercise_muscles",
-  "exercise_milestones",
-  "rm_tests",
-  "exercises",
-  "body_log",
-  "composition",
-  "composition_milestones",
-  "zeitraeume",
-  "inventory_equipment",
-  "inventory_kettlebells",
-  "inventory_dumbbells",
-  "inventory_plates",
-  "inventory_bars",
-];
-
-// Einfuegen: Eltern zuerst (Spiegelbild).
-const INSERT_ORDER: (keyof RestoreTables)[] = [
-  "inventory_bars",
-  "inventory_plates",
-  "inventory_kettlebells",
-  "inventory_dumbbells",
-  "inventory_equipment",
-  "exercises",
-  "exercise_muscles",
-  "exercise_milestones",
-  "rm_tests",
-  "templates",
-  "template_exercises",
-  "journey_templates",
-  "journey_template_phases",
-  "skills",
-  "skill_phases",
-  "skill_phase_exercises",
-  "skill_phase_equipment",
-  "journeys",
-  "phases",
-  "sessions",
-  "session_exercises",
-  "sets",
-  "skill_progress",
-  "body_log",
-  "composition",
-  "composition_milestones",
-  "zeitraeume",
-];
+// Loesch- und Einfuege-Reihenfolge kommen aus dem Bestandsregister: Kinder
+// zuerst loeschen, Eltern zuerst einfuegen. settings ist in beiden nicht
+// enthalten, das wird geupsertet.
 
 function withUser(rows: Row[], userId: string): Row[] {
   return rows.map((r) => ({ ...r, user_id: userId }));
@@ -101,7 +47,7 @@ export function useRestore(): {
     setDone(false);
     try {
       // 1) Alles Eigene loeschen (Kinder zuerst).
-      for (const table of DELETE_ORDER) {
+      for (const table of LOESCH_REIHENFOLGE) {
         const { error: delErr } = await supabase
           .from(table)
           .delete()
@@ -110,8 +56,8 @@ export function useRestore(): {
       }
 
       // 2) Neu einfuegen (Eltern zuerst), user_id gesetzt.
-      for (const table of INSERT_ORDER) {
-        const rows = tables[table] as Row[];
+      for (const table of EINFUEGE_REIHENFOLGE) {
+        const rows = tables[table];
         if (rows.length === 0) continue;
         const { error: insErr } = await supabase
           .from(table)
