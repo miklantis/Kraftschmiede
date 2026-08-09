@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.23.3",
+      "date": "2026-08-09",
+      "changes": [
+        "Der Verlauf auf der Übungsdetailseite zeigt jetzt zunächst nur die letzten fünf Einträge. Über den dezenten Pfeil darunter lassen sich jeweils fünf weitere einblenden – die Seite bleibt dadurch auch bei oft trainierten Übungen kurz."
+      ]
+    },
+    {
       "version": "1.23.2",
       "date": "2026-08-09",
       "changes": [
