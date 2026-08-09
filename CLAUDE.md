@@ -71,6 +71,9 @@ Fortschritt und Planung laufen ueber die GitHub Issues dieses Repos. Details in
 
 ## Beim Bauen
 
+- Direkt auf `main` arbeiten, keinen eigenen Feature-/Sitzungs-Branch anlegen. Es gibt
+  keine Vorschau-Umgebung fuer Branches – der Deploy laeuft nur bei Push auf `main`,
+  Aenderungen auf anderen Branches sind fuer den Nutzer nicht live testbar.
 - Betroffene Dateien frisch aus dem Repo lesen, Aenderungen bauen und validieren, dann
   committen und auf `main` pushen.
 - Nach dem Push nur kurz melden: geaenderte Dateien, Commit-Message (Betreff + Body),
