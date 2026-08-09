@@ -3,6 +3,8 @@ import { ChevronRight, Plus } from "lucide-react";
 import { Section } from "@/components/ui/section";
 import { List } from "@/components/ui/list";
 import { BodyMeasureDialog } from "./BodyMeasureDialog";
+import { MehrLadenButton } from "@/components/ui/mehr-laden-button";
+import { useMehrLaden } from "@/hooks/useMehrLaden";
 import { compChips } from "@/lib/composition";
 import { longDateYearDE } from "@/lib/format";
 import type { CompositionRow } from "@/schemas";
@@ -21,6 +23,7 @@ export function BodyMeasureList({
 }): React.ReactElement {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editRow, setEditRow] = useState<CompositionRow | null>(null);
+  const { sichtbar, hatMehr, mehrLaden } = useMehrLaden(rows);
 
   const belegteDaten = rows.map((r) => r.date);
 
@@ -43,7 +46,7 @@ export function BodyMeasureList({
           </div>
         ) : (
           <List>
-            {rows.map((e) => (
+            {sichtbar.map((e) => (
               <button
                 key={e.id}
                 type="button"
@@ -71,6 +74,8 @@ export function BodyMeasureList({
             ))}
           </List>
         )}
+
+        <MehrLadenButton hatMehr={hatMehr} onMehrLaden={mehrLaden} />
 
         <button
           type="button"

@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { Section } from "@/components/ui/section";
-import { Button } from "@/components/ui/button";
 import {
   Calendar,
   currentMonth,
   shiftMonth,
   type CalendarMonth,
 } from "@/components/ui/calendar";
+import { MehrLadenButton } from "@/components/ui/mehr-laden-button";
 import { SessionLogCard } from "@/components/history/SessionLogCard";
 import { SessionEditPanel } from "@/components/history/SessionEditPanel";
 import { ZeitraeumeSection } from "@/components/history/ZeitraeumeSection";
 import { useHistory } from "@/hooks/useHistory";
+import { useMehrLaden } from "@/hooks/useMehrLaden";
 import { useZeitraeume } from "@/hooks/useZeitraeume";
 import {
   zeitraumWochenBaender,
@@ -28,8 +29,9 @@ import type { HistoryKind } from "@/lib/history";
 // Umschalter mehr). Bringt seine Datenanbindung selbst mit; die Trainingsseite
 // bindet den Block nur ein. Keine Statistik-Reihe, keine Charts (Paritaet zu V1).
 //
-// Die Liste zeigt zunaechst die juengsten PAGE_SIZE Einheiten; „Mehr laden\"
-// blendet jeweils PAGE_SIZE weitere ein (reine Anzeige, Daten liegen schon vor).
+// Die Liste zeigt zunaechst die juengsten Einheiten; „Mehr laden\" blendet
+// jeweils eine weitere Seite ein (gemeinsamer Baustein useMehrLaden /
+// MehrLadenButton, reine Anzeige – die Daten liegen schon vor).
 //
 // Die Bloecke (Kalender, Liste) laufen in der umgebenden reveal-group der
 // Trainingsseite mit; der Block markiert selbst keine eigenen Spalten mehr.
@@ -69,16 +71,12 @@ function bandInset(isStart: boolean, isEnd: boolean): string {
 const EYEBROW =
   "mb-2.5 text-[13px] font-semibold tracking-[0.6px] text-muted-foreground uppercase min-[960px]:mb-3 min-[960px]:text-[12px] min-[960px]:tracking-[0.7px]";
 
-// Anzahl der zunaechst sichtbaren Einheiten; „Mehr laden\" legt jeweils so
-// viele weitere frei.
-const PAGE_SIZE = 5;
-
 export function HistorySection(): React.ReactElement {
   const { isLoading, isError, data } = useHistory();
   const zeitraeume = useZeitraeume();
   const del = useDeleteSession();
   const [month, setMonth] = useState<CalendarMonth>(currentMonth);
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const { sichtbar, hatMehr, mehrLaden } = useMehrLaden(data?.sessions ?? []);
   const [editId, setEditId] = useState<string | null>(null);
 
   if (isLoading) {
@@ -164,7 +162,7 @@ export function HistorySection(): React.ReactElement {
       </div>
     ) : (
       <div className="flex flex-col gap-2.5">
-        {data.sessions.slice(0, visibleCount).map((s) => (
+        {sichtbar.map((s) => (
           <SessionLogCard
             key={s.id}
             session={s}
@@ -173,15 +171,7 @@ export function HistorySection(): React.ReactElement {
             onEdit={(id) => setEditId(id)}
           />
         ))}
-        {data.sessions.length > visibleCount && (
-          <Button
-            variant="outline"
-            className="mt-1 w-full"
-            onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
-          >
-            Mehr laden
-          </Button>
-        )}
+        <MehrLadenButton hatMehr={hatMehr} onMehrLaden={mehrLaden} />
       </div>
     );
 

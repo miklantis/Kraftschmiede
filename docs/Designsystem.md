@@ -98,6 +98,7 @@ Karten tragen einen sehr weichen Schatten statt eines harten Rahmens. Erhöhte E
 | **ChipSwitch** | Einfachauswahl als kleine Chips, genau einer aktiv (z. B. Metrik-Umschalter). |
 | **ChipEditor** | Mehrfachauswahl als Chips zum Hinzufügen und Entfernen (z. B. Scheiben, Kettlebells). |
 | **RatingScale** | Bewertungs-Skala: Reihe gleichwertiger Buttons, einer aktiv; Farbe je Wert frei vorgebbar (Kater, Readiness). |
+| **MehrLadenButton** | Knopf „Mehr laden" unter einer schrittweise sichtbaren Liste; rendert nichts, wenn nichts mehr verdeckt ist. Zusammen mit dem Hook `useMehrLaden` (hält die sichtbare Anzahl, Seitengröße standardmäßig fünf). Genutzt im Verlauf (letzte Einheiten), im Befinden-Verlauf, bei den Messungen und den Zeiträumen. Reine Anzeige-Logik: die Daten liegen bereits vollständig vor. |
 | **SortableList** | Vertikale Liste, deren Einträge sich per Ziehen an einem Griff umordnen lassen (Maus und Touch, ohne Zusatz-Bibliothek). Nur der Griff startet das Ziehen, die übrige Fläche bleibt bedienbar und die Seite scrollt weiter; umgeordnet wird beim Loslassen über `onReorder(from, to)`. Kennt die Inhalte nicht (Aufrufer liefert `renderItem`). Erstmals im Workout-Editor für die Übungsreihenfolge. |
 
 ### Anzeige & Visualisierung
