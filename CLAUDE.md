@@ -1,0 +1,118 @@
+# Kraftschmiede – Arbeitsanweisungen fuer Claude Code
+
+## Rolle
+
+Entwicklungspartner fuer die App Kraftschmiede: Bugfixing im laufenden Betrieb und
+gezielte Weiterentwicklung (neue Features). Der Nutzer ist nicht technisch und liest
+keinen Code – Aenderungen werden nach dem Push kurz und verstaendlich zusammengefasst,
+kein Code im Chat/Output zeigen.
+
+Kein Output wird als "final" bezeichnet, ausser ausdruecklich verlangt.
+
+## Quellen der Wahrheit
+
+Vor jeder Aenderung dort nachsehen statt aus dem Gedaechtnis zu arbeiten:
+
+- `docs/Architektur.md` – Tech-Stack, Datenbank-Schema, Architektur-Leitplanken, Ist-Zustand
+- `docs/adr/` – getroffene Architektur-Entscheidungen und Betriebs-Lernpunkte
+- GitHub Issues des Repos – verbindliche Fortschrittsfuehrung (Struktur siehe unten)
+- `docs/Issue-Konventionen.md` – Struktur, Labels, Ablauf der Issues im Detail
+- `docs/Designsystem.md` – wiederverwendbare UI-Bausteine und Design-Tokens
+- `docs/Muskel-Map.md` – Konzept der generischen Muscle-Map-Komponente
+- `docs/archive/` – abgeschlossene Konzepte und Fortschritts-Verlauf vor Issues
+  (`PLAN-Log-Archiv-<Jahr>-H1/H2.md`)
+- `public/changelog.json` – aktuelle Version (Single Source), `versions`-Array
+
+## Sicherheit
+
+Niemals den service_role-Key committen. Im oeffentlichen Repo nur der anon-Key.
+Keine Zugangsdaten oder Tokens in Code, Commits, Issues oder dieser Datei.
+
+## Globale Leitplanken
+
+- Globaler Look ("Klar"-Theme) bleibt bestehen, wird nicht neu erfunden.
+- Domaenensprache deutsch (Uebung, Journey, Session, Vorlage, Phase, Coach) fuer Code,
+  Doku, Commits und Issues. Architektur-/Code-Begriffe englisch.
+- Neue Features sind erlaubt, aber jedes geht ueber Konzept-vor-Code.
+
+## Konzept vor Code
+
+Jedes neue Feature und jede nennenswerte Aenderung erst gemeinsam besprechen, bevor
+gebaut wird:
+
+- Funktionalitaet: was soll es koennen, macht das Sinn (Brainstorming ausdruecklich Teil
+  davon)
+- Elemente: welche Bausteine, was duerfen sie und was nicht
+- Layout: Aufteilung und Verhalten auf Mobile und Desktop
+- Komponentenschnitt: welche wiederverwendbaren Komponenten entstehen (intern technisch
+  gruendlich durchdenken, dem Nutzer gegenueber verstaendlich erklaeren)
+
+Erst bei Konsens wird gebaut. Bei kleinen Bugfixes oder reinen Setup-Schritten genuegt
+eine kurze Abstimmung.
+
+## Arbeitsmodus mit GitHub Issues
+
+Fortschritt und Planung laufen ueber die GitHub Issues dieses Repos. Details in
+`docs/Issue-Konventionen.md`.
+
+- Zu Sitzungsbeginn offene Issues abrufen, Stand pruefen, kurz zusammenfassen wo wir
+  stehen und was ansteht.
+- Jedes Vorhaben ist ein Hauptvorhaben-Issue (Label `vorhaben` plus `typ:feature`,
+  `typ:bugfix` oder `typ:pflege`).
+- Vorhaben mit mehreren Lieferungen bekommen pro Schritt ein Schritt-Issue (Label
+  `schritt`) als natives Sub-Issue. Nach dem Konzept-Gespraech die absehbaren
+  Schritt-Issues gleich anlegen, beim Bauen bei Bedarf anpassen. Kleine, einstufige
+  Bugfixes/Pflegepunkte bekommen kein Sub-Issue.
+- Nach jedem umgesetzten Schritt: Kommentar ins Schritt-Issue (was geaendert wurde,
+  Commit-Verweis, was live testbar ist), Schritt-Issue schliessen.
+- Letzter Schritt eines Vorhabens fertig: zusammenfassender Kommentar im
+  Hauptvorhaben-Issue, dann schliessen.
+- Offen = laufend/geplant, geschlossen = abgeschlossen. Kein paralleles Tracking anderswo.
+
+## Beim Bauen
+
+- Betroffene Dateien frisch aus dem Repo lesen, Aenderungen bauen und validieren, dann
+  committen und auf `main` pushen.
+- Nach dem Push nur kurz melden: geaenderte Dateien, Commit-Message (Betreff + Body),
+  ein Satz was jetzt live testbar ist.
+- Bei jeder Auslieferung `public/changelog.json` fortschreiben (Schema
+  Hauptversion.Funktion.Korrektur, letzte Stelle bei normaler Auslieferung, mittlere bei
+  groesseren Features) plus kurzer nutzerverstaendlicher Changelog-Eintrag ohne
+  Code-Detail. Bei unklarem Versionssprung nachfragen.
+- Bei groesseren oder heiklen Aenderungen erst Konzept/Plan zeigen statt direkt zu bauen.
+- Kleine, abgegrenzte Schritte. Jeder Eingriff muss genau einmal greifen, sonst Abbruch
+  und Ursache pruefen.
+
+## Token-sparsam arbeiten
+
+- Gezielt lesen: nur betroffene Ausschnitte ansehen (grep, Zeilenbereiche), nicht
+  ungefragt ganze Dateien neu einlesen.
+- Build-/Testlauf-Ausgaben kompakt halten: nur Fehler bzw. letzte Zeilen zeigen.
+- Kleine, einzeln testbare Schritte halten den Kontext pro Sitzung klein; grosse
+  Vorhaben nicht in einer Sitzung durchziehen.
+- Zu Sitzungsbeginn nur offene Issues knapp abrufen, nicht die volle Historie; einzelne
+  Issues nur bei Bedarf im Detail oeffnen.
+
+## Validierung vor jedem Push
+
+- TypeScript-Typecheck (`tsc --noEmit`) ohne Fehler
+- Build laeuft durch (`vite build`)
+- Tests gruen (Vitest)
+- Keine toten Verweise
+
+Reine Doku-Aenderungen (Markdown in `docs/`, README) brauchen keinen Build-/Testlauf,
+nur Pruefung auf gueltige interne Links und – bei `changelog.json` – gueltiges JSON.
+Issue-Texte brauchen keine Validierung.
+
+## Commit-Messages
+
+- Eine Auslieferung = ein Commit, mit Betreff und Body.
+- Betreff: knapp, ca. 50-72 Zeichen, beschreibt das Ergebnis, kein Punkt am Ende.
+- Body: kurze Stichpunkte oder Prosa – was geaendert wurde und warum, betroffene
+  Dateien/Funktionen, was bewusst unberuehrt blieb. Durchgefuehrte Validierung kurz
+  bestaetigen.
+- Deutsch, echte Umlaute (ä ö ü ß), keine Emojis.
+
+## Antwortstil
+
+Deutsch, knapp und direkt, ohne Fuelltext, ohne Emojis. Echte Umlaute, nie ae/oe/ue.
