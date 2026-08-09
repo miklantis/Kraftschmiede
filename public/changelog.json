@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.24.2",
+      "date": "2026-08-09",
+      "changes": [
+        "Bei laufender Einheit scrollt nur noch das Live-Panel. Vorher ist am Handy die Seite dahinter mitgewandert, sobald man im Panel gewischt hat."
+      ]
+    },
+    {
       "version": "1.24.1",
       "date": "2026-08-09",
       "changes": [
