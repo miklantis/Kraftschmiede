@@ -77,12 +77,6 @@ function JourneyPage(): React.ReactElement {
       <PageReveal className="flex flex-col gap-7 min-[960px]:gap-8">
         <Section eyebrow="Aktive Journey">
           <ActiveJourneyCard name={data.name} metaLine={metaLine} />
-          <div className="mt-4">
-            <JourneyCoachExport
-              journeyId={data.id}
-              description="Kopiert die laufende Journey als schlankes JSON: Phasen, bisherige Einheiten mit Sätzen und Zuordnung sowie Körperwerte seit dem Start."
-            />
-          </div>
         </Section>
         {data.periodization.weeks.length > 0 && (
           <Section eyebrow="Periodisierung">
@@ -92,6 +86,10 @@ function JourneyPage(): React.ReactElement {
         <Section eyebrow="Phasen · Ablauf">
           <PhaseList phases={data.phases} />
         </Section>
+        <JourneyCoachExport
+          journeyId={data.id}
+          description="Kopiert die laufende Journey als schlankes JSON: Phasen, bisherige Einheiten mit Sätzen und Zuordnung sowie Körperwerte seit dem Start."
+        />
         <JourneyWorkoutsSection />
         {archiveSection}
       </PageReveal>

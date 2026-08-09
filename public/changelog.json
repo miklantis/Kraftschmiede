@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.21.2",
+      "date": "2026-08-09",
+      "changes": [
+        "Der Block „Mit dem Coach besprechen“ sitzt auf der Journey-Seite jetzt unter „Phasen · Ablauf“ statt direkt unter der aktiven Journey."
+      ]
+    },
+    {
       "version": "1.21.1",
       "date": "2026-08-09",
       "changes": [
