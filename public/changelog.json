@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.22.0",
+      "date": "2026-08-09",
+      "changes": [
+        "Neue Übung „Plank“ (Unterarmstütz) im Übungskatalog, mit Haltezeit statt Wiederholungen und eigener Muskel-Map.",
+        "Neuer Skill „Plank“ mit fünf Stufen: Spanplatte (1 Min), Eichenbrett (2 Min), Stahlträger (5 Min), Betonplatte (10 Min), Monolith (15 Min). Aufstieg jeweils nach zwei erfolgreichen Einheiten."
+      ]
+    },
+    {
       "version": "1.21.5",
       "date": "2026-08-09",
       "changes": [
