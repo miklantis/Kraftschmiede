@@ -321,6 +321,60 @@ export const skillSeeds: SeedSkill[] = [
       },
     ],
   },
+  {
+    key: "plank",
+    name: "Plank",
+    category: "core",
+    image: null,
+    phases: [
+      {
+        label: "Spanplatte",
+        description:
+          "Der klassische Unterarmstütz: Ellenbogen unter den Schultern, Körper eine gerade Linie, Blick nach unten.",
+        consecutiveSessions: 2,
+        equipment: [],
+        exercises: [
+          { name: "Plank", metric: "duration", sets: 1, target: 60, tempo: null, exerciseKey: "plank" },
+        ],
+      },
+      {
+        label: "Eichenbrett",
+        description: "Zwei Minuten ohne durchhängende Hüfte.",
+        consecutiveSessions: 2,
+        equipment: [],
+        exercises: [
+          { name: "Plank", metric: "duration", sets: 1, target: 120, tempo: null, exerciseKey: "plank" },
+        ],
+      },
+      {
+        label: "Stahlträger",
+        description: "Fünf Minuten am Stück. Ab hier hält der Kopf mit.",
+        consecutiveSessions: 2,
+        equipment: [],
+        exercises: [
+          { name: "Plank", metric: "duration", sets: 1, target: 300, tempo: null, exerciseKey: "plank" },
+        ],
+      },
+      {
+        label: "Betonplatte",
+        description: "Zehn Minuten. Sobald die Hüfte absackt, sofort abbrechen.",
+        consecutiveSessions: 2,
+        equipment: [],
+        exercises: [
+          { name: "Plank", metric: "duration", sets: 1, target: 600, tempo: null, exerciseKey: "plank" },
+        ],
+      },
+      {
+        label: "Monolith",
+        description: "Eine Viertelstunde unbeweglich. Endstufe.",
+        consecutiveSessions: 2,
+        equipment: [],
+        exercises: [
+          { name: "Plank", metric: "duration", sets: 1, target: 900, tempo: null, exerciseKey: "plank" },
+        ],
+      },
+    ],
+  },
 ];
 
 // --- Equipment (Skill-Tor) ----------------------------------------------------
