@@ -18,35 +18,38 @@ export function SkillCard({
   onRegress: () => void;
   onReset: () => void;
 }): React.ReactElement {
-  const statusPill = model.mastered ? (
-    <span className="flex-none rounded-pill bg-skill/15 px-2.5 py-1 text-[11px] font-semibold text-skill-foreground">
-      Gemeistert
-    </span>
-  ) : !model.startable ? (
-    <span className="flex-none rounded-pill bg-warning/15 px-2.5 py-1 text-[11px] font-semibold text-warning">
-      Gerät fehlt
-    </span>
-  ) : null;
+  // Kopf wie die Skill-Zeile auf der Trainingsseite: Symbol, Name, eine
+  // Phasenzeile, darunter der Balken. Zusatzhinweise stehen wie dort im Text
+  // der Phasenzeile statt als eigene Pille.
+  const subline =
+    "Phase " +
+    (model.phaseIndex + 1) +
+    " / " +
+    model.phaseCount +
+    (model.phaseLabel !== "" ? " · " + model.phaseLabel : "") +
+    (model.mastered ? " · Gemeistert" : "") +
+    (!model.startable ? " · Gerät fehlt" : "");
 
-  const subline = `Phase ${model.phaseIndex + 1}/${model.phaseCount} · ${model.phaseLabel}`;
-
-  const header = (
+  // Aufgeklappt zeigt die Phasenliste denselben Stand ausfuehrlich - der Balken
+  // waere doppelt. Er wird nur unsichtbar geschaltet, behaelt also seinen Platz,
+  // damit die Kopfhoehe beim Auf- und Zuklappen gleich bleibt.
+  const header = ({ open }: { open: boolean }): React.ReactElement => (
     <div className="flex items-center gap-3">
       <Zap className="size-5 flex-none text-muted-foreground" />
       <div className="min-w-0 flex-1">
         <div className="text-[17px] font-semibold text-foreground min-[960px]:text-[15px]">
           {model.name}
         </div>
-        <div className="mt-px text-[13px] text-muted-foreground">{subline}</div>
-        <div className="text-[12px] text-[#a0a0a5]">{model.counterText}</div>
+        <div className="mt-0.5 truncate text-[13px] text-muted-foreground">
+          {subline}
+        </div>
         <PhaseBar
           index={model.phaseIndex}
           count={model.phaseCount}
           mastered={model.mastered}
-          className="mt-1.5"
+          className={"mt-1.5 " + (open ? "invisible" : "")}
         />
       </div>
-      {statusPill}
     </div>
   );
 
@@ -67,6 +70,11 @@ export function SkillCard({
 
   return (
     <AccordionItem header={header}>
+      {model.counterText !== "" && (
+        <p className="mb-3 text-[13px] text-muted-foreground">
+          {model.counterText}
+        </p>
+      )}
       {model.missingEquipment.length > 0 && (
         <p className="mb-3 text-[13px] text-warning">
           Fehlt für die aktuelle Phase: {model.missingEquipment.join(", ")}.
