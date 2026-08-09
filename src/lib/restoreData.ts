@@ -1,45 +1,27 @@
-// Reine, DOM-/Supabase-freie Pruefung und Aufbereitung eines V2-Exports fuer das
-// Voll-Restore. Spiegelt V1 io.js (stripDerived): nimmt einen EIGENEN
-// Kraftschmiede-V2-Export (app + schemaVersion "v2"), verwirft die abgeleiteten
-// Felder (rir/rpe/scoreLabel je Satz, _scoreScale), entschachtelt die Einheiten
-// wieder in die flachen Tabellen (sessions/session_exercises/sets) und liefert
-// pro Tabelle eine Zeilenliste plus eine kleine Vorschau (Anzahlen). Validierung
-// mit Zod auf der Huelle; die Zeilen selbst bleiben durchgereicht (der Schreiber
-// setzt user_id und behaelt ids/Fremdschluessel, damit die Beziehungen halten).
+// Reine, DOM-/Supabase-freie Pruefung und Aufbereitung eines eigenen Exports
+// fuer das Voll-Restore. Spiegelt V1 io.js (stripDerived): nimmt einen EIGENEN
+// Kraftschmiede-Export (app + schemaVersion "v2" oder "v3"), verwirft die
+// abgeleiteten Felder (rir/rpe/scoreLabel je Satz, _scoreScale), entschachtelt
+// die Einheiten wieder in die flachen Tabellen (sessions/session_exercises/sets)
+// und liefert pro Tabelle eine Zeilenliste plus eine kleine Vorschau (Anzahlen).
+// Validierung mit Zod auf der Huelle; die Zeilen selbst bleiben durchgereicht
+// (der Schreiber setzt user_id und behaelt ids/Fremdschluessel, damit die
+// Beziehungen halten).
+//
+// Welche Tabellen dazugehoeren, steht im Bestandsregister - hier wird nur noch
+// darueber gelaufen.
 
 import { z } from "zod";
 import type { Row } from "@/lib/exportData";
+import {
+  BESTANDSREGISTER,
+  type EinzelTabelle,
+  type ListenTabelle,
+} from "@/lib/bestandsregister";
 
-export interface RestoreTables {
-  inventory_bars: Row[];
-  inventory_plates: Row[];
-  inventory_kettlebells: Row[];
-  inventory_dumbbells: Row[];
-  inventory_equipment: Row[];
-  exercises: Row[];
-  exercise_muscles: Row[];
-  templates: Row[];
-  template_exercises: Row[];
-  journey_templates: Row[];
-  journey_template_phases: Row[];
-  skills: Row[];
-  skill_phases: Row[];
-  skill_phase_exercises: Row[];
-  skill_phase_equipment: Row[];
-  journeys: Row[];
-  phases: Row[];
-  sessions: Row[];
-  session_exercises: Row[];
-  sets: Row[];
-  skill_progress: Row[];
-  body_log: Row[];
-  composition: Row[];
-  exercise_milestones: Row[];
-  composition_milestones: Row[];
-  rm_tests: Row[];
-  zeitraeume: Row[];
-  settings: Row | null;
-}
+// Zeilen je Tabelle, Feldliste aus dem Bestandsregister abgeleitet.
+export type RestoreTables = Record<ListenTabelle, Row[]> &
+  Record<EinzelTabelle, Row | null>;
 
 export interface RestorePreview {
   sessions: number;
@@ -57,46 +39,44 @@ const zRow = z.record(z.string(), z.unknown());
 const zEntry = z.looseObject({ sets: z.array(zRow).optional() });
 const zSession = z.looseObject({ entries: z.array(zEntry).optional() });
 
-// Huellen-Schema: nur Struktur, keine Spalten-Tiefe (sonst wuerde ein gueltiger
-// Export an Detailregeln scheitern). app + schemaVersion sind die harte Schranke.
+// Huellen-Schema aus dem Register aufgebaut: nur Struktur, keine Spalten-Tiefe
+// (sonst wuerde ein gueltiger Export an Detailregeln scheitern). app +
+// schemaVersion sind die harte Schranke. Jeder Schluessel ist optional - aeltere
+// Sicherungen kennen spaeter dazugekommene Tabellen nicht, deren Liste bleibt
+// dann leer.
+const inventarHuelle: Record<string, z.ZodType> = {};
+const listenHuelle: Record<string, z.ZodType> = {};
+for (const e of BESTANDSREGISTER) {
+  if (e.ablage === "in_einheit") continue; // steckt in den Einheiten
+  if (e.ablage === "inventar") {
+    inventarHuelle[e.key] = z.array(zRow).optional();
+  } else if (e.ablage === "einheiten") {
+    listenHuelle[e.key] = z.array(zSession).optional();
+  } else {
+    listenHuelle[e.key] = e.einzelzeile
+      ? zRow.nullable().optional()
+      : z.array(zRow).optional();
+  }
+}
+
 const zExport = z.looseObject({
   app: z.literal("Kraftschmiede"),
   schemaVersion: z.union([z.literal("v2"), z.literal("v3")]),
-  inventory: z
-    .looseObject({
-      bars: z.array(zRow).optional(),
-      plates: z.array(zRow).optional(),
-      kettlebells: z.array(zRow).optional(),
-      dumbbells: z.array(zRow).optional(),
-      equipment: z.array(zRow).optional(),
-    })
-    .optional(),
-  exercises: z.array(zRow).optional(),
-  exerciseMuscles: z.array(zRow).optional(),
-  templates: z.array(zRow).optional(),
-  templateExercises: z.array(zRow).optional(),
-  journeyTemplates: z.array(zRow).optional(),
-  journeyTemplatePhases: z.array(zRow).optional(),
-  skills: z.array(zRow).optional(),
-  skillPhases: z.array(zRow).optional(),
-  skillPhaseExercises: z.array(zRow).optional(),
-  skillPhaseEquipment: z.array(zRow).optional(),
-  journeys: z.array(zRow).optional(),
-  phases: z.array(zRow).optional(),
-  sessions: z.array(zSession).optional(),
-  skillProgress: z.array(zRow).optional(),
-  bodyLog: z.array(zRow).optional(),
-  composition: z.array(zRow).optional(),
-  milestones: z.array(zRow).optional(),
-  compositionMilestones: z.array(zRow).optional(),
-  rmTests: z.array(zRow).optional(),
-  zeitraeume: z.array(zRow).optional(),
-  settings: zRow.nullable().optional(),
+  inventory: z.looseObject(inventarHuelle).optional(),
+  ...listenHuelle,
 });
 
-function arr(v: Row[] | undefined): Row[] {
-  return v ?? [];
+// Nach der Zod-Pruefung stehen die Listen als unknown da (die Huelle wird
+// dynamisch aufgebaut); hier einmal auf Zeilenlisten zurueckgeholt.
+function arr(v: unknown): Row[] {
+  return Array.isArray(v) ? (v as Row[]) : [];
 }
+
+// Tabellen, deren Zeilen beim Einspielen umgebaut werden muessen (Alt-Backups).
+const UMBAU: Record<string, (r: Row) => Row> = {
+  exercises: migrateExerciseRow,
+  template_exercises: stripTemplateExerciseRow,
+};
 
 // Abgeleitete Satz-Felder wegwerfen (wie V1 stripDerived).
 function stripSet(set: Row): Row {
@@ -159,7 +139,8 @@ export function parseRestore(text: string): RestoreResult {
   if (!parsed.success) {
     throw new Error("Der Export hat ein unerwartetes Format.");
   }
-  const exp = parsed.data;
+  const exp = parsed.data as Record<string, unknown>;
+  const inventar = (exp.inventory ?? {}) as Record<string, unknown>;
 
   // Einheiten entschachteln: session-Zeile ohne entries, je Uebung ohne sets,
   // Saetze flach (abgeleitete Felder entfernt). ids/Fremdschluessel bleiben.
@@ -175,39 +156,32 @@ export function parseRestore(text: string): RestoreResult {
       for (const st of exSets ?? []) sets.push(stripSet(st));
     }
   }
-
-  const tables: RestoreTables = {
-    inventory_bars: arr(exp.inventory?.bars),
-    inventory_plates: arr(exp.inventory?.plates),
-    inventory_kettlebells: arr(exp.inventory?.kettlebells),
-    inventory_dumbbells: arr(exp.inventory?.dumbbells),
-    inventory_equipment: arr(exp.inventory?.equipment),
-    exercises: arr(exp.exercises).map(migrateExerciseRow),
-    exercise_muscles: arr(exp.exerciseMuscles),
-    templates: arr(exp.templates),
-    template_exercises: arr(exp.templateExercises).map(stripTemplateExerciseRow),
-    journey_templates: arr(exp.journeyTemplates),
-    journey_template_phases: arr(exp.journeyTemplatePhases),
-    skills: arr(exp.skills),
-    skill_phases: arr(exp.skillPhases),
-    skill_phase_exercises: arr(exp.skillPhaseExercises),
-    skill_phase_equipment: arr(exp.skillPhaseEquipment),
-    journeys: arr(exp.journeys),
-    phases: arr(exp.phases),
+  const ausEinheiten: Record<string, Row[]> = {
     sessions,
     session_exercises,
     sets,
-    skill_progress: arr(exp.skillProgress),
-    body_log: arr(exp.bodyLog),
-    composition: arr(exp.composition),
-    exercise_milestones: arr(exp.milestones),
-    composition_milestones: arr(exp.compositionMilestones),
-    // Aeltere Sicherungen kennen rm_tests nicht - dann bleibt die Liste leer.
-    rm_tests: arr(exp.rmTests),
-    // Aeltere Sicherungen kennen zeitraeume nicht - dann bleibt die Liste leer.
-    zeitraeume: arr(exp.zeitraeume),
-    settings: exp.settings ?? null,
   };
+
+  // Je Register-Eintrag die passende Liste holen. Fehlt ein Schluessel (aeltere
+  // Sicherung), bleibt sie leer.
+  const gefuellt: Record<string, Row[] | Row | null> = {};
+  for (const e of BESTANDSREGISTER) {
+    if (e.einzelzeile) {
+      gefuellt[e.tabelle] = (exp[e.key] as Row | null | undefined) ?? null;
+      continue;
+    }
+    if (e.ablage === "einheiten" || e.ablage === "in_einheit") {
+      gefuellt[e.tabelle] = ausEinheiten[e.tabelle] ?? [];
+      continue;
+    }
+    const roh = e.ablage === "inventar" ? arr(inventar[e.key]) : arr(exp[e.key]);
+    const umbau = UMBAU[e.tabelle];
+    gefuellt[e.tabelle] = umbau ? roh.map(umbau) : roh;
+  }
+
+  // Die Schluessel stammen aus dem Register, das die Form von RestoreTables
+  // bestimmt - deshalb hier eine einmalige Zusicherung.
+  const tables = gefuellt as RestoreTables;
 
   const preview: RestorePreview = {
     sessions: sessions.length,

@@ -159,3 +159,41 @@ describe("parseRestore – 1RM-Tests", () => {
     expect(without.tables.rm_tests).toEqual([]);
   });
 });
+
+describe("parseRestore – Workout-Zuordnung der Journey", () => {
+  it("uebernimmt journeyWorkouts in die Tabelle journey_workouts", () => {
+    const exp = validExport();
+    exp.journeyWorkouts = [{ id: "jw1", journey_id: "j1", template_id: "t1" }];
+    const res = parseRestore(JSON.stringify(exp));
+    expect(res.tables.journey_workouts).toHaveLength(1);
+    expect(res.tables.journey_workouts[0]?.template_id).toBe("t1");
+  });
+
+  it("bleibt bei aelteren Sicherungen ohne den Schluessel leer", () => {
+    const res = parseRestore(JSON.stringify(validExport()));
+    expect(res.tables.journey_workouts).toEqual([]);
+  });
+});
+
+describe("parseRestore – Schema-Versionen", () => {
+  it("nimmt einen v2-Export an", () => {
+    const res = parseRestore(JSON.stringify(validExport()));
+    expect(res.preview.sessions).toBe(1);
+  });
+
+  it("nimmt einen v3-Export an", () => {
+    const exp = validExport();
+    exp.schemaVersion = "v3";
+    const res = parseRestore(JSON.stringify(exp));
+    expect(res.preview.sessions).toBe(1);
+    expect(res.tables.exercises[0]?.id).toBe("e1");
+  });
+
+  it("weist eine unbekannte Schema-Version ab", () => {
+    const exp = validExport();
+    exp.schemaVersion = "v4";
+    expect(() => parseRestore(JSON.stringify(exp))).toThrow(
+      /Kraftschmiede-Export/,
+    );
+  });
+});
