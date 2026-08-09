@@ -39,8 +39,8 @@ import type { HistoryKind } from "@/lib/history";
 // Farb-/Hintergrundklassen der Kalenderpunkte je Typ (Optik aus V1 cal-dot).
 const CAL_DOT: Record<HistoryKind, string> = {
   kraft: "text-primary bg-primary/15",
-  skill: "text-[#3f7fb5] bg-skill/15",
-  yoga: "text-[#6b5fb8] bg-yoga/15",
+  skill: "text-tone-blue bg-skill/15",
+  yoga: "text-tone-purple bg-yoga/15",
   dev: "text-deviation-foreground bg-deviation/20",
   rmtest: "text-primary bg-primary/15",
 };

@@ -57,20 +57,20 @@ export function SessionLogCard({
         <span className="min-w-0 flex-1 truncate text-[15px] font-semibold text-foreground">
           {session.title}
         </span>
-        <span className="flex-none text-[12px] whitespace-nowrap text-[#b0b0b6]">
+        <span className="flex-none text-[12px] whitespace-nowrap text-foreground-faint">
           {session.dateLabel}
         </span>
         {open ? (
-          <ChevronUp className="size-4 flex-none text-[#c4c4c9]" />
+          <ChevronUp className="size-4 flex-none text-icon-faint" />
         ) : (
-          <ChevronDown className="size-4 flex-none text-[#c4c4c9]" />
+          <ChevronDown className="size-4 flex-none text-icon-faint" />
         )}
       </button>
 
       {open && (
         <div className="border-t border-border px-4 pt-1 pb-3.5">
           {session.durationLabel && (
-            <div className="border-b border-[#f6f6f8] py-[9px]">
+            <div className="border-b border-line-faint py-[9px]">
               <div className="text-[14px] font-semibold text-foreground">Dauer</div>
               <ul className="mt-1 flex flex-col gap-0.5">
                 <li className="flex items-baseline gap-2 font-mono text-[13px] text-muted-foreground">
@@ -83,7 +83,7 @@ export function SessionLogCard({
           {session.detail.map((row, i) => (
             <div
               key={i}
-              className="border-b border-[#f6f6f8] py-[9px]"
+              className="border-b border-line-faint py-[9px]"
             >
               <div className="text-[14px] font-semibold text-foreground">
                 {row.label}

@@ -34,22 +34,74 @@ sieht alles aus einem Guss aus, und eine Farbänderung greift an einer Stelle.
 
 ### Farben
 
-| Rolle | Wert | Verwendung |
+**Verbindlich:** Farbwerte stehen ausschließlich in `src/index.css`. In Feature-Komponenten
+wird nur der Token-Name genutzt (Tailwind-Klasse wie `text-foreground-subtle`, in Charts
+`readToken("--primary")`), nie ein Hex- oder rgba-Wert. Fehlt für einen gewünschten Ton
+eine Rolle, wird hier eine neue Zeile ergänzt statt im Code eine Farbe zu setzen.
+
+#### Flächen, Text und Linien
+
+| Rolle | Token | Wert | Verwendung |
+|---|---|---|---|
+| Markengrün (Akzent) | `primary` | `#0c9d77` | Primärknopf, Fokus, Erfolg, aktive Zustände |
+| Canvas | `background` | `#edeef1` | App-Hintergrund hinter den Karten |
+| Karte / Panel | `card` | `#ffffff` | Flächen, auf denen Inhalt liegt |
+| Primärtext | `foreground` | `#1c1c1e` | normale Schrift |
+| Sekundärtext | `foreground-secondary` | `#5c5c61` | Erklärtext, versaler Markenschriftzug |
+| Gedeckter Text | `muted-foreground` | `#8a8a8e` | Labels, Nebeninfos |
+| Abgeschwächter Text | `foreground-subtle` | `#a0a0a5` | gesperrte/künftige Einträge, Chevrons in Zeilen |
+| Schwächster Text | `foreground-faint` | `#b0b0b6` | Datum in Listenköpfen, inaktive Navigations-Symbole |
+| Zier-Symbol | `icon-faint` | `#c4c4c9` | rein dekoratives Symbol (Auf-/Zuklapp-Chevron) |
+| Inaktiver Marker | `marker-idle` | `#d8d8dc` | graue Füllung eines noch nicht erreichten Punkts |
+| Neutrale Chart-Fläche | `chart-neutral` | `#d7dade` | Deload-Band im Periodisierungs-Chart |
+| Rahmen / Linie | `border` | `#e4e4e8` | sichtbare Trennlinien, Feldrahmen |
+| Feine Innenlinie | `line-soft` | `#ececef` | Rahmen ruhiger Karten, Innenlinien im Live-Panel |
+| Sehr feine Trennlinie | `line-faint` | `#f6f6f8` | Zeilen innerhalb einer aufgeklappten Karte |
+| Eingabefeld-Füllung | `input` | `#fafafa` | Hintergrund von Eingabefeldern |
+| Hover-Fläche | `muted` / `secondary` | `#f0f0f2` | dezenter Hover, Sekundärflächen, Listen-Trennlinien |
+| Sidebar-Navigation | `sidebar-muted-foreground` | `#6c685f` | warmes Grau der Einträge in der Seitenleiste |
+
+#### Signalfarben
+
+| Rolle | Token | Wert | Verwendung |
+|---|---|---|---|
+| Erfolg | `good` | `#0c9d77` | Erfolg = Akzentgrün |
+| Warnung / Deload | `warning` | `#d99a2b` | Vorsicht-Hinweise, Deload |
+| Abweichung | `deviation` | `#f3b13a` | Satz-Abweichung (distinkt vom Deload) |
+| Danger | `danger` | `#ef5b5b` | Löschen, Fehler |
+| Intensität (Teal) | `intensity` | `#37a9c4` | Intensität im Journey-Chart |
+| Skill | `skill` | `#0c9d77` | Skill-Bereich (nutzt den Akzent) |
+| Yoga | `yoga` | `#0c9d77` | Yoga-Bereich (nutzt den Akzent) |
+
+#### Kategorie-Palette (`tone-*`)
+
+Sechs gut unterscheidbare Töne für Dinge, die nur auseinandergehalten werden müssen und
+kein eigenes Signal tragen – heute die Zeitraum-Typen und die Kalender-Marker. Jeder Ton
+hat einen dunkleren Schrift-Ton (`…-foreground`) für die getönte Variante. Welcher Typ
+welchen Ton bekommt, steht im Code (`src/lib/zeitraeume.ts`), nicht hier.
+
+| Ton | Wert | Schrift-Ton |
 |---|---|---|
-| Markengrün (Akzent) | `#0c9d77` | Primärknopf, Fokus, Erfolg, aktive Zustände |
-| Canvas | `#edeef1` | App-Hintergrund hinter den Karten |
-| Karte / Panel | `#ffffff` | Flächen, auf denen Inhalt liegt |
-| Primärtext | `#1c1c1e` | normale Schrift |
-| Gedeckter Text | `#8a8a8e` | Labels, Nebeninfos |
-| Rahmen / Linie | `#e4e4e8` | Trennlinien, Feldrahmen |
-| Eingabefeld-Füllung | `#fafafa` | Hintergrund von Eingabefeldern |
-| Hover-Fläche | `#f0f0f2` | dezenter Hover, Sekundärflächen |
-| Warnung / Deload | `#d99a2b` | Vorsicht-Hinweise, Deload |
-| Abweichung | `#f3b13a` | Satz-Abweichung (distinkt vom Deload) |
-| Danger | `#ef5b5b` | Löschen, Fehler |
-| Intensität (Teal) | `#37a9c4` | Intensität im Journey-Chart |
-| Skill (Blau) | `#5b9bd6` | Skill-Bereich |
-| Yoga (Lila) | `#8478c9` | Yoga-Bereich |
+| `tone-green` | `#2f9e78` | `#1f6e53` |
+| `tone-blue` | `#3f7fb5` | `#2c587f` |
+| `tone-grey` | `#9a9aa0` | `#5f5f66` |
+| `tone-rose` | `#c25f77` | `#8a3f52` |
+| `tone-amber` | `#c0803f` | `#855626` |
+| `tone-purple` | `#6b5fb8` | `#4a3f82` |
+
+#### Bewertungs-Skala (`rating-*`)
+
+Stufenskala für Muskelkater und Readiness: „gut" ist das Markengrün, danach vier zunehmend
+dunkle Blaugrau-Stufen. Zu jeder Stufe gehört eine zarte Füll-Variante (`…-tint`) für den
+nicht gewählten Zustand der Bewertungsknöpfe.
+
+| Stufe | Wert | Füll-Variante |
+|---|---|---|
+| `rating-good` | `#0c9d77` | `rgba(12,157,119,.12)` |
+| `rating-1` | `#8a8f99` | `rgba(138,143,153,.14)` |
+| `rating-2` | `#5a606b` | `rgba(90,96,107,.14)` |
+| `rating-3` | `#43474f` | `rgba(67,71,79,.13)` |
+| `rating-4` | `#33373f` | `rgba(51,55,63,.12)` |
 
 ### Radien
 
@@ -62,7 +114,10 @@ sieht alles aus einem Guss aus, und eine Farbänderung greift an einer Stelle.
 ### Schatten
 
 Karten tragen einen sehr weichen Schatten statt eines harten Rahmens. Erhöhte Elemente
-(z. B. die Empfehlungskarte) bekommen zusätzlich einen leichten grünen Schimmer.
+(z. B. die Empfehlungskarte) bekommen zusätzlich einen leichten grünen Schimmer. Auch
+Schatten sind Tokens und werden nie im Code ausgeschrieben: `shadow-card` (Karte),
+`shadow-hi` (grüner Schimmer), `shadow-pop` (Popup), `shadow-auth` (freistehende
+Anmelde-Karte), `shadow-nav` (mobile Navigationsleiste).
 
 ---
 
@@ -92,7 +147,7 @@ Karten tragen einen sehr weichen Schatten statt eines harten Rahmens. Erhöhte E
 | **Input** | Textfeld mit sichtbarem Rahmen und grünem Fokusring. |
 | **NumberField** | Zahlenfeld mit optionalem Suffix (kg, Sek., ×/Woche); übernimmt beim Verlassen oder mit Enter, nicht bei jedem Tastendruck. |
 | **Select** | Auswahlfeld aus wenigen festen Werten (natives Dropdown), passend zum Eingabefeld. |
-| **Switch** | An/Aus-Schalter; Ein-Farbe je Bereich (Skill blau, Journey grün, Yoga lila). |
+| **Switch** | An/Aus-Schalter; Ein-Farbe je Bereich über die Tokens `primary`, `skill`, `yoga` (heute alle drei Akzentgrün). |
 | **Stepper** | Zwei ±-Knöpfe mit beliebigem Wert in der Mitte; kennt selbst keine Einheit oder Grenzen. |
 | **SegmentedControl** | Segment-Umschalter, genau einer aktiv – z. B. Liste/Kalender im Verlauf. |
 | **ChipSwitch** | Einfachauswahl als kleine Chips, genau einer aktiv (z. B. Metrik-Umschalter). |

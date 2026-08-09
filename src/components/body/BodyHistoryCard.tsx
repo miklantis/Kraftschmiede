@@ -25,7 +25,7 @@ export function BodyHistoryCard({
         {sichtbar.map((e) => (
           <div
             key={e.date}
-            className="border-t border-[#f0f0f2] p-[14px_16px] first:border-t-0 min-[960px]:p-[14px_18px]"
+            className="border-t border-muted p-[14px_16px] first:border-t-0 min-[960px]:p-[14px_18px]"
           >
             <div className="mb-2 text-[14px] font-semibold text-foreground">
               {e.dateLabel}

@@ -41,9 +41,52 @@
      --radius-pill 20px Pillen). */
   --radius: 16px;
 
+  /* Grau-Leiter fuer Text, Symbole und Linien (V1-Werte). Von kraeftig nach
+     zart; ergaenzt --foreground (Primaertext) und --muted-foreground
+     (Nebeninfos) um die Zwischenstufen, die die Oberflaeche wirklich braucht. */
+  --foreground-secondary: #5c5c61; /* Sekundaertext, Marken-Schriftzug */
+  --foreground-subtle: #a0a0a5; /* abgeschwaecht: gesperrt/kuenftig, Chevrons */
+  --foreground-faint: #b0b0b6; /* schwaechste Textstufe, inaktive Nav-Symbole */
+  --icon-faint: #c4c4c9; /* reine Zier-Symbole (Auf-/Zuklapp-Chevron) */
+  --marker-idle: #d8d8dc; /* graue Fuellung inaktiver Marker (Phasenpunkt) */
+  --chart-neutral: #d7dade; /* neutrale Chart-Flaeche (Deload-Band) */
+  --line-soft: #ececef; /* feine Innenlinie (V1 --line3) */
+  --line-faint: #f6f6f8; /* sehr feine Trennlinie innerhalb einer Karte */
+
+  /* Kategorie-Palette: sechs gut unterscheidbare Toene, jeder mit dunklerem
+     Schrift-Ton fuer die getoente Variante. Genutzt fuer die Zeitraum-Typen und
+     die Kalender-Marker; die Zuordnung Typ -> Ton liegt im Code, nicht hier. */
+  --tone-green: #2f9e78;
+  --tone-green-foreground: #1f6e53;
+  --tone-blue: #3f7fb5;
+  --tone-blue-foreground: #2c587f;
+  --tone-grey: #9a9aa0;
+  --tone-grey-foreground: #5f5f66;
+  --tone-rose: #c25f77;
+  --tone-rose-foreground: #8a3f52;
+  --tone-amber: #c0803f;
+  --tone-amber-foreground: #855626;
+  --tone-purple: #6b5fb8;
+  --tone-purple-foreground: #4a3f82;
+
+  /* Bewertungs-Skala (Muskelkater, Readiness): "gut" ist das Markengruen,
+     danach vier zunehmend dunkle Blaugrau-Stufen. Je Stufe eine zarte
+     Fuell-Variante fuer den nicht gewaehlten Zustand. */
+  --rating-good: #0c9d77;
+  --rating-good-tint: rgba(12, 157, 119, 0.12);
+  --rating-1: #8a8f99;
+  --rating-1-tint: rgba(138, 143, 153, 0.14);
+  --rating-2: #5a606b;
+  --rating-2-tint: rgba(90, 96, 107, 0.14);
+  --rating-3: #43474f;
+  --rating-3-tint: rgba(67, 71, 79, 0.13);
+  --rating-4: #33373f;
+  --rating-4-tint: rgba(51, 55, 63, 0.12);
+
   /* Sidebar (an V1-Shell angelehnt: heller Grund, Akzent-Aktivzustand). */
   --sidebar: #ffffff;
   --sidebar-foreground: #1c1c1e;
+  --sidebar-muted-foreground: #6c685f; /* warmes Grau der Navigations-Eintraege */
   --sidebar-primary: #0c9d77;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #f0f0f2;
@@ -81,6 +124,11 @@
   --shadow-hi: 0 8px 24px -12px rgba(12, 157, 119, 0.45),
     0 0 0 1px rgba(12, 157, 119, 0.16);
   --shadow-pop: 0 30px 80px -30px rgba(20, 24, 40, 0.6);
+  /* Auth-Karte (freistehend auf der Canvas) und mobile Navigationsleiste
+     (Abgrenzung nach oben) tragen je einen eigenen Schatten. */
+  --shadow-auth:
+    0 1px 3px rgba(0, 0, 0, 0.05), 0 12px 32px -16px rgba(20, 24, 40, 0.18);
+  --shadow-nav: 0 -11px 26px -8px rgba(10, 12, 22, 0.34);
 
   /* Schrift: System-UI fuer die Oberflaeche (1:1 wie V1), Spline Sans Mono fuer
      Zahlen. V1 nutzt bewusst die System-Schrift; sie wirkt schlanker als Sora und
@@ -118,6 +166,29 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-muted-foreground: var(--sidebar-muted-foreground);
+
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-subtle: var(--foreground-subtle);
+  --color-foreground-faint: var(--foreground-faint);
+  --color-icon-faint: var(--icon-faint);
+  --color-marker-idle: var(--marker-idle);
+  --color-chart-neutral: var(--chart-neutral);
+  --color-line-soft: var(--line-soft);
+  --color-line-faint: var(--line-faint);
+
+  --color-tone-green: var(--tone-green);
+  --color-tone-green-foreground: var(--tone-green-foreground);
+  --color-tone-blue: var(--tone-blue);
+  --color-tone-blue-foreground: var(--tone-blue-foreground);
+  --color-tone-grey: var(--tone-grey);
+  --color-tone-grey-foreground: var(--tone-grey-foreground);
+  --color-tone-rose: var(--tone-rose);
+  --color-tone-rose-foreground: var(--tone-rose-foreground);
+  --color-tone-amber: var(--tone-amber);
+  --color-tone-amber-foreground: var(--tone-amber-foreground);
+  --color-tone-purple: var(--tone-purple);
+  --color-tone-purple-foreground: var(--tone-purple-foreground);
 
   --color-good: var(--good);
   --color-good-foreground: var(--good-foreground);
@@ -194,7 +265,7 @@
    laesst. Token-Mapping: V1 --accent (Gruen) -> --primary; --text ->
    --foreground; --muted -> --muted-foreground; --panel -> --card. Feste, in V2
    nicht getokte Werte wie V1 belassen: #1c1c1e (dunkle Streifen-/Mini-Flaeche),
-   #e5e5ea (Panel-Grund), #ececef (innere Linie, V1 --line3), #d4d4d8 (Greifer),
+   #e5e5ea (Panel-Grund), #d4d4d8 (Greifer),
    rgba(12,157,119,X) (Akzent-Toenung, = --primary in rgba).
    ============================================================ */
 
@@ -283,7 +354,7 @@ body.ks-live-collapsed main { padding-bottom: calc(150px + env(safe-area-inset-b
 /* --- Griff + Kopf --- */
 .kl-ov-grip { flex: none; padding: 10px 0 0; touch-action: none; }
 .kl-ov-grip-bar { width: 38px; height: 5px; border-radius: 3px; background: #d4d4d8; margin: 0 auto 6px; }
-.kl-ov-head { flex: none; display: flex; align-items: center; border-bottom: 1px solid #ececef; }
+.kl-ov-head { flex: none; display: flex; align-items: center; border-bottom: 1px solid var(--line-soft); }
 .kl-ov--desk .kl-ov-head { gap: 14px; padding: 18px 30px; background: var(--card); }
 .kl-ov--mob .kl-ov-head {
   gap: 10px; padding: 6px 18px 14px; touch-action: none;
@@ -303,7 +374,7 @@ body.ks-live-collapsed main { padding-bottom: calc(150px + env(safe-area-inset-b
 .kl-ov-collapse { cursor: pointer; font-family: inherit; flex: none; }
 .kl-ov--mob .kl-ov-collapse { background: none; border: none; padding: 4px; }
 .kl-ov--desk .kl-ov-collapse {
-  width: 38px; height: 38px; border-radius: 11px; border: 1px solid #ececef;
+  width: 38px; height: 38px; border-radius: 11px; border: 1px solid var(--line-soft);
   background: var(--card); display: flex; align-items: center; justify-content: center; padding: 0;
 }
 .kl-ov-info { flex: 1; min-width: 0; }

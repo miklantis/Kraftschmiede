@@ -63,12 +63,15 @@ describe("Farb-Helfer", () => {
     expect(soreColor(9)).toBe(KATER_HEX[3]);
   });
   it("soreButtonColors gefuellt vs dezent", () => {
-    expect(soreButtonColors(0, true)).toEqual({ bg: KATER_HEX[0], fg: "#ffffff" });
+    expect(soreButtonColors(0, true)).toEqual({
+      bg: KATER_HEX[0],
+      fg: "var(--primary-foreground)",
+    });
     expect(soreButtonColors(3, false).fg).toBe(KATER_HEX[3]);
   });
   it("readyButtonColors gefuellt vs dezent", () => {
-    expect(readyButtonColors(5, true).fg).toBe("#ffffff");
-    expect(readyButtonColors(1, false).bg).toContain("rgba");
+    expect(readyButtonColors(5, true).fg).toBe("var(--primary-foreground)");
+    expect(readyButtonColors(1, false).bg).toContain("var(--rating-");
   });
 });
 

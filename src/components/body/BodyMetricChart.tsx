@@ -47,10 +47,10 @@ export function BodyMetricChart({
         .append("g")
         .attr("transform", `translate(${margin.l},${margin.t})`);
 
-      const ACC = readToken("--primary", "#0c9d77");
-      const GRID = readToken("--border", "#e4e4e8");
-      const FAINT = readToken("--muted-foreground", "#8a8a8e");
-      const INK = readToken("--foreground", "#1c1c1e");
+      const ACC = readToken("--primary");
+      const GRID = readToken("--border");
+      const FAINT = readToken("--muted-foreground");
+      const INK = readToken("--foreground");
 
       if (n === 0) {
         g.append("text")

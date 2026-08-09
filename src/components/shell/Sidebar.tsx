@@ -6,7 +6,7 @@ import { AccountButton } from "./AccountButton";
 
 // Feste Seitenleiste fuer Desktop (ab 960px). Sichtbarkeit steuert die AppShell.
 // Optik an V1-"Klar" angeglichen: versaler Markenname mit Sperrung, Nav-Eintraege
-// mit 12px-Radius und warmem Grau-Ink (#6c685f, V1-Wert), Akzent-Toenung fuer
+// mit 12px-Radius und warmem Grau-Ink (--sidebar-muted-foreground), Akzent-Toenung fuer
 // Hover (.06) und Aktiv (.10) wie in V1.
 export function Sidebar(): React.ReactElement {
   return (
@@ -15,7 +15,7 @@ export function Sidebar(): React.ReactElement {
         <span className="bg-primary text-primary-foreground rounded-control flex size-9 items-center justify-center">
           <BrandMark size={22} />
         </span>
-        <span className="text-[15px] font-bold tracking-[1px] text-[#5c5c61] uppercase">
+        <span className="text-[15px] font-bold tracking-[1px] text-foreground-secondary uppercase">
           Kraftschmiede
         </span>
       </div>
@@ -28,7 +28,7 @@ export function Sidebar(): React.ReactElement {
               key={entry.to}
               to={entry.to}
               activeOptions={entry.exact ? { exact: true } : undefined}
-              className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-[15px] font-medium text-[#6c685f] transition-colors outline-none hover:bg-primary/[0.06] hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
+              className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-[15px] font-medium text-sidebar-muted-foreground transition-colors outline-none hover:bg-primary/[0.06] hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
               activeProps={{
                 className:
                   "bg-primary/10 font-semibold text-primary hover:bg-primary/10 hover:text-primary",
@@ -48,7 +48,7 @@ export function Sidebar(): React.ReactElement {
         <Link
           to="/einstellungen"
           aria-label="Einstellungen"
-          className="rounded-control flex size-10 items-center justify-center text-[#6c685f] transition-colors outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
+          className="rounded-control flex size-10 items-center justify-center text-sidebar-muted-foreground transition-colors outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
           activeProps={{ className: "bg-primary/10 text-primary" }}
         >
           <Settings2 className="size-5" />

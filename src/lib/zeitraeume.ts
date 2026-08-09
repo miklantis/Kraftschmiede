@@ -30,15 +30,16 @@ export function zeitraumLabel(typ: ZeitraumTyp | string): string {
 
 // Vollstaendige Tailwind-Klassenliterale je Typ (kein Laufzeit-Zusammenbau, sonst
 // greift der Compiler sie nicht). Solide Fuellfarbe des Markers: als kleiner
-// Punkt in der Liste, spaeter als Band im Kalender wiederverwendet. Toene aus dem
-// „Klar“-Theme, gut unterscheidbar und dezent.
+// Punkt in der Liste, spaeter als Band im Kalender wiederverwendet. Die Toene
+// kommen aus der Kategorie-Palette des Designsystems (--tone-*); hier steht nur
+// noch, welcher Typ welchen Ton bekommt.
 export const ZEITRAUM_FARBE: Record<ZeitraumTyp, string> = {
-  heilfasten: "bg-[#2f9e78]",
-  urlaub: "bg-[#3f7fb5]",
-  pause: "bg-[#9a9aa0]",
-  krankheit: "bg-[#c25f77]",
-  verletzung: "bg-[#c0803f]",
-  sonstiges: "bg-[#6b5fb8]",
+  heilfasten: "bg-tone-green",
+  urlaub: "bg-tone-blue",
+  pause: "bg-tone-grey",
+  krankheit: "bg-tone-rose",
+  verletzung: "bg-tone-amber",
+  sonstiges: "bg-tone-purple",
 };
 
 // Pastell-Variante je Typ fuer das Kalender-Band: heller Hintergrund im Farbton
@@ -47,12 +48,12 @@ export const ZEITRAUM_FARBE: Record<ZeitraumTyp, string> = {
 // erhaltener Typ-Unterscheidung. Vollstaendige Klassenliterale, damit der
 // Tailwind-Compiler sie erfasst (kein Laufzeit-Zusammenbau).
 export const ZEITRAUM_CHIP: Record<ZeitraumTyp, string> = {
-  heilfasten: "bg-[#2f9e78]/15 text-[#1f6e53]",
-  urlaub: "bg-[#3f7fb5]/15 text-[#2c587f]",
-  pause: "bg-[#9a9aa0]/20 text-[#5f5f66]",
-  krankheit: "bg-[#c25f77]/15 text-[#8a3f52]",
-  verletzung: "bg-[#c0803f]/15 text-[#855626]",
-  sonstiges: "bg-[#6b5fb8]/15 text-[#4a3f82]",
+  heilfasten: "bg-tone-green/15 text-tone-green-foreground",
+  urlaub: "bg-tone-blue/15 text-tone-blue-foreground",
+  pause: "bg-tone-grey/20 text-tone-grey-foreground",
+  krankheit: "bg-tone-rose/15 text-tone-rose-foreground",
+  verletzung: "bg-tone-amber/15 text-tone-amber-foreground",
+  sonstiges: "bg-tone-purple/15 text-tone-purple-foreground",
 };
 
 // Ein Wochen-Segment eines Zeitraums: ein durchgehender, beschrifteter Balken

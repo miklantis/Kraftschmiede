@@ -36,7 +36,7 @@ export function UpdateBanner(): React.ReactElement | null {
             Tippen, um zu sehen, was neu ist.
           </div>
         </div>
-        <ChevronRight className="size-[18px] flex-none text-[#a0a0a5]" />
+        <ChevronRight className="size-[18px] flex-none text-foreground-subtle" />
       </button>
 
       <WhatsNewSheet

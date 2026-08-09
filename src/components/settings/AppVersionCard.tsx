@@ -42,7 +42,7 @@ export function AppVersionCard(): React.ReactElement {
             {versionText}
           </span>
         </span>
-        <ChevronRight className="ml-auto size-[18px] flex-none text-[#a0a0a5]" />
+        <ChevronRight className="ml-auto size-[18px] flex-none text-foreground-subtle" />
       </Link>
     </div>
   );

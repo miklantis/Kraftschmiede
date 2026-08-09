@@ -53,13 +53,14 @@ export function PeriodizationChart({
       const ih = dims.innerHeight;
 
       // V1-Token-Mapping: accent->primary, accent-2->intensity, warn->warning.
-      const ACC = readToken("--primary", "#0c9d77");
-      const INT = readToken("--intensity", "#37a9c4");
-      const WARN = readToken("--warning", "#d99a2b");
-      const ORANGE = readToken("--deviation", "#f3b13a");
-      const INK = readToken("--foreground", "#1c1c1e");
-      const SUB = readToken("--muted-foreground", "#8a8a8e");
-      const GRID = readToken("--border", "#e4e4e8");
+      const ACC = readToken("--primary");
+      const INT = readToken("--intensity");
+      const WARN = readToken("--warning");
+      const ORANGE = readToken("--deviation");
+      const INK = readToken("--foreground");
+      const SUB = readToken("--muted-foreground");
+      const GRID = readToken("--border");
+      const NEUTRAL = readToken("--chart-neutral");
 
       // Wertebereich auf 12%-90% der Plothoehe abbilden (liefert direkt Pixel).
       const ny = (v: number, lo: number, hi: number): number => {
@@ -84,12 +85,12 @@ export function PeriodizationChart({
       bgGrad
         .append("stop")
         .attr("offset", "0%")
-        .attr("stop-color", "#d7dade")
+        .attr("stop-color", NEUTRAL)
         .attr("stop-opacity", 0);
       bgGrad
         .append("stop")
         .attr("offset", "100%")
-        .attr("stop-color", "#d7dade")
+        .attr("stop-color", NEUTRAL)
         .attr("stop-opacity", 0.7);
 
       const g = svg

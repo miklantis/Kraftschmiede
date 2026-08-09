@@ -42,7 +42,7 @@ export function RecommendedWorkout({
           <ScoreBadge value={score} variant="hero" />
         </div>
       </div>
-      <div className="mb-[18px] text-[15px] leading-[1.5] text-[#5c5c61] min-[960px]:mb-[22px] min-[960px]:text-base">
+      <div className="mb-[18px] text-[15px] leading-[1.5] text-foreground-secondary min-[960px]:mb-[22px] min-[960px]:text-base">
         {lifts}
       </div>
       {excluded && (

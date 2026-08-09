@@ -17,12 +17,12 @@ export function AuthCard({
 }): ReactElement {
   return (
     <main className="bg-background flex min-h-dvh flex-col items-center justify-center p-6">
-      <div className="bg-card rounded-card w-full max-w-sm p-7 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_12px_32px_-16px_rgba(20,24,40,0.18)] sm:p-8">
+      <div className="bg-card rounded-card w-full max-w-sm p-7 shadow-auth sm:p-8">
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
           <span className="bg-primary text-primary-foreground rounded-control flex size-11 items-center justify-center">
             <BrandMark size={26} />
           </span>
-          <span className="text-[15px] font-bold tracking-[1px] text-[#5c5c61] uppercase">
+          <span className="text-[15px] font-bold tracking-[1px] text-foreground-secondary uppercase">
             Kraftschmiede
           </span>
           <p className="text-muted-foreground text-sm">{subtitle}</p>

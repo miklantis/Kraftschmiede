@@ -37,7 +37,7 @@ export function JourneyStrip({
         </div>
       </div>
       {showDots && <ProgressDots filled={filled} total={total} />}
-      <ChevronRight className="hidden size-[18px] flex-none text-[#a0a0a5] min-[960px]:block" />
+      <ChevronRight className="hidden size-[18px] flex-none text-foreground-subtle min-[960px]:block" />
     </Link>
   );
 }
