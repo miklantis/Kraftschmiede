@@ -143,7 +143,7 @@ export function SkillWatchValue({
         aria-label={ariaLabel}
         readOnly={active}
         className={
-          "h-[22px] w-full rounded-[8px] bg-transparent px-1 py-0 text-center font-mono text-[16px] leading-[22px] outline-none focus:bg-secondary/70 " +
+          "h-[22px] w-full rounded-[8px] bg-transparent px-1 py-0 text-center font-mono text-[16px] leading-[22px] outline-none focus:bg-muted/70 " +
           (lead ? "text-danger" : "text-foreground")
         }
         value={text}

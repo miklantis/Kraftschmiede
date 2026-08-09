@@ -26,7 +26,7 @@ function defaultColors(
   selected: boolean,
 ): { bg: string; fg: string } {
   return selected
-    ? { bg: "var(--primary)", fg: "#ffffff" }
+    ? { bg: "var(--primary)", fg: "var(--primary-foreground)" }
     : { bg: "var(--muted)", fg: "var(--muted-foreground)" };
 }
 

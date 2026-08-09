@@ -10,7 +10,7 @@ import { AccountButton } from "./AccountButton";
 // Hover (.06) und Aktiv (.10) wie in V1.
 export function Sidebar(): React.ReactElement {
   return (
-    <aside className="bg-sidebar border-sidebar-border fixed inset-y-0 left-0 z-20 flex w-[264px] flex-col border-r">
+    <aside className="bg-card border-border fixed inset-y-0 left-0 z-20 flex w-[264px] flex-col border-r">
       <div className="flex items-center gap-3 px-5 pt-6 pb-5">
         <span className="bg-primary text-primary-foreground rounded-control flex size-9 items-center justify-center">
           <BrandMark size={22} />
@@ -28,7 +28,7 @@ export function Sidebar(): React.ReactElement {
               key={entry.to}
               to={entry.to}
               activeOptions={entry.exact ? { exact: true } : undefined}
-              className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-[15px] font-medium text-sidebar-muted-foreground transition-colors outline-none hover:bg-primary/[0.06] hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
+              className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-[15px] font-medium text-foreground-secondary transition-colors outline-none hover:bg-primary/[0.06] hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
               activeProps={{
                 className:
                   "bg-primary/10 font-semibold text-primary hover:bg-primary/10 hover:text-primary",
@@ -41,14 +41,14 @@ export function Sidebar(): React.ReactElement {
         })}
       </nav>
 
-      <div className="border-sidebar-border flex items-center gap-2 border-t px-3.5 py-3">
+      <div className="border-border flex items-center gap-2 border-t px-3.5 py-3">
         <div className="min-w-0 flex-1">
           <AccountButton variant="full" />
         </div>
         <Link
           to="/einstellungen"
           aria-label="Einstellungen"
-          className="rounded-control flex size-10 items-center justify-center text-sidebar-muted-foreground transition-colors outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
+          className="rounded-control flex size-10 items-center justify-center text-foreground-secondary transition-colors outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
           activeProps={{ className: "bg-primary/10 text-primary" }}
         >
           <Settings2 className="size-5" />

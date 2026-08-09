@@ -24,7 +24,7 @@ export function LoadMore({
       aria-label={label}
       title={label}
       className={cn(
-        "flex w-full items-center justify-center rounded-control py-2 text-[#c4c4c9]",
+        "flex w-full items-center justify-center rounded-control py-2 text-foreground-subtle",
         "transition-colors outline-none hover:text-foreground",
         "focus-visible:ring-2 focus-visible:ring-ring/30",
         className,

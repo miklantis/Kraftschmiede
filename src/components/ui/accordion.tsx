@@ -55,7 +55,7 @@ export function AccordionItem({
       {open && (
         <div
           id={bodyId}
-          className="border-t border-[#ececef] px-4 py-3.5 min-[960px]:px-[18px]"
+          className="border-t border-border px-4 py-3.5 min-[960px]:px-[18px]"
         >
           {children}
         </div>

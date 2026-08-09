@@ -127,7 +127,7 @@ export function Overlay({
         )}
       >
         {/* Greif-Leiste nur am Handy. */}
-        <div className="mx-auto mb-3.5 h-[5px] w-[38px] flex-none rounded-[3px] bg-[#d4d4d8] min-[960px]:hidden" />
+        <div className="mx-auto mb-3.5 h-[5px] w-[38px] flex-none rounded-[3px] bg-marker-idle min-[960px]:hidden" />
 
         {title != null && (
           <div className="mb-[18px] flex flex-none items-center gap-3">

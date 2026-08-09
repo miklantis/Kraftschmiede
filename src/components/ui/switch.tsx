@@ -35,7 +35,7 @@ export function Switch({
       onClick={() => onChange(!checked)}
       className={cn(
         "relative inline-flex h-[26px] w-[44px] flex-none items-center rounded-pill transition-colors disabled:opacity-50",
-        checked ? TONE_ON[tone] : "bg-[#d4d4d8]",
+        checked ? TONE_ON[tone] : "bg-marker-idle",
         className,
       )}
     >

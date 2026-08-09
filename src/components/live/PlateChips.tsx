@@ -37,7 +37,7 @@ export function PlateChips({
 
   const tone = active
     ? " border-primary/30 bg-primary/[0.14] text-primary"
-    : " border-border bg-secondary text-secondary-foreground";
+    : " border-border bg-muted text-foreground";
 
   const chips: string[] = [];
   pb.plates.forEach((pp) => {

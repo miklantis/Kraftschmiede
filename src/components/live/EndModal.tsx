@@ -60,7 +60,7 @@ function SummaryList({ entries }: { entries: SummaryEntry[] }): React.ReactEleme
                     "whitespace-nowrap rounded-[7px] px-[9px] py-1 font-mono text-[12px] font-semibold " +
                     (c.done
                       ? "bg-primary/12 text-primary"
-                      : "bg-secondary text-muted-foreground")
+                      : "bg-muted text-muted-foreground")
                   }
                 >
                   {c.label}

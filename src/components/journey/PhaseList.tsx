@@ -15,7 +15,7 @@ function DetailRows({
     (layout === "grid"
       ? phase.isCurrent
         ? "mt-3.5 bg-white/70"
-        : "mt-3.5 bg-secondary"
+        : "mt-3.5 bg-muted"
       : "bg-white/70");
   return (
     <div className={box}>
@@ -68,7 +68,7 @@ export function PhaseList({
               "flex flex-col rounded-[16px] border p-4 " +
               (p.isCurrent
                 ? "border-primary/30 bg-primary/10"
-                : "border-line-soft bg-card")
+                : "border-border bg-card")
             }
           >
             <div className="mb-3">
@@ -97,7 +97,7 @@ export function PhaseList({
               "overflow-hidden rounded-[16px] border " +
               (p.isCurrent
                 ? "border-primary/30 bg-primary/10"
-                : "border-line-soft bg-card")
+                : "border-border bg-card")
             }
           >
             <div className="flex items-center gap-3.5 px-4 py-[15px]">

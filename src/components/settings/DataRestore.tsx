@@ -104,7 +104,7 @@ export function DataRestore(): ReactElement {
       />
 
       {parseError !== null ? (
-        <p className="text-destructive text-xs" role="alert">
+        <p className="text-danger text-xs" role="alert">
           {parseError}
         </p>
       ) : null}
@@ -140,7 +140,7 @@ export function DataRestore(): ReactElement {
           ) : null}
 
           {applyError !== null ? (
-            <p className="text-destructive text-xs" role="alert">
+            <p className="text-danger text-xs" role="alert">
               {applyError}
             </p>
           ) : null}

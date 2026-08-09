@@ -1,4 +1,8 @@
-@import "tailwindcss";
+/* Nur der Quellcode wird nach Klassennamen durchsucht. Ohne diese Eingrenzung
+   liest Tailwind auch die Markdown-Dateien im Repo und erzeugt Utilities fuer
+   Klassennamen, die dort nur als Beispiel im Text stehen - inklusive Farben,
+   die es in der App laengst nicht mehr gibt. */
+@import "tailwindcss" source("../src");
 @import "tw-animate-css";
 
 /* Design-System (Phase 1) - V1-"Klar"-Theme 1:1 uebernommen.
@@ -14,23 +18,14 @@
   --foreground: #1c1c1e; /* Primaertext (V1 --text) */
   --card: #ffffff; /* Karten-/Panel-Flaeche (V1 --panel) */
   --card-foreground: #1c1c1e;
-  --popover: #ffffff;
-  --popover-foreground: #1c1c1e;
 
   /* Akzent = Markengruen (V1 --accent). */
   --primary: #0c9d77;
   --primary-foreground: #ffffff;
 
-  /* Sekundaer/leichte Fuellung (V1 --panel2). */
-  --secondary: #f0f0f2;
-  --secondary-foreground: #1c1c1e;
+  /* Gedeckte Flaeche fuer Chips, Hover und Sekundaerknoepfe (V1 --panel2). */
   --muted: #f0f0f2;
   --muted-foreground: #8a8a8e; /* V1 --muted */
-  --accent: #f0f0f2; /* shadcn-Hover-Flaeche, V1 --panel2 */
-  --accent-foreground: #1c1c1e;
-
-  /* Gefahr (V1 --bad). */
-  --destructive: #ef5b5b;
 
   /* Linien/Rahmen (V1 --line2 sichtbar, Eingabefeld-Fuellung wie V1 input). */
   --border: #e4e4e8; /* V1 --line2 */
@@ -41,17 +36,18 @@
      --radius-pill 20px Pillen). */
   --radius: 16px;
 
-  /* Grau-Leiter fuer Text, Symbole und Linien (V1-Werte). Von kraeftig nach
-     zart; ergaenzt --foreground (Primaertext) und --muted-foreground
-     (Nebeninfos) um die Zwischenstufen, die die Oberflaeche wirklich braucht. */
-  --foreground-secondary: #5c5c61; /* Sekundaertext, Marken-Schriftzug */
-  --foreground-subtle: #a0a0a5; /* abgeschwaecht: gesperrt/kuenftig, Chevrons */
-  --foreground-faint: #b0b0b6; /* schwaechste Textstufe, inaktive Nav-Symbole */
-  --icon-faint: #c4c4c9; /* reine Zier-Symbole (Auf-/Zuklapp-Chevron) */
-  --marker-idle: #d8d8dc; /* graue Fuellung inaktiver Marker (Phasenpunkt) */
-  --chart-neutral: #d7dade; /* neutrale Chart-Flaeche (Deload-Band) */
-  --line-soft: #ececef; /* feine Innenlinie (V1 --line3) */
-  --line-faint: #f6f6f8; /* sehr feine Trennlinie innerhalb einer Karte */
+  /* Grau-Leiter. Bewusst kurz gehalten: vier Textstufen (--foreground,
+     --foreground-secondary, --muted-foreground, --foreground-subtle), ein Ton
+     fuer helle Marker und Flaechen, dazu --border/--muted fuer Linien. Neue
+     Zwischenstufen nur, wenn eine bestehende wirklich nicht reicht. */
+  --foreground-secondary: #5c5c61; /* Sekundaertext, Seitenleiste, Marken-Schriftzug */
+  --foreground-subtle: #a0a0a5; /* abgeschwaecht: gesperrt/kuenftig, Chevrons, Zier-Symbole */
+  --marker-idle: #d8d8dc; /* helle Marker und neutrale Chart-Flaechen */
+
+  /* Muskel-Silhouette: eigene Rolle, weil sie sich vom Canvas absetzen muss und
+     nicht mit den Linien-/Marker-Toenen mitwandern soll. */
+  --body-base: #cfd3d8; /* Koerperform */
+  --body-idle: #c2c6cb; /* nicht beanspruchte Region, leicht dunkler */
 
   /* Kategorie-Palette: sechs gut unterscheidbare Toene, jeder mit dunklerem
      Schrift-Ton fuer die getoente Variante. Genutzt fuer die Zeitraum-Typen und
@@ -83,20 +79,8 @@
   --rating-4: #33373f;
   --rating-4-tint: rgba(51, 55, 63, 0.12);
 
-  /* Sidebar (an V1-Shell angelehnt: heller Grund, Akzent-Aktivzustand). */
-  --sidebar: #ffffff;
-  --sidebar-foreground: #1c1c1e;
-  --sidebar-muted-foreground: #6c685f; /* warmes Grau der Navigations-Eintraege */
-  --sidebar-primary: #0c9d77;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f0f0f2;
-  --sidebar-accent-foreground: #1c1c1e;
-  --sidebar-border: #e4e4e8;
-  --sidebar-ring: #0c9d77;
-
   /* Markenfarben mit fester Bedeutung (V1 1:1). */
   --good: #0c9d77; /* Erfolg = Akzentgruen */
-  --good-foreground: #ffffff;
   --warning: #d99a2b; /* Vorsicht/Deload */
   --warning-foreground: #8a6d18;
   --deviation: #f3b13a; /* Satz-Abweichung, distinkt vom Deload */
@@ -144,38 +128,17 @@
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-muted-foreground: var(--sidebar-muted-foreground);
 
   --color-foreground-secondary: var(--foreground-secondary);
   --color-foreground-subtle: var(--foreground-subtle);
-  --color-foreground-faint: var(--foreground-faint);
-  --color-icon-faint: var(--icon-faint);
   --color-marker-idle: var(--marker-idle);
-  --color-chart-neutral: var(--chart-neutral);
-  --color-line-soft: var(--line-soft);
-  --color-line-faint: var(--line-faint);
 
   --color-tone-green: var(--tone-green);
   --color-tone-green-foreground: var(--tone-green-foreground);
@@ -191,7 +154,6 @@
   --color-tone-purple-foreground: var(--tone-purple-foreground);
 
   --color-good: var(--good);
-  --color-good-foreground: var(--good-foreground);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-deviation: var(--deviation);
@@ -265,7 +227,6 @@
    laesst. Token-Mapping: V1 --accent (Gruen) -> --primary; --text ->
    --foreground; --muted -> --muted-foreground; --panel -> --card. Feste, in V2
    nicht getokte Werte wie V1 belassen: #1c1c1e (dunkle Streifen-/Mini-Flaeche),
-   #e5e5ea (Panel-Grund), #d4d4d8 (Greifer),
    rgba(12,157,119,X) (Akzent-Toenung, = --primary in rgba).
    ============================================================ */
 
@@ -294,7 +255,7 @@ body.ks-live-collapsed main { padding-bottom: calc(150px + env(safe-area-inset-b
 
 /* --- Overlay-Rahmen --- */
 .kl-ov {
-  position: fixed; background: #e5e5ea; z-index: 84; display: flex; flex-direction: column;
+  position: fixed; background: var(--background); z-index: 84; display: flex; flex-direction: column;
   font-family: var(--font-sans); line-height: normal; color: var(--foreground);
 }
 .kl-ov--desk { inset: 0; }
@@ -353,7 +314,7 @@ body.ks-live-collapsed main { padding-bottom: calc(150px + env(safe-area-inset-b
 
 /* --- Griff + Kopf --- */
 .kl-ov-grip { flex: none; padding: 10px 0 0; touch-action: none; }
-.kl-ov-grip-bar { width: 38px; height: 5px; border-radius: 3px; background: #d4d4d8; margin: 0 auto 6px; }
+.kl-ov-grip-bar { width: 38px; height: 5px; border-radius: 3px; background: var(--marker-idle); margin: 0 auto 6px; }
 .kl-ov-head { flex: none; display: flex; align-items: center; border-bottom: 1px solid var(--line-soft); }
 .kl-ov--desk .kl-ov-head { gap: 14px; padding: 18px 30px; background: var(--card); }
 .kl-ov--mob .kl-ov-head {

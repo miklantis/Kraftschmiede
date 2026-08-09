@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 // Rahmen, Hover faerbt Rahmen + Text gruen), ghost = .btn.ghost (Akzenttext),
 // destructive = .btn.danger (Rahmen + Danger-Text auf Weiss).
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center rounded-control border text-sm font-semibold whitespace-nowrap transition-[color,background-color,border-color,filter] outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "inline-flex shrink-0 items-center justify-center rounded-control border text-sm font-semibold whitespace-nowrap transition-[color,background-color,border-color,filter] outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-danger [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -19,7 +19,7 @@ const buttonVariants = cva(
         outline:
           "border-border bg-card text-foreground hover:border-primary hover:text-primary",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:brightness-[0.98]",
+          "border-transparent bg-muted text-foreground hover:brightness-[0.98]",
         ghost:
           "border-transparent bg-transparent text-primary hover:bg-primary/10",
         destructive:

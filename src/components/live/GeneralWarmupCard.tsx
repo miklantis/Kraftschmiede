@@ -65,7 +65,7 @@ export function GeneralWarmupCard({
             />
             <select
               aria-label={"Art Aufwaermsatz " + (i + 1)}
-              className="w-full appearance-none rounded-[8px] bg-transparent px-1 py-1 text-center text-[14px] text-foreground outline-none focus:bg-secondary/70"
+              className="w-full appearance-none rounded-[8px] bg-transparent px-1 py-1 text-center text-[14px] text-foreground outline-none focus:bg-muted/70"
               value={ws.mode}
               onChange={(e) => onMode(i, e.target.value)}
             >

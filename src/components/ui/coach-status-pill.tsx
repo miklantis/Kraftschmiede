@@ -15,9 +15,9 @@ type PillStyle = {
 };
 
 const STYLES: Record<CoachState, PillStyle> = {
-  up: { label: "Steigern", cls: "bg-primary/10 text-[#0a7d5e]", Icon: ArrowUp },
+  up: { label: "Steigern", cls: "bg-primary/10 text-skill-foreground", Icon: ArrowUp },
   hold: { label: "Halten", cls: "bg-muted text-muted-foreground", Icon: Minus },
-  down: { label: "Senken", cls: "bg-[#e9edf1] text-[#637083]", Icon: ArrowDown },
+  down: { label: "Senken", cls: "bg-background text-foreground-secondary", Icon: ArrowDown },
   carry: { label: "Frei", cls: "bg-muted text-muted-foreground" },
   start: { label: "Start", cls: "bg-muted text-muted-foreground" },
 };

@@ -20,7 +20,7 @@ export function SkillPhaseList({
             (p.isCurrent
               ? "bg-skill/10"
               : p.state === "done"
-                ? "bg-secondary"
+                ? "bg-muted"
                 : "bg-white/60")
           }
         >
@@ -31,7 +31,7 @@ export function SkillPhaseList({
                 ? "bg-skill text-white"
                 : p.state === "done"
                   ? "bg-skill/20 text-skill-foreground"
-                  : "bg-secondary text-foreground-subtle")
+                  : "bg-muted text-foreground-subtle")
             }
           >
             {i + 1}

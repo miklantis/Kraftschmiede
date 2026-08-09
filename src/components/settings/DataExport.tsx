@@ -35,7 +35,7 @@ export function DataExport(): ReactElement {
         <p className="text-muted-foreground text-xs">Datei heruntergeladen.</p>
       ) : null}
       {error !== null ? (
-        <p className="text-destructive text-xs" role="alert">
+        <p className="text-danger text-xs" role="alert">
           {error}
         </p>
       ) : null}

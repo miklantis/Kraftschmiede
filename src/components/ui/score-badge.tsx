@@ -17,7 +17,7 @@ export function ScoreBadge({
     <span
       className={cn(
         "font-mono tabular-nums",
-        variant === "row" && "text-[13px] font-semibold text-[#a0a0a5]",
+        variant === "row" && "text-[13px] font-semibold text-foreground-subtle",
         variant === "hero" &&
           "text-[22px] leading-none font-bold text-primary min-[960px]:text-[30px] min-[960px]:leading-[1.05]",
         className,

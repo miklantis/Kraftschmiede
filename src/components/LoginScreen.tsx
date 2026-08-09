@@ -64,7 +64,7 @@ export function LoginScreen(): ReactElement {
         </div>
 
         {fehler !== null ? (
-          <p className="text-destructive text-sm" role="alert">
+          <p className="text-danger text-sm" role="alert">
             {fehler}
           </p>
         ) : null}

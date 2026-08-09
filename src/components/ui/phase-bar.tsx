@@ -44,7 +44,7 @@ export function PhaseBar({
                 ? "bg-skill/45"
                 : isCurrent
                   ? "bg-skill"
-                  : "bg-[#e4e4e8]",
+                  : "bg-border",
             )}
           />
         );

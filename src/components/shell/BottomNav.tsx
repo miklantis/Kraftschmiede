@@ -4,7 +4,7 @@ import { NAV_ENTRIES } from "@/lib/nav";
 // Untere Navigationsleiste fuer Mobile (unter 960px). Sichtbarkeit steuert die
 // AppShell. Nur Icons (kein Label); das Label dient als aria-label/Titel fuer
 // Bedienhilfen. Einstellungen sitzt separat im Kopf (Konto-Symbol).
-// Optik an V1-"Klar": heller Hintergrund (bg-card), inaktive Icons hellgrau (text-foreground-faint),
+// Optik an V1-"Klar": heller Hintergrund (bg-card), inaktive Icons hellgrau (text-foreground-subtle),
 // aktives Icon in Akzentgruen (text-primary). Farbe getrennt ueber inactiveProps/activeProps
 // (kein konkurrierendes text-* in der Basisklasse). Dezenter oberer Schatten zur Abgrenzung.
 export function BottomNav(): React.ReactElement {
@@ -23,7 +23,7 @@ export function BottomNav(): React.ReactElement {
             aria-label={entry.label}
             title={entry.label}
             className="flex flex-1 items-center justify-center py-2 transition-colors"
-            inactiveProps={{ className: "text-foreground-faint" }}
+            inactiveProps={{ className: "text-foreground-subtle" }}
             activeProps={{ className: "text-primary" }}
           >
             <Icon className="size-[27px] shrink-0" />

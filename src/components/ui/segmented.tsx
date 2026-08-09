@@ -21,7 +21,7 @@ export function SegmentedControl<T extends string>({
     <div
       role="tablist"
       className={
-        "flex gap-0 rounded-[13px] bg-secondary p-[3px] " + (className ?? "")
+        "flex gap-0 rounded-[13px] bg-muted p-[3px] " + (className ?? "")
       }
     >
       {options.map((opt) => {
