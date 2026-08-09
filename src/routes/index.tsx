@@ -6,6 +6,7 @@ import { Section } from "@/components/ui/section";
 import { List, ListRow } from "@/components/ui/list";
 import { ScoreBadge } from "@/components/ui/score-badge";
 import { JourneyChip } from "@/components/ui/journey-chip";
+import { PhaseBar } from "@/components/ui/phase-bar";
 import { WorkoutIcon, YogaIcon } from "@/components/ui/training-icons";
 import { TwoColumn } from "@/components/ui/two-column";
 import { PageReveal } from "@/components/ui/page-reveal";
@@ -152,6 +153,13 @@ function TrainingPage(): React.ReactElement {
                 key={sk.id}
                 title={sk.name}
                 subtitle={sk.subtitle}
+                footer={
+                  <PhaseBar
+                    index={sk.phaseIndex}
+                    count={sk.phaseCount}
+                    mastered={sk.mastered}
+                  />
+                }
                 leading={<Zap />}
                 chevron
                 disabled={sk.gated}

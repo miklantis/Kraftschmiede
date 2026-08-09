@@ -1,5 +1,6 @@
 import { Zap } from "lucide-react";
 import { AccordionItem } from "@/components/ui/accordion";
+import { PhaseBar } from "@/components/ui/phase-bar";
 import { SkillPhaseList } from "./SkillPhaseList";
 import type { SkillCardView } from "@/hooks/useSkillsView";
 
@@ -38,6 +39,12 @@ export function SkillCard({
         </div>
         <div className="mt-px text-[13px] text-muted-foreground">{subline}</div>
         <div className="text-[12px] text-[#a0a0a5]">{model.counterText}</div>
+        <PhaseBar
+          index={model.phaseIndex}
+          count={model.phaseCount}
+          mastered={model.mastered}
+          className="mt-1.5"
+        />
       </div>
       {statusPill}
     </div>
