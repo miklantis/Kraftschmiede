@@ -3,6 +3,23 @@
 Fortschritt und Planung laufen über GitHub Issues im Repo, nicht mehr über eine
 `PLAN.md`. Diese Datei hält die Konventionen fest.
 
+## Issue-Pflicht
+
+Jede Änderung an der App bekommt ein Issue – ausnahmslos. Das gilt auch für
+Einzeiler, Hotfixes, Textkorrekturen, Style-Anpassungen, Abhängigkeits-Updates
+und alles, was der Nutzer nur beiläufig im Chat erwähnt. Kein Commit ohne
+zugehöriges Issue. Wird beim Bauen zusätzlich etwas Ungeplantes geändert,
+bekommt das ein eigenes Issue. Ausgenommen ist nur reine Doku- oder
+Issue-Textpflege ohne Codeänderung.
+
+Die Reihenfolge ist verbindlich: Issue anlegen (mit Labels) → bauen →
+validieren → pushen → Kommentar mit Commit-Verweis → Issue schließen. Wurde das
+Issue vor dem Push vergessen, wird es sofort nachträglich angelegt und mit dem
+Commit verknüpft, bevor etwas anderes passiert.
+
+Vor dem Anlegen kurz prüfen, ob zum Thema schon ein offenes Issue existiert –
+dann dort weiterarbeiten statt ein Duplikat anzulegen.
+
 ## Struktur
 
 Jedes Vorhaben (Feature, Bugfix, Pflegepunkt) ist ein **Hauptvorhaben-Issue**:
@@ -28,6 +45,10 @@ Status-Label nötig.
 
 - Ebene: `vorhaben` (Hauptvorhaben-Issue) / `schritt` (Sub-Issue)
 - Art, nur am Hauptvorhaben-Issue: `typ:feature`, `typ:bugfix`, `typ:pflege`
+
+Labels sind Pflicht: kein Issue ohne Ebenen-Label, kein Hauptvorhaben-Issue ohne
+Art-Label. Passt keine der drei Arten, vor dem Anlegen kurz nachfragen statt zu
+raten.
 
 ## Ablauf
 

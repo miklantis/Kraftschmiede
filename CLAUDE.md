@@ -55,6 +55,22 @@ eine kurze Abstimmung.
 Fortschritt und Planung laufen ueber die GitHub Issues dieses Repos. Details in
 `docs/Issue-Konventionen.md`.
 
+**Issue-Pflicht (ausnahmslos):** Jede Aenderung an der App bekommt ein Issue – auch
+Einzeiler, Hotfixes, Textkorrekturen, Style-Anpassungen, Abhaengigkeits-Updates und
+Aenderungen, die der Nutzer nur beilaeufig im Chat erwaehnt. Kein Commit ohne
+zugehoeriges Issue. Wenn beim Bauen zusaetzlich etwas Ungeplantes geaendert wird, bekommt
+das ein eigenes Issue. Nur reine Doku-/Issue-Textpflege ohne Codeaenderung ist
+ausgenommen.
+
+- Reihenfolge ist verbindlich: Issue anlegen (mit Labels) -> bauen -> validieren ->
+  pushen -> Kommentar mit Commit-Verweis ins Issue -> Issue schliessen. Ist das Issue
+  vor dem Push vergessen worden, wird es sofort nachgetraeglich angelegt und mit dem
+  Commit verknuepft, bevor irgendetwas anderes gemacht wird.
+- Labels sind Pflicht, nie ohne: Ebene (`vorhaben` oder `schritt`) plus am Hauptvorhaben
+  die Art (`typ:feature`, `typ:bugfix`, `typ:pflege`). Passt keine Art, vor dem Anlegen
+  kurz nachfragen statt raten.
+- Vor dem Anlegen kurz pruefen, ob es zum Thema schon ein offenes Issue gibt – dann dort
+  weiterarbeiten statt ein Duplikat zu erzeugen.
 - Zu Sitzungsbeginn offene Issues abrufen, Stand pruefen, kurz zusammenfassen wo wir
   stehen und was ansteht.
 - Jedes Vorhaben ist ein Hauptvorhaben-Issue (Label `vorhaben` plus `typ:feature`,
@@ -74,6 +90,8 @@ Fortschritt und Planung laufen ueber die GitHub Issues dieses Repos. Details in
 - Direkt auf `main` arbeiten, keinen eigenen Feature-/Sitzungs-Branch anlegen. Es gibt
   keine Vorschau-Umgebung fuer Branches – der Deploy laeuft nur bei Push auf `main`,
   Aenderungen auf anderen Branches sind fuer den Nutzer nicht live testbar.
+- Vor dem ersten Eingriff pruefen: Gibt es ein Issue dafuer? Wenn nein, zuerst anlegen
+  (siehe Issue-Pflicht oben), erst dann Code anfassen.
 - Betroffene Dateien frisch aus dem Repo lesen, Aenderungen bauen und validieren, dann
   committen und auf `main` pushen.
 - Nach dem Push nur kurz melden: geaenderte Dateien, Commit-Message (Betreff + Body),
@@ -102,6 +120,8 @@ Fortschritt und Planung laufen ueber die GitHub Issues dieses Repos. Details in
 - Build laeuft durch (`vite build`)
 - Tests gruen (Vitest)
 - Keine toten Verweise
+- Issue vorhanden und korrekt gelabelt (siehe Issue-Pflicht) – fehlt es, erst anlegen,
+  dann pushen
 
 Reine Doku-Aenderungen (Markdown in `docs/`, README) brauchen keinen Build-/Testlauf,
 nur Pruefung auf gueltige interne Links und – bei `changelog.json` – gueltiges JSON.
