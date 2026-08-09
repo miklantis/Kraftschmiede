@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Section } from "@/components/ui/section";
+import { LoadMore } from "@/components/ui/load-more";
 import {
   Calendar,
   currentMonth,
   shiftMonth,
   type CalendarMonth,
 } from "@/components/ui/calendar";
-import { MehrLadenButton } from "@/components/ui/mehr-laden-button";
 import { SessionLogCard } from "@/components/history/SessionLogCard";
 import { SessionEditPanel } from "@/components/history/SessionEditPanel";
 import { ZeitraeumeSection } from "@/components/history/ZeitraeumeSection";
@@ -29,9 +29,9 @@ import type { HistoryKind } from "@/lib/history";
 // Umschalter mehr). Bringt seine Datenanbindung selbst mit; die Trainingsseite
 // bindet den Block nur ein. Keine Statistik-Reihe, keine Charts (Paritaet zu V1).
 //
-// Die Liste zeigt zunaechst die juengsten Einheiten; „Mehr laden\" blendet
-// jeweils eine weitere Seite ein (gemeinsamer Baustein useMehrLaden /
-// MehrLadenButton, reine Anzeige – die Daten liegen schon vor).
+// Die Liste zeigt zunaechst die juengsten Einheiten; der dezente Nachlade-Pfeil
+// (LoadMore) blendet jeweils eine weitere Seite ein. Den Zaehler haelt der
+// gemeinsame Hook useMehrLaden (reine Anzeige, Daten liegen schon vor).
 //
 // Die Bloecke (Kalender, Liste) laufen in der umgebenden reveal-group der
 // Trainingsseite mit; der Block markiert selbst keine eigenen Spalten mehr.
@@ -171,7 +171,7 @@ export function HistorySection(): React.ReactElement {
             onEdit={(id) => setEditId(id)}
           />
         ))}
-        <MehrLadenButton hatMehr={hatMehr} onMehrLaden={mehrLaden} />
+        {hatMehr && <LoadMore onClick={mehrLaden} />}
       </div>
     );
 

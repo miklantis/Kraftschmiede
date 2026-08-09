@@ -9,6 +9,7 @@ import { List, ListRow } from "@/components/ui/list";
 import { CoachStatusPill } from "@/components/ui/coach-status-pill";
 import { MuscleMap } from "@/components/ui/muscle-map";
 import { PageReveal } from "@/components/ui/page-reveal";
+import { LoadMore } from "@/components/ui/load-more";
 import { ExerciseChartCard } from "@/components/exercise/ExerciseChartCard";
 import { ExerciseEditModal } from "@/components/exercise/ExerciseEditModal";
 import { MilestonesSection } from "@/components/exercise/MilestonesSection";
@@ -24,6 +25,12 @@ import { cn } from "@/lib/utils";
 // Rahmen-Button rechts in der Coach-Card: mobil oben (an der Statuszeile), ab
 // 960px vertikal zentriert. Oeffnet das Popup.
 // Der Anheften-Umschalter sitzt im Kopf der Chartkarte.
+//
+// Die Verlaufsliste zeigt zunaechst die juengsten VERLAUF_PAGE_SIZE Eintraege;
+// der dezente Nachlade-Pfeil (LoadMore) blendet jeweils genauso viele weitere
+// ein (reine Anzeige, die Daten liegen schon vollstaendig vor).
+const VERLAUF_PAGE_SIZE = 5;
+
 export const Route = createFileRoute("/uebungen_/$exerciseId")({
   component: ExerciseDetailPage,
 });
@@ -31,6 +38,7 @@ export const Route = createFileRoute("/uebungen_/$exerciseId")({
 function ExerciseDetailPage(): React.ReactElement {
   const { exerciseId } = Route.useParams();
   const [editOpen, setEditOpen] = useState(false);
+  const [verlaufCount, setVerlaufCount] = useState(VERLAUF_PAGE_SIZE);
   const {
     isLoading,
     isError,
@@ -204,22 +212,32 @@ function ExerciseDetailPage(): React.ReactElement {
                 Noch keine absolvierte Session mit dieser Übung.
               </p>
             ) : (
-              <List bordered>
-                {verlauf.map((r, i) => (
-                  <ListRow
-                    key={i}
-                    title={longDateShort(r.date)}
-                    subtitle={r.line || undefined}
-                    trailing={
-                      r.right ? (
-                        <span className="font-mono text-[14px] text-muted-foreground tabular-nums">
-                          {r.right}
-                        </span>
-                      ) : undefined
+              <>
+                <List bordered>
+                  {verlauf.slice(0, verlaufCount).map((r, i) => (
+                    <ListRow
+                      key={i}
+                      title={longDateShort(r.date)}
+                      subtitle={r.line || undefined}
+                      trailing={
+                        r.right ? (
+                          <span className="font-mono text-[14px] text-muted-foreground tabular-nums">
+                            {r.right}
+                          </span>
+                        ) : undefined
+                      }
+                    />
+                  ))}
+                </List>
+                {verlauf.length > verlaufCount && (
+                  <LoadMore
+                    onClick={() =>
+                      setVerlaufCount((n) => n + VERLAUF_PAGE_SIZE)
                     }
+                    className="mt-1"
                   />
-                ))}
-              </List>
+                )}
+              </>
             )}
           </Section>
         </div>

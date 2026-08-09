@@ -45,6 +45,10 @@ export interface SkillCard {
   name: string;
   subtitle: string;
   gated: boolean;
+  /** Nullbasierter Index der aktuellen Phase – fuer den Phasen-Balken. */
+  phaseIndex: number;
+  phaseCount: number;
+  mastered: boolean;
 }
 
 export interface TrainingOverview {
@@ -321,6 +325,9 @@ export function useTrainingOverview(): {
         name: def.name,
         subtitle,
         gated: adv.equipmentMissing,
+        phaseIndex: adv.phaseIndex,
+        phaseCount: def.phases.length,
+        mastered: adv.mastered,
       };
     });
 

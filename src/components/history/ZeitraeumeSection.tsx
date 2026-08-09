@@ -3,7 +3,7 @@ import { Plus } from "lucide-react";
 import { Section } from "@/components/ui/section";
 import { Button } from "@/components/ui/button";
 import { List, ListRow } from "@/components/ui/list";
-import { MehrLadenButton } from "@/components/ui/mehr-laden-button";
+import { LoadMore } from "@/components/ui/load-more";
 import { ZeitraumFormModal } from "@/components/history/ZeitraumFormModal";
 import { useMehrLaden } from "@/hooks/useMehrLaden";
 import { useZeitraeume } from "@/hooks/useZeitraeume";
@@ -78,7 +78,7 @@ export function ZeitraeumeSection(): React.ReactElement {
           </List>
         )}
 
-        <MehrLadenButton hatMehr={hatMehr} onMehrLaden={mehrLaden} />
+        {hatMehr && <LoadMore onClick={mehrLaden} />}
 
         <Button variant="outline" className="mt-5 w-full" onClick={oeffnenNeu}>
           <Plus className="size-[18px]" />

@@ -1,10 +1,39 @@
 {
   "versions": [
     {
+      "version": "1.23.4",
+      "date": "2026-08-09",
+      "changes": [
+        "Auch der Verlauf und die Messungen auf der Körper-Seite sowie die Zeiträume auf der Trainingsseite zeigen jetzt zunächst fünf Einträge; der dezente Pfeil darunter blendet jeweils fünf weitere ein."
+      ]
+    },
+    {
+      "version": "1.23.3",
+      "date": "2026-08-09",
+      "changes": [
+        "Der Verlauf auf der Übungsdetailseite zeigt jetzt zunächst nur die letzten fünf Einträge. Über den dezenten Pfeil darunter lassen sich jeweils fünf weitere einblenden – die Seite bleibt dadurch auch bei oft trainierten Übungen kurz."
+      ]
+    },
+    {
+      "version": "1.23.2",
+      "date": "2026-08-09",
+      "changes": [
+        "Das Nachladen bei gekürzten Listen tritt zurück: Statt des auffälligen Knopfs mit „Mehr laden“ steht dort jetzt nur ein dezenter Pfeil nach unten – ohne Rahmen und ohne Hintergrund. Zu sehen im Verlauf unter „Letzte Einheiten“; alle künftigen Listen mit Nachladen nutzen dasselbe Element."
+      ]
+    },
+    {
+      "version": "1.23.1",
+      "date": "2026-08-09",
+      "changes": [
+        "Die zugeklappte Skill-Karte sieht jetzt genauso aus wie die Skill-Zeile auf der Trainingsseite: Name, eine Phasenzeile (mit Hinweis „Gemeistert“ bzw. „Gerät fehlt“) und der Phasen-Balken. Der Zähler steht jetzt im aufgeklappten Bereich.",
+        "Beim Aufklappen verschwindet der Balken, weil die Phasenliste darunter denselben Stand ausführlich zeigt. Die Kopfhöhe bleibt dabei gleich, die Karte springt nicht."
+      ]
+    },
+    {
       "version": "1.23.0",
       "date": "2026-08-09",
       "changes": [
-        "Lange Listen sind jetzt kürzer: Verlauf und Messungen auf der Körper-Seite sowie die Zeiträume auf der Trainingsseite zeigen zunächst fünf Einträge, „Mehr laden“ blendet weitere ein – wie schon bei den letzten Einheiten."
+        "Skills zeigen ihren Phasen-Stand jetzt auch als Balken: ein Segment je Phase, erledigte gefüllt, die aktuelle hervorgehoben. Zu sehen auf der Trainingsseite in der Skill-Liste und im Kopf der Skill-Karten. Die Textzeile „Phase 2 / 5“ bleibt daneben bestehen."
       ]
     },
     {

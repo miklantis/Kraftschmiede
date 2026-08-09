@@ -34,6 +34,7 @@ export function List({
 export function ListRow({
   title,
   subtitle,
+  footer,
   leading,
   trailing,
   chevron = false,
@@ -43,6 +44,10 @@ export function ListRow({
 }: {
   title: ReactNode;
   subtitle?: ReactNode;
+  /** Optionale Zusatzzeile unter der Unterzeile, volle Breite (z. B. der
+   *  Phasen-Balken bei Skills). Anders als subtitle nicht auf eine Textzeile
+   *  gekuerzt. */
+  footer?: ReactNode;
   /** Fuehrendes Symbol ganz vorne (z. B. Trainingstyp-Icon). Dezent grau,
    *  einheitlich auf 20px gesetzt; der Aufrufer gibt nur das Icon herein. */
   leading?: ReactNode;
@@ -70,6 +75,7 @@ export function ListRow({
             {subtitle}
           </div>
         )}
+        {footer != null && <div className="mt-1.5 w-full">{footer}</div>}
       </div>
       {trailing != null && <div className="flex-none">{trailing}</div>}
       {chevron && (

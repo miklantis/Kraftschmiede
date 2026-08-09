@@ -1,6 +1,6 @@
 import type { BodyHistEntry } from "@/hooks/useBodyView";
 import { useMehrLaden } from "@/hooks/useMehrLaden";
-import { MehrLadenButton } from "@/components/ui/mehr-laden-button";
+import { LoadMore } from "@/components/ui/load-more";
 
 // Befinden-Verlauf als Karte (neueste zuerst): Datum, Chips (Kater/Readiness,
 // ggf. Schmerz) und optionale Notiz. Read-only wie V1. Zeigt zunaechst die
@@ -48,7 +48,7 @@ export function BodyHistoryCard({
           </div>
         ))}
       </div>
-      <MehrLadenButton hatMehr={hatMehr} onMehrLaden={mehrLaden} />
+      {hatMehr && <LoadMore onClick={mehrLaden} />}
     </div>
   );
 }

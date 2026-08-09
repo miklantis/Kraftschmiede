@@ -3,7 +3,7 @@ import { ChevronRight, Plus } from "lucide-react";
 import { Section } from "@/components/ui/section";
 import { List } from "@/components/ui/list";
 import { BodyMeasureDialog } from "./BodyMeasureDialog";
-import { MehrLadenButton } from "@/components/ui/mehr-laden-button";
+import { LoadMore } from "@/components/ui/load-more";
 import { useMehrLaden } from "@/hooks/useMehrLaden";
 import { compChips } from "@/lib/composition";
 import { longDateYearDE } from "@/lib/format";
@@ -75,7 +75,7 @@ export function BodyMeasureList({
           </List>
         )}
 
-        <MehrLadenButton hatMehr={hatMehr} onMehrLaden={mehrLaden} />
+        {hatMehr && <LoadMore onClick={mehrLaden} />}
 
         <button
           type="button"
