@@ -23,6 +23,33 @@ export function skillMetricUnit(metric: string | null | undefined): string {
   return "";
 }
 
+// Ab dieser Haltezeit wird in Minuten statt in Sekunden angezeigt: lange Ziele
+// (z. B. 900) sind als "15 Min." deutlich schneller zu erfassen.
+const MINUTEN_AB_SEKUNDEN = 120;
+
+// Haltezeit in Sekunden als lesbare Dauer: unter zwei Minuten in Sekunden,
+// darueber in Minuten ("15 Min."), bei krummen Werten mit Sekunden ("2:30 Min.").
+// `kurz` liefert die knappe Form fuer die Live-Ansicht ("30 s", "15 min").
+export function dauerLabel(sekunden: number, kurz = false): string {
+  const sek = Math.max(0, Math.round(sekunden));
+  if (sek < MINUTEN_AB_SEKUNDEN) return kurz ? `${sek} s` : `${sek} Sek.`;
+  const min = Math.floor(sek / 60);
+  const rest = sek % 60;
+  const wert = rest === 0 ? String(min) : `${min}:${String(rest).padStart(2, "0")}`;
+  return kurz ? `${wert} min` : `${wert} Min.`;
+}
+
+// Ziel einer Skill-Uebung als Wert samt Einheit ("8 Wdh.", "30 Sek.", "15 Min.").
+export function skillTargetLabel(
+  target: number,
+  metric: string | null | undefined,
+  kurz = false,
+): string {
+  if (metric === "duration") return dauerLabel(target, kurz);
+  if (metric === "reps") return kurz ? `${target} Wdh` : `${target} Wdh.`;
+  return String(target);
+}
+
 // Anzeigename der Uebungsart (tier). Ersetzt das fruehere kindLabel.
 const TIER_LABELS: Record<string, string> = {
   main: "Hauptübung",

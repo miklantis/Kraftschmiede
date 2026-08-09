@@ -1,7 +1,7 @@
 import { useSkills, useSkillProgress } from "./useSkills";
 import { useEquipment } from "./useInventory";
 import { skillAdvice } from "@/engine";
-import { skillMetricUnit } from "@/lib/labels";
+import { skillTargetLabel } from "@/lib/labels";
 import type { SkillDefAssembled } from "./useSkills";
 import type { SkillProgressRow } from "@/schemas";
 
@@ -42,7 +42,7 @@ function phaseGoal(
   exercises: SkillDefAssembled["phases"][number]["exercises"],
 ): string {
   return exercises
-    .map((e) => `${e.sets} × ${e.target} ${skillMetricUnit(e.metric)}`.trim())
+    .map((e) => `${e.sets} × ${skillTargetLabel(e.target, e.metric)}`.trim())
     .join(" · ");
 }
 

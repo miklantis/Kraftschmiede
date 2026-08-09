@@ -94,13 +94,21 @@ aufhoeren.
 
 ## Beim Bauen
 
-- Direkt auf `main` arbeiten, keinen eigenen Feature-/Sitzungs-Branch anlegen. Es gibt
-  keine Vorschau-Umgebung fuer Branches – der Deploy laeuft nur bei Push auf `main`,
-  Aenderungen auf anderen Branches sind fuer den Nutzer nicht live testbar.
+- Ziel ist immer `main`: nur dort laeuft der Deploy, nur dort kann der Nutzer testen.
+  Von sich aus keinen Feature-/Sitzungs-Branch anlegen.
+- Gibt die Umgebung einen Branch vor und verbietet den Push auf `main` (z. B. Claude Code
+  im Web), gilt diese Vorgabe. Dann laeuft die Auslieferung in einem Zug bis `main`
+  durch: bauen, validieren, auf den Branch pushen, Pull Request anlegen, selbst mergen.
+  Der Nutzer soll damit nichts zu tun haben und keine Merges selbst ausfuehren muessen –
+  gemeldet wird erst das Ergebnis auf `main`. Nur wenn er ausdruecklich sagt, er will
+  vorher draufschauen, wird vor dem Merge angehalten.
+- Solange etwas nur auf einem Branch liegt, ist es fuer den Nutzer nicht testbar. Das nie
+  als erledigt melden.
 - Vor dem ersten Eingriff pruefen: Gibt es ein Issue dafuer? Wenn nein, zuerst anlegen
   (siehe Issue-Pflicht oben), erst dann Code anfassen.
 - Betroffene Dateien frisch aus dem Repo lesen, Aenderungen bauen und validieren, dann
-  committen und auf `main` pushen.
+  committen und nach `main` ausliefern (direkt oder ueber den vorgegebenen Branch samt
+  Pull Request, siehe oben).
 - Nach dem Push nur kurz melden: geaenderte Dateien, Commit-Message (Betreff + Body),
   ein Satz was jetzt live testbar ist.
 - Bei jeder Auslieferung `public/changelog.json` fortschreiben (Schema

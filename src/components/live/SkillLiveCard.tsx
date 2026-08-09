@@ -3,6 +3,7 @@ import type { SkillLiveExercise } from "@/lib/liveSession";
 import { LiveNumberInput } from "./LiveNumberInput";
 import { SkillWatchValue } from "./SkillWatchValue";
 import { SetCheck } from "./SetCheck";
+import { skillTargetLabel } from "@/lib/labels";
 
 // Eine Uebungskarte der laufenden Skill-Einheit (Phase 11, Lieferung 5).
 // Kopf mit Name, optionalem Tempo und dem Metrik-Tag (WDH/DAUER); Tabelle
@@ -48,7 +49,7 @@ export function SkillLiveCard({
 }): React.ReactElement {
   const isDur = exercise.metric === "duration";
   const tag = isDur ? "DAUER" : "WDH";
-  const targetLabel = isDur ? exercise.target + " s" : exercise.target + " Wdh";
+  const targetLabel = skillTargetLabel(exercise.target, exercise.metric, true);
   const grid = editMode ? ROW_EDIT : ROW;
 
   return (
