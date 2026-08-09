@@ -5,6 +5,7 @@ import { Section } from "@/components/ui/section";
 import { JourneyHeadCard } from "@/components/journey/JourneyHeadCard";
 import { PhaseList } from "@/components/journey/PhaseList";
 import { JourneyReviewSessions } from "@/components/journey/JourneyReviewSessions";
+import { JourneyCoachExport } from "@/components/journey/JourneyCoachExport";
 import { useJourneyReview } from "@/hooks/useJourneyReview";
 
 // Rueckschau einer abgeschlossenen Journey: eigenstaendige Vollseite (entschachtelt
@@ -59,6 +60,7 @@ function JourneyArchiveDetailPage(): React.ReactElement {
       {back}
       <PageReveal className="flex flex-col gap-7 min-[960px]:gap-8">
         <JourneyHeadCard name={data.name} metaLine={data.metaLine} />
+        <JourneyCoachExport journeyId={journeyId} />
         {data.phases.length > 0 && (
           <Section eyebrow="Phasen · Ablauf">
             <PhaseList phases={data.phases} />

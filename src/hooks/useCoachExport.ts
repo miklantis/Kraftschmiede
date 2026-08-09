@@ -6,10 +6,14 @@ import { copyText } from "@/lib/download";
 
 // Coach-Export: holt den Bestand (gemeinsame Quelle), baut das schlanke,
 // sprechende JSON fuer das Gespraech und legt es in die Zwischenablage.
-// weeks = null bedeutet kompletter Verlauf.
+// weeks = null bedeutet kompletter Verlauf; mit journeyId wird stattdessen genau
+// eine Journey ausgegeben (Rueckschau).
 
 export function useCoachExport(): {
-  copyForCoaching: (weeks: number | null) => Promise<void>;
+  copyForCoaching: (
+    weeks: number | null,
+    journeyId?: string | null,
+  ) => Promise<void>;
   isPending: boolean;
   done: boolean;
   error: string | null;
@@ -19,7 +23,10 @@ export function useCoachExport(): {
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function copyForCoaching(weeks: number | null): Promise<void> {
+  async function copyForCoaching(
+    weeks: number | null,
+    journeyId: string | null = null,
+  ): Promise<void> {
     if (userId === null) {
       setError("Nicht angemeldet.");
       return;
@@ -29,7 +36,9 @@ export function useCoachExport(): {
     setDone(false);
     try {
       const raw = await fetchAllData();
-      const text = serializeCoachExport(buildCoachExport(raw, { weeks }));
+      const text = serializeCoachExport(
+        buildCoachExport(raw, { weeks, journeyId }),
+      );
       const ok = await copyText(text);
       if (!ok) throw new Error("Zwischenablage nicht verfuegbar.");
       setDone(true);

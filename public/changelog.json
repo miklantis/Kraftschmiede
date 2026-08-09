@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.21.0",
+      "date": "2026-08-09",
+      "changes": [
+        "Coach-Export je Journey: In der Rückschau einer abgeschlossenen Journey lässt sich genau diese Journey als JSON kopieren – ihre Phasen, alle Einheiten mit Sätzen sowie Körper- und Zeitraum-Daten aus ihrem Fenster.",
+        "Der Export in den Einstellungen bleibt unverändert."
+      ]
+    },
+    {
       "version": "1.20.0",
       "date": "2026-08-08",
       "changes": [

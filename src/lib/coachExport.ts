@@ -123,7 +123,13 @@ export interface CoachExport {
   app: "Kraftschmiede";
   kind: "coach";
   generatedAt: string;
-  range: { weeks: number | "all"; from: string | null };
+  range: {
+    weeks: number | "all" | "journey";
+    from: string | null;
+    to?: string | null;
+  };
+  /** Gesetzt, wenn nur eine Journey ausgegeben wird (Rueckschau). */
+  journeyFilter?: { name: string; from: string | null; to: string | null };
   scoreScale: {
     note: string;
     map: Record<number, ScoreInfo>;
@@ -145,6 +151,10 @@ export interface CoachExport {
 export interface CoachExportOptions {
   // Anzahl Wochen zurueck (null = alles)
   weeks: number | null;
+  // Nur eine bestimmte Journey ausgeben. Ist sie gesetzt, ersetzt ihre Spanne
+  // (Start bis Ende) die Wochen-Angabe: Einheiten dieser Journey, dazu Koerper-
+  // und Zeitraum-Daten aus genau diesem Fenster.
+  journeyId?: string | null;
   today?: Date;
 }
 
@@ -219,9 +229,37 @@ export function buildCoachExport(
   opts: CoachExportOptions,
 ): CoachExport {
   const today = opts.today ?? new Date();
-  const from = rangeStart(today, opts.weeks);
+
+  // Journey-Filter: die gewaehlte Journey bestimmt die Spanne. Ende bzw. Beginn
+  // kommen aus der Journey-Zeile; fehlen sie (Altbestand ohne end_date), tritt
+  // die erste bzw. letzte Einheit dieser Journey an ihre Stelle.
+  const filterId = opts.journeyId ?? null;
+  const filterRow =
+    filterId != null
+      ? (raw.journeys.find((j) => str(j, "id") === filterId) ?? null)
+      : null;
+  let jFrom: string | null = null;
+  let jTo: string | null = null;
+  if (filterRow != null) {
+    const dates = raw.sessions
+      .filter((s) => str(s, "journey_id") === filterId && s.date != null)
+      .map((s) => s.date)
+      .sort();
+    jFrom = str(filterRow, "start_date") ?? dates[0] ?? null;
+    jTo = str(filterRow, "end_date") ?? dates[dates.length - 1] ?? null;
+  }
+
+  const from = filterRow != null ? jFrom : rangeStart(today, opts.weeks);
+  const to = filterRow != null ? jTo : null;
   const inRange = (date: string | null): boolean =>
-    date != null && (from == null || date >= from);
+    date != null &&
+    (from == null || date >= from) &&
+    (to == null || date <= to);
+  // Einheiten: bei Journey-Filter zaehlt die feste Zuordnung, nicht das Datum.
+  const sessionInScope = (s: Row): boolean =>
+    filterRow != null
+      ? str(s, "journey_id") === filterId
+      : inRange(str(s, "date"));
 
   // ---- Lookups ----
   const journeyName = new Map<string, string>();
@@ -280,8 +318,9 @@ export function buildCoachExport(
   }
 
   // ---- aktive Journey ----
+  // Bei gesetztem Filter wird die gewaehlte Journey ausgegeben, sonst die aktive.
   const activeJourneyRow =
-    raw.journeys.find((j) => flag(j, "active")) ?? null;
+    filterRow ?? raw.journeys.find((j) => flag(j, "active")) ?? null;
   let activeJourney: CoachJourney | null = null;
   if (activeJourneyRow != null) {
     const jid = str(activeJourneyRow, "id") ?? "";
@@ -314,12 +353,19 @@ export function buildCoachExport(
       todayISO(today),
     );
     const curPhase = phases[placement.phaseIndex] ?? null;
+    // Abgeschlossene Journey (Rueckschau): kein "aktuell", sondern die volle
+    // Dauer und keine laufende Phase.
+    const isActive = flag(activeJourneyRow, "active");
     activeJourney = {
       name: str(activeJourneyRow, "name") ?? "Journey",
       startDate: str(activeJourneyRow, "start_date"),
-      currentWeek: placement.globalWeek,
+      currentWeek: isActive
+        ? placement.globalWeek
+        : phases.reduce((sum, p) => sum + p.weeks, 0),
       currentPhase:
-        curPhase != null ? `${curPhase.name} (${curPhase.index})` : null,
+        isActive && curPhase != null
+          ? `${curPhase.name} (${curPhase.index})`
+          : null,
       phases,
     };
   }
@@ -369,7 +415,7 @@ export function buildCoachExport(
 
   // ---- Einheiten in der Spanne ----
   const sessions: CoachSession[] = [...raw.sessions]
-    .filter((s) => inRange(s.date))
+    .filter((s) => sessionInScope(s))
     .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
     .map((s) => {
       const type = str(s, "type") ?? "strength";
@@ -524,7 +570,18 @@ export function buildCoachExport(
     app: "Kraftschmiede",
     kind: "coach",
     generatedAt: today.toISOString(),
-    range: { weeks: opts.weeks ?? "all", from },
+    range: filterRow != null
+      ? { weeks: "journey" as const, from, to }
+      : { weeks: opts.weeks ?? "all", from },
+    ...(filterRow != null
+      ? {
+          journeyFilter: {
+            name: str(filterRow, "name") ?? "Journey",
+            from: jFrom,
+            to: jTo,
+          },
+        }
+      : {}),
     scoreScale: {
       note: SCORE_SCALE_NOTE,
       map: buildScoreScale(),

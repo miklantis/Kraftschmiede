@@ -326,3 +326,75 @@ describe("buildCoachExport - Uebungskatalog & Meilensteine", () => {
     expect(out.zeitraeume.map((z) => z.typ)).toEqual(["Verletzung", "Krankheit"]);
   });
 });
+
+describe("buildCoachExport - Journey-Filter", () => {
+  function rawWithJourneys(): RawExportData {
+    const raw = emptyRaw();
+    raw.journeys = [
+      {
+        id: "j1",
+        name: "Aufbau",
+        active: false,
+        start_date: "2026-01-05",
+        end_date: "2026-03-01",
+      },
+      { id: "j2", name: "Laufend", active: true, start_date: "2026-03-02" },
+    ] as unknown as RawExportData["journeys"];
+    raw.phases = [
+      {
+        id: "p1",
+        journey_id: "j1",
+        name: "Basis",
+        focus: "hypertrophie",
+        weeks: 8,
+        position: 0,
+      },
+    ] as unknown as RawExportData["phases"];
+    raw.sessions = [
+      {
+        id: "a",
+        date: "2026-01-10",
+        type: "strength",
+        journey_id: "j1",
+        phase_id: "p1",
+      },
+      { id: "b", date: "2026-04-01", type: "strength", journey_id: "j2" },
+    ] as unknown as RawSession[];
+    return raw;
+  }
+
+  it("nimmt nur die Einheiten der gewaehlten Journey", () => {
+    const out = buildCoachExport(rawWithJourneys(), {
+      weeks: 4,
+      journeyId: "j1",
+      today: TODAY,
+    });
+    expect(out.sessions.map((s) => s.date)).toEqual(["2026-01-10"]);
+    expect(out.range.weeks).toBe("journey");
+    expect(out.range.from).toBe("2026-01-05");
+    expect(out.range.to).toBe("2026-03-01");
+    expect(out.journeyFilter?.name).toBe("Aufbau");
+  });
+
+  it("gibt die gewaehlte Journey statt der aktiven aus", () => {
+    const out = buildCoachExport(rawWithJourneys(), {
+      weeks: null,
+      journeyId: "j1",
+      today: TODAY,
+    });
+    expect(out.activeJourney?.name).toBe("Aufbau");
+    // Abgeschlossen: volle Dauer, keine laufende Phase.
+    expect(out.activeJourney?.currentWeek).toBe(8);
+    expect(out.activeJourney?.currentPhase).toBeNull();
+  });
+
+  it("bleibt ohne Filter beim bisherigen Verhalten", () => {
+    const out = buildCoachExport(rawWithJourneys(), {
+      weeks: null,
+      today: TODAY,
+    });
+    expect(out.activeJourney?.name).toBe("Laufend");
+    expect(out.journeyFilter).toBeUndefined();
+    expect(out.sessions).toHaveLength(2);
+  });
+});
