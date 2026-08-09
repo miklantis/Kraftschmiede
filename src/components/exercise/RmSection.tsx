@@ -100,15 +100,20 @@ export function RmSection({
           <Target className="size-4" />
           1RM testen
         </button>
+
+        {/* Solange es keinen Test gibt, steht der Hinweis in der Karte selbst -
+            unter dem Knopf, abgesetzt durch eine dezente Linie. Erst sobald
+            Tests da sind, folgt die Liste als eigene Karten unter dem Block. */}
+        {!testsQ.isLoading && rows.length === 0 && (
+          <p className="mt-3.5 border-t border-border pt-3.5 text-[14px] text-muted-foreground">
+            Noch kein Test gemacht.
+          </p>
+        )}
       </div>
 
       {testsQ.isLoading ? (
         <p className="mt-3 text-[15px] text-muted-foreground">Wird geladen …</p>
-      ) : rows.length === 0 ? (
-        <p className="mt-3 text-[15px] text-muted-foreground">
-          Noch kein Test gemacht.
-        </p>
-      ) : (
+      ) : rows.length === 0 ? null : (
         <div className="mt-3 flex flex-col gap-2">
           {rows.map((t) => (
             <div
