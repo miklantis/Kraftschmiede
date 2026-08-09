@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.23.2",
+      "date": "2026-08-09",
+      "changes": [
+        "Das Nachladen bei gekürzten Listen tritt zurück: Statt des auffälligen Knopfs mit „Mehr laden“ steht dort jetzt nur ein dezenter Pfeil nach unten – ohne Rahmen und ohne Hintergrund. Zu sehen im Verlauf unter „Letzte Einheiten“; alle künftigen Listen mit Nachladen nutzen dasselbe Element."
+      ]
+    },
+    {
       "version": "1.23.1",
       "date": "2026-08-09",
       "changes": [
