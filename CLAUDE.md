@@ -62,10 +62,17 @@ zugehoeriges Issue. Wenn beim Bauen zusaetzlich etwas Ungeplantes geaendert wird
 das ein eigenes Issue. Nur reine Doku-/Issue-Textpflege ohne Codeaenderung ist
 ausgenommen.
 
-- Reihenfolge ist verbindlich: Issue anlegen (mit Labels) -> bauen -> validieren ->
-  pushen -> Kommentar mit Commit-Verweis ins Issue -> Issue schliessen. Ist das Issue
-  vor dem Push vergessen worden, wird es sofort nachgetraeglich angelegt und mit dem
-  Commit verknuepft, bevor irgendetwas anderes gemacht wird.
+**Issue anlegen heisst nicht umsetzen.** Das sind zwei getrennte Schritte. Oft wird nur
+geplant: dann werden Issues angelegt und bleiben offen liegen, ohne dass Code angefasst
+wird. Gebaut wird erst, wenn der Nutzer das ausdruecklich sagt – und nur das, was er
+nennt. Ist unklar, ob nur geplant oder auch gebaut werden soll, vorher fragen statt
+loszubauen. Nach dem Anlegen kurz melden, welche Issues entstanden sind, und dort
+aufhoeren.
+
+- Reihenfolge beim Umsetzen ist verbindlich: Issue anlegen (mit Labels) -> bauen ->
+  validieren -> pushen -> Kommentar mit Commit-Verweis ins Issue -> Issue schliessen.
+  Ist das Issue vor dem Push vergessen worden, wird es sofort nachtraeglich angelegt und
+  mit dem Commit verknuepft, bevor irgendetwas anderes gemacht wird.
 - Labels sind Pflicht, nie ohne: Ebene (`vorhaben` oder `schritt`) plus am Hauptvorhaben
   die Art (`typ:feature`, `typ:bugfix`, `typ:pflege`). Passt keine Art, vor dem Anlegen
   kurz nachfragen statt raten.
