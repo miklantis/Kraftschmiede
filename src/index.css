@@ -147,6 +147,42 @@
        brauchen (z. B. Hero-Lifts), setzen ihn lokal selbst. */
     line-height: normal;
   }
+
+  /* Datums-/Zeitfelder: Safari auf dem iPhone gibt diesen Feldern eine native
+     Eigenbreite aus dem Inhalt der Shadow-DOM-Teile. Diese Eigenbreite schlaegt
+     ein gesetztes width:100% und laesst das Feld im Popup ueber den Rand
+     hinauswachsen, sodass rechts das Kalender-Icon abgeschnitten wird
+     (Overlay clippt horizontal). appearance:none nimmt die native Optik samt
+     Eigenbreite weg, danach greift die normale Breite des Rahmens. */
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  input[type="month"],
+  input[type="week"] {
+    -webkit-appearance: none;
+    appearance: none;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  /* Der eigentliche Wert sitzt in Safari mittig und bringt eigenes Padding mit;
+     beides an die uebrigen Eingabefelder angleichen. */
+  input[type="date"]::-webkit-date-and-time-value,
+  input[type="time"]::-webkit-date-and-time-value,
+  input[type="datetime-local"]::-webkit-date-and-time-value,
+  input[type="month"]::-webkit-date-and-time-value,
+  input[type="week"]::-webkit-date-and-time-value {
+    text-align: left;
+    min-width: 0;
+  }
+
+  input[type="date"]::-webkit-datetime-edit,
+  input[type="time"]::-webkit-datetime-edit,
+  input[type="datetime-local"]::-webkit-datetime-edit,
+  input[type="month"]::-webkit-datetime-edit,
+  input[type="week"]::-webkit-datetime-edit {
+    padding: 0;
+  }
 }
 
 /* ============================================================
