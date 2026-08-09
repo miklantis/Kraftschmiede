@@ -15,6 +15,7 @@ import {
 import { clampTestReps } from "@/lib/rmTest";
 import { appendedSet, restAfterSet } from "@/lib/liveFlow";
 import { clickTick, ensureAudio } from "@/lib/liveAudio";
+import { istDesktopJetzt } from "@/hooks/useIsDesktop";
 
 // Geraete-lokaler Store der laufenden Live-Session. Bewusst KEIN TanStack-Query/
 // Supabase: die laufende Einheit ist ein Arbeitsobjekt auf diesem Geraet (genau
@@ -251,7 +252,7 @@ function startRmTest(input: StartRmTestInput): void {
     pending: null,
     ending: false,
     collapsed: false,
-    entering: !isDesktop(),
+    entering: !istDesktopJetzt(),
     rest: null,
     plateShow: {},
     skillWatch: null,
@@ -272,7 +273,7 @@ function confirmStart(): void {
     set({
       session: { ...p, startedAt: Date.now() },
       collapsed: false,
-      entering: !isDesktop(),
+      entering: !istDesktopJetzt(),
       rest: null,
       plateShow: {},
       skillWatch: null,
@@ -569,14 +570,6 @@ function startSkillWatch(ei: number, si: number): void {
 /** Stoppuhr beenden. */
 function stopSkillWatch(): void {
   if (state.skillWatch) set({ skillWatch: null });
-}
-
-export function isDesktop(): boolean {
-  return (
-    typeof window !== "undefined" &&
-    !!window.matchMedia &&
-    window.matchMedia("(min-width:960px)").matches
-  );
 }
 
 export interface LiveBarChoice {
