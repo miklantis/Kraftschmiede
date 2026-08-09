@@ -15,6 +15,7 @@ import { ExerciseEditModal } from "@/components/exercise/ExerciseEditModal";
 import { MilestonesSection } from "@/components/exercise/MilestonesSection";
 import { RmSection } from "@/components/exercise/RmSection";
 import { useExerciseDetail } from "@/hooks/useExerciseDetail";
+import { useMehrLaden } from "@/hooks/useMehrLaden";
 import { profileLabel, equipmentLabel, tierLabel } from "@/lib/labels";
 import { longDateShort, fmtWeight } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -26,10 +27,10 @@ import { cn } from "@/lib/utils";
 // 960px vertikal zentriert. Oeffnet das Popup.
 // Der Anheften-Umschalter sitzt im Kopf der Chartkarte.
 //
-// Die Verlaufsliste zeigt zunaechst die juengsten VERLAUF_PAGE_SIZE Eintraege;
-// der dezente Nachlade-Pfeil (LoadMore) blendet jeweils genauso viele weitere
-// ein (reine Anzeige, die Daten liegen schon vollstaendig vor).
-const VERLAUF_PAGE_SIZE = 5;
+// Die Verlaufsliste zeigt zunaechst die juengsten Eintraege; der dezente
+// Nachlade-Pfeil (LoadMore) blendet jeweils eine weitere Seite ein. Den Zaehler
+// haelt der gemeinsame Hook useMehrLaden (reine Anzeige, die Daten liegen schon
+// vollstaendig vor).
 
 export const Route = createFileRoute("/uebungen_/$exerciseId")({
   component: ExerciseDetailPage,
@@ -38,7 +39,6 @@ export const Route = createFileRoute("/uebungen_/$exerciseId")({
 function ExerciseDetailPage(): React.ReactElement {
   const { exerciseId } = Route.useParams();
   const [editOpen, setEditOpen] = useState(false);
-  const [verlaufCount, setVerlaufCount] = useState(VERLAUF_PAGE_SIZE);
   const {
     isLoading,
     isError,
@@ -54,6 +54,7 @@ function ExerciseDetailPage(): React.ReactElement {
     muscleValues,
     coach,
   } = useExerciseDetail(exerciseId);
+  const verlaufListe = useMehrLaden(verlauf);
 
   if (isLoading) {
     return (
@@ -214,7 +215,7 @@ function ExerciseDetailPage(): React.ReactElement {
             ) : (
               <>
                 <List bordered>
-                  {verlauf.slice(0, verlaufCount).map((r, i) => (
+                  {verlaufListe.sichtbar.map((r, i) => (
                     <ListRow
                       key={i}
                       title={longDateShort(r.date)}
@@ -229,13 +230,8 @@ function ExerciseDetailPage(): React.ReactElement {
                     />
                   ))}
                 </List>
-                {verlauf.length > verlaufCount && (
-                  <LoadMore
-                    onClick={() =>
-                      setVerlaufCount((n) => n + VERLAUF_PAGE_SIZE)
-                    }
-                    className="mt-1"
-                  />
+                {verlaufListe.hatMehr && (
+                  <LoadMore onClick={verlaufListe.mehrLaden} className="mt-1" />
                 )}
               </>
             )}
