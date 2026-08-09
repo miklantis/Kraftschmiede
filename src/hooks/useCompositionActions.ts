@@ -21,6 +21,7 @@ export interface CompositionFelder {
   body_fat_kg: number | null;
   body_fat_pct: number | null;
   skeletal_muscle_kg: number | null;
+  muscle_mass_kg: number | null;
   tbw_kg: number | null;
   ecw_kg: number | null;
   icw_kg: number | null;

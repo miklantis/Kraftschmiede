@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.24.0",
+      "date": "2026-08-09",
+      "changes": [
+        "Die Körpermessungen kennen jetzt neben der Skelettmuskelmasse auch die Muskelmasse. Der Wert lässt sich im Mess-Dialog direkt darunter eintragen, erscheint als eigener Chip in der Messliste und als eigene Kurve im Mess-Chart. Zur Unterscheidung heißt die bisherige Kurve jetzt \"SMM\".",
+        "Für die Kennzahl BMR lassen sich jetzt auch Meilensteine speichern."
+      ]
+    },
+    {
       "version": "1.23.4",
       "date": "2026-08-09",
       "changes": [

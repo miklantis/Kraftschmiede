@@ -7,7 +7,17 @@ import { fmtScore } from "@/lib/format";
 import type { CompositionRow } from "@/schemas";
 
 // Anzeige-Metriken des Mess-Charts -> DB-Spalte, Einheit, Achsen-Polster.
-export type BodyMetric = "weight" | "fat" | "muscle" | "water" | "phase" | "bmr";
+// Der Schluessel `muscle` bleibt bewusst bei der Skelettmuskelmasse, damit
+// bereits angelegte Meilensteine gueltig bleiben; die Muskelmasse kam spaeter
+// als eigener Schluessel `muscle_mass` dazu.
+export type BodyMetric =
+  | "weight"
+  | "fat"
+  | "muscle"
+  | "muscle_mass"
+  | "water"
+  | "phase"
+  | "bmr";
 
 interface MetricDef {
   field: keyof CompositionRow;
@@ -20,14 +30,15 @@ interface MetricDef {
 export const BODY_METRIC: Record<BodyMetric, MetricDef> = {
   weight: { field: "weight", unit: "kg", pad: 0.5, label: "Gewicht", short: "Gewicht" },
   fat: { field: "body_fat_pct", unit: "%", pad: 0.3, label: "Körperfett", short: "Fett" },
-  muscle: { field: "skeletal_muscle_kg", unit: "kg", pad: 0.3, label: "Muskelmasse", short: "Muskel" },
+  muscle: { field: "skeletal_muscle_kg", unit: "kg", pad: 0.3, label: "Skelettmuskelmasse", short: "SMM" },
+  muscle_mass: { field: "muscle_mass_kg", unit: "kg", pad: 0.3, label: "Muskelmasse", short: "Muskel" },
   water: { field: "tbw_kg", unit: "kg", pad: 0.3, label: "Körperwasser", short: "Wasser" },
   phase: { field: "phase_angle", unit: "°", pad: 0.15, label: "Phasenwinkel", short: "Phasenw." },
   bmr: { field: "bmr_kcal", unit: "kcal", pad: 25, label: "BMR", short: "BMR" },
 };
 
 export const BODY_METRIC_OPTIONS: ReadonlyArray<{ key: BodyMetric; label: string }> = (
-  ["weight", "fat", "muscle", "water", "phase", "bmr"] as const
+  ["weight", "fat", "muscle", "muscle_mass", "water", "phase", "bmr"] as const
 ).map((k) => ({ key: k, label: BODY_METRIC[k].short }));
 
 export interface BodyMetricSeries {
@@ -62,7 +73,9 @@ export function compChips(e: CompositionRow): string[] {
   if (e.body_fat_pct != null) v.push("Fett " + fmtScore(e.body_fat_pct) + " %");
   else if (e.body_fat_kg != null) v.push("Fett " + fmtScore(e.body_fat_kg) + " kg");
   if (e.skeletal_muscle_kg != null)
-    v.push("Muskel " + fmtScore(e.skeletal_muscle_kg) + " kg");
+    v.push("SMM " + fmtScore(e.skeletal_muscle_kg) + " kg");
+  if (e.muscle_mass_kg != null)
+    v.push("Muskel " + fmtScore(e.muscle_mass_kg) + " kg");
   if (e.tbw_kg != null) v.push("Wasser " + fmtScore(e.tbw_kg) + " kg");
   if (e.ecw_kg != null) v.push("ECW " + fmtScore(e.ecw_kg) + " kg");
   if (e.icw_kg != null) v.push("ICW " + fmtScore(e.icw_kg) + " kg");
