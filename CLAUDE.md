@@ -111,6 +111,28 @@ aufhoeren.
 - Kleine, abgegrenzte Schritte. Jeder Eingriff muss genau einmal greifen, sonst Abbruch
   und Ursache pruefen.
 
+## Datenbank-Aenderungen (Migrationen)
+
+Braucht eine Aenderung einen Eingriff in die Datenbank (neue Spalte, neue Tabelle, neue
+Stammdaten wie Uebungen oder Skills), gilt immer:
+
+1. Migrationsdatei im Repo anlegen: `supabase/migrations/<Nummer>_<kurzer_name>.sql`,
+   fortlaufend nummeriert, mit Kopfkommentar (was, warum, fuer wen) und idempotent
+   geschrieben (mehrfaches Ausfuehren darf nichts doppelt anlegen oder kaputt machen).
+   Nutzersichtbare Texte in der Migration mit echten Umlauten, damit sie zum Seed passen.
+2. Danach pruefen, ob der Supabase-Connector in dieser Sitzung verfuegbar ist.
+   - **Verfuegbar:** die Migration selbst im Projekt ausfuehren, ohne Rueckfrage. Vorher
+     kurz den Ist-Zustand abfragen (gibt es die Daten schon?), danach mit einer
+     Kontroll-Abfrage pruefen, dass das Ergebnis stimmt. Beides kurz und
+     nutzerverstaendlich melden.
+   - **Nicht verfuegbar:** die Migration nicht raten und nicht ueberspringen, sondern
+     deutlich melden, dass sie noch im Supabase-SQL-Editor ausgefuehrt werden muss, mit
+     Dateiname und einem Satz, was sie bewirkt. Der Nutzer fuehrt sie dann selbst aus.
+
+Migration und Code gehoeren zusammen in dieselbe Auslieferung. Die Datenbank haengt nicht
+am Deploy: eine ausgefuehrte Migration wirkt sofort, der Code erst nach dem Push auf
+`main` – bei der Rueckmeldung beides sauber auseinanderhalten.
+
 ## Token-sparsam arbeiten
 
 - Gezielt lesen: nur betroffene Ausschnitte ansehen (grep, Zeilenbereiche), nicht
