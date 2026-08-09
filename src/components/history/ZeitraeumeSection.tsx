@@ -1,25 +1,23 @@
 import { useState } from "react";
-import { Pencil, Trash2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Section } from "@/components/ui/section";
 import { Button } from "@/components/ui/button";
+import { List, ListRow } from "@/components/ui/list";
 import { ZeitraumFormModal } from "@/components/history/ZeitraumFormModal";
 import { useZeitraeume } from "@/hooks/useZeitraeume";
-import { useZeitraumActions } from "@/hooks/useZeitraumActions";
 import { zeitraumLabel, zeitraumSpanne, ZEITRAUM_FARBE } from "@/lib/zeitraeume";
 import type { ZeitraumRow } from "@/schemas";
 
 // Sektion „Zeiträume“ im Verlauf-Block, direkt nach „Letzte Einheiten“. Zeigt die
-// angelegten Marker (Typ-Kreis, Name/Typ, Spanne, Notiz) und erlaubt Anlegen,
-// Bearbeiten und Loeschen. Loeschen ist zweistufig (kurzes Nachfragen in der
-// Zeile), weil es ohne weitere Verknuepfung sofort greift. Anlegen/Bearbeiten
-// laeuft ueber das gemeinsame Formular-Popup.
+// angelegten Marker in derselben Listen-Optik wie die Workouts (List/ListRow):
+// Typ-Punkt vorne, Name/Typ als Titel, Spanne/Typ/Notiz als Unterzeile, Chevron
+// rechts. Die ganze Zeile ist tippbar und oeffnet das Formular-Popup; Bearbeiten
+// und Loeschen passieren dort, die Liste selbst traegt keine Aktions-Buttons.
 
 export function ZeitraeumeSection(): React.ReactElement {
   const { isLoading, isError, data } = useZeitraeume();
-  const { remove, isPending } = useZeitraumActions();
   const [formOpen, setFormOpen] = useState(false);
   const [editZeitraum, setEditZeitraum] = useState<ZeitraumRow | null>(null);
-  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const oeffnenNeu = (): void => {
     setEditZeitraum(null);
@@ -27,16 +25,18 @@ export function ZeitraeumeSection(): React.ReactElement {
   };
 
   const oeffnenBearbeiten = (z: ZeitraumRow): void => {
-    setConfirmId(null);
     setEditZeitraum(z);
     setFormOpen(true);
   };
 
+  const untertitel = (z: ZeitraumRow): string =>
+    zeitraumSpanne(z.start_datum, z.end_datum) +
+    (z.name ? " · " + zeitraumLabel(z.typ) : "") +
+    (z.notiz ? " · " + z.notiz : "");
+
   const inhalt = (): React.ReactElement => {
     if (isLoading) {
-      return (
-        <p className="text-sm text-muted-foreground">Wird geladen …</p>
-      );
+      return <p className="text-sm text-muted-foreground">Wird geladen …</p>;
     }
     if (isError || !data) {
       return (
@@ -46,85 +46,40 @@ export function ZeitraeumeSection(): React.ReactElement {
       );
     }
     return (
-      <div className="flex flex-col gap-2.5">
-        <Button variant="outline" className="w-full" onClick={oeffnenNeu}>
-          <Plus className="size-4" />
+      <>
+        {data.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Noch keine Zeiträume. Lege z. B. eine Fastenphase an.
+          </p>
+        ) : (
+          <List bordered>
+            {data.map((z) => (
+              <ListRow
+                key={z.id}
+                title={z.name ?? zeitraumLabel(z.typ)}
+                subtitle={untertitel(z)}
+                leading={
+                  <span
+                    aria-hidden
+                    className={
+                      "block size-3 flex-none rounded-full " +
+                      ZEITRAUM_FARBE[z.typ]
+                    }
+                  />
+                }
+                chevron
+                ariaLabel={(z.name ?? zeitraumLabel(z.typ)) + " bearbeiten"}
+                onClick={() => oeffnenBearbeiten(z)}
+              />
+            ))}
+          </List>
+        )}
+
+        <Button variant="outline" className="mt-5 w-full" onClick={oeffnenNeu}>
+          <Plus className="size-[18px]" />
           Zeitraum anlegen
         </Button>
-
-        {data.length === 0 ? (
-          <div className="rounded-[16px] bg-card px-[18px] py-[22px] text-center text-sm text-muted-foreground shadow-card">
-            Noch keine Zeiträume. Lege z. B. eine Fastenphase an.
-          </div>
-        ) : (
-          data.map((z) => (
-            <div
-              key={z.id}
-              className="flex items-center gap-3 rounded-[16px] bg-card px-4 py-3 shadow-card"
-            >
-              <span
-                aria-hidden
-                className={
-                  "size-3 flex-none rounded-full " +
-                  ZEITRAUM_FARBE[z.typ]
-                }
-              />
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-[15px] font-semibold text-foreground">
-                  {z.name ?? zeitraumLabel(z.typ)}
-                </div>
-                <div className="truncate text-[13px] text-muted-foreground">
-                  {zeitraumSpanne(z.start_datum, z.end_datum)}
-                  {z.name ? " · " + zeitraumLabel(z.typ) : ""}
-                  {z.notiz ? " · " + z.notiz : ""}
-                </div>
-              </div>
-
-              {confirmId === z.id ? (
-                <div className="flex flex-none items-center gap-1.5">
-                  <button
-                    type="button"
-                    disabled={isPending}
-                    onClick={() => {
-                      void remove(z.id);
-                      setConfirmId(null);
-                    }}
-                    className="rounded-control px-2.5 py-1.5 text-[13px] font-semibold text-danger transition-colors hover:bg-danger/10 disabled:opacity-50"
-                  >
-                    Löschen
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setConfirmId(null)}
-                    className="rounded-control px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted"
-                  >
-                    Abbrechen
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-none items-center gap-0.5">
-                  <button
-                    type="button"
-                    aria-label="Bearbeiten"
-                    onClick={() => oeffnenBearbeiten(z)}
-                    className="flex size-9 items-center justify-center rounded-control text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                  >
-                    <Pencil className="size-[18px]" />
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Löschen"
-                    onClick={() => setConfirmId(z.id)}
-                    className="flex size-9 items-center justify-center rounded-control text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger"
-                  >
-                    <Trash2 className="size-[18px]" />
-                  </button>
-                </div>
-              )}
-            </div>
-          ))
-        )}
-      </div>
+      </>
     );
   };
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Trash2 } from "lucide-react";
 import { Overlay } from "@/components/ui/overlay";
 import { Select } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,8 @@ import type { ZeitraumRow, ZeitraumTyp } from "@/schemas";
 // (Titel im Kalender-Band), Start, Ende und eine kurze Notiz. Das Ende ist optional: der Schalter „läuft noch“
 // laesst es offen (gespeichert als null), sonst ist ein Enddatum Pflicht und
 // darf nicht vor dem Start liegen. Nutzt das generische Overlay-Fundament.
+// Beim Bearbeiten steht unten das Loeschen: erst der dezente Anstoss, nach
+// Klick die rote Rueckfrage, erst der zweite Klick loescht und schliesst.
 
 const FELD_LABEL =
   "text-[12px] font-semibold tracking-[0.3px] text-muted-foreground";
@@ -27,18 +30,20 @@ export function ZeitraumFormModal({
   zeitraum: ZeitraumRow | null;
   onClose: () => void;
 }): React.ReactElement {
-  const { add, update, isPending } = useZeitraumActions();
+  const { add, update, remove, isPending } = useZeitraumActions();
   const [typ, setTyp] = useState<ZeitraumTyp>("heilfasten");
   const [name, setName] = useState("");
   const [startDatum, setStartDatum] = useState(todayISO());
   const [laeuftNoch, setLaeuftNoch] = useState(false);
   const [endDatum, setEndDatum] = useState(todayISO());
   const [notiz, setNotiz] = useState("");
+  const [loeschenBestaetigen, setLoeschenBestaetigen] = useState(false);
 
   // Beim Oeffnen den Entwurf setzen: aus dem Zeitraum (Bearbeiten) oder frische
   // Vorgaben (Anlegen).
   useEffect(() => {
     if (!open) return;
+    setLoeschenBestaetigen(false);
     if (zeitraum) {
       setTyp(zeitraum.typ);
       setName(zeitraum.name ?? "");
@@ -71,6 +76,12 @@ export function ZeitraumFormModal({
     };
     if (zeitraum) await update(zeitraum.id, felder);
     else await add(felder);
+    onClose();
+  };
+
+  const loeschen = async (): Promise<void> => {
+    if (!zeitraum) return;
+    await remove(zeitraum.id);
     onClose();
   };
 
@@ -173,6 +184,29 @@ export function ZeitraumFormModal({
         >
           {zeitraum ? "Speichern" : "Anlegen"}
         </Button>
+
+        {zeitraum &&
+          (loeschenBestaetigen ? (
+            <button
+              type="button"
+              onClick={() => void loeschen()}
+              disabled={isPending}
+              className="flex w-full items-center justify-center gap-2 rounded-[13px] border border-danger/40 py-3 text-[14px] font-semibold text-danger transition-[filter] hover:brightness-95 disabled:opacity-50"
+            >
+              <Trash2 className="size-4" />
+              Wirklich löschen?
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setLoeschenBestaetigen(true)}
+              className="flex w-full items-center justify-center gap-2 rounded-[13px] py-3 text-[14px] font-medium text-muted-foreground transition-colors hover:text-danger"
+            >
+              <Trash2 className="size-4" />
+              Zeitraum löschen
+            </button>
+          ))}
+
         <button
           type="button"
           onClick={onClose}
