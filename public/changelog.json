@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.23.4",
+      "date": "2026-08-09",
+      "changes": [
+        "Auch der Verlauf und die Messungen auf der Körper-Seite sowie die Zeiträume auf der Trainingsseite zeigen jetzt zunächst fünf Einträge; der dezente Pfeil darunter blendet jeweils fünf weitere ein."
+      ]
+    },
+    {
       "version": "1.23.3",
       "date": "2026-08-09",
       "changes": [

@@ -3,7 +3,9 @@ import { Plus } from "lucide-react";
 import { Section } from "@/components/ui/section";
 import { Button } from "@/components/ui/button";
 import { List, ListRow } from "@/components/ui/list";
+import { LoadMore } from "@/components/ui/load-more";
 import { ZeitraumFormModal } from "@/components/history/ZeitraumFormModal";
+import { useMehrLaden } from "@/hooks/useMehrLaden";
 import { useZeitraeume } from "@/hooks/useZeitraeume";
 import { zeitraumLabel, zeitraumSpanne, ZEITRAUM_FARBE } from "@/lib/zeitraeume";
 import type { ZeitraumRow } from "@/schemas";
@@ -18,6 +20,7 @@ export function ZeitraeumeSection(): React.ReactElement {
   const { isLoading, isError, data } = useZeitraeume();
   const [formOpen, setFormOpen] = useState(false);
   const [editZeitraum, setEditZeitraum] = useState<ZeitraumRow | null>(null);
+  const { sichtbar, hatMehr, mehrLaden } = useMehrLaden(data ?? []);
 
   const oeffnenNeu = (): void => {
     setEditZeitraum(null);
@@ -53,7 +56,7 @@ export function ZeitraeumeSection(): React.ReactElement {
           </p>
         ) : (
           <List bordered>
-            {data.map((z) => (
+            {sichtbar.map((z) => (
               <ListRow
                 key={z.id}
                 title={z.name ?? zeitraumLabel(z.typ)}
@@ -74,6 +77,8 @@ export function ZeitraeumeSection(): React.ReactElement {
             ))}
           </List>
         )}
+
+        {hatMehr && <LoadMore onClick={mehrLaden} />}
 
         <Button variant="outline" className="mt-5 w-full" onClick={oeffnenNeu}>
           <Plus className="size-[18px]" />
