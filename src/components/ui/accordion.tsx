@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 // Inhalt. Optional ein trailing-Element rechts neben dem Kopf (z. B. ein
 // Schalter) - es liegt ausserhalb des Klappen-Knopfs, klickt also nicht mit auf.
 // Eigener Offen-Zustand je Eintrag (unkontrolliert mit optionalem Startwert).
+// header darf auch eine Funktion sein und bekommt dann den Offen-Zustand -
+// damit kann der Kopf Teile weglassen, die aufgeklappt im Inhalt stehen.
 // Generisch und domaenenfrei - nutzbar fuer Skills und spaeter Uebungen/Verlauf.
 export function AccordionItem({
   header,
@@ -14,7 +16,7 @@ export function AccordionItem({
   defaultOpen = false,
   className,
 }: {
-  header: ReactNode;
+  header: ReactNode | ((state: { open: boolean }) => ReactNode);
   children: ReactNode;
   trailing?: ReactNode;
   defaultOpen?: boolean;
@@ -37,7 +39,9 @@ export function AccordionItem({
           onClick={() => setOpen((o) => !o)}
           className="flex min-w-0 flex-1 items-center gap-3 py-[15px] text-left min-[960px]:py-4"
         >
-          <div className="min-w-0 flex-1">{header}</div>
+          <div className="min-w-0 flex-1">
+            {typeof header === "function" ? header({ open }) : header}
+          </div>
           <ChevronDown
             size={20}
             className={cn(
