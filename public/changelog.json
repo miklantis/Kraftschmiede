@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.21.5",
+      "date": "2026-08-09",
+      "changes": [
+        "Die Messungen auf der Körper-Seite haben keine Stift- und Papierkorb-Symbole mehr. Ein Tippen auf eine Messung öffnet das Bearbeiten-Popup, gelöscht wird dort unten mit Rückfrage."
+      ]
+    },
+    {
       "version": "1.21.4",
       "date": "2026-08-09",
       "changes": [

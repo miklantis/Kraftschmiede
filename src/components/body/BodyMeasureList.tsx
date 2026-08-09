@@ -1,27 +1,26 @@
 import { useState } from "react";
-import { Pencil, Trash2, Plus } from "lucide-react";
+import { ChevronRight, Plus } from "lucide-react";
 import { Section } from "@/components/ui/section";
+import { List } from "@/components/ui/list";
 import { BodyMeasureDialog } from "./BodyMeasureDialog";
-import { useCompositionActions } from "@/hooks/useCompositionActions";
 import { compChips } from "@/lib/composition";
 import { longDateYearDE } from "@/lib/format";
 import type { CompositionRow } from "@/schemas";
 
 // Abschnitt "Messungen": je Messung Datum + Chips der vorhandenen Werte,
-// neueste zuerst. Der Knopf zum Hinzufuegen sitzt ganz unten unter der Liste
-// und ist optisch an den "Meilenstein hinzufuegen"-Knopf angeglichen. Je Zeile
-// Bearbeiten und Loeschen. Anlegen und Bearbeiten laufen ueber das gemeinsame
-// Mess-Popup; Loeschen ist zweistufig (kurze Rueckfrage in der Zeile), weil es
-// sofort greift. Ohne Messung nur der Hinzufuegen-Knopf plus ein kurzer Hinweis.
+// neueste zuerst. Die Zeilen sitzen in einer Karte mit Trennlinien
+// (gemeinsamer List-Baustein) und tragen keine Aktions-Buttons: die ganze
+// Zeile ist tippbar und oeffnet das Mess-Popup, Bearbeiten und Loeschen
+// passieren dort. Der Knopf zum Hinzufuegen sitzt ganz unten unter der Liste
+// und ist optisch an den "Meilenstein hinzufuegen"-Knopf angeglichen.
+// Ohne Messung nur der Hinzufuegen-Knopf plus ein kurzer Hinweis.
 export function BodyMeasureList({
   rows,
 }: {
   rows: CompositionRow[];
 }): React.ReactElement {
-  const { remove, isPending } = useCompositionActions();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editRow, setEditRow] = useState<CompositionRow | null>(null);
-  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const belegteDaten = rows.map((r) => r.date);
 
@@ -31,7 +30,6 @@ export function BodyMeasureList({
   };
 
   const oeffnenBearbeiten = (r: CompositionRow): void => {
-    setConfirmId(null);
     setEditRow(r);
     setDialogOpen(true);
   };
@@ -44,11 +42,14 @@ export function BodyMeasureList({
             Noch keine Messung. Trage deine erste von Hand ein.
           </div>
         ) : (
-          <div className="overflow-hidden rounded-[18px] bg-card shadow-card">
+          <List>
             {rows.map((e) => (
-              <div
+              <button
                 key={e.id}
-                className="flex items-start gap-3 border-t border-[#f0f0f2] p-[14px_16px] first:border-t-0 min-[960px]:p-[14px_18px]"
+                type="button"
+                aria-label={longDateYearDE(e.date) + " bearbeiten"}
+                onClick={() => oeffnenBearbeiten(e)}
+                className="flex w-full cursor-pointer items-center gap-3 border-t border-[#f0f0f2] p-[14px_16px] text-left transition-colors first:border-t-0 hover:bg-primary/5 min-[960px]:p-[14px_18px]"
               >
                 <div className="min-w-0 flex-1">
                   <div className="mb-2 text-[14px] font-semibold text-foreground">
@@ -65,51 +66,10 @@ export function BodyMeasureList({
                     ))}
                   </div>
                 </div>
-
-                {confirmId === e.id ? (
-                  <div className="flex flex-none items-center gap-1.5">
-                    <button
-                      type="button"
-                      disabled={isPending}
-                      onClick={() => {
-                        void remove(e.id);
-                        setConfirmId(null);
-                      }}
-                      className="rounded-control px-2.5 py-1.5 text-[13px] font-semibold text-danger transition-colors hover:bg-danger/10 disabled:opacity-50"
-                    >
-                      Löschen
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setConfirmId(null)}
-                      className="rounded-control px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted"
-                    >
-                      Abbrechen
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex flex-none items-center gap-0.5">
-                    <button
-                      type="button"
-                      aria-label="Bearbeiten"
-                      onClick={() => oeffnenBearbeiten(e)}
-                      className="flex size-9 items-center justify-center rounded-control text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                    >
-                      <Pencil className="size-[18px]" />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Löschen"
-                      onClick={() => setConfirmId(e.id)}
-                      className="flex size-9 items-center justify-center rounded-control text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger"
-                    >
-                      <Trash2 className="size-[18px]" />
-                    </button>
-                  </div>
-                )}
-              </div>
+                <ChevronRight className="size-[18px] flex-none text-[#a0a0a5]" />
+              </button>
             ))}
-          </div>
+          </List>
         )}
 
         <button

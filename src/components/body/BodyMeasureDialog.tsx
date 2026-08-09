@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Trash2 } from "lucide-react";
 import { Overlay } from "@/components/ui/overlay";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,9 @@ import type { CompositionRow } from "@/schemas";
 // bereits belegten Datum weist der Dialog freundlich darauf hin, statt den
 // vorhandenen Tag still zu ueberschreiben (belegte Tage kommen ueber
 // `belegteDaten`). Beim Bearbeiten ist das eigene Datum davon ausgenommen.
+//
+// Beim Bearbeiten steht unten das Loeschen: erst der dezente Anstoss, nach
+// Klick die rote Rueckfrage, erst der zweite Klick loescht und schliesst.
 
 const FELD_LABEL =
   "text-[12px] font-semibold tracking-[0.3px] text-muted-foreground";
@@ -82,14 +86,16 @@ export function BodyMeasureDialog({
   belegteDaten: string[];
   onClose: () => void;
 }): React.ReactElement {
-  const { add, update, isPending } = useCompositionActions();
+  const { add, update, remove, isPending } = useCompositionActions();
   const [date, setDate] = useState(todayISO());
   const [werte, setWerte] = useState<WerteEntwurf>(LEER_ENTWURF);
+  const [loeschenBestaetigen, setLoeschenBestaetigen] = useState(false);
 
   // Beim Oeffnen den Entwurf setzen: aus dem Eintrag (Bearbeiten) oder frisch
   // (Anlegen, Datum = heute).
   useEffect(() => {
     if (!open) return;
+    setLoeschenBestaetigen(false);
     if (row) {
       setDate(row.date);
       setWerte({
@@ -142,6 +148,12 @@ export function BodyMeasureDialog({
     };
     if (row) await update(row.id, felder);
     else await add(felder);
+    onClose();
+  };
+
+  const loeschen = async (): Promise<void> => {
+    if (!row) return;
+    await remove(row.id);
     onClose();
   };
 
@@ -201,6 +213,29 @@ export function BodyMeasureDialog({
         >
           {row ? "Speichern" : "Hinzufügen"}
         </Button>
+
+        {row &&
+          (loeschenBestaetigen ? (
+            <button
+              type="button"
+              onClick={() => void loeschen()}
+              disabled={isPending}
+              className="flex w-full items-center justify-center gap-2 rounded-[13px] border border-danger/40 py-3 text-[14px] font-semibold text-danger transition-[filter] hover:brightness-95 disabled:opacity-50"
+            >
+              <Trash2 className="size-4" />
+              Wirklich löschen?
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setLoeschenBestaetigen(true)}
+              className="flex w-full items-center justify-center gap-2 rounded-[13px] py-3 text-[14px] font-medium text-muted-foreground transition-colors hover:text-danger"
+            >
+              <Trash2 className="size-4" />
+              Messung löschen
+            </button>
+          ))}
+
         <button
           type="button"
           onClick={onClose}
