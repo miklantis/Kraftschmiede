@@ -61,7 +61,7 @@ export function SkillLiveCard({
             <div className="mt-0.5 text-[12px] text-muted-foreground">{exercise.tempo}</div>
           )}
         </div>
-        <span className="flex-none rounded-pill bg-secondary px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        <span className="flex-none rounded-pill bg-muted px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
           {tag}
         </span>
       </div>

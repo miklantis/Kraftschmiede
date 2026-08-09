@@ -41,37 +41,43 @@ eine Rolle, wird hier eine neue Zeile ergänzt statt im Code eine Farbe zu setze
 
 #### Flächen, Text und Linien
 
+Die Grau-Leiter ist bewusst kurz: **vier Textstufen, ein heller Marker-Ton, zwei
+Linien-/Flächentöne.** Eine neue Zwischenstufe kommt nur dazu, wenn keine bestehende
+reicht – „ein bisschen heller" ist kein Grund.
+
 | Rolle | Token | Wert | Verwendung |
 |---|---|---|---|
-| Markengrün (Akzent) | `primary` | `#0c9d77` | Primärknopf, Fokus, Erfolg, aktive Zustände |
-| Canvas | `background` | `#edeef1` | App-Hintergrund hinter den Karten |
+| Markengrün (Akzent) | `primary` | `#0c9d77` | Primärknopf, Fokus, aktive Zustände |
 | Karte / Panel | `card` | `#ffffff` | Flächen, auf denen Inhalt liegt |
-| Primärtext | `foreground` | `#1c1c1e` | normale Schrift |
-| Sekundärtext | `foreground-secondary` | `#5c5c61` | Erklärtext, versaler Markenschriftzug |
-| Gedeckter Text | `muted-foreground` | `#8a8a8e` | Labels, Nebeninfos |
-| Abgeschwächter Text | `foreground-subtle` | `#a0a0a5` | gesperrte/künftige Einträge, Chevrons in Zeilen |
-| Schwächster Text | `foreground-faint` | `#b0b0b6` | Datum in Listenköpfen, inaktive Navigations-Symbole |
-| Zier-Symbol | `icon-faint` | `#c4c4c9` | rein dekoratives Symbol (Auf-/Zuklapp-Chevron) |
-| Inaktiver Marker | `marker-idle` | `#d8d8dc` | graue Füllung eines noch nicht erreichten Punkts |
-| Neutrale Chart-Fläche | `chart-neutral` | `#d7dade` | Deload-Band im Periodisierungs-Chart |
-| Rahmen / Linie | `border` | `#e4e4e8` | sichtbare Trennlinien, Feldrahmen |
-| Feine Innenlinie | `line-soft` | `#ececef` | Rahmen ruhiger Karten, Innenlinien im Live-Panel |
-| Sehr feine Trennlinie | `line-faint` | `#f6f6f8` | Zeilen innerhalb einer aufgeklappten Karte |
 | Eingabefeld-Füllung | `input` | `#fafafa` | Hintergrund von Eingabefeldern |
-| Hover-Fläche | `muted` / `secondary` | `#f0f0f2` | dezenter Hover, Sekundärflächen, Listen-Trennlinien |
-| Sidebar-Navigation | `sidebar-muted-foreground` | `#6c685f` | warmes Grau der Einträge in der Seitenleiste |
+| Gedeckte Fläche | `muted` | `#f0f0f2` | Chips, Hover, Sekundärknöpfe, feine Trennlinien in Listen |
+| Canvas | `background` | `#edeef1` | App-Hintergrund hinter den Karten, Grund des Live-Panels |
+| Rahmen / Linie | `border` | `#e4e4e8` | alle sichtbaren Trennlinien und Rahmen |
+| Heller Marker | `marker-idle` | `#d8d8dc` | nicht erreichte Punkte, Schalter im Aus-Zustand, Griffe, neutrale Chart-Flächen |
+| Abgeschwächter Text | `foreground-subtle` | `#a0a0a5` | gesperrte/künftige Einträge, Chevrons, Zier-Symbole |
+| Gedeckter Text | `muted-foreground` | `#8a8a8e` | Labels, Nebeninfos |
+| Sekundärtext | `foreground-secondary` | `#5c5c61` | Erklärtext, Seitenleisten-Navigation, Markenschriftzug |
+| Primärtext | `foreground` | `#1c1c1e` | normale Schrift |
+
+Zwei Sonderfälle mit eigener Rolle, bewusst außerhalb der Leiter, weil die Silhouette sich
+gegen die weiße Karte behaupten muss: `body-base` (`#cfd3d8`, Körperform) und `body-idle`
+(`#c2c6cb`, nicht beanspruchte Region) in der MuscleMap.
 
 #### Signalfarben
 
 | Rolle | Token | Wert | Verwendung |
 |---|---|---|---|
-| Erfolg | `good` | `#0c9d77` | Erfolg = Akzentgrün |
+| Erfolg | `good` | `#0c9d77` | Erfolgs-Zustände (heute = Akzent) |
 | Warnung / Deload | `warning` | `#d99a2b` | Vorsicht-Hinweise, Deload |
 | Abweichung | `deviation` | `#f3b13a` | Satz-Abweichung (distinkt vom Deload) |
 | Danger | `danger` | `#ef5b5b` | Löschen, Fehler |
 | Intensität (Teal) | `intensity` | `#37a9c4` | Intensität im Journey-Chart |
-| Skill | `skill` | `#0c9d77` | Skill-Bereich (nutzt den Akzent) |
-| Yoga | `yoga` | `#0c9d77` | Yoga-Bereich (nutzt den Akzent) |
+| Skill | `skill` | `#0c9d77` | Skill-Bereich (heute = Akzent) |
+| Yoga | `yoga` | `#0c9d77` | Yoga-Bereich (heute = Akzent) |
+
+`good`, `skill` und `yoga` tragen denselben Wert wie `primary`, bleiben aber eigene Token:
+Sie sind eigene Rollen, und ein Bereich soll später wieder eine eigene Farbe bekommen
+können, ohne dass man dafür durch die ganze App muss.
 
 #### Kategorie-Palette (`tone-*`)
 
@@ -118,6 +124,14 @@ Karten tragen einen sehr weichen Schatten statt eines harten Rahmens. Erhöhte E
 Schatten sind Tokens und werden nie im Code ausgeschrieben: `shadow-card` (Karte),
 `shadow-hi` (grüner Schimmer), `shadow-pop` (Popup), `shadow-auth` (freistehende
 Anmelde-Karte), `shadow-nav` (mobile Navigationsleiste).
+
+**Nichts Unbenutztes.** Die Liste enthält nur Token, die tatsächlich irgendwo greifen. Was
+die shadcn-Grundausstattung sonst noch mitbringt (Popover-, Sidebar- und Accent-Farben),
+ist entfernt; die Seitenleiste nutzt `card`, `border` und `muted` mit. Wer ein neues Token
+anlegt, prüft vorher, ob eine bestehende Rolle passt.
+
+**Tailwind durchsucht nur `src/`.** Sonst erzeugt es Utilities für Klassennamen, die in der
+Doku nur als Beispiel im Text stehen – samt Farben, die es in der App gar nicht mehr gibt.
 
 ---
 

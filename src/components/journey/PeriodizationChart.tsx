@@ -60,7 +60,7 @@ export function PeriodizationChart({
       const INK = readToken("--foreground");
       const SUB = readToken("--muted-foreground");
       const GRID = readToken("--border");
-      const NEUTRAL = readToken("--chart-neutral");
+      const NEUTRAL = readToken("--marker-idle");
 
       // Wertebereich auf 12%-90% der Plothoehe abbilden (liefert direkt Pixel).
       const ny = (v: number, lo: number, hi: number): number => {

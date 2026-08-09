@@ -60,7 +60,7 @@ export function CoachExport(): ReactElement {
         </p>
       ) : null}
       {error !== null ? (
-        <p className="text-destructive text-xs" role="alert">
+        <p className="text-danger text-xs" role="alert">
           {error}
         </p>
       ) : null}

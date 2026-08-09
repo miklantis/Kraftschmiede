@@ -41,7 +41,7 @@ function StartCard({ entry }: { entry: LiveEntry }): React.ReactElement {
         {entry.sets.map((st, i) => (
           <span
             key={i}
-            className="rounded-[10px] bg-secondary px-3 py-1.5 font-mono text-[13px] font-medium text-foreground"
+            className="rounded-[10px] bg-muted px-3 py-1.5 font-mono text-[13px] font-medium text-foreground"
           >
             {setChip(st.reps, st.weight)}
           </span>
@@ -70,7 +70,7 @@ function SkillStartCard({
         {exercise.sets.map((_, i) => (
           <span
             key={i}
-            className="rounded-[10px] bg-secondary px-3 py-1.5 font-mono text-[13px] font-medium text-foreground"
+            className="rounded-[10px] bg-muted px-3 py-1.5 font-mono text-[13px] font-medium text-foreground"
           >
             {target}
           </span>

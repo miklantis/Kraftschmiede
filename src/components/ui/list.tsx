@@ -79,7 +79,7 @@ export function ListRow({
       </div>
       {trailing != null && <div className="flex-none">{trailing}</div>}
       {chevron && (
-        <ChevronRight className="size-[18px] flex-none text-[#a0a0a5]" />
+        <ChevronRight className="size-[18px] flex-none text-foreground-subtle" />
       )}
     </>
   );
@@ -87,7 +87,7 @@ export function ListRow({
   // Trennlinie: jede Zeile ausser der ersten; in einer bordered-Liste auch die
   // erste. Hover-Tonung nur bei klickbaren Zeilen.
   const base =
-    "flex w-full items-center gap-3 px-4 py-3.5 text-left text-foreground border-t border-[#f0f0f2] first:border-t-0 group-data-[bordered]/list:first:border-t min-[960px]:px-5 min-[960px]:py-4";
+    "flex w-full items-center gap-3 px-4 py-3.5 text-left text-foreground border-t border-muted first:border-t-0 group-data-[bordered]/list:first:border-t min-[960px]:px-5 min-[960px]:py-4";
 
   if (clickable) {
     return (

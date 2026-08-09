@@ -34,7 +34,7 @@ export function TemplateCard({
         <span className="text-[16px] font-bold text-foreground min-[960px]:text-[18px]">
           {model.name}
         </span>
-        <span className="flex-none rounded-[7px] bg-secondary px-2.5 py-1 text-[10px] font-semibold text-muted-foreground">
+        <span className="flex-none rounded-[7px] bg-muted px-2.5 py-1 text-[10px] font-semibold text-muted-foreground">
           {model.duration}
         </span>
       </div>
@@ -66,7 +66,7 @@ export function TemplateCard({
         className={
           "w-full rounded-control py-3 text-sm font-semibold transition-[filter] " +
           (model.active
-            ? "cursor-default bg-secondary text-muted-foreground"
+            ? "cursor-default bg-muted text-muted-foreground"
             : "bg-primary text-primary-foreground hover:brightness-105 disabled:opacity-60")
         }
       >

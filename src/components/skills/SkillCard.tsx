@@ -87,7 +87,7 @@ export function SkillCard({
           type="button"
           disabled={busy || !model.canRegress}
           onClick={confirmRegress}
-          className="rounded-control bg-secondary px-3.5 py-2 text-[13px] font-semibold text-foreground hover:brightness-95 disabled:opacity-40"
+          className="rounded-control bg-muted px-3.5 py-2 text-[13px] font-semibold text-foreground hover:brightness-95 disabled:opacity-40"
         >
           Phase zurück
         </button>

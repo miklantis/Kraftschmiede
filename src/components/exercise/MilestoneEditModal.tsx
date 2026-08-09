@@ -139,7 +139,7 @@ export function MilestoneEditModal({
                 type="button"
                 onClick={() => void doDelete()}
                 disabled={isPending}
-                className="mt-3 flex w-full items-center justify-center gap-2 rounded-[13px] border border-destructive/40 py-3 text-[14px] font-semibold text-destructive transition-[filter] hover:brightness-95 disabled:opacity-50"
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-[13px] border border-danger/40 py-3 text-[14px] font-semibold text-danger transition-[filter] hover:brightness-95 disabled:opacity-50"
               >
                 <Trash2 className="size-4" />
                 Wirklich löschen?
@@ -148,7 +148,7 @@ export function MilestoneEditModal({
               <button
                 type="button"
                 onClick={() => setConfirmDelete(true)}
-                className="mt-3 flex w-full items-center justify-center gap-2 rounded-[13px] py-3 text-[14px] font-medium text-muted-foreground transition-colors hover:text-destructive"
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-[13px] py-3 text-[14px] font-medium text-muted-foreground transition-colors hover:text-danger"
               >
                 <Trash2 className="size-4" />
                 Meilenstein löschen

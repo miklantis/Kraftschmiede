@@ -212,7 +212,7 @@ export function ExerciseLiveCard({
                 <select
                   aria-label={"RIR Satz " + (si + 1)}
                   title="RIR / Score je Satz"
-                  className="h-[22px] w-full appearance-none rounded-[8px] bg-transparent px-1 py-0 text-center font-mono text-[15px] leading-[22px] text-foreground outline-none [text-align-last:center] focus:bg-secondary/70"
+                  className="h-[22px] w-full appearance-none rounded-[8px] bg-transparent px-1 py-0 text-center font-mono text-[15px] leading-[22px] text-foreground outline-none [text-align-last:center] focus:bg-muted/70"
                   value={st.score}
                   onChange={(e) => onSetValue(si, "score", Number(e.target.value))}
                 >

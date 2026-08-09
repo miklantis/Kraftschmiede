@@ -10,7 +10,7 @@ import bodySvgRaw from "@/assets/body-muscles.svg?raw";
 // Update einen zweiten Effekt-Lauf ausloeste (z. B. Koerper-Seite ohne heutigen
 // Kater-Eintrag). Die echten Farben setzt weiterhin der Effekt (Silhouette =
 // base, Region = idle/colorFn). Pfaddaten bleiben unberuehrt.
-const bodySvg = bodySvgRaw.replace(/fill:\s*[^;}]+/g, "fill:#cfd3d8");
+const bodySvg = bodySvgRaw.replace(/fill:\s*[^;}]+/g, "fill:var(--body-base)");
 
 // Generisches Muscle-Map-Primitive. Faerbt die Regionen der Single-Master-SVG
 // (src/assets/body-muscles.svg) anhand einer Werte-Map ein. Die Komponente
@@ -39,14 +39,16 @@ const VIEWBOX: Record<MuscleMapView, string> = {
   both: "165 92 1000 1304",
 };
 
-const BASE_DEFAULT = "#cfd3d8"; // Silhouette (Koerperform), haelt Kontrast zum Canvas
-const IDLE_DEFAULT = "#c2c6cb"; // nicht beanspruchte Regionen, leicht dunkler
+const BASE_DEFAULT = "var(--body-base)"; // Silhouette (Koerperform)
+const IDLE_DEFAULT = "var(--body-idle)"; // nicht beanspruchte Regionen
 
 // --- Farb-Helfer (Default-Rampe weiss -> --accent), 1:1 aus V1 -----------------
 function clamp01(v: number): number {
   return v < 0 ? 0 : v > 1 ? 1 : v;
 }
 
+// Das Markengruen als Hexwert - die Rampe rechnet mit Hex, deshalb hier ein
+// Klartextwert als Notnagel, falls kein Fenster da ist (Serverlauf/Test).
 function readPrimary(): string {
   if (typeof window === "undefined") return "#0c9d77";
   const v = getComputedStyle(document.documentElement)

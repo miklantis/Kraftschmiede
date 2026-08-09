@@ -154,7 +154,7 @@ export function RmSection({
                     <button
                       type="button"
                       onClick={() => setConfirmId(null)}
-                      className="rounded-control bg-secondary px-3.5 py-2 text-[13px] font-semibold text-foreground"
+                      className="rounded-control bg-muted px-3.5 py-2 text-[13px] font-semibold text-foreground"
                     >
                       Abbrechen
                     </button>

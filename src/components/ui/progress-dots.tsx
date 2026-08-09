@@ -20,7 +20,7 @@ export function ProgressDots({
           key={i}
           className={cn(
             "size-[7px] rounded-full min-[960px]:size-2",
-            i < on ? "bg-primary" : "bg-[#d8d8dc]",
+            i < on ? "bg-primary" : "bg-marker-idle",
           )}
         />
       ))}

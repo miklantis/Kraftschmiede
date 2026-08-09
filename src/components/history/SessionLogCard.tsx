@@ -57,20 +57,20 @@ export function SessionLogCard({
         <span className="min-w-0 flex-1 truncate text-[15px] font-semibold text-foreground">
           {session.title}
         </span>
-        <span className="flex-none text-[12px] whitespace-nowrap text-foreground-faint">
+        <span className="flex-none text-[12px] whitespace-nowrap text-foreground-subtle">
           {session.dateLabel}
         </span>
         {open ? (
-          <ChevronUp className="size-4 flex-none text-icon-faint" />
+          <ChevronUp className="size-4 flex-none text-foreground-subtle" />
         ) : (
-          <ChevronDown className="size-4 flex-none text-icon-faint" />
+          <ChevronDown className="size-4 flex-none text-foreground-subtle" />
         )}
       </button>
 
       {open && (
         <div className="border-t border-border px-4 pt-1 pb-3.5">
           {session.durationLabel && (
-            <div className="border-b border-line-faint py-[9px]">
+            <div className="border-b border-muted py-[9px]">
               <div className="text-[14px] font-semibold text-foreground">Dauer</div>
               <ul className="mt-1 flex flex-col gap-0.5">
                 <li className="flex items-baseline gap-2 font-mono text-[13px] text-muted-foreground">
@@ -83,7 +83,7 @@ export function SessionLogCard({
           {session.detail.map((row, i) => (
             <div
               key={i}
-              className="border-b border-line-faint py-[9px]"
+              className="border-b border-muted py-[9px]"
             >
               <div className="text-[14px] font-semibold text-foreground">
                 {row.label}
@@ -111,7 +111,7 @@ export function SessionLogCard({
                 <button
                   type="button"
                   onClick={() => setConfirm(false)}
-                  className="rounded-control bg-secondary px-3.5 py-2 text-[13px] font-semibold text-foreground"
+                  className="rounded-control bg-muted px-3.5 py-2 text-[13px] font-semibold text-foreground"
                 >
                   Abbrechen
                 </button>

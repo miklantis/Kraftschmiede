@@ -47,13 +47,13 @@ export function AccountButton({
     <Link
       to="/einstellungen"
       className={cn(
-        "hover:bg-sidebar-accent flex items-center gap-3 rounded-control p-2 text-left transition-colors",
+        "hover:bg-muted flex items-center gap-3 rounded-control p-2 text-left transition-colors",
         "focus-visible:ring-ring/30 outline-none focus-visible:ring-2",
       )}
     >
       {avatar}
       <span className="flex min-w-0 flex-col">
-        <span className="text-sidebar-foreground truncate text-sm font-medium">
+        <span className="text-foreground truncate text-sm font-medium">
           Mein Konto
         </span>
         <span

@@ -99,7 +99,7 @@ export function Calendar({
   for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
 
   const navBtn =
-    "flex size-8 items-center justify-center rounded-[9px] border border-border bg-card text-[#6b7280] hover:bg-primary/5 min-[960px]:size-[34px]";
+    "flex size-8 items-center justify-center rounded-[9px] border border-border bg-card text-foreground-secondary hover:bg-primary/5 min-[960px]:size-[34px]";
 
   return (
     <div className="rounded-[18px] bg-card p-3.5 shadow-card min-[960px]:rounded-[20px] min-[960px]:p-5">
@@ -128,7 +128,7 @@ export function Calendar({
         {DOW.map((d) => (
           <div
             key={d}
-            className="text-center text-[11px] font-semibold text-[#b0b0b6] min-[960px]:text-[12px]"
+            className="text-center text-[11px] font-semibold text-foreground-subtle min-[960px]:text-[12px]"
           >
             {d}
           </div>
@@ -157,7 +157,7 @@ export function Calendar({
                     style={{ gridColumn: ci + 1, gridRow: "1 / " + bgEndLine }}
                     className={
                       "min-h-[54px] rounded-lg min-[960px]:min-h-[72px] min-[960px]:rounded-[10px] " +
-                      (iso === today ? "bg-primary/10" : "bg-[#f7f7f9]")
+                      (iso === today ? "bg-primary/10" : "bg-muted")
                     }
                   />
                 ),
