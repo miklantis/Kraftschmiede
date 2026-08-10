@@ -11,8 +11,8 @@ const lk = {
 };
 
 const phases = [
-  { id: "p1", name: "Wiedereinstieg", weeks: 2 },
-  { id: "p2", name: "Aufbau", weeks: 4 },
+  { id: "p1", name: "Wiedereinstieg", weeks: 2, loadFactor: 1 },
+  { id: "p2", name: "Aufbau", weeks: 4, loadFactor: 1 },
 ];
 
 function s(over: Partial<ReviewSessionInput>): ReviewSessionInput {
@@ -106,5 +106,30 @@ describe("buildJourneyReview", () => {
     const r = buildJourneyReview("j1", phases, [], lk);
     expect(r.groups[0]!.meta).toBe("2 Wochen · 0 Einheiten");
     expect(r.groups).toHaveLength(2);
+  });
+});
+describe("buildJourneyReview \u2013 Lastfaktor", () => {
+  it("haelt die vorgegebene Last in der Meta-Zeile fest", () => {
+    const r = buildJourneyReview(
+      "j1",
+      [
+        { id: "p1", name: "Tasten", weeks: 1, loadFactor: 0.65 },
+        { id: "p2", name: "Standort", weeks: 1, loadFactor: 1 },
+      ],
+      [s({ id: "a", date: "2026-01-05", phaseId: "p1" })],
+      lk,
+    );
+    expect(r.groups[0]!.meta).toBe("1 Woche \u00b7 1 Einheit \u00b7 65 % Last");
+    expect(r.groups[1]!.meta).toBe("1 Woche \u00b7 0 Einheiten \u00b7 100 % Last");
+  });
+
+  it("laesst Journeys ohne Lastfaktor unveraendert", () => {
+    const r = buildJourneyReview(
+      "j1",
+      phases,
+      [s({ id: "a", date: "2026-01-05", phaseId: "p1" })],
+      lk,
+    );
+    expect(r.groups[0]!.meta).toBe("2 Wochen \u00b7 1 Einheit");
   });
 });

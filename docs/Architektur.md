@@ -193,6 +193,12 @@ betroffene Tabelle beim Wiederherstellen leer.
   (`rampLoad` in `coach.ts`, angewandt in `progression.ts`); der 1RM-Einstieg beim
   Phasenwechsel ruht solange. Ohne Lastfaktor-Journey ändert sich nichts – auch dann
   nicht, wenn an den Übungen noch ein altes Referenzgewicht hängt.
+- **Lastfaktor ist überall sichtbar, aber nur wenn er wirkt.** Die Anzeigetexte
+  entstehen an einer Stelle (`lib/loadFactor.ts`: Prozentangabe und Hinweistext) und
+  werden von Phasenliste, Periodisierungskurve (Lastfaktor steckt in der
+  Intensitätslinie), Trainingsbildschirm (`phaseContext.loadNote`, eingefroren auf die
+  laufende Einheit), Rückschau und Coach-Export genutzt. Journeys mit Lastfaktor 1
+  überall sehen unverändert aus – keine zusätzliche Zeile, kein Hinweis.
 - **Datenzugriff gekapselt** in Query-/Mutation-Hooks je Entität (z. B.
   `useSessions`, `useExercises`). Komponenten kennen kein Supabase direkt.
 - **Wiederverwendbare Primitives** in `src/components/ui` (Modal, DataTable, Sheet,

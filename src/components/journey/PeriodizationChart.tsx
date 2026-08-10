@@ -258,6 +258,8 @@ export function PeriodizationChart({
           anc = "end";
           lx = iw;
         }
+        // Gibt die Phase die Last vor, steht der Anteil hinter dem Namen -
+        // sonst waere an der Kurve nicht ablesbar, warum sie flacher liegt.
         g.append("text")
           .attr("x", lx)
           .attr("y", ih + 28)
@@ -265,7 +267,7 @@ export function PeriodizationChart({
           .attr("fill", SUB)
           .attr("font-size", 10)
           .attr("font-family", CHART_FONT)
-          .text(bd.name);
+          .text(bd.loadLabel ? `${bd.name} · ${bd.loadLabel}` : bd.name);
       });
     },
     [weeks, bands, curG, vMin, vMax, iMin, iMax, N, showNow],

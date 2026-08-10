@@ -86,6 +86,7 @@ export function useJourneyView(): {
       deloadWeek: p.deload_week,
       repTargetMin: p.rep_target_min,
       repTargetMax: p.rep_target_max,
+      loadFactor: p.load_factor ?? 1,
     }));
 
     const phases = buildPhaseViews(phaseInputs, placement);

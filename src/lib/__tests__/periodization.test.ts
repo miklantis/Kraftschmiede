@@ -14,6 +14,7 @@ function phase(overrides: Partial<JourneyPhaseInput>): JourneyPhaseInput {
     deloadWeek: null,
     repTargetMin: 8,
     repTargetMax: 12,
+    loadFactor: 1,
     ...overrides,
   };
 }
@@ -76,11 +77,37 @@ describe("buildPeriodization", () => {
     expect(d.iMax).toBeCloseTo(0.25);
   });
 
+  it("senkt die Intensitaet einer Phase mit vorgegebener Last", () => {
+    // Gleiches Repband, aber nur 65 % der alten Last: die Kurve darf hier nicht
+    // so hoch liegen wie in der Phase mit voller Last.
+    const d = buildPeriodization(
+      [
+        phase({ name: "Tasten", weeks: 1, repTargetMin: 8, repTargetMax: 12, loadFactor: 0.65 }),
+        phase({ name: "Standort", weeks: 1, repTargetMin: 8, repTargetMax: 12, loadFactor: 1 }),
+      ],
+      1,
+    );
+    expect(d.weeks[0].intens).toBeCloseTo(0.065);
+    expect(d.weeks[1].intens).toBeCloseTo(0.1);
+  });
+
+  it("beschriftet Baender mit vorgegebener Last", () => {
+    const d = buildPeriodization(
+      [
+        phase({ name: "Tasten", weeks: 1, loadFactor: 0.65 }),
+        phase({ name: "Standort", weeks: 1, loadFactor: 1 }),
+      ],
+      1,
+    );
+    expect(d.bands[0].loadLabel).toBe("65 %");
+    expect(d.bands[1].loadLabel).toBeNull();
+  });
+
   it("setzt die Phasen-Baender ueber ihre Wochenspanne", () => {
     const d = buildPeriodization(phases, 1);
     expect(d.bands).toEqual([
-      { name: "Aufbau", start: 0, end: 3 },
-      { name: "Kraft", start: 4, end: 6 },
+      { name: "Aufbau", start: 0, end: 3, loadLabel: null },
+      { name: "Kraft", start: 4, end: 6, loadLabel: null },
     ]);
   });
 
