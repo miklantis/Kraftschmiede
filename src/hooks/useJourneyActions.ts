@@ -5,6 +5,39 @@ import { useUserId } from "./useUserId";
 import type { JourneyInsert, PhaseInsert } from "@/schemas";
 import type { JourneyTemplateWithPhases } from "./useJourneyTemplates";
 
+type WriteError = { error: { message: string } | null };
+
+// Referenzgewicht aller Uebungen des Nutzers auf den aktuellen Stand einfrieren.
+// Postgres kann Spalte-auf-Spalte nur im SQL selbst; ueber den Client wird
+// darum je Zeile geschrieben (Uebungskatalog eines Nutzers, zweistellig).
+async function freezeReferenceWeights(userId: string): Promise<WriteError> {
+  const { data, error } = await supabase
+    .from("exercises")
+    .select("id, work_weight")
+    .eq("user_id", userId);
+  if (error) return { error };
+  const rows = (data ?? []) as Array<{ id: string; work_weight: number }>;
+  const results = await Promise.all(
+    rows.map((r) =>
+      supabase
+        .from("exercises")
+        .update({ reference_weight: r.work_weight })
+        .eq("id", r.id),
+    ),
+  );
+  return { error: results.find((r) => r.error)?.error ?? null };
+}
+
+// Referenzgewicht wegraeumen (Journey ohne Lastfaktor bzw. archivierte Journey).
+async function clearReferenceWeights(userId: string): Promise<WriteError> {
+  const { error } = await supabase
+    .from("exercises")
+    .update({ reference_weight: null })
+    .eq("user_id", userId)
+    .not("reference_weight", "is", null);
+  return { error };
+}
+
 // Schreibaktionen der Journey-Seite. Anlegen kopiert die Vorlagenphasen in eine
 // neue, aktive Journey und deaktiviert die bisherige (Invariante: genau eine
 // aktive Journey – als Partial Unique Index in der DB). Umbenennen aendert nur
@@ -90,10 +123,23 @@ export function useJourneyActions(): {
         deload_week: p.deload_week,
         rep_target_min: p.rep_target_min,
         rep_target_max: p.rep_target_max,
+        load_factor: p.load_factor,
         position: i,
       }));
       const { error: phErr } = await supabase.from("phases").insert(phaseRows);
       if (phErr) throw new Error(phErr.message);
+
+      // Referenzgewicht: Bezugspunkt einer Journey, die die Last selbst vorgibt.
+      // Bei einer Lastfaktor-Journey den aktuellen Stand einfrieren (work_weight
+      // wird nach jeder Einheit fortgeschrieben und waere sonst nach der ersten
+      // abgesenkten Einheit verloren), sonst den alten Stand wegraeumen.
+      const usesLoadFactor = template.phases.some(
+        (p) => Math.abs((p.load_factor ?? 1) - 1) > 1e-9,
+      );
+      const { error: refErr } = usesLoadFactor
+        ? await freezeReferenceWeights(userId)
+        : await clearReferenceWeights(userId);
+      if (refErr) throw new Error(refErr.message);
 
       return { newJourneyId: journeyId, previousJourneyId };
     },

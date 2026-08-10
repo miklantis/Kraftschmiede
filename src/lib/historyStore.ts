@@ -42,6 +42,8 @@ export interface HistoryStore {
   updateExercise(id: string, patch: Record<string, unknown>): Promise<void>;
   /** Journey abschliessen: inaktiv, Status archiviert, Enddatum setzen. */
   archiveJourney(id: string, endDate: string): Promise<void>;
+  /** Eingefrorene Referenzgewichte wegraeumen (Ende einer Lastfaktor-Journey). */
+  clearReferenceWeights(): Promise<void>;
   /** Skill-Fortschritt schreiben: anlegen (isNew) oder fortschreiben. */
   writeSkillProgress(write: SkillProgressWrite): Promise<void>;
 }
@@ -96,6 +98,14 @@ export const supabaseHistoryStore: HistoryStore = {
         .eq("id", id),
     );
   },
+  async clearReferenceWeights() {
+    must(
+      await supabase
+        .from("exercises")
+        .update({ reference_weight: null })
+        .not("reference_weight", "is", null),
+    );
+  },
   async writeSkillProgress(write) {
     if (write.isNew) {
       must(
@@ -138,6 +148,7 @@ export interface MemoryHistoryLog {
   exercisePatches: Array<{ id: string; patch: Record<string, unknown> }>;
   skillProgress: SkillProgressWrite[];
   archivedJourneys: Array<{ id: string; endDate: string }>;
+  clearedReferenceWeights: number;
 }
 
 /** Erzeugt einen Verlauf-Speicher, der nichts schreibt, sondern jeden Handgriff
@@ -156,6 +167,7 @@ export function createMemoryHistoryStore(): {
     exercisePatches: [],
     skillProgress: [],
     archivedJourneys: [],
+    clearedReferenceWeights: 0,
   };
   const store: HistoryStore = {
     async insertSession(row) {
@@ -184,6 +196,9 @@ export function createMemoryHistoryStore(): {
     },
     async archiveJourney(id, endDate) {
       log.archivedJourneys.push({ id, endDate });
+    },
+    async clearReferenceWeights() {
+      log.clearedReferenceWeights += 1;
     },
   };
   return { store, log };

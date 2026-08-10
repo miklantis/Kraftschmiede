@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.25.0",
+      "date": "2026-08-10",
+      "changes": [
+        "Die Journey \"Wiederaufbau nach Fasten\" steuert das Gewicht jetzt wirklich selbst: Beim Start der Journey merkt sich die App dein Gewicht je Übung, und in den ersten drei Wochen trainierst du mit 65, 80 und 95 Prozent davon. Der Coach darf in dieser Zeit nicht darüber hinausgehen und steuert nur die Wiederholungen. In Woche vier landest du exakt wieder beim alten Gewicht und der Coach arbeitet ab dann wie gewohnt.",
+        "Nach unten reagiert der Coach unverändert: Bei Schmerz, Versagen oder zu harten Sätzen senkt er das Gewicht auch innerhalb der Rampe.",
+        "Beim Wechsel oder Abschluss der Journey wird das gemerkte Gewicht wieder verworfen. Alle anderen Vorlagen verhalten sich unverändert."
+      ]
+    },
+    {
       "version": "1.24.7",
       "date": "2026-08-10",
       "changes": [

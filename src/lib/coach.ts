@@ -10,7 +10,12 @@ import {
   generateWarmup,
   volumeForWeek,
 } from "@/engine";
-import type { SuitabilityResult, SuggestResult, SuggestExercise } from "@/engine";
+import type {
+  SuitabilityResult,
+  SuggestResult,
+  SuggestExercise,
+  RampLoad,
+} from "@/engine";
 import type {
   Exercise,
   SuitabilityCtx,
@@ -162,6 +167,9 @@ export interface CoachBuildExercise {
   workWeight: number;
   targetScore: number;
   barId: string | null;
+  // Eingefrorenes Arbeitsgewicht vom Start einer Lastfaktor-Journey (null,
+  // solange keine solche laeuft). Bezugspunkt der Rampe.
+  referenceWeight: number | null;
 }
 
 // Coach-Entscheidung mit dem zusaetzlichen "carry" (bewusst keine Wertung) fuer
@@ -254,6 +262,22 @@ export interface SuggestBuildCtx {
   repTarget?: [number, number] | null;
   // Freies Training ohne aktive Journey: keine Progression, nur Uebernahme.
   freeMode?: boolean;
+  // Lastfaktor der aktiven Phase; null, wenn die laufende Journey ohne
+  // Lastfaktor arbeitet (Normalfall).
+  loadFactor?: number | null;
+}
+
+// Vorgabe der Journey fuer diese Uebung: Referenzgewicht x Lastfaktor. null,
+// solange keine Lastfaktor-Journey laeuft oder kein Referenzgewicht eingefroren
+// ist – dann rechnet der Coach wie gewohnt aus der letzten Leistung.
+export function rampLoad(
+  exo: CoachBuildExercise,
+  loadFactor: number | null | undefined,
+): RampLoad | null {
+  if (loadFactor == null || !(loadFactor > 0)) return null;
+  const ref = exo.referenceWeight;
+  if (ref == null || !(ref > 0)) return null;
+  return { weight: ref * loadFactor, cap: loadFactor < 1 - 1e-9 };
 }
 
 // Gewichts-/Wdh.-Vorschlag. Core/Bodyweight -> coreCarry; sonst Doppelprogression
@@ -283,6 +307,7 @@ export function suggestForExercise(
     plates: ctx.plates,
     dumbbells: ctx.dumbbells,
     reentry: focus === "reentry",
+    ramp: rampLoad(exo, ctx.loadFactor),
   });
 }
 
@@ -322,6 +347,8 @@ export interface SuggestWithBarInput<B extends { weight: number }> {
   repTarget: [number, number] | null;
   // Freies Training ohne aktive Journey (Vorbelegung statt Progression).
   freeMode?: boolean;
+  // Lastfaktor der aktiven Phase; null ausserhalb einer Lastfaktor-Journey.
+  loadFactor?: number | null;
 }
 
 export interface SuggestWithBarResult<B> {
@@ -345,6 +372,7 @@ export function suggestWithBar<B extends { weight: number }>(
       plates: input.plates,
       repTarget: input.repTarget,
       freeMode: input.freeMode,
+      loadFactor: input.loadFactor,
     });
     const bar = pickBarForTarget(rawSug.weight, input.bars);
     const suggestion = suggestForExercise(exo, {
@@ -354,6 +382,7 @@ export function suggestWithBar<B extends { weight: number }>(
       plates: input.plates,
       repTarget: input.repTarget,
       freeMode: input.freeMode,
+      loadFactor: input.loadFactor,
     });
     return { suggestion, bar };
   }
@@ -368,6 +397,7 @@ export function suggestWithBar<B extends { weight: number }>(
       dumbbells: input.dumbbells,
       repTarget: input.repTarget,
       freeMode: input.freeMode,
+      loadFactor: input.loadFactor,
     });
     return { suggestion, bar: null };
   }
@@ -378,6 +408,7 @@ export function suggestWithBar<B extends { weight: number }>(
     plates: input.plates,
     repTarget: input.repTarget,
     freeMode: input.freeMode,
+    loadFactor: input.loadFactor,
   });
   return { suggestion, bar: null };
 }

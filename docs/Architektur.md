@@ -184,6 +184,15 @@ betroffene Tabelle beim Wiederherstellen leer.
   Glue-/Coach-Schicht greift darauf zu.
 - **Coach als eigenes, testbares Modul** (`coach.ts`): nimmt Zustand explizit herein,
   gibt Entscheidungen heraus – gleiche Form wie die Engine. Kein DOM-Bezug.
+- **Lastfaktor schlägt Doppelprogression.** Arbeitet die laufende Journey mit
+  Lastfaktoren (irgendeine Phase ≠ 1), gibt sie das Arbeitsgewicht vor:
+  `reference_weight × load_factor`, abgerundet auf ladbare Scheiben bzw.
+  Kurzhantelstufen. Unter Lastfaktor 1 ist dieser Wert zugleich Ziel und Obergrenze
+  (der Coach steuert nur noch die Wiederholungen), bei Lastfaktor 1 nur Untergrenze.
+  Nach unten reagiert der Coach unverändert. Die Vorgabe entsteht an einer Stelle
+  (`rampLoad` in `coach.ts`, angewandt in `progression.ts`); der 1RM-Einstieg beim
+  Phasenwechsel ruht solange. Ohne Lastfaktor-Journey ändert sich nichts – auch dann
+  nicht, wenn an den Übungen noch ein altes Referenzgewicht hängt.
 - **Datenzugriff gekapselt** in Query-/Mutation-Hooks je Entität (z. B.
   `useSessions`, `useExercises`). Komponenten kennen kein Supabase direkt.
 - **Wiederverwendbare Primitives** in `src/components/ui` (Modal, DataTable, Sheet,

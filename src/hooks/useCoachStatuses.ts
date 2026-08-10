@@ -101,6 +101,7 @@ export function useCoachStatuses(): UseCoachStatuses {
         workWeight: e.work_weight,
         targetScore: e.target_score,
         barId: e.bar_id,
+        referenceWeight: e.reference_weight,
       };
       const lastEntry = lastEntryByExercise[e.id] ?? null;
       const hadPriorData = workSets(lastEntry).length > 0;
@@ -118,6 +119,7 @@ export function useCoachStatuses(): UseCoachStatuses {
         dumbbells,
         repTarget,
         freeMode,
+        loadFactor: ph.loadFactor,
       });
       out[e.id] = coachStatusFromSuggestion(suggestion, hadPriorData);
     }
