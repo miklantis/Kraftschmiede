@@ -148,6 +148,54 @@ describe("buildCoachExport - Zuordnung und Saetze", () => {
   });
 });
 
+describe("buildCoachExport - aktives Wiederholungsband", () => {
+  // Uebungskatalog mit einer Kraft- und einer Core-Uebung; das Katalog-Band der
+  // Kniebeuge (6-10) widerspricht bewusst dem Phasen-Band.
+  function rawMitKatalog(): RawExportData {
+    const raw = emptyRaw();
+    raw.exercises = [
+      { id: "e1", name: "Back Squat", profile: "strength", position: 0, rep_range_min: 6, rep_range_max: 10, work_weight: 27.5 },
+      { id: "e2", name: "Core Situps", profile: "core", position: 1, rep_range_min: 12, rep_range_max: 20, work_weight: 10 },
+    ];
+    raw.settings = { weekly_frequency_target: 3, unit: "kg", rm_formula: "mean" };
+    return raw;
+  }
+
+  it("weist das Phasen-Band als aktives Band aus, Katalog-Band bleibt stehen", () => {
+    const raw = rawMitKatalog();
+    raw.journeys = [{ id: "j1", name: "Rückkehr", active: true, start_date: "2026-05-31" }];
+    raw.phases = [
+      { id: "p1", journey_id: "j1", name: "Maximalkraft", focus: "strength", weeks: 5, sets_start: 3, sets_end: 5, rep_target_min: 4, rep_target_max: 6, position: 0 },
+    ];
+
+    const out = buildCoachExport(raw, { weeks: null, today: TODAY });
+    const squat = out.exercises.find((e) => e.name === "Back Squat");
+    expect(squat?.repBand).toBe("6-10");
+    expect(squat?.activeRepBand).toBe("4-6");
+    // Core folgt der Phase nicht - dort gilt weiter das Uebungs-Band.
+    const core = out.exercises.find((e) => e.name === "Core Situps");
+    expect(core?.activeRepBand).toBeUndefined();
+    expect(out.repBandNote).toContain("activeRepBand");
+  });
+
+  it("leitet das aktive Band aus dem Fokus ab, wenn die Phase keins setzt", () => {
+    const raw = rawMitKatalog();
+    raw.journeys = [{ id: "j1", name: "Rückkehr", active: true, start_date: "2026-05-31" }];
+    raw.phases = [
+      { id: "p1", journey_id: "j1", name: "Maximalkraft", focus: "strength", weeks: 5, sets_start: 3, sets_end: 5, position: 0 },
+    ];
+
+    const out = buildCoachExport(raw, { weeks: null, today: TODAY });
+    expect(out.exercises[0].activeRepBand).toBe("4-6");
+  });
+
+  it("laesst das aktive Band ohne laufende Journey weg", () => {
+    const out = buildCoachExport(rawMitKatalog(), { weeks: null, today: TODAY });
+    expect(out.exercises[0].activeRepBand).toBeUndefined();
+    expect(out.repBandNote).toBeUndefined();
+  });
+});
+
 describe("buildCoachExport - Skill und Yoga", () => {
   it("formatiert Skill-Einheit mit Haltezeit, Ergebnis und Fortschritt", () => {
     const raw = emptyRaw();
