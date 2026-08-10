@@ -11,7 +11,8 @@
 // template_id, idempotent).
 
 import type { QueryClient } from "@tanstack/react-query";
-import { supabase } from "./supabase";
+import { supabaseJourneyStore } from "./journeyStore";
+import { writeZuordnungAction } from "./journeyWrite";
 import { INVALIDATE, invalidateGroup } from "./queryKeys";
 
 export const JOURNEY_WORKOUT_MUTATION_KEY = ["journeyWorkoutAction"] as const;
@@ -37,23 +38,27 @@ export type JourneyWorkoutActionPayload =
   | JourneyWorkoutAssignPayload
   | JourneyWorkoutUnassignPayload;
 
+// Das gespeicherte Paket (kind) auf die Absicht der Naht (type) bringen. Die
+// Feldnamen des Pakets bleiben Zeichen fuer Zeichen gleich: pausierte Mutationen
+// aus einer aelteren Sitzung werden nach dem Neustart genau so wieder
+// eingespielt (ADR-0001/ADR-0009).
 async function writeAction(p: JourneyWorkoutActionPayload): Promise<void> {
-  if (p.kind === "assign") {
-    const { error } = await supabase.from("journey_workouts").insert({
-      id: p.id,
-      user_id: p.userId,
-      journey_id: p.journeyId,
-      template_id: p.templateId,
-    });
-    if (error) throw new Error(error.message);
-  } else {
-    const { error } = await supabase
-      .from("journey_workouts")
-      .delete()
-      .eq("journey_id", p.journeyId)
-      .eq("template_id", p.templateId);
-    if (error) throw new Error(error.message);
-  }
+  await writeZuordnungAction(
+    supabaseJourneyStore,
+    p.kind === "assign"
+      ? {
+          type: "assign",
+          id: p.id,
+          userId: p.userId,
+          journeyId: p.journeyId,
+          templateId: p.templateId,
+        }
+      : {
+          type: "unassign",
+          journeyId: p.journeyId,
+          templateId: p.templateId,
+        },
+  );
 }
 
 /** Default-mutationFn + Auffrischung registrieren. Greift auch fuer nach einem
