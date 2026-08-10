@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 
 export interface EquipmentItem {
@@ -13,7 +14,7 @@ export interface EquipmentItem {
 export function useEquipment() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["equipment", userId],
+    queryKey: queryKeys.equipment(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<EquipmentItem[]> => {
       const { data, error } = await supabase
@@ -31,7 +32,7 @@ export function useEquipment() {
 export function useOwnedEquipmentKeys() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["ownedEquipment", userId],
+    queryKey: queryKeys.ownedEquipment(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<string[]> => {
       const { data, error } = await supabase
@@ -55,7 +56,7 @@ export interface BarItem {
 export function useBars() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["bars", userId],
+    queryKey: queryKeys.bars(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<BarItem[]> => {
       const { data, error } = await supabase
@@ -76,7 +77,7 @@ export interface WeightItem {
 export function usePlates() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["plates", userId],
+    queryKey: queryKeys.plates(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<WeightItem[]> => {
       const { data, error } = await supabase
@@ -93,7 +94,7 @@ export function usePlates() {
 export function useKettlebells() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["kettlebells", userId],
+    queryKey: queryKeys.kettlebells(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<WeightItem[]> => {
       const { data, error } = await supabase
@@ -110,7 +111,7 @@ export function useKettlebells() {
 export function useDumbbells() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["dumbbells", userId],
+    queryKey: queryKeys.dumbbells(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<WeightItem[]> => {
       const { data, error } = await supabase

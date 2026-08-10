@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { TemplateRow } from "@/schemas";
 
@@ -28,7 +29,7 @@ interface TemplateExerciseLink {
 export function useTemplates() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["templates", userId],
+    queryKey: queryKeys.templates(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<TemplateWithExercises[]> => {
       const { data, error } = await supabase

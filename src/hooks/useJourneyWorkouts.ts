@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 
 // Liest die Zuordnung (journey_workouts) einer Journey und liefert die Liste der
@@ -10,7 +11,7 @@ import { useUserId } from "./useUserId";
 export function useJourneyWorkouts(journeyId: string | null) {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["journeyWorkouts", userId, journeyId],
+    queryKey: queryKeys.journeyWorkouts(userId, journeyId),
     enabled: userId !== null && journeyId !== null,
     queryFn: async (): Promise<string[]> => {
       const { data, error } = await supabase

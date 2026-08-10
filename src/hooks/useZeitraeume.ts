@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { ZeitraumRow } from "@/schemas";
 
@@ -9,7 +10,7 @@ import type { ZeitraumRow } from "@/schemas";
 export function useZeitraeume() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["zeitraeume", userId],
+    queryKey: queryKeys.zeitraeume(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<ZeitraumRow[]> => {
       const { data, error } = await supabase

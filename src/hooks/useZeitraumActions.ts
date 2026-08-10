@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { INVALIDATE, invalidateGroup } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { ZeitraumTyp } from "@/schemas";
 
@@ -69,7 +70,7 @@ export function useZeitraumActions(): {
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["zeitraeume"] });
+      invalidateGroup(queryClient, INVALIDATE.zeitraeume);
     },
   });
 

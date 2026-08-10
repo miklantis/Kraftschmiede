@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { INVALIDATE, invalidateGroup } from "@/lib/queryKeys";
 import { todayISO } from "@/lib/format";
 import { useUserId } from "./useUserId";
 import type { JourneyInsert, PhaseInsert } from "@/schemas";
@@ -60,10 +61,9 @@ export function useJourneyActions(): {
   const queryClient = useQueryClient();
   const userId = useUserId();
 
+  // Die abgeloeste Journey landet im Archiv – die Gruppe frischt beides auf.
   const invalidate = (): void => {
-    void queryClient.invalidateQueries({ queryKey: ["activeJourney", userId] });
-    // Die abgeloeste Journey landet im Archiv – Liste mit auffrischen.
-    void queryClient.invalidateQueries({ queryKey: ["archivedJourneys"] });
+    invalidateGroup(queryClient, INVALIDATE.journeyChange);
   };
 
   const create = useMutation({
@@ -174,7 +174,7 @@ export function useJourneyActions(): {
     }));
     const { error } = await supabase.from("journey_workouts").insert(rows);
     if (error) throw new Error(error.message);
-    void queryClient.invalidateQueries({ queryKey: ["journeyWorkouts"] });
+    invalidateGroup(queryClient, INVALIDATE.journeyWorkouts);
   };
 
   const renameM = useMutation({

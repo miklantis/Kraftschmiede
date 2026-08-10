@@ -102,23 +102,3 @@ export async function writeEditSession(
     await store.updateExercise(p.id, exercisePatchToRecord(p));
   }
 }
-
-/** Welche Ansichten nach welchem Schreibvorgang aufzufrischen sind – an einer
- *  Stelle, damit Beenden/Bearbeiten/Skill nicht je eigene Schluessel pflegen.
- *  Die Mutationen lesen diese Schluessel in ihrer onSuccess. */
-export const HISTORY_INVALIDATE = {
-  finishStrength: [
-    ["sessions"],
-    ["sessions-detailed"],
-    ["exercises"],
-    ["activeJourney"],
-    ["archivedJourneys"],
-  ],
-  finishSkill: [
-    ["sessions"],
-    ["sessions-detailed"],
-    ["skillProgress"],
-    ["trainingOverview"],
-  ],
-  edit: [["sessions"], ["sessions-detailed"], ["exercises"]],
-} as const;

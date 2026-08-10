@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabaseConfig } from "@/lib/supabase";
+import { queryKeys } from "@/lib/queryKeys";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -24,7 +25,7 @@ export function AccountCard(): React.ReactElement {
   const initial = (email.charAt(0) || "K").toUpperCase();
 
   const connection = useQuery({
-    queryKey: ["verbindung"],
+    queryKey: queryKeys.verbindung(),
     queryFn: checkConnection,
     retry: 1,
   });

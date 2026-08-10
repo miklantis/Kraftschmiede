@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { JourneyTemplateRow, JourneyTemplatePhaseRow } from "@/schemas";
 
@@ -14,7 +15,7 @@ export interface JourneyTemplateWithPhases extends JourneyTemplateRow {
 export function useJourneyTemplates() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["journeyTemplates", userId],
+    queryKey: queryKeys.journeyTemplates(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<JourneyTemplateWithPhases[]> => {
       const { data, error } = await supabase

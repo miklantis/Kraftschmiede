@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { INVALIDATE, invalidateGroup } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 
 // Schreibzugriffe auf die Koerpermessungen (composition), gebuendelt in einem
@@ -85,7 +86,7 @@ export function useCompositionActions(): {
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["composition", userId] });
+      invalidateGroup(queryClient, INVALIDATE.composition);
     },
   });
 

@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import {
   JOURNEY_WORKOUT_MUTATION_KEY,
   type JourneyWorkoutActionPayload,
@@ -35,7 +36,7 @@ export function useJourneyWorkoutActions(): UseJourneyWorkoutActions {
       // Optimistisch: den Schalter sofort spiegeln (auch offline). Als Array
       // gehalten, damit der JSON-serialisierte Offline-Cache heil bleibt.
       qc.setQueryData<string[]>(
-        ["journeyWorkouts", userId, journeyId],
+        queryKeys.journeyWorkouts(userId, journeyId),
         (old) => {
           const list = Array.isArray(old) ? old : [];
           if (next) {

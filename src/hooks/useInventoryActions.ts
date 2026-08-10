@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { INVALIDATE, invalidateGroup } from "@/lib/queryKeys";
+import type { QueryRoot } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 
 // Schreibzugriffe aufs Inventar, gebuendelt in einem Hook. Alle Aktionen laufen
@@ -87,18 +89,16 @@ export function useInventoryActions(): {
       if (error) throw new Error(error.message);
     },
     onSuccess: (_data, action) => {
-      const map: Record<InventoryAction["type"], string[]> = {
-        addPlate: ["plates"],
-        delPlate: ["plates"],
-        addKb: ["kettlebells"],
-        delKb: ["kettlebells"],
-        addDb: ["dumbbells"],
-        delDb: ["dumbbells"],
-        toggleEquip: ["equipment", "ownedEquipment"],
+      const gruppe: Record<InventoryAction["type"], readonly QueryRoot[]> = {
+        addPlate: INVALIDATE.plates,
+        delPlate: INVALIDATE.plates,
+        addKb: INVALIDATE.kettlebells,
+        delKb: INVALIDATE.kettlebells,
+        addDb: INVALIDATE.dumbbells,
+        delDb: INVALIDATE.dumbbells,
+        toggleEquip: INVALIDATE.equipment,
       };
-      for (const key of map[action.type]) {
-        void queryClient.invalidateQueries({ queryKey: [key, userId] });
-      }
+      invalidateGroup(queryClient, gruppe[action.type]);
     },
   });
 

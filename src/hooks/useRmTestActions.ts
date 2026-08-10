@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { INVALIDATE, invalidateGroup } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 
 // Schreibzugriffe auf die 1RM-Tests, gebuendelt in einem Hook (gemeinsamer
@@ -105,8 +106,7 @@ export function useRmTestActions(): {
       }
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["rmTests"] });
-      void queryClient.invalidateQueries({ queryKey: ["exercises"] });
+      invalidateGroup(queryClient, INVALIDATE.rmTest);
     },
   });
 

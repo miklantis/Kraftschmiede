@@ -13,6 +13,7 @@
 
 import type { QueryClient } from "@tanstack/react-query";
 import { supabase } from "./supabase";
+import { INVALIDATE, invalidateGroup } from "./queryKeys";
 
 export const TEMPLATE_MUTATION_KEY = ["templateAction"] as const;
 
@@ -107,7 +108,7 @@ export function registerTemplateMutation(qc: QueryClient): void {
       writeTemplateAction(vars as TemplateActionPayload),
     onSuccess: () => {
       // Prefix-Match trifft ["templates", userId].
-      void qc.invalidateQueries({ queryKey: ["templates"] });
+      invalidateGroup(qc, INVALIDATE.templates);
     },
   });
 }

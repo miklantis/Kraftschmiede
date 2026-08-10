@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { JourneyRow, PhaseRow } from "@/schemas";
 
@@ -13,7 +14,7 @@ export interface ArchivedJourneyDetail extends JourneyRow {
 export function useArchivedJourney(journeyId: string | null) {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["archivedJourney", userId, journeyId],
+    queryKey: queryKeys.archivedJourney(userId, journeyId),
     enabled: userId !== null && journeyId !== null,
     queryFn: async (): Promise<ArchivedJourneyDetail | null> => {
       const { data, error } = await supabase

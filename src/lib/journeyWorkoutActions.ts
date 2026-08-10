@@ -12,6 +12,7 @@
 
 import type { QueryClient } from "@tanstack/react-query";
 import { supabase } from "./supabase";
+import { INVALIDATE, invalidateGroup } from "./queryKeys";
 
 export const JOURNEY_WORKOUT_MUTATION_KEY = ["journeyWorkoutAction"] as const;
 
@@ -63,7 +64,7 @@ export function registerJourneyWorkoutMutation(qc: QueryClient): void {
       writeAction(vars as JourneyWorkoutActionPayload),
     onSuccess: () => {
       // Prefix-Match trifft ["journeyWorkouts", userId, journeyId].
-      void qc.invalidateQueries({ queryKey: ["journeyWorkouts"] });
+      invalidateGroup(qc, INVALIDATE.journeyWorkouts);
     },
   });
 }

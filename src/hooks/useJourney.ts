@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { JourneyRow, PhaseRow } from "@/schemas";
 
@@ -12,7 +13,7 @@ export interface ActiveJourney extends JourneyRow {
 export function useActiveJourney() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["activeJourney", userId],
+    queryKey: queryKeys.activeJourney(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<ActiveJourney | null> => {
       const { data, error } = await supabase

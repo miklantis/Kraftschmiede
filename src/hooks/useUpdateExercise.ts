@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { INVALIDATE, invalidateGroup } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 
 // Schreibt die im "Uebung anpassen"-Popup angepassten Felder einer Uebung
@@ -36,7 +37,7 @@ export function useUpdateExercise(): {
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["exercises", userId] });
+      invalidateGroup(queryClient, INVALIDATE.exerciseUpdate);
     },
   });
 

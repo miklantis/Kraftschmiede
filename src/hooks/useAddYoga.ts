@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { INVALIDATE, invalidateGroup } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { SessionInsert } from "@/schemas";
 
@@ -33,10 +34,7 @@ export function useAddYoga(): {
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["sessions", userId] });
-      void queryClient.invalidateQueries({
-        queryKey: ["sessions-detailed", userId],
-      });
+      invalidateGroup(queryClient, INVALIDATE.addYoga);
     },
   });
 

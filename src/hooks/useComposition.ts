@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { CompositionRow } from "@/schemas";
 
@@ -8,7 +9,7 @@ import type { CompositionRow } from "@/schemas";
 export function useComposition() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["composition", userId],
+    queryKey: queryKeys.composition(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<CompositionRow[]> => {
       const { data, error } = await supabase

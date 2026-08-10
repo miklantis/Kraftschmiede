@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { CompositionMilestoneRow } from "@/schemas";
 
@@ -11,7 +12,7 @@ import type { CompositionMilestoneRow } from "@/schemas";
 export function useCompositionMilestones() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["compMilestones", userId],
+    queryKey: queryKeys.compMilestones(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<CompositionMilestoneRow[]> => {
       const { data, error } = await supabase

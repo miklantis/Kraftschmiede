@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { SessionRow } from "@/schemas";
 
@@ -17,7 +18,7 @@ interface SessionExerciseLink {
 export function useSessions() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["sessions", userId],
+    queryKey: queryKeys.sessions(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<SessionWithExercises[]> => {
       const { data, error } = await supabase

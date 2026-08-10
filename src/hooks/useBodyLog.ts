@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { BodyLogRow } from "@/schemas";
 
@@ -10,7 +11,7 @@ import type { BodyLogRow } from "@/schemas";
 export function useBodyLog() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["body-log", userId],
+    queryKey: queryKeys.bodyLog(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<BodyLogRow[]> => {
       const { data, error } = await supabase

@@ -14,7 +14,8 @@ import type {
   SetInsert,
 } from "@/schemas";
 import { supabaseHistoryStore } from "./historyStore";
-import { writeFinishSkill, HISTORY_INVALIDATE } from "./historyWrite";
+import { writeFinishSkill } from "./historyWrite";
+import { INVALIDATE, invalidateGroup } from "./queryKeys";
 
 export const FINISH_SKILL_MUTATION_KEY = ["finishSkill"] as const;
 
@@ -46,9 +47,7 @@ export function registerFinishSkillMutation(qc: QueryClient): void {
     mutationFn: (vars: unknown) =>
       writeFinishSkill(supabaseHistoryStore, vars as FinishSkillPayload),
     onSuccess: () => {
-      for (const key of HISTORY_INVALIDATE.finishSkill) {
-        void qc.invalidateQueries({ queryKey: key });
-      }
+      invalidateGroup(qc, INVALIDATE.finishSkill);
     },
   });
 }
