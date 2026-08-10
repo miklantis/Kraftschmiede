@@ -128,6 +128,7 @@ async function seedJourneyTemplates(userId: string): Promise<void> {
         deload_week: p.deloadWeek,
         rep_target_min: p.repTargetMin,
         rep_target_max: p.repTargetMax,
+        load_factor: p.loadFactor,
         position: i,
       });
     });
