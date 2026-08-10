@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.25.3",
+      "date": "2026-08-10",
+      "changes": [
+        "Aufräumen unter der Haube: Das Anlegen, Ändern und Löschen von Zeiträumen (Urlaub, Krankheit, Pause und so weiter) läuft jetzt über einen klar getrennten Weg zur Datenbank. Dadurch lässt sich dieser Vorgang erstmals automatisch prüfen – er war bisher von keinem Test erreichbar.",
+        "Für dich ändert sich nichts sichtbar: Zeiträume verhalten sich genau wie vorher. Weitere Bereiche folgen nach und nach."
+      ]
+    },
+    {
       "version": "1.25.2",
       "date": "2026-08-10",
       "changes": [
