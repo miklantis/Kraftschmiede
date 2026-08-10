@@ -1,20 +1,18 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
 import { INVALIDATE, invalidateGroup } from "@/lib/queryKeys";
+import { supabaseExerciseStore } from "@/lib/exerciseStore";
+import { writeExerciseEdit } from "@/lib/exerciseWrite";
+import type { ExerciseEditValues } from "@/lib/exerciseWrite";
 import { useUserId } from "./useUserId";
 
 // Schreibt die im "Uebung anpassen"-Popup angepassten Felder einer Uebung
 // zurueck: Arbeitsgewicht, Ziel-Score und (sofern nicht aus der aktiven Phase
 // gesperrt) das Repband. Bewusst genau die drei Felder wie V1 – keine weiteren.
+// Der Datenbank-Handgriff liegt hinter der Naht ExerciseStore/exerciseWrite.
 // Nach Erfolg wird der Uebungskatalog neu geladen; die Detailseite leitet ihre
 // Statistik daraus ab.
-export interface ExerciseEditValues {
-  work_weight: number;
-  target_score: number;
-  // Nur gesetzt, wenn das Repband editierbar war (nicht aus der Phase gesperrt).
-  rep_range_min?: number;
-  rep_range_max?: number;
-}
+
+export type { ExerciseEditValues };
 
 export function useUpdateExercise(): {
   update: (id: string, values: ExerciseEditValues) => Promise<void>;
@@ -25,17 +23,11 @@ export function useUpdateExercise(): {
   const userId = useUserId();
 
   const mutation = useMutation({
-    mutationFn: async (vars: {
+    mutationFn: (vars: {
       id: string;
       values: ExerciseEditValues;
-    }): Promise<void> => {
-      if (userId === null) throw new Error("Nicht angemeldet.");
-      const { error } = await supabase
-        .from("exercises")
-        .update(vars.values)
-        .eq("id", vars.id);
-      if (error) throw new Error(error.message);
-    },
+    }): Promise<void> =>
+      writeExerciseEdit(supabaseExerciseStore, userId, vars.id, vars.values),
     onSuccess: () => {
       invalidateGroup(queryClient, INVALIDATE.exerciseUpdate);
     },

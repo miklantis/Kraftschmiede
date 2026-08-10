@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.25.5",
+      "date": "2026-08-10",
+      "changes": [
+        "Aufräumen unter der Haube: Übungs-Meilensteine, 1RM-Tests und das Anpassen einer Übung laufen jetzt über denselben klar getrennten Weg zur Datenbank wie Zeiträume und Messungen. Damit ist erstmals automatisch geprüft, dass ein 1RM-Test zuerst den Test speichert und danach den Rekord der Übung nachzieht.",
+        "Für dich ändert sich nichts sichtbar: Meilensteine, Tests und das Bearbeiten einer Übung verhalten sich genau wie vorher – auch das Zurücknehmen des Rekords beim Löschen des jüngsten Tests."
+      ]
+    },
+    {
       "version": "1.25.4",
       "date": "2026-08-10",
       "changes": [
