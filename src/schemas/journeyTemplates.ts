@@ -29,7 +29,9 @@ export const journeyTemplateInsert = journeyTemplateRow
 export type JourneyTemplateInsert = z.infer<typeof journeyTemplateInsert>;
 
 // journey_template_phases – Phase einer Journey-Vorlage. rep_target_* steuert
-// spaeter die Doppelprogression.
+// spaeter die Doppelprogression. load_factor ist der Anteil des
+// Referenzgewichts, mit dem in dieser Phase gearbeitet wird (1.0 = volles
+// Niveau, also das gewohnte Verhalten).
 export const journeyTemplatePhaseRow = z.object({
   id: uuid,
   user_id: uuid,
@@ -42,6 +44,7 @@ export const journeyTemplatePhaseRow = z.object({
   deload_week: z.number().int().nullable(),
   rep_target_min: z.number().int().nullable(),
   rep_target_max: z.number().int().nullable(),
+  load_factor: z.number(),
   position: z.number().int(),
 });
 export type JourneyTemplatePhaseRow = z.infer<typeof journeyTemplatePhaseRow>;
@@ -52,6 +55,7 @@ export const journeyTemplatePhaseInsert = journeyTemplatePhaseRow
     deload_week: true,
     rep_target_min: true,
     rep_target_max: true,
+    load_factor: true,
     position: true,
   });
 export type JourneyTemplatePhaseInsert = z.infer<

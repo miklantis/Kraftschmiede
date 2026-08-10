@@ -72,7 +72,9 @@ Recovery-Fenster, Timer).
 - **exercises** – key, name, profile (strength/core/bodyweight), tier (main/accessory),
   equipment, bar_id (FK), description, metric (reps/duration bei Körpergewicht),
   muscle_groups (grobe Tags als text[]), rep_range_min/max, target_score, work_weight,
-  recovery_hours, rm/rm_as_of/rm_stale (zwischengespeichertes 1RM für den Coach), position
+  reference_weight (nullable, eingefrorenes Arbeitsgewicht zum Start einer
+  Lastfaktor-Journey), recovery_hours, rm/rm_as_of/rm_stale (zwischengespeichertes 1RM
+  für den Coach), position
 - **exercise_muscles** – feine Regionen-Map: exercise_id (FK), region_id (Code-/SVG-Region),
   kategorie (primär/sekundär/stabilisierend)
 - **templates** – key, name, image, active (Soft-Archiv), position. Namen pro Nutzer
@@ -80,7 +82,8 @@ Recovery-Fenster, Timer).
 - **template_exercises** – template_id (FK), exercise_id (FK), position
 - **journey_templates** – key, name, tagline, for_whom, summary, position
 - **journey_template_phases** – journey_template_id (FK), name, focus, weeks,
-  sets_start, sets_end, deload_week (nullable), rep_target_min/max, position
+  sets_start, sets_end, deload_week (nullable), rep_target_min/max, load_factor
+  (Anteil des Referenzgewichts, Default 1.0 = gewohntes Verhalten), position
 - **skills** – key, name, category, image, position
 - **skill_phases** – skill_id (FK), label, description, consecutive_sessions
   (aufeinanderfolgende Erfolge bis Aufstieg), position
@@ -99,7 +102,8 @@ Begründung in ADR-0003.
   Partial Unique Index `journeys_one_active_per_user` auf
   `user_id where active` -> genau eine aktive Journey pro Nutzer (ADR-0004)
 - **phases** – journey_id (FK), name, focus, weeks, sets_start, sets_end, deload_week
-  (nullable), rep_target_min/max, position
+  (nullable), rep_target_min/max, load_factor (Anteil des Referenzgewichts,
+  Default 1.0), position
 - **journey_workouts** – ordnet Workouts der Journey zu: journey_id (FK), template_id (FK),
   `unique(user_id, journey_id, template_id)`. Reine Ja/Nein-Menge, bewusst ohne position
   (die Empfehlungsreihenfolge bestimmt der Coach); ON DELETE CASCADE über beide FKs
