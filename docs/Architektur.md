@@ -209,8 +209,10 @@ betroffene Tabelle beim Wiederherstellen leer.
   „Absicht → Handgriffe" samt Feld-Abbildung und kennt Supabase nicht; der Hook trägt
   nur noch Absicht und Auffrischung. Dadurch ist jeder umgestellte Schreibpfad ohne
   echte Datenbank prüfbar (`src/lib/__tests__/<bereich>Write.test.ts`). Umgestellt:
-  Verlauf (`historyStore`/`historyWrite`), Zeiträume (`zeitraumStore`/`zeitraumWrite`);
-  die übrigen Bereiche folgen schrittweise (Issue #57).
+  Verlauf (`historyStore`/`historyWrite`), Zeiträume (`zeitraumStore`/`zeitraumWrite`),
+  Messungen samt Mess-Meilensteinen (`compositionStore`/`compositionWrite`, ein Store für
+  beide Tabellen, weil fachlich derselbe Bereich); die übrigen Bereiche folgen
+  schrittweise (Issue #57).
 - **Query-Schlüssel und Auffrischung an einer Stelle** (`src/lib/queryKeys.ts`). Kein
   Schlüssel steht als loses Textliteral in Hook, Komponente oder Route. Drei Regeln:
   `queryKeys.<entität>(userId, …)` baut jeden Leseschlüssel und verlangt die

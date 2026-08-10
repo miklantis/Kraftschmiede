@@ -1,15 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
 import { INVALIDATE, invalidateGroup } from "@/lib/queryKeys";
+import { supabaseCompositionStore } from "@/lib/compositionStore";
+import { writeCompositionMilestoneAction } from "@/lib/compositionWrite";
+import type { CompositionMilestoneAction } from "@/lib/compositionWrite";
 import { useUserId } from "./useUserId";
 
 // Schreibzugriffe auf die Koerper-Meilensteine, gebuendelt in einem Hook
 // (gemeinsamer Lade-/Fehlerzustand). Reine Richtwerte: nur Anlegen, Aendern,
-// Loeschen – kein Erreicht-Stempel. Nach Erfolg die Liste neu laden.
-type Action =
-  | { type: "add"; metric: string; name: string; target: number }
-  | { type: "update"; id: string; name: string; target: number }
-  | { type: "delete"; id: string };
+// Loeschen – kein Erreicht-Stempel. Nach Erfolg die Liste neu laden. Die
+// Datenbank-Handgriffe liegen hinter derselben Naht wie die Messungen
+// (lib/compositionStore.ts), die Abfolge in lib/compositionWrite.ts.
 
 export function useCompositionMilestoneActions(): {
   add: (metric: string, name: string, target: number) => Promise<void>;
@@ -22,38 +22,8 @@ export function useCompositionMilestoneActions(): {
   const userId = useUserId();
 
   const mutation = useMutation({
-    mutationFn: async (action: Action): Promise<void> => {
-      if (userId === null) throw new Error("Nicht angemeldet.");
-      let error: { message: string } | null = null;
-
-      switch (action.type) {
-        case "add": {
-          ({ error } = await supabase.from("composition_milestones").insert({
-            user_id: userId,
-            metric: action.metric,
-            name: action.name,
-            target: action.target,
-          }));
-          break;
-        }
-        case "update": {
-          ({ error } = await supabase
-            .from("composition_milestones")
-            .update({ name: action.name, target: action.target })
-            .eq("id", action.id));
-          break;
-        }
-        case "delete": {
-          ({ error } = await supabase
-            .from("composition_milestones")
-            .delete()
-            .eq("id", action.id));
-          break;
-        }
-      }
-
-      if (error) throw new Error(error.message);
-    },
+    mutationFn: (action: CompositionMilestoneAction): Promise<void> =>
+      writeCompositionMilestoneAction(supabaseCompositionStore, userId, action),
     onSuccess: () => {
       invalidateGroup(queryClient, INVALIDATE.compMilestones);
     },
