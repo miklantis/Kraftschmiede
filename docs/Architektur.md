@@ -201,6 +201,16 @@ betroffene Tabelle beim Wiederherstellen leer.
   überall sehen unverändert aus – keine zusätzliche Zeile, kein Hinweis.
 - **Datenzugriff gekapselt** in Query-/Mutation-Hooks je Entität (z. B.
   `useSessions`, `useExercises`). Komponenten kennen kein Supabase direkt.
+- **Naht zur Datenbank je Schreibbereich** (`src/lib/<bereich>Store.ts` +
+  `src/lib/<bereich>Write.ts`). Der Store ist eine schmale Schnittstelle mit einem
+  Handgriff je Methode und zwei Gesichtern: `supabase<Bereich>Store` im Betrieb
+  (Fehlerprüfung an genau einer Stelle, `must`) und `createMemory<Bereich>Store()` für
+  Tests (protokolliert statt zu schreiben). Der Write-Baustein hält die reine Abfolge
+  „Absicht → Handgriffe" samt Feld-Abbildung und kennt Supabase nicht; der Hook trägt
+  nur noch Absicht und Auffrischung. Dadurch ist jeder umgestellte Schreibpfad ohne
+  echte Datenbank prüfbar (`src/lib/__tests__/<bereich>Write.test.ts`). Umgestellt:
+  Verlauf (`historyStore`/`historyWrite`), Zeiträume (`zeitraumStore`/`zeitraumWrite`);
+  die übrigen Bereiche folgen schrittweise (Issue #57).
 - **Query-Schlüssel und Auffrischung an einer Stelle** (`src/lib/queryKeys.ts`). Kein
   Schlüssel steht als loses Textliteral in Hook, Komponente oder Route. Drei Regeln:
   `queryKeys.<entität>(userId, …)` baut jeden Leseschlüssel und verlangt die

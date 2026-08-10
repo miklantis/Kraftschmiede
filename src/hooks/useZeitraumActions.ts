@@ -1,25 +1,17 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
 import { INVALIDATE, invalidateGroup } from "@/lib/queryKeys";
+import { supabaseZeitraumStore } from "@/lib/zeitraumStore";
+import { writeZeitraumAction } from "@/lib/zeitraumWrite";
+import type { ZeitraumAction, ZeitraumFelder } from "@/lib/zeitraumWrite";
 import { useUserId } from "./useUserId";
-import type { ZeitraumTyp } from "@/schemas";
 
 // Schreibzugriffe auf die Zeitraeume, gebuendelt in einem Hook (gemeinsamer
-// Lade-/Fehlerzustand). Nach Erfolg wird die Liste neu geladen. Der Marker ist
-// reiner Timeline-Kontext, es haengt nichts weiter daran.
+// Lade-/Fehlerzustand). Der Hook traegt nur noch Absicht und Auffrischung; die
+// Datenbank-Handgriffe liegen hinter der Naht (lib/zeitraumStore.ts), die
+// Abfolge in lib/zeitraumWrite.ts. Der Marker ist reiner Timeline-Kontext, es
+// haengt nichts weiter daran.
 
-export interface ZeitraumFelder {
-  typ: ZeitraumTyp;
-  startDatum: string;
-  endDatum: string | null;
-  name: string | null;
-  notiz: string | null;
-}
-
-type ZeitraumAction =
-  | { type: "add"; felder: ZeitraumFelder }
-  | { type: "update"; id: string; felder: ZeitraumFelder }
-  | { type: "delete"; id: string };
+export type { ZeitraumFelder };
 
 export function useZeitraumActions(): {
   add: (felder: ZeitraumFelder) => Promise<void>;
@@ -32,43 +24,8 @@ export function useZeitraumActions(): {
   const userId = useUserId();
 
   const mutation = useMutation({
-    mutationFn: async (action: ZeitraumAction): Promise<void> => {
-      if (userId === null) throw new Error("Nicht angemeldet.");
-
-      if (action.type === "add") {
-        const { error } = await supabase.from("zeitraeume").insert({
-          user_id: userId,
-          typ: action.felder.typ,
-          start_datum: action.felder.startDatum,
-          end_datum: action.felder.endDatum,
-          name: action.felder.name,
-          notiz: action.felder.notiz,
-        });
-        if (error) throw new Error(error.message);
-        return;
-      }
-
-      if (action.type === "update") {
-        const { error } = await supabase
-          .from("zeitraeume")
-          .update({
-            typ: action.felder.typ,
-            start_datum: action.felder.startDatum,
-            end_datum: action.felder.endDatum,
-            name: action.felder.name,
-            notiz: action.felder.notiz,
-          })
-          .eq("id", action.id);
-        if (error) throw new Error(error.message);
-        return;
-      }
-
-      const { error } = await supabase
-        .from("zeitraeume")
-        .delete()
-        .eq("id", action.id);
-      if (error) throw new Error(error.message);
-    },
+    mutationFn: (action: ZeitraumAction): Promise<void> =>
+      writeZeitraumAction(supabaseZeitraumStore, userId, action),
     onSuccess: () => {
       invalidateGroup(queryClient, INVALIDATE.zeitraeume);
     },
