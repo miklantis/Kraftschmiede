@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { ExerciseRow } from "@/schemas";
 
@@ -8,7 +9,7 @@ import type { ExerciseRow } from "@/schemas";
 export function useExercises() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["exercises", userId],
+    queryKey: queryKeys.exercises(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<ExerciseRow[]> => {
       const { data, error } = await supabase

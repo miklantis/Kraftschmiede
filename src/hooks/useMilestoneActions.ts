@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { INVALIDATE, invalidateGroup } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import { todayISO } from "@/lib/format";
 
@@ -66,7 +67,7 @@ export function useMilestoneActions(): {
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["milestones"] });
+      invalidateGroup(queryClient, INVALIDATE.milestones);
     },
   });
 

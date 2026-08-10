@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { PageHeader } from "@/components/ui/page-header";
 import { PageReveal } from "@/components/ui/page-reveal";
 import { BackLink } from "@/components/ui/back-link";
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/einstellungen_/version")({
 
 function VersionHistoryPage(): React.ReactElement {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["changelog-all"],
+    queryKey: queryKeys.changelogAll(),
     queryFn: fetchChangelogVersions,
     staleTime: 5 * 60 * 1000,
     retry: 1,

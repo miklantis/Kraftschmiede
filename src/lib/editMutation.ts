@@ -10,7 +10,8 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { EditPayload } from "./editSession";
 import { supabaseHistoryStore } from "./historyStore";
-import { writeEditSession, HISTORY_INVALIDATE } from "./historyWrite";
+import { writeEditSession } from "./historyWrite";
+import { INVALIDATE, invalidateGroup } from "./queryKeys";
 
 export const EDIT_MUTATION_KEY = ["editSession"] as const;
 
@@ -21,9 +22,7 @@ export function registerEditMutation(qc: QueryClient): void {
     mutationFn: (vars: unknown) =>
       writeEditSession(supabaseHistoryStore, vars as EditPayload),
     onSuccess: () => {
-      for (const key of HISTORY_INVALIDATE.edit) {
-        void qc.invalidateQueries({ queryKey: key });
-      }
+      invalidateGroup(qc, INVALIDATE.editSession);
     },
   });
 }

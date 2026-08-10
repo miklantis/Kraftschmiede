@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.25.1",
+      "date": "2026-08-10",
+      "changes": [
+        "Aufräumen unter der Haube: Die App merkt sich geladene Listen (Übungen, Einheiten, Journey, Inventar und so weiter) in einem Zwischenspeicher. Bisher war an über 50 Stellen im Code einzeln notiert, wie diese Listen heißen und wann sie nach einer Änderung neu geladen werden müssen. Das steht jetzt an einer einzigen Stelle, nach Ereignis sortiert – also \"nach dem Beenden einer Einheit\" statt einer Liste von Namen.",
+        "Dabei fiel auf, dass die Trainings-Übersicht nach dem Zurücksetzen eines Skills auf eine Liste verwies, die es gar nicht gibt. Der Aufruf lief bisher ins Leere; die Übersicht aktualisiert sich ohnehin über ihre Quelldaten. Für dich ändert sich nichts sichtbar – Ziel ist, dass künftige Änderungen nicht mehr versehentlich veraltete Werte stehen lassen."
+      ]
+    },
+    {
       "version": "1.25.0",
       "date": "2026-08-10",
       "changes": [

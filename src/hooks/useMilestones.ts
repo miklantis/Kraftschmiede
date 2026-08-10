@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { ExerciseMilestoneRow } from "@/schemas";
 
@@ -9,7 +10,7 @@ import type { ExerciseMilestoneRow } from "@/schemas";
 export function useMilestones(exerciseId: string) {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["milestones", userId, exerciseId],
+    queryKey: queryKeys.milestones(userId, exerciseId),
     enabled: userId !== null && exerciseId !== "",
     queryFn: async (): Promise<ExerciseMilestoneRow[]> => {
       const { data, error } = await supabase

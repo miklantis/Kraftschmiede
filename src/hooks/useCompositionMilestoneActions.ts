@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { INVALIDATE, invalidateGroup } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 
 // Schreibzugriffe auf die Koerper-Meilensteine, gebuendelt in einem Hook
@@ -54,7 +55,7 @@ export function useCompositionMilestoneActions(): {
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["compMilestones"] });
+      invalidateGroup(queryClient, INVALIDATE.compMilestones);
     },
   });
 

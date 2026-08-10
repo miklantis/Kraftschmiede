@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { INVALIDATE, invalidateGroup } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import { todayISO } from "@/lib/format";
 
@@ -45,8 +46,7 @@ export function useUpsertBodyToday(): {
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["body-log", userId] });
-      void queryClient.invalidateQueries({ queryKey: ["latestBody", userId] });
+      invalidateGroup(queryClient, INVALIDATE.bodyToday);
     },
   });
 

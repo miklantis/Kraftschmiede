@@ -16,7 +16,8 @@ import type {
   SetInsert,
 } from "@/schemas";
 import { supabaseHistoryStore } from "./historyStore";
-import { writeFinishStrength, HISTORY_INVALIDATE } from "./historyWrite";
+import { writeFinishStrength } from "./historyWrite";
+import { INVALIDATE, invalidateGroup } from "./queryKeys";
 
 export const FINISH_MUTATION_KEY = ["finishSession"] as const;
 
@@ -48,9 +49,7 @@ export function registerFinishMutation(qc: QueryClient): void {
     mutationFn: (vars: unknown) =>
       writeFinishStrength(supabaseHistoryStore, vars as FinishPayload),
     onSuccess: () => {
-      for (const key of HISTORY_INVALIDATE.finishStrength) {
-        void qc.invalidateQueries({ queryKey: key });
-      }
+      invalidateGroup(qc, INVALIDATE.finishStrength);
     },
   });
 }

@@ -195,6 +195,17 @@ betroffene Tabelle beim Wiederherstellen leer.
   nicht, wenn an den Übungen noch ein altes Referenzgewicht hängt.
 - **Datenzugriff gekapselt** in Query-/Mutation-Hooks je Entität (z. B.
   `useSessions`, `useExercises`). Komponenten kennen kein Supabase direkt.
+- **Query-Schlüssel und Auffrischung an einer Stelle** (`src/lib/queryKeys.ts`). Kein
+  Schlüssel steht als loses Textliteral in Hook, Komponente oder Route. Drei Regeln:
+  `queryKeys.<entität>(userId, …)` baut jeden Leseschlüssel und verlangt die
+  Nutzer-Kennung als Parameter (an zweiter Stelle, damit beim Kontowechsel nichts
+  gemischt wird); `INVALIDATE.<ereignis>` nennt je Schreib-Ereignis die
+  aufzufrischenden Wurzeln – der Schreiber nennt das Ereignis, nicht die Schlüssel;
+  aufgefrischt wird immer nur über die Wurzel ohne Kennung, weil TanStack Query nach
+  Präfix vergleicht. Abgeleitete Ansichten (`useTrainingOverview`, `useCoachStatuses`)
+  haben bewusst keinen eigenen Schlüssel: sie rechnen im Speicher aus den Hooks und
+  ziehen automatisch nach, sobald eine ihrer Quellen aufgefrischt wird. Die Wurzelnamen
+  sind zugleich der Vertrag mit dem Offline-Cache und werden nicht umbenannt.
 - **Wiederverwendbare Primitives** in `src/components/ui` (Modal, DataTable, Sheet,
   MuscleMap, Chart). Genau das Ziel: einmal bauen, überall nutzen.
 - **shadcn/ui als Fundament, nicht als Optik.** shadcn liefert die unsichtbare Mechanik

@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { fetchLatestChangelog } from "@/lib/changelog";
 import type { ChangelogEntry } from "@/schemas";
 
@@ -11,7 +12,7 @@ export function useChangelog(enabled: boolean): {
   isError: boolean;
 } {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["changelog"],
+    queryKey: queryKeys.changelog(),
     queryFn: fetchLatestChangelog,
     enabled,
     staleTime: 0,

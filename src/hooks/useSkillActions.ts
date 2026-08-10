@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { INVALIDATE, invalidateGroup } from "@/lib/queryKeys";
 import { todayISO } from "@/lib/format";
-import { useUserId } from "./useUserId";
 import type { SkillProgressRow, SkillLog } from "@/schemas";
 
 // Manuelle Eingriffe der Skills-Seite in den Fortschritt: Phase zurueck und
@@ -17,13 +17,9 @@ export function useSkillActions(): {
   error: unknown;
 } {
   const queryClient = useQueryClient();
-  const userId = useUserId();
 
   const invalidate = (): void => {
-    void queryClient.invalidateQueries({ queryKey: ["skillProgress", userId] });
-    void queryClient.invalidateQueries({
-      queryKey: ["trainingOverview", userId],
-    });
+    invalidateGroup(queryClient, INVALIDATE.skillProgress);
   };
 
   // Bestehenden Fortschritt lesen (oder null, wenn noch keiner existiert).

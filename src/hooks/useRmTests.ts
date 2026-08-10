@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { RmTestRow } from "@/schemas";
 
@@ -9,7 +10,7 @@ import type { RmTestRow } from "@/schemas";
 export function useRmTests(exerciseId: string) {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["rmTests", userId, exerciseId],
+    queryKey: queryKeys.rmTests(userId, exerciseId),
     enabled: userId !== null && exerciseId !== "",
     queryFn: async (): Promise<RmTestRow[]> => {
       const { data, error } = await supabase
@@ -28,7 +29,7 @@ export function useRmTests(exerciseId: string) {
 export function useAllRmTests() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["rmTests", userId, "alle"],
+    queryKey: queryKeys.rmTestsAll(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<RmTestRow[]> => {
       const { data, error } = await supabase

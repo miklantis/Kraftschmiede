@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { Link } from "@tanstack/react-router";
 import { Info, ChevronRight } from "lucide-react";
 import { fetchLatestChangelog } from "@/lib/changelog";
@@ -14,7 +15,7 @@ import { longDateYearDE } from "@/lib/format";
 // sichtbar sein.
 export function AppVersionCard(): React.ReactElement {
   const { data: entry } = useQuery({
-    queryKey: ["app-version"],
+    queryKey: queryKeys.appVersion(),
     queryFn: fetchLatestChangelog,
     staleTime: 5 * 60 * 1000,
     retry: 1,

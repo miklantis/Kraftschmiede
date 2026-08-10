@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { SkillProgressRow } from "@/schemas";
 import type { Metric } from "@/schemas/shared";
@@ -61,7 +62,7 @@ interface SkillLink {
 export function useSkills() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["skills", userId],
+    queryKey: queryKeys.skills(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<SkillDefAssembled[]> => {
       const { data, error } = await supabase
@@ -106,7 +107,7 @@ export function useSkills() {
 export function useSkillProgress() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["skillProgress", userId],
+    queryKey: queryKeys.skillProgress(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<SkillProgressRow[]> => {
       const { data, error } = await supabase.from("skill_progress").select("*");

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useUserId } from "./useUserId";
+import { INVALIDATE, invalidateGroup } from "@/lib/queryKeys";
 
 // Loescht eine abgeschlossene Einheit. Die Fremdschluessel sind auf ON DELETE
 // CASCADE gesetzt, daher raeumt die DB session_exercises und sets automatisch
@@ -13,7 +13,6 @@ export function useDeleteSession(): {
   error: unknown;
 } {
   const queryClient = useQueryClient();
-  const userId = useUserId();
 
   const mutation = useMutation({
     mutationFn: async (id: string): Promise<void> => {
@@ -21,10 +20,7 @@ export function useDeleteSession(): {
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: ["sessions-detailed", userId],
-      });
-      void queryClient.invalidateQueries({ queryKey: ["sessions", userId] });
+      invalidateGroup(queryClient, INVALIDATE.deleteSession);
     },
   });
 

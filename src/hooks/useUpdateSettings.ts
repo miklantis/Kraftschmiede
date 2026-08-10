@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { INVALIDATE, invalidateGroup } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { RecoveryWindows, Timers } from "@/schemas/shared";
 import type { SettingsRow } from "@/schemas";
@@ -42,7 +43,7 @@ export function useUpdateSettings(): {
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["settings", userId] });
+      invalidateGroup(queryClient, INVALIDATE.settingsUpdate);
     },
   });
 
