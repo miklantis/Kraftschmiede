@@ -1,5 +1,6 @@
 import { volumeForWeek } from "@/engine";
 import type { JourneyPhaseInput } from "@/lib/journey";
+import { isNeutralLoad, loadPercent } from "@/lib/loadFactor";
 
 // Reine Aufbereitung der Daten fuer die Periodisierungskurve, 1:1 aus V1
 // (charts.js drawJourneyChart, Datenteil). Kein DOM-/D3-Bezug: hier entstehen nur
@@ -23,6 +24,8 @@ export interface PeriodBand {
   name: string;
   start: number;
   end: number;
+  /** "65 %" bei vorgegebener Last, sonst null (Beschriftung unter der Achse). */
+  loadLabel: string | null;
 }
 
 // Vollstaendiges Anzeige-Modell der Kurve. Wertebereiche (min/max) sind fuer die
@@ -38,10 +41,18 @@ export interface PeriodizationData {
 }
 
 // Intensitaets-Score einer Phase aus der Wiederholungsspanne. Fehlt die Spanne,
-// gilt ein Mittel von 8 Wiederholungen (wie V1).
-function intensityScore(min: number | null, max: number | null): number {
+// gilt ein Mittel von 8 Wiederholungen (wie V1). Gibt die Phase die Last vor
+// (Lastfaktor < 1), zaehlt sie entsprechend weniger intensiv – sonst zeigte die
+// Kurve einer Wiederaufbau-Journey vier gleich intensive Wochen, obwohl in
+// Woche 1 nur 65 % des alten Gewichts auf der Stange liegen.
+function intensityScore(
+  min: number | null,
+  max: number | null,
+  loadFactor: number,
+): number {
   const mid = min != null && max != null ? (min + max) / 2 : 8;
-  return 1 / Math.max(1, mid);
+  const load = loadFactor > 0 ? loadFactor : 1;
+  return load / Math.max(1, mid);
 }
 
 // Baut aus den Phasen einer aktiven Journey und der aktuellen Gesamtwoche
@@ -60,11 +71,12 @@ export function buildPeriodization(
 
   phases.forEach((p, pi) => {
     const pw = Math.max(1, p.weeks || 1);
-    const iScore = intensityScore(p.repTargetMin, p.repTargetMax);
+    const iScore = intensityScore(p.repTargetMin, p.repTargetMax, p.loadFactor);
     bands.push({
       name: p.name || `Phase ${pi + 1}`,
       start: gw,
       end: gw + pw - 1,
+      loadLabel: isNeutralLoad(p.loadFactor) ? null : loadPercent(p.loadFactor),
     });
     for (let wi = 0; wi < pw; wi++) {
       const vol = volumeForWeek(

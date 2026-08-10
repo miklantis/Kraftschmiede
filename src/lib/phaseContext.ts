@@ -5,6 +5,7 @@
 
 import { journeyPlacement } from "@/engine";
 import type { VolumePhase } from "@/engine/types";
+import { loadFactorNote, usesLoadFactor } from "@/lib/loadFactor";
 import type { JourneyRow, PhaseRow } from "@/schemas";
 
 export type PhaseContextJourney = JourneyRow & { phases: PhaseRow[] };
@@ -29,6 +30,10 @@ export interface PhaseContext {
   // dann rechnet der Coach wie gewohnt aus der letzten Leistung, unabhaengig
   // davon, ob an den Uebungen noch ein altes Referenzgewicht haengt.
   loadFactor: number | null;
+  // Kurzer Hinweistext zur vorgegebenen Last fuer den Trainingsbildschirm; null,
+  // wenn die laufende Journey ohne Lastfaktor arbeitet. In der letzten Phase
+  // sagt er zusaetzlich, dass die Vorgabe endet.
+  loadNote: string | null;
 }
 
 export function derivePhaseContext(
@@ -44,6 +49,7 @@ export function derivePhaseContext(
   let journeyId: string | null = null;
   let phaseId: string | null = null;
   let loadFactor: number | null = null;
+  let loadNote: string | null = null;
 
   if (journey) {
     journeyId = journey.id;
@@ -72,10 +78,13 @@ export function derivePhaseContext(
       if (phase.rep_target_min != null && phase.rep_target_max != null) {
         phaseRepTarget = [phase.rep_target_min, phase.rep_target_max];
       }
-      const usesLoadFactor = journey.phases.some(
-        (p) => Math.abs((p.load_factor ?? 1) - 1) > 1e-9,
-      );
-      if (usesLoadFactor) loadFactor = phase.load_factor ?? 1;
+      if (usesLoadFactor(journey.phases.map((p) => p.load_factor))) {
+        loadFactor = phase.load_factor ?? 1;
+        loadNote = loadFactorNote(
+          loadFactor,
+          placement.phaseIndex === journey.phases.length - 1,
+        );
+      }
     }
   }
 
@@ -87,5 +96,6 @@ export function derivePhaseContext(
     journeyId,
     phaseId,
     loadFactor,
+    loadNote,
   };
 }

@@ -7,6 +7,7 @@
 // Restgruppe, damit nichts unsichtbar wird.
 
 import { longDateShort } from "./format";
+import { loadPercent, usesLoadFactor } from "./loadFactor";
 
 export interface ReviewSessionInput {
   id: string;
@@ -23,6 +24,8 @@ export interface ReviewPhaseInput {
   id: string;
   name: string;
   weeks: number;
+  /** Vorgegebene Last der Phase (1 = keine Vorgabe). */
+  loadFactor: number;
 }
 
 export interface ReviewLookups {
@@ -81,16 +84,20 @@ export function buildJourneyReview(
     title: titleOf(s, lk),
   });
 
+  // Gab die Journey die Last vor, gehoert der Anteil in die Rueckschau - sonst
+  // ist spaeter nicht mehr erkennbar, warum die ersten Wochen leichter waren.
+  const withLoad = usesLoadFactor(phases.map((p) => p.loadFactor));
   const known = new Set(phases.map((p) => p.id));
   const groups: ReviewGroup[] = phases.map((p) => {
     const list = mine.filter((s) => s.phaseId === p.id).map(view);
     return {
       id: p.id,
       name: p.name,
-      meta:
-        (p.weeks === 1 ? "1 Woche" : p.weeks + " Wochen") +
-        " · " +
+      meta: [
+        p.weeks === 1 ? "1 Woche" : p.weeks + " Wochen",
         unitsLabel(list.length),
+        ...(withLoad ? [loadPercent(p.loadFactor) + " Last"] : []),
+      ].join(" · "),
       sessions: list,
     };
   });

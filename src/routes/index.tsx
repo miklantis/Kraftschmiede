@@ -87,6 +87,7 @@ function TrainingPage(): React.ReactElement {
       title: w.name,
       journeyId: builder.journeyId,
       phaseId: builder.phaseId,
+      loadNote: builder.loadNote,
       entries: built.entries,
       generalWarmup: built.generalWarmup,
     });

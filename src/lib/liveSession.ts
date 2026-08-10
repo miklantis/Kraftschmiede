@@ -128,6 +128,9 @@ export interface WorkoutSession extends LiveSessionBase {
    *  und steuern (nur bei Journey-Einheiten) die eingefrorene Wochennummer. */
   journeyId: string | null;
   phaseId: string | null;
+  /** Hinweis zur vorgegebenen Last der Phase (Lastfaktor-Journey), sonst null.
+   *  Beim Start eingefroren, damit Start-Popup und Panel dasselbe zeigen. */
+  loadNote: string | null;
   /** Allgemeines Aufwaermen (Cardio) vor den Uebungen. */
   generalWarmup: { sets: LiveGeneralWarmupSet[] };
   /** Die vom Coach aufgebauten Uebungen mit ihren Saetzen (Lieferung 2). */
@@ -244,6 +247,7 @@ export function parseLive(raw: string | null): PersistedLive {
           templateId: sr.templateId,
           journeyId: typeof sr.journeyId === "string" ? sr.journeyId : null,
           phaseId: typeof sr.phaseId === "string" ? sr.phaseId : null,
+          loadNote: typeof sr.loadNote === "string" ? sr.loadNote : null,
           title: sr.title,
           startedAt: sr.startedAt,
           generalWarmup: parseGeneralWarmup(sr.generalWarmup),

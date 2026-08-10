@@ -1,6 +1,16 @@
 {
   "versions": [
     {
+      "version": "1.25.1",
+      "date": "2026-08-10",
+      "changes": [
+        "Die vorgegebene Last der Journey \"Wiederaufbau nach Fasten\" ist jetzt überall zu sehen: In der Journey-Ansicht steht an jeder Phase, mit wie viel Prozent deines Standes vor der Pause du trainierst, und an der laufenden Phase ein kurzer Satz dazu – in Woche vier mit dem Hinweis, dass die Vorgabe endet und der Coach wieder normal steuert.",
+        "Vor und während der Einheit steht derselbe Hinweis im Trainingsbildschirm, damit ein bewusst niedriger Vorschlag nicht wie ein Fehler wirkt.",
+        "Die Periodisierungskurve rechnet die vorgegebene Last mit ein: Die Intensitätslinie steigt jetzt über die vier Wochen an, statt vier gleich intensive Wochen zu zeigen. Auch in der Rückschau abgeschlossener Journeys und im Coach-Export ist die Last je Phase festgehalten.",
+        "Journeys ohne vorgegebene Last sehen unverändert aus."
+      ]
+    },
+    {
       "version": "1.25.0",
       "date": "2026-08-10",
       "changes": [

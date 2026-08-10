@@ -55,7 +55,12 @@ export function useJourneyReview(journeyId: string): {
 
     const review = buildJourneyReview(
       journey.id,
-      journey.phases.map((p) => ({ id: p.id, name: p.name, weeks: p.weeks })),
+      journey.phases.map((p) => ({
+        id: p.id,
+        name: p.name,
+        weeks: p.weeks,
+        loadFactor: p.load_factor ?? 1,
+      })),
       sessions.map((s) => ({
         id: s.id,
         date: s.date,
@@ -108,6 +113,7 @@ export function useJourneyReview(journeyId: string): {
       deloadWeek: p.deload_week,
       repTargetMin: p.rep_target_min,
       repTargetMax: p.rep_target_max,
+      loadFactor: p.load_factor ?? 1,
     }));
     const phases = buildPhaseViews(phaseInputs, {
       phaseIndex: phaseInputs.length - 1,
