@@ -35,6 +35,8 @@ export const journeyInsert = journeyRow
 export type JourneyInsert = z.infer<typeof journeyInsert>;
 
 // phases – Phase der konkreten Journey (Kopie der Vorlagenphase, frei anpassbar).
+// load_factor ist der Anteil des eingefrorenen Referenzgewichts, mit dem in
+// dieser Phase gearbeitet wird (1.0 = volles Niveau, also gewohntes Verhalten).
 export const phaseRow = z.object({
   id: uuid,
   user_id: uuid,
@@ -47,6 +49,7 @@ export const phaseRow = z.object({
   deload_week: z.number().int().nullable(),
   rep_target_min: z.number().int().nullable(),
   rep_target_max: z.number().int().nullable(),
+  load_factor: z.number(),
   position: z.number().int(),
 });
 export type PhaseRow = z.infer<typeof phaseRow>;
@@ -57,6 +60,7 @@ export const phaseInsert = phaseRow
     deload_week: true,
     rep_target_min: true,
     rep_target_max: true,
+    load_factor: true,
     position: true,
   });
 export type PhaseInsert = z.infer<typeof phaseInsert>;

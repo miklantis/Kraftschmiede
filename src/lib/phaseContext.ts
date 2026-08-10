@@ -24,6 +24,11 @@ export interface PhaseContext {
   weekInPhase: number;
   journeyId: string | null;
   phaseId: string | null;
+  // Lastfaktor der aktuellen Phase – aber nur, wenn die laufende Journey
+  // ueberhaupt mit Lastfaktoren arbeitet (irgendeine Phase != 1). Sonst null:
+  // dann rechnet der Coach wie gewohnt aus der letzten Leistung, unabhaengig
+  // davon, ob an den Uebungen noch ein altes Referenzgewicht haengt.
+  loadFactor: number | null;
 }
 
 export function derivePhaseContext(
@@ -38,6 +43,7 @@ export function derivePhaseContext(
   let weekInPhase = 0;
   let journeyId: string | null = null;
   let phaseId: string | null = null;
+  let loadFactor: number | null = null;
 
   if (journey) {
     journeyId = journey.id;
@@ -66,6 +72,10 @@ export function derivePhaseContext(
       if (phase.rep_target_min != null && phase.rep_target_max != null) {
         phaseRepTarget = [phase.rep_target_min, phase.rep_target_max];
       }
+      const usesLoadFactor = journey.phases.some(
+        (p) => Math.abs((p.load_factor ?? 1) - 1) > 1e-9,
+      );
+      if (usesLoadFactor) loadFactor = phase.load_factor ?? 1;
     }
   }
 
@@ -76,5 +86,6 @@ export function derivePhaseContext(
     weekInPhase,
     journeyId,
     phaseId,
+    loadFactor,
   };
 }

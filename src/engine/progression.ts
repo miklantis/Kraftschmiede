@@ -14,6 +14,17 @@ export interface SuggestExercise {
   barId?: string;
 }
 
+// Von der Journey vorgegebene Last: Referenzgewicht x Lastfaktor der Phase.
+// `cap` = true, solange der Lastfaktor unter 1 liegt – dann ist `weight`
+// zugleich Zielwert und Obergrenze: die Rampe der Journey steuert das Gewicht,
+// nicht die Tagesform. Bei Lastfaktor 1 (Abschlussphase) wirkt `weight` nur als
+// Untergrenze, damit die Journey wieder exakt am alten Niveau ankommt und der
+// Coach von dort normal weiterarbeitet.
+export interface RampLoad {
+  weight: number;
+  cap: boolean;
+}
+
 export interface SuggestOpts {
   bar?: Bar;
   plates?: number[];
@@ -21,6 +32,8 @@ export interface SuggestOpts {
   // Gewicht auf die naechste feste Stufe gerundet statt mit Scheiben geladen.
   dumbbells?: number[];
   reentry?: boolean;
+  // Vorgabe einer Lastfaktor-Journey; ohne sie rechnet der Coach wie gewohnt.
+  ramp?: RampLoad | null;
 }
 
 export type SuggestDecision = "increase" | "hold" | "decrease" | "increase-reps";
@@ -52,35 +65,89 @@ export function suggestWeight(
       ? nearestDumbbell(x, o.dumbbells, !!down)
       : nearestLoadable(x, bar.weight, plates, !!down);
 
+  // Rampenlast der Journey, auf eine ladbare Stufe abgerundet.
+  const ramp =
+    o.ramp && o.ramp.weight > 0
+      ? { weight: ld(o.ramp.weight, true), cap: o.ramp.cap }
+      : null;
+
+  // Die Vorgabe der Journey auf einen fertigen Vorschlag anwenden.
+  // `reacting` = der Vorschlag geht wegen Versagen/zu hoher Anstrengung nach
+  // unten; dann deckelt die Rampe nur, sie hebt nichts an. `capReps` sind die
+  // Wiederholungen, die stehen bleiben, wenn der Deckel eine Gewichtssteigerung
+  // schluckt (sonst faellt die doppelte Progression auf das Bandende zurueck).
+  const withRamp = (
+    res: SuggestResult,
+    reacting?: boolean,
+    capReps?: number,
+  ): SuggestResult => {
+    if (!ramp) return res;
+    if (!ramp.cap) {
+      // Abschlussphase: nur Untergrenze, und nur wenn nicht gerade gesenkt wird.
+      if (reacting || res.weight >= ramp.weight - 1e-9) return res;
+      return {
+        weight: ramp.weight,
+        targetReps: res.targetReps,
+        decision: "increase",
+        note: "Abschlussphase – zurueck auf das Referenzgewicht",
+      };
+    }
+    if (res.weight > ramp.weight + 1e-9) {
+      return {
+        weight: ramp.weight,
+        targetReps: capReps ?? res.targetReps,
+        decision: reacting ? res.decision : "hold",
+        note: reacting
+          ? res.note
+          : "Lastfaktor der Phase – Gewicht bleibt gedeckelt",
+      };
+    }
+    if (!reacting && res.weight < ramp.weight - 1e-9) {
+      return {
+        weight: ramp.weight,
+        targetReps: res.targetReps,
+        decision: "increase",
+        note: "Lastfaktor der Phase – Gewicht auf die Phasenlast angehoben",
+      };
+    }
+    return res;
+  };
+
   if (reentry) {
     // Wiedereinstieg: nur erhoehen bei Score <= 3 und Technik ok; abrunden.
     const wsR = workSets(lastEntry);
     const okScore = wsR.length ? avg(wsR.map((s) => s.score || 3)) <= 3 : true;
     const techOk = !wsR.some((s) => s.painFlag);
     if (wsR.length && okScore && techOk) {
-      return {
+      return withRamp({
         weight: ld(W + 2.5, true),
         targetReps: range[0],
         decision: "increase",
         note: "Wiedereinstieg: vorsichtig +Schritt, abgerundet",
-      };
+      });
     }
-    return {
-      weight: ld(W, true),
-      targetReps: range[0],
-      decision: "hold",
-      note: "Wiedereinstieg: Gewicht halten",
-    };
+    // Gehalten wird hier wegen zu hoher Anstrengung oder Schmerz (ohne Vordaten
+    // dagegen nur mangels Grundlage): im ersten Fall darf eine Rampe nicht
+    // hochziehen, sondern nur deckeln.
+    return withRamp(
+      {
+        weight: ld(W, true),
+        targetReps: range[0],
+        decision: "hold",
+        note: "Wiedereinstieg: Gewicht halten",
+      },
+      wsR.length > 0,
+    );
   }
 
   const ws = workSets(lastEntry);
   if (!ws.length) {
-    return {
+    return withRamp({
       weight: ld(W, false),
       targetReps: range[1],
       decision: "hold",
       note: "keine Vordaten – Startgewicht halten",
-    };
+    });
   }
 
   const allMet = ws.every((s) => metTarget(s) === true);
@@ -95,46 +162,56 @@ export function suggestWeight(
   // ueber Ziel-Score / Versagen / Last-Reduktion -> halten oder senken
   if (anyFailed || anyReduced || avgScore > tScore + 0.5) {
     if (avgScore >= 4.5 || anyReduced) {
-      return {
-        weight: ld(W - 2.5, true),
-        targetReps: range[1],
-        decision: "decrease",
-        note: "Versagen/Reduktion oder zu hart – Gewicht senken",
-      };
+      return withRamp(
+        {
+          weight: ld(W - 2.5, true),
+          targetReps: range[1],
+          decision: "decrease",
+          note: "Versagen/Reduktion oder zu hart – Gewicht senken",
+        },
+        true,
+      );
     }
-    return {
-      weight: ld(W, false),
-      targetReps: range[1],
-      decision: "hold",
-      note: "hart/verfehlt – Gewicht halten",
-    };
+    return withRamp(
+      {
+        weight: ld(W, false),
+        targetReps: range[1],
+        decision: "hold",
+        note: "hart/verfehlt – Gewicht halten",
+      },
+      true,
+    );
   }
 
   // alles erreicht und leichter als Ziel -> doppelte Progression
   if (allMet && avgScore < tScore) {
     if (minReps >= range[1]) {
       // oberes Repband erreicht -> Gewicht hoch, Reps zurueck auf Minimum
-      return {
-        weight: ld(W + 2.5, false),
-        targetReps: range[0],
-        decision: "increase",
-        note: "Repband oben erreicht – Gewicht +Schritt, Reps zuruecksetzen",
-      };
+      return withRamp(
+        {
+          weight: ld(W + 2.5, false),
+          targetReps: range[0],
+          decision: "increase",
+          note: "Repband oben erreicht – Gewicht +Schritt, Reps zuruecksetzen",
+        },
+        false,
+        range[1],
+      );
     }
     // sonst zuerst Wiederholungen steigern
-    return {
+    return withRamp({
       weight: ld(W, false),
       targetReps: Math.min(range[1], maxReps + 1),
       decision: "increase-reps",
       note: "leichter als Ziel – Wiederholungen steigern (Gewicht gleich)",
-    };
+    });
   }
 
   // im Ziel, aber Reps nicht voll oder metTarget false -> halten
-  return {
+  return withRamp({
     weight: ld(W, false),
     targetReps: range[1],
     decision: "hold",
     note: "im Ziel – Gewicht halten, Repband ausreizen",
-  };
+  });
 }

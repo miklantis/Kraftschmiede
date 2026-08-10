@@ -24,6 +24,7 @@ function ex(overrides: Partial<ExerciseRow>): ExerciseRow {
     rep_range_max: null,
     target_score: 3,
     work_weight: 0,
+    reference_weight: null,
     recovery_hours: 48,
     rm: null,
     rm_as_of: null,

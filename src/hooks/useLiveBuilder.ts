@@ -73,6 +73,7 @@ export function useLiveBuilder(): UseLiveBuilder {
         workWeight: e.work_weight,
         targetScore: e.target_score,
         barId: e.bar_id,
+        referenceWeight: e.reference_weight,
         rm: e.rm,
         muscleGroups: e.muscle_groups,
       };
@@ -143,6 +144,7 @@ export function useLiveBuilder(): UseLiveBuilder {
         weekInPhase: base.weekInPhase,
         recoveryGreen: base.green,
         freeMode: base.journeyId === null,
+        loadFactor: base.loadFactor,
         lastEntryByExercise: base.lastEntryByExercise,
         bars: base.bars,
         plates: base.plates,

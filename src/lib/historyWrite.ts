@@ -51,6 +51,10 @@ export async function writeFinishStrength(
       payload.journeyArchive.journeyId,
       payload.journeyArchive.endDate,
     );
+    // Mit der Journey endet auch ihr Bezugspunkt: eingefrorene
+    // Referenzgewichte wegraeumen, damit die naechste Journey wieder aus der
+    // letzten Leistung rechnet.
+    await store.clearReferenceWeights();
   }
 }
 

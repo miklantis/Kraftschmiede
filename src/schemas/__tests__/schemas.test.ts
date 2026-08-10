@@ -31,6 +31,7 @@ describe("Lese-Form (Row) verlangt alle Spalten", () => {
     rep_range_max: 8,
     target_score: 3,
     work_weight: 100,
+    reference_weight: null,
     recovery_hours: 48,
     rm: null,
     rm_as_of: null,

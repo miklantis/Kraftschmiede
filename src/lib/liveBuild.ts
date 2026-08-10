@@ -12,6 +12,7 @@ import {
   warmupFor,
   plannedSets,
   lastWorkSetCount,
+  rampLoad,
   type CoachBuildExercise,
 } from "./coach";
 import { fmtNum } from "./format";
@@ -50,6 +51,8 @@ export interface LiveBuildInput {
   // Freies Training: keine aktive Journey. Der Coach gibt dann nichts vor -
   // Gewicht, Wdh. und Satzzahl kommen unveraendert aus der letzten Einheit.
   freeMode: boolean;
+  // Lastfaktor der aktiven Phase; null ausserhalb einer Lastfaktor-Journey.
+  loadFactor: number | null;
   // Letzter Krafteintrag je Uebung (Saetze) als Vordaten fuer den Vorschlag.
   lastEntryByExercise: Record<string, SetEntry | null>;
   bars: LiveBuildBar[];
@@ -150,6 +153,7 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
       dumbbells: input.dumbbells,
       repTarget,
       freeMode: input.freeMode,
+      loadFactor: input.loadFactor,
     });
 
     // Phasenwechsel-Einstieg: springt die Zielzone der neuen Phase deutlich (echt
@@ -158,10 +162,20 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
     // der Doppelprogression. Nur Langhantel (Scheiben-Rechnung). Verletzungs-
     // bewusst gedeckelt und abgerundet (workWeightForPhase). Selbstbegrenzt: ab
     // der zweiten Einheit liegt das letzte Band in der neuen Zone -> kein Sprung.
+    // Gibt die Journey die Last selbst vor (Lastfaktor-Rampe), steuert sie den
+    // Phasenwechsel bereits im Vorschlag - der 1RM-Umweg wuerde dagegenhalten.
+    const ramp = rampLoad(exo, input.loadFactor);
     let wWeight = sug.weight;
     let wReps = sug.targetReps;
     let phaseEntry = false;
-    if (exo.profile === "strength" && repTarget && bar && exo.rm != null && exo.rm > 0) {
+    if (
+      !ramp &&
+      exo.profile === "strength" &&
+      repTarget &&
+      bar &&
+      exo.rm != null &&
+      exo.rm > 0
+    ) {
       const prev = lastBand(lastEntry);
       if (prev && bandsSeparated(prev, repTarget)) {
         const carried = topWorkWeight(lastEntry) ?? sug.weight;

@@ -33,6 +33,9 @@ export const exerciseRow = z.object({
   rep_range_max: z.number().int().nullable(),
   target_score: z.number(),
   work_weight: z.number(),
+  // Eingefrorenes Arbeitsgewicht vom Start einer Lastfaktor-Journey; null,
+  // solange keine solche Journey laeuft.
+  reference_weight: z.number().nullable(),
   recovery_hours: z.number().int(),
   rm: z.number().nullable(),
   rm_as_of: isoDate.nullable(),
@@ -54,6 +57,7 @@ export const exerciseInsert = exerciseRow.omit({ id: true }).partial({
   rep_range_max: true,
   target_score: true,
   work_weight: true,
+  reference_weight: true,
   recovery_hours: true,
   rm: true,
   rm_as_of: true,
