@@ -6,7 +6,11 @@
 // Woche und (bei Kraft) das Workout. Spanne: letzte X Wochen (oder alles).
 
 import { SCORE_MAP, scoreInfo, type ScoreInfo } from "@/engine/score";
-import { journeyPlacement, type JourneySession } from "@/engine/journey";
+import {
+  journeyPlacement,
+  phaseRepBand,
+  type JourneySession,
+} from "@/engine/journey";
 import { todayISO } from "@/lib/format";
 import { isNeutralLoad } from "@/lib/loadFactor";
 import { zeitraumLabel } from "@/lib/zeitraeume";
@@ -61,7 +65,14 @@ export interface CoachMilestone {
 
 export interface CoachExerciseCat {
   name: string;
+  /** Band aus dem Uebungs-Katalog. Waehrend einer Journey nicht massgeblich,
+   *  s. activeRepBand. */
   repBand: string | null;
+  /** Band, mit dem der Coach gerade wirklich rechnet: das der laufenden Phase.
+   *  Nur gesetzt, solange eine Journey aktiv ist und die Uebung ein Kraftprofil
+   *  hat - genau die Faelle, in denen das Phasen-Band das Uebungs-Band
+   *  ueberstimmt (vgl. activeRepTarget in lib/liveBuild). */
+  activeRepBand?: string;
   workWeight: number | null;
   /** Eingefrorener Stand vor der Pause, solange eine Lastfaktor-Journey laeuft. */
   referenceWeight?: number;
@@ -141,6 +152,9 @@ export interface CoachExport {
     note: string;
     map: Record<number, ScoreInfo>;
   };
+  /** Erklaert das Nebeneinander von repBand und activeRepBand. Nur gesetzt,
+   *  wenn mindestens eine Uebung ein aktives Band traegt. */
+  repBandNote?: string;
   settings: {
     unit: string | null;
     weeklyFrequencyTarget: number | null;
@@ -175,6 +189,13 @@ const RESULT_LABEL: Record<string, string> = {
   missed: "verfehlt",
   skipped: "uebersprungen",
 };
+
+const REP_BAND_NOTE =
+  "repBand ist der Katalog-Wert der Uebung. Laeuft eine Journey, ueberstimmt " +
+  "bei Kraftuebungen das Wiederholungsband der aktiven Phase - dann gilt " +
+  "activeRepBand, und nur damit rechnet der Coach (Doppelprogression: erst " +
+  "Wiederholungen bis zum oberen Rand, dann Gewicht hoch und zurueck auf den " +
+  "unteren Rand).";
 
 const SCORE_SCALE_NOTE =
   "score (1-5) ist die gepflegte Groesse; RIR (Reps in Reserve), RPE und das " +
@@ -332,6 +353,9 @@ export function buildCoachExport(
   const activeJourneyRow =
     filterRow ?? raw.journeys.find((j) => flag(j, "active")) ?? null;
   let activeJourney: CoachJourney | null = null;
+  // Band der laufenden Phase - das, mit dem der Coach bei Kraftuebungen rechnet.
+  // Nur bei wirklich aktiver Journey; in der Rueckschau gilt nichts "gerade".
+  let activeBand: [number, number] | null = null;
   if (activeJourneyRow != null) {
     const jid = str(activeJourneyRow, "id") ?? "";
     const jphases = [...raw.phases]
@@ -371,6 +395,15 @@ export function buildCoachExport(
     // Abgeschlossene Journey (Rueckschau): kein "aktuell", sondern die volle
     // Dauer und keine laufende Phase.
     const isActive = flag(activeJourneyRow, "active");
+    const curPhaseRow = jphases[placement.phaseIndex] ?? null;
+    if (isActive && curPhaseRow != null) {
+      // Dieselbe Regel wie die Engine: gesetzte Grenzen, sonst aus dem Fokus.
+      activeBand = phaseRepBand(
+        num(curPhaseRow, "rep_target_min"),
+        num(curPhaseRow, "rep_target_max"),
+        str(curPhaseRow, "focus") ?? "",
+      );
+    }
     activeJourney = {
       name: str(activeJourneyRow, "name") ?? "Journey",
       startDate: str(activeJourneyRow, "start_date"),
@@ -407,6 +440,11 @@ export function buildCoachExport(
         workWeight: num(e, "work_weight"),
         est1RM,
       };
+      // Nur Kraftuebungen folgen dem Phasen-Band; Core/Bodyweight behalten ihr
+      // eigenes (gleiche Abgrenzung wie activeRepTarget in lib/liveBuild).
+      if (activeBand != null && str(e, "profile") === "strength") {
+        cat.activeRepBand = `${activeBand[0]}-${activeBand[1]}`;
+      }
       const ref = num(e, "reference_weight");
       if (ref != null) cat.referenceWeight = ref;
       const exId = str(e, "id");
@@ -605,6 +643,9 @@ export function buildCoachExport(
       note: SCORE_SCALE_NOTE,
       map: buildScoreScale(),
     },
+    ...(exercises.some((x) => x.activeRepBand != null)
+      ? { repBandNote: REP_BAND_NOTE }
+      : {}),
     settings: {
       unit: str(raw.settings ?? {}, "unit"),
       weeklyFrequencyTarget: num(raw.settings ?? {}, "weekly_frequency_target"),

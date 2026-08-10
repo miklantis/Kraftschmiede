@@ -184,6 +184,14 @@ betroffene Tabelle beim Wiederherstellen leer.
   Glue-/Coach-Schicht greift darauf zu.
 - **Coach als eigenes, testbares Modul** (`coach.ts`): nimmt Zustand explizit herein,
   gibt Entscheidungen heraus – gleiche Form wie die Engine. Kein DOM-Bezug.
+- **Phasen-Repband schlägt Übungs-Repband.** Läuft eine Journey, rechnet der Coach bei
+  Kraftübungen mit dem Wiederholungsband der aktiven Phase (ersatzweise aus deren Fokus
+  abgeleitet); das Band aus dem Übungskatalog ruht solange. Core- und
+  Bodyweight-Übungen behalten ihr eigenes Band. Die Regel steht an einer Stelle
+  (`activeRepTarget` in `lib/liveBuild.ts`) und wird von Trainingsbildschirm,
+  Übungs-Statusanzeige und Coach-Export genutzt – der Export weist beide Bänder getrennt
+  aus (`repBand` = Katalog, `activeRepBand` = was gerade gilt), damit von außen nicht das
+  falsche für maßgeblich gehalten wird.
 - **Lastfaktor schlägt Doppelprogression.** Arbeitet die laufende Journey mit
   Lastfaktoren (irgendeine Phase ≠ 1), gibt sie das Arbeitsgewicht vor:
   `reference_weight × load_factor`, abgerundet auf ladbare Scheiben bzw.
