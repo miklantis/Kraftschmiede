@@ -214,7 +214,15 @@ betroffene Tabelle beim Wiederherstellen leer.
   beide Tabellen, weil fachlich derselbe Bereich), Übungskatalog samt
   Übungs-Meilensteinen und 1RM-Tests (`exerciseStore`/`exerciseWrite`, ein Store für
   `exercise_milestones`, `rm_tests` und `exercises`, weil der 1RM-Test in einem Zug Test
-  und Katalog schreibt); die übrigen Bereiche folgen schrittweise (Issue #57).
+  und Katalog schreibt), Journey samt Phasen, Workout-Zuordnung und Workout-Vorlagen
+  (`journeyStore`/`journeyWrite`, ein Store für `journeys`, `phases`,
+  `journey_workouts`, `templates`, `template_exercises` und die Referenzgewichte in
+  `exercises`, weil der Journey-Start Referenzgewichte einfriert und der Wechsel
+  Zuordnungen übernimmt); die übrigen Bereiche folgen schrittweise (Issue #57).
+  Bei den registrierten (pausierbaren) Mutationen tauscht die Naht ausschließlich den
+  Rumpf der `mutationFn`: Mutations-Kennung, Nutzlast-Felder und Registrier-Reihenfolge
+  bleiben unverändert, damit offline pausierte Schreibvorgänge einen App-Neustart
+  weiterhin überleben (ADR-0009).
 - **Query-Schlüssel und Auffrischung an einer Stelle** (`src/lib/queryKeys.ts`). Kein
   Schlüssel steht als loses Textliteral in Hook, Komponente oder Route. Drei Regeln:
   `queryKeys.<entität>(userId, …)` baut jeden Leseschlüssel und verlangt die

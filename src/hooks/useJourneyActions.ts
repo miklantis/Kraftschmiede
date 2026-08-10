@@ -1,48 +1,24 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
 import { INVALIDATE, invalidateGroup } from "@/lib/queryKeys";
 import { todayISO } from "@/lib/format";
+import { supabaseJourneyStore } from "@/lib/journeyStore";
+import {
+  readJourneyZuordnungen,
+  writeJourneyRename,
+  writeJourneyStart,
+  writeJourneyZuordnungUebernahme,
+} from "@/lib/journeyWrite";
 import { useUserId } from "./useUserId";
-import type { JourneyInsert, PhaseInsert } from "@/schemas";
 import type { JourneyTemplateWithPhases } from "./useJourneyTemplates";
 
-type WriteError = { error: { message: string } | null };
-
-// Referenzgewicht aller Uebungen des Nutzers auf den aktuellen Stand einfrieren.
-// Postgres kann Spalte-auf-Spalte nur im SQL selbst; ueber den Client wird
-// darum je Zeile geschrieben (Uebungskatalog eines Nutzers, zweistellig).
-async function freezeReferenceWeights(userId: string): Promise<WriteError> {
-  const { data, error } = await supabase
-    .from("exercises")
-    .select("id, work_weight")
-    .eq("user_id", userId);
-  if (error) return { error };
-  const rows = (data ?? []) as Array<{ id: string; work_weight: number }>;
-  const results = await Promise.all(
-    rows.map((r) =>
-      supabase
-        .from("exercises")
-        .update({ reference_weight: r.work_weight })
-        .eq("id", r.id),
-    ),
-  );
-  return { error: results.find((r) => r.error)?.error ?? null };
-}
-
-// Referenzgewicht wegraeumen (Journey ohne Lastfaktor bzw. archivierte Journey).
-async function clearReferenceWeights(userId: string): Promise<WriteError> {
-  const { error } = await supabase
-    .from("exercises")
-    .update({ reference_weight: null })
-    .eq("user_id", userId)
-    .not("reference_weight", "is", null);
-  return { error };
-}
-
-// Schreibaktionen der Journey-Seite. Anlegen kopiert die Vorlagenphasen in eine
-// neue, aktive Journey und deaktiviert die bisherige (Invariante: genau eine
-// aktive Journey – als Partial Unique Index in der DB). Umbenennen aendert nur
-// den Namen. Beide laden danach die aktive Journey neu, damit Seite und
+// Schreibaktionen der Journey-Seite. Der Hook traegt nur noch Absicht und
+// Auffrischung; die Datenbank-Handgriffe liegen hinter der Naht
+// (lib/journeyStore.ts), die Abfolge in lib/journeyWrite.ts.
+//
+// Anlegen kopiert die Vorlagenphasen in eine neue, aktive Journey und
+// deaktiviert die bisherige (Invariante: genau eine aktive Journey – als
+// Partial Unique Index in der DB, ADR-0004). Umbenennen aendert nur den Namen.
+// Beide laden danach die aktive Journey neu, damit Seite und
 // Trainings-Uebersicht sofort stimmen.
 export function useJourneyActions(): {
   createFromTemplate: (
@@ -67,127 +43,36 @@ export function useJourneyActions(): {
   };
 
   const create = useMutation({
-    mutationFn: async (
+    mutationFn: (
       template: JourneyTemplateWithPhases,
-    ): Promise<{ newJourneyId: string; previousJourneyId: string | null }> => {
-      if (userId === null) throw new Error("Nicht angemeldet.");
-
-      // Bisherige aktive Journey zuerst deaktivieren, damit der Unique-Index
-      // beim Einfuegen der neuen aktiven Journey nicht verletzt wird. Ihre Id
-      // merken wir uns fuer das Uebernahme-Angebot (Lieferung 4b); ihre
-      // journey_workouts bleiben erhalten (nur active=false).
-      let previousJourneyId: string | null = null;
-      const { data: current, error: curErr } = await supabase
-        .from("journeys")
-        .select("id")
-        .eq("active", true)
-        .maybeSingle();
-      if (curErr) throw new Error(curErr.message);
-      if (current) {
-        previousJourneyId = (current as { id: string }).id;
-        const { error: deErr } = await supabase
-          .from("journeys")
-          .update({
-            active: false,
-            status: "archived",
-            end_date: todayISO(),
-          })
-          .eq("id", previousJourneyId);
-        if (deErr) throw new Error(deErr.message);
-      }
-
-      const insert: JourneyInsert = {
-        user_id: userId,
-        name: template.name,
-        active: true,
-        status: "active",
-        source_template_id: template.id,
-        start_date: todayISO(),
-      };
-      const { data: created, error: insErr } = await supabase
-        .from("journeys")
-        .insert(insert)
-        .select("id")
-        .single();
-      if (insErr) throw new Error(insErr.message);
-      const journeyId = (created as { id: string }).id;
-
-      const phaseRows: PhaseInsert[] = template.phases.map((p, i) => ({
-        user_id: userId,
-        journey_id: journeyId,
-        name: p.name,
-        focus: p.focus,
-        weeks: p.weeks,
-        sets_start: p.sets_start,
-        sets_end: p.sets_end,
-        deload_week: p.deload_week,
-        rep_target_min: p.rep_target_min,
-        rep_target_max: p.rep_target_max,
-        load_factor: p.load_factor,
-        position: i,
-      }));
-      const { error: phErr } = await supabase.from("phases").insert(phaseRows);
-      if (phErr) throw new Error(phErr.message);
-
-      // Referenzgewicht: Bezugspunkt einer Journey, die die Last selbst vorgibt.
-      // Bei einer Lastfaktor-Journey den aktuellen Stand einfrieren (work_weight
-      // wird nach jeder Einheit fortgeschrieben und waere sonst nach der ersten
-      // abgesenkten Einheit verloren), sonst den alten Stand wegraeumen.
-      const usesLoadFactor = template.phases.some(
-        (p) => Math.abs((p.load_factor ?? 1) - 1) > 1e-9,
-      );
-      const { error: refErr } = usesLoadFactor
-        ? await freezeReferenceWeights(userId)
-        : await clearReferenceWeights(userId);
-      if (refErr) throw new Error(refErr.message);
-
-      return { newJourneyId: journeyId, previousJourneyId };
-    },
+    ): Promise<{ newJourneyId: string; previousJourneyId: string | null }> =>
+      writeJourneyStart(supabaseJourneyStore, userId, template, todayISO()),
     onSuccess: invalidate,
   });
 
   // Zugewiesene Workout-Ids einer Journey lesen (fuer das Uebernahme-Angebot).
-  const readAssignments = async (journeyId: string): Promise<string[]> => {
-    const { data, error } = await supabase
-      .from("journey_workouts")
-      .select("template_id")
-      .eq("journey_id", journeyId);
-    if (error) throw new Error(error.message);
-    return ((data ?? []) as Array<{ template_id: string }>).map(
-      (r) => r.template_id,
-    );
-  };
+  const readAssignments = (journeyId: string): Promise<string[]> =>
+    readJourneyZuordnungen(supabaseJourneyStore, journeyId);
 
-  // Zuweisungen in die neue Journey kopieren (Uebernahme beim Wechsel). Nur die
-  // uebergebenen (bereits auf zuweisbar gefilterten) Workouts; IDs clientseitig.
+  // Zuweisungen in die neue Journey kopieren (Uebernahme beim Wechsel).
   const copyAssignments = async (
     newJourneyId: string,
     templateIds: string[],
   ): Promise<void> => {
-    if (userId === null) throw new Error("Nicht angemeldet.");
+    await writeJourneyZuordnungUebernahme(
+      supabaseJourneyStore,
+      userId,
+      newJourneyId,
+      templateIds,
+      () => crypto.randomUUID(),
+    );
     if (templateIds.length === 0) return;
-    const rows = templateIds.map((templateId) => ({
-      id: crypto.randomUUID(),
-      user_id: userId,
-      journey_id: newJourneyId,
-      template_id: templateId,
-    }));
-    const { error } = await supabase.from("journey_workouts").insert(rows);
-    if (error) throw new Error(error.message);
     invalidateGroup(queryClient, INVALIDATE.journeyWorkouts);
   };
 
   const renameM = useMutation({
-    mutationFn: async (vars: {
-      journeyId: string;
-      name: string;
-    }): Promise<void> => {
-      const { error } = await supabase
-        .from("journeys")
-        .update({ name: vars.name })
-        .eq("id", vars.journeyId);
-      if (error) throw new Error(error.message);
-    },
+    mutationFn: (vars: { journeyId: string; name: string }): Promise<void> =>
+      writeJourneyRename(supabaseJourneyStore, vars.journeyId, vars.name),
     onSuccess: invalidate,
   });
 

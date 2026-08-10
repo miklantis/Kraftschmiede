@@ -10,9 +10,14 @@
 // bei bestehenden Workouts wird die Uebungsliste sauber ersetzt (die Vorlage ist
 // nur ein Rezept; der Verlauf kopiert Uebungen beim Start und haengt nicht an
 // template_exercises). Archivieren/Reaktivieren setzt nur templates.active.
+//
+// Diese Datei traegt nur noch Kennung, Registrierung und Auffrischung. Die
+// Abfolge des Schreibens liegt in lib/journeyWrite.ts, die Datenbank-Handgriffe
+// hinter der Naht lib/journeyStore.ts.
 
 import type { QueryClient } from "@tanstack/react-query";
-import { supabase } from "./supabase";
+import { supabaseJourneyStore } from "./journeyStore";
+import { writeVorlageAction } from "./journeyWrite";
 import { INVALIDATE, invalidateGroup } from "./queryKeys";
 
 export const TEMPLATE_MUTATION_KEY = ["templateAction"] as const;
@@ -46,58 +51,30 @@ export interface WorkoutActivePayload {
 
 export type TemplateActionPayload = WorkoutSavePayload | WorkoutActivePayload;
 
-async function writeSave(p: WorkoutSavePayload): Promise<void> {
-  if (p.isNew) {
-    const { error } = await supabase.from("templates").insert({
-      id: p.templateId,
-      user_id: p.userId,
-      key: null,
-      name: p.name,
-      image: null,
-      active: true,
-      position: p.position,
-    });
-    if (error) throw new Error(error.message);
-  } else {
-    const { error } = await supabase
-      .from("templates")
-      .update({ name: p.name })
-      .eq("id", p.templateId);
-    if (error) throw new Error(error.message);
-  }
-
-  // Uebungsliste sauber ersetzen (Loeschen + Neu-Einfuegen). Unbedenklich, da
-  // template_exercises nur das Rezept ist und der Verlauf beim Start kopiert.
-  const del = await supabase
-    .from("template_exercises")
-    .delete()
-    .eq("template_id", p.templateId);
-  if (del.error) throw new Error(del.error.message);
-
-  if (p.exercises.length > 0) {
-    const rows = p.exercises.map((e) => ({
-      id: e.id,
-      user_id: p.userId,
-      template_id: p.templateId,
-      exercise_id: e.exercise_id,
-      position: e.position,
-    }));
-    const ins = await supabase.from("template_exercises").insert(rows);
-    if (ins.error) throw new Error(ins.error.message);
-  }
-}
-
-async function writeSetActive(p: WorkoutActivePayload): Promise<void> {
-  const { error } = await supabase
-    .from("templates")
-    .update({ active: p.active })
-    .eq("id", p.templateId);
-  if (error) throw new Error(error.message);
-}
-
+// Das gespeicherte Paket (kind) auf die Absicht der Naht (type) bringen. Die
+// Feldnamen des Pakets bleiben Zeichen fuer Zeichen gleich: pausierte Mutationen
+// aus einer aelteren Sitzung werden nach dem Neustart genau so wieder
+// eingespielt (ADR-0001/ADR-0009). Die Abfolge des Speicherns (Kopf, dann
+// Uebungsliste ersetzen) liegt in lib/journeyWrite.ts.
 async function writeTemplateAction(p: TemplateActionPayload): Promise<void> {
-  if (p.kind === "save") await writeSave(p);
-  else await writeSetActive(p);
+  await writeVorlageAction(
+    supabaseJourneyStore,
+    p.kind === "save"
+      ? {
+          type: "save",
+          userId: p.userId,
+          templateId: p.templateId,
+          name: p.name,
+          isNew: p.isNew,
+          position: p.position,
+          exercises: p.exercises,
+        }
+      : {
+          type: "setActive",
+          templateId: p.templateId,
+          aktiv: p.active,
+        },
+  );
 }
 
 /** Default-mutationFn + Auffrischung registrieren. Greift auch fuer nach einem

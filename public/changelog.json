@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.25.6",
+      "date": "2026-08-10",
+      "changes": [
+        "Aufräumen unter der Haube: Journey starten und umbenennen, das Zuweisen von Workouts zur Journey und das Speichern bzw. Archivieren von Workouts laufen jetzt über denselben klar getrennten Weg zur Datenbank wie Zeiträume, Messungen und Übungen. Damit ist erstmals automatisch geprüft, dass beim Journey-Start zuerst die alte Journey abgelöst und danach die neue mit ihren Phasen angelegt wird – und dass beim Speichern eines Workouts die Übungsliste sauber ersetzt wird.",
+        "Für dich ändert sich nichts sichtbar: Journey wechseln samt Übernahme der Workouts, das Einfrieren der Referenzgewichte bei Lastfaktor-Journeys und das Bearbeiten von Workouts verhalten sich genau wie vorher – auch ohne Netz mit späterem Nachschicken."
+      ]
+    },
+    {
       "version": "1.25.5",
       "date": "2026-08-10",
       "changes": [
