@@ -33,6 +33,8 @@ export interface UseLiveBuilder {
   /** Aktive Journey und aktuelle Phase (zum Einfrieren auf die Einheit). */
   journeyId: string | null;
   phaseId: string | null;
+  /** Hinweis zur vorgegebenen Last der laufenden Phase; null im Normalfall. */
+  loadNote: string | null;
 }
 
 export function useLiveBuilder(): UseLiveBuilder {
@@ -155,5 +157,11 @@ export function useLiveBuilder(): UseLiveBuilder {
     [templates, base],
   );
 
-  return { ready, buildWorkout, journeyId: base.journeyId, phaseId: base.phaseId };
+  return {
+    ready,
+    buildWorkout,
+    journeyId: base.journeyId,
+    phaseId: base.phaseId,
+    loadNote: base.loadNote,
+  };
 }

@@ -184,6 +184,45 @@ describe("derivePhaseContext – Lastfaktor", () => {
     );
     expect(ctx.loadFactor).toBeNull();
   });
+
+  it("erklaert die niedrige Vorgabe im Hinweis fuer den Trainingsbildschirm", () => {
+    const ctx = derivePhaseContext(
+      journeyWith([phase("Tasten", 0.65, 0), phase("Standort", 1, 1)]),
+      [],
+      3,
+      "2026-08-05",
+    );
+    expect(ctx.loadNote).toContain("65 %");
+    expect(ctx.loadNote).toContain("gewollt");
+  });
+
+  it("sagt in der letzten Phase, dass die Vorgabe endet", () => {
+    // Woche 1 (03.-05.08.) ist mit drei Einheiten erfuellt; am 12.08. laeuft
+    // damit Woche 2 – die letzte Phase.
+    const ctx = derivePhaseContext(
+      journeyWith([phase("Tasten", 0.65, 0), phase("Standort", 1, 1)]),
+      [
+        { date: "2026-08-03", status: "done", type: "strength", journey_id: "00000000-0000-0000-0000-0000000000aa" },
+        { date: "2026-08-04", status: "done", type: "strength", journey_id: "00000000-0000-0000-0000-0000000000aa" },
+        { date: "2026-08-05", status: "done", type: "strength", journey_id: "00000000-0000-0000-0000-0000000000aa" },
+      ],
+      3,
+      "2026-08-12",
+    );
+    expect(ctx.loadFactor).toBe(1);
+    expect(ctx.loadNote).toContain("100 %");
+    expect(ctx.loadNote).toContain("endet");
+  });
+
+  it("ohne Lastfaktor-Journey gibt es keinen Hinweis", () => {
+    const ctx = derivePhaseContext(
+      journeyWith([phase("Hypertrophie", 1, 0)]),
+      [],
+      3,
+      "2026-08-05",
+    );
+    expect(ctx.loadNote).toBeNull();
+  });
 });
 
 // --- Sitzungsaufbau ---

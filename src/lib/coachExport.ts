@@ -8,6 +8,7 @@
 import { SCORE_MAP, scoreInfo, type ScoreInfo } from "@/engine/score";
 import { journeyPlacement, type JourneySession } from "@/engine/journey";
 import { todayISO } from "@/lib/format";
+import { isNeutralLoad } from "@/lib/loadFactor";
 import { zeitraumLabel } from "@/lib/zeitraeume";
 import type {
   RawExportData,
@@ -38,6 +39,9 @@ export interface CoachPhase {
   setsRamp: string; // "2→6"
   deloadWeek: number | null;
   repBand: string | null; // "8-12"
+  /** Vorgegebene Last der Phase als Anteil des Referenzgewichts; nur wenn die
+   *  Journey damit arbeitet (sonst weggelassen). */
+  loadFactor?: number;
 }
 
 export interface CoachJourney {
@@ -59,6 +63,8 @@ export interface CoachExerciseCat {
   name: string;
   repBand: string | null;
   workWeight: number | null;
+  /** Eingefrorener Stand vor der Pause, solange eine Lastfaktor-Journey laeuft. */
+  referenceWeight?: number;
   est1RM: number | null;
   milestones?: CoachMilestone[];
 }
@@ -340,6 +346,11 @@ export function buildCoachExport(
       setsRamp: `${num(p, "sets_start") ?? "?"}→${num(p, "sets_end") ?? "?"}`,
       deloadWeek: num(p, "deload_week"),
       repBand: repBand(num(p, "rep_target_min"), num(p, "rep_target_max")),
+      // Lastfaktor nur ausgeben, wenn er die Last wirklich vorgibt - sonst
+      // traegt der Export in jeder Journey eine nichtssagende 1.
+      ...(isNeutralLoad(num(p, "load_factor"))
+        ? {}
+        : { loadFactor: num(p, "load_factor") ?? 1 }),
     }));
 
     // aktuelle Woche/Phase ueber die getestete Placement-Engine
@@ -396,6 +407,8 @@ export function buildCoachExport(
         workWeight: num(e, "work_weight"),
         est1RM,
       };
+      const ref = num(e, "reference_weight");
+      if (ref != null) cat.referenceWeight = ref;
       const exId = str(e, "id");
       const ms = exId != null ? milestonesByExercise.get(exId) : undefined;
       if (ms != null && ms.length > 0) {

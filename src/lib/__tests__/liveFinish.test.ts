@@ -39,6 +39,7 @@ function session(entries: LiveEntry[]): WorkoutSession {
     templateId: "tpl1",
     journeyId: "j1",
     phaseId: "p1",
+    loadNote: null,
     title: "Push",
     startedAt: 1_000_000,
     generalWarmup: { sets: [{ minutes: 7, mode: "bike", done: true }] },

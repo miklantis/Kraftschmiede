@@ -16,6 +16,7 @@ function phase(over: Partial<JourneyPhaseInput> = {}): JourneyPhaseInput {
     deloadWeek: 4,
     repTargetMin: 8,
     repTargetMax: 12,
+    loadFactor: 1,
     ...over,
   };
 }
@@ -91,6 +92,52 @@ describe("buildPhaseViews", () => {
     expect(views[0].detail[0].v).toBe("? Wdh");
     expect(views[0].detail[1].v).toBe("3 S\u00e4tze");
     expect(views[0].detail[2].v).toBe("keiner");
+  });
+});
+
+describe("buildPhaseViews \u2013 Lastfaktor", () => {
+  const rampe: JourneyPhaseInput[] = [
+    phase({ name: "Tasten", weeks: 1, loadFactor: 0.65 }),
+    phase({ name: "Standort", weeks: 1, loadFactor: 1 }),
+  ];
+
+  it("zeigt die vorgegebene Last als Detailzeile an jeder Phase", () => {
+    const views = buildPhaseViews(rampe, {
+      phaseIndex: 0,
+      weekInPhase: 1,
+      done: false,
+    });
+    expect(views[0].detail[3]).toEqual({ k: "Vorgegebene Last", v: "65 %" });
+    expect(views[1].detail[3]).toEqual({ k: "Vorgegebene Last", v: "100 %" });
+  });
+
+  it("erklaert die Vorgabe nur an der laufenden Phase", () => {
+    const views = buildPhaseViews(rampe, {
+      phaseIndex: 0,
+      weekInPhase: 1,
+      done: false,
+    });
+    expect(views[0].loadNote).toContain("65 %");
+    expect(views[1].loadNote).toBeNull();
+  });
+
+  it("sagt in der letzten Phase, dass die Vorgabe endet", () => {
+    const views = buildPhaseViews(rampe, {
+      phaseIndex: 1,
+      weekInPhase: 1,
+      done: false,
+    });
+    expect(views[1].loadNote).toContain("endet");
+  });
+
+  it("laesst Journeys ohne Lastfaktor unveraendert", () => {
+    const views = buildPhaseViews([phase()], {
+      phaseIndex: 0,
+      weekInPhase: 1,
+      done: false,
+    });
+    expect(views[0].detail).toHaveLength(3);
+    expect(views[0].loadNote).toBeNull();
   });
 });
 

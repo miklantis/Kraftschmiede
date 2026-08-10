@@ -1,4 +1,5 @@
 import { focusLabel } from "@/lib/labels";
+import { loadFactorNote, loadPercent, usesLoadFactor } from "@/lib/loadFactor";
 import type { Focus } from "@/schemas/shared";
 
 // Phase einer aktiven Journey, soweit die Anzeige sie braucht. Werte snake_case-
@@ -12,6 +13,8 @@ export interface JourneyPhaseInput {
   deloadWeek: number | null;
   repTargetMin: number | null;
   repTargetMax: number | null;
+  /** Anteil des Referenzgewichts, den die Phase vorgibt (1 = keine Vorgabe). */
+  loadFactor: number;
 }
 
 // Platzierung, soweit die Phasen-Anzeige sie braucht (aus engine.journeyPlacement).
@@ -38,6 +41,9 @@ export interface PhaseView {
   mark: string; // "\u2713" bei vergangenen Phasen, sonst ""
   meta: string;
   detail: PhaseDetail[];
+  /** Hinweis zur vorgegebenen Last, nur an der laufenden Phase einer
+   *  Lastfaktor-Journey; sonst null. */
+  loadNote: string | null;
 }
 
 function repBand(min: number | null, max: number | null): string {
@@ -58,6 +64,10 @@ export function buildPhaseViews(
   phases: JourneyPhaseInput[],
   placement: PhasePlacementInfo,
 ): PhaseView[] {
+  // Gibt die Journey die Last vor, bekommt jede Phase eine Detailzeile "Last"
+  // und die laufende Phase zusaetzlich den erklaerenden Hinweis. Journeys ohne
+  // Lastfaktor sehen unveraendert aus.
+  const withLoad = usesLoadFactor(phases.map((p) => p.loadFactor));
   return phases.map((p, i) => {
     const state: PhaseState = placement.done
       ? "past"
@@ -84,7 +94,14 @@ export function buildPhaseViews(
         },
         { k: "Satz-Rampe / Woche", v: setsRamp(p.setsStart, p.setsEnd) },
         { k: "Deload", v: p.deloadWeek ? `Woche ${p.deloadWeek}` : "keiner" },
+        ...(withLoad
+          ? [{ k: "Vorgegebene Last", v: loadPercent(p.loadFactor) }]
+          : []),
       ],
+      loadNote:
+        withLoad && isCurrent
+          ? loadFactorNote(p.loadFactor, i === phases.length - 1)
+          : null,
     };
   });
 }

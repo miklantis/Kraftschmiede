@@ -45,6 +45,16 @@ function DetailRows({
   );
 }
 
+// Hinweis zur vorgegebenen Last an der laufenden Phase (nur Lastfaktor-Journeys).
+// Erklaert den bewusst niedrigen Vorschlag bzw. das Ende der Vorgabe.
+function LoadNote({ text }: { text: string }): React.ReactElement {
+  return (
+    <div className="rounded-[12px] border border-primary/25 bg-white/70 px-3 py-2 text-[12.5px] leading-snug text-foreground">
+      {text}
+    </div>
+  );
+}
+
 // Phasen einer Journey. Desktop: Raster mit bis zu vier Spalten, jede Karte mit
 // Detailzeilen. Mobile: Liste, nur die aktuelle Phase zeigt Details. Optik aus
 // V1 (jph): aktuelle Phase akzent-getoent, kuenftige gedimmt.
@@ -83,6 +93,11 @@ export function PhaseList({
               {p.name}
             </div>
             <div className="mt-0.5 text-[12.5px] text-foreground-subtle">{p.meta}</div>
+            {p.loadNote !== null && (
+              <div className="mt-3.5">
+                <LoadNote text={p.loadNote} />
+              </div>
+            )}
             <DetailRows phase={p} layout="grid" />
           </div>
         ))}
@@ -118,6 +133,11 @@ export function PhaseList({
             </div>
             {p.isCurrent && (
               <div className="mx-3.5 mb-3.5">
+                {p.loadNote !== null && (
+                  <div className="mb-2.5">
+                    <LoadNote text={p.loadNote} />
+                  </div>
+                )}
                 <DetailRows phase={p} layout="list" />
               </div>
             )}

@@ -14,6 +14,7 @@ const SESSION: WorkoutSession = {
   templateId: "tpl-1",
   journeyId: "j-1",
   phaseId: "p-1",
+  loadNote: null,
   title: "Oberkörper",
   startedAt: 1_700_000_000_000,
   generalWarmup: { sets: [{ minutes: 7, mode: "bike", done: false }] },

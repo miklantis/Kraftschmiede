@@ -174,6 +174,8 @@ export interface StartWorkoutInput {
   title: string;
   journeyId: string | null;
   phaseId: string | null;
+  /** Hinweis zur vorgegebenen Last der Phase; null ohne Lastfaktor-Journey. */
+  loadNote: string | null;
   entries: WorkoutSession["entries"];
   generalWarmup: WorkoutSession["generalWarmup"];
 }
@@ -187,6 +189,7 @@ function openStartWorkout(input: StartWorkoutInput): void {
     templateId: input.templateId,
     journeyId: input.journeyId,
     phaseId: input.phaseId,
+    loadNote: input.loadNote,
     title: input.title,
     startedAt: Date.now(),
     generalWarmup: input.generalWarmup,
