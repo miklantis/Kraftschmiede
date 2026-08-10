@@ -211,8 +211,10 @@ betroffene Tabelle beim Wiederherstellen leer.
   echte Datenbank prüfbar (`src/lib/__tests__/<bereich>Write.test.ts`). Umgestellt:
   Verlauf (`historyStore`/`historyWrite`), Zeiträume (`zeitraumStore`/`zeitraumWrite`),
   Messungen samt Mess-Meilensteinen (`compositionStore`/`compositionWrite`, ein Store für
-  beide Tabellen, weil fachlich derselbe Bereich); die übrigen Bereiche folgen
-  schrittweise (Issue #57).
+  beide Tabellen, weil fachlich derselbe Bereich), Übungskatalog samt
+  Übungs-Meilensteinen und 1RM-Tests (`exerciseStore`/`exerciseWrite`, ein Store für
+  `exercise_milestones`, `rm_tests` und `exercises`, weil der 1RM-Test in einem Zug Test
+  und Katalog schreibt); die übrigen Bereiche folgen schrittweise (Issue #57).
 - **Query-Schlüssel und Auffrischung an einer Stelle** (`src/lib/queryKeys.ts`). Kein
   Schlüssel steht als loses Textliteral in Hook, Komponente oder Route. Drei Regeln:
   `queryKeys.<entität>(userId, …)` baut jeden Leseschlüssel und verlangt die
