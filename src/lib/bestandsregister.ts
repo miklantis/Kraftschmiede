@@ -1,7 +1,7 @@
 // Bestandsregister: die eine Stelle, an der steht, aus welchen Tabellen der
 // Datenbestand eines Nutzers besteht. Abruf (exportSource), Voll-Export
 // (exportData), Wiederherstellung (restoreData) und die Loesch-/Einfuege-
-// Reihenfolge (useRestore) lesen ausschliesslich hier.
+// Reihenfolge (restoreWrite) lesen ausschliesslich hier.
 //
 // Frueher stand diese Liste an acht Stellen von Hand aufgezaehlt. Wurde eine
 // vergessen, fiel die betroffene Tabelle still aus der Sicherung heraus und
@@ -130,3 +130,9 @@ export const EINFUEGE_REIHENFOLGE: readonly ListenTabelle[] = nachTiefe;
 
 /** Loeschen beim Wiederherstellen: Kinder zuerst, exaktes Spiegelbild. */
 export const LOESCH_REIHENFOLGE: readonly ListenTabelle[] = [...nachTiefe].reverse();
+
+/** Einzelzeilen-Tabellen (settings): werden geupsertet statt eingefuegt und
+ *  tauchen darum in keiner der beiden Reihenfolgen auf. */
+export const EINZEL_TABELLEN: readonly EinzelTabelle[] = BESTANDSREGISTER
+  .filter((e): e is EinzelEintrag => e.einzelzeile)
+  .map((e) => e.tabelle);
