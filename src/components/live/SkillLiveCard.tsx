@@ -1,4 +1,3 @@
-import type { AudioPrefs } from "@/lib/liveAudio";
 import type { SkillLiveExercise } from "@/lib/liveSession";
 import { LiveNumberInput } from "./LiveNumberInput";
 import { SkillWatchValue } from "./SkillWatchValue";
@@ -24,7 +23,6 @@ function rowCls(grid: string, done: boolean): string {
 export function SkillLiveCard({
   exercise,
   watchSi,
-  audioPrefs,
   onToggleSet,
   onValue,
   onStartWatch,
@@ -36,7 +34,6 @@ export function SkillLiveCard({
   exercise: SkillLiveExercise;
   /** Index des Satzes mit laufender Stoppuhr in dieser Uebung, sonst null. */
   watchSi: number | null;
-  audioPrefs?: AudioPrefs;
   onToggleSet: (si: number) => void;
   onValue: (si: number, value: number) => void;
   onStartWatch: (si: number) => void;
@@ -86,9 +83,7 @@ export function SkillLiveCard({
             {isDur && !editMode ? (
               <SkillWatchValue
                 value={st.value}
-                target={exercise.target}
                 active={watchSi === si}
-                audioPrefs={audioPrefs ?? { sound: false, vibrate: false }}
                 onStart={() => onStartWatch(si)}
                 onStop={onStopWatch}
                 onCommit={(v) => onValue(si, v)}

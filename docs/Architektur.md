@@ -284,8 +284,10 @@ betroffene Tabelle beim Wiederherstellen leer.
   (Pausen-Rechnung, Zeit kommt als Parameter herein), `liveAutoRest` (Entscheidung nach
   einem abgehakten Satz: keine / abbrechen / starten), `liveWarmup` (allgemeines
   Aufwärmen), `liveSkillEdit` (Ändern der Skill-Übungen; der Aufbau liegt getrennt in
-  `skillLiveBuild`) und `liveStart` (die drei Startwege Kraft / Skill / 1RM-Test als
-  Fabriken, Kennung und Startzeit kommen herein). Der Store enthält selbst keine
+  `skillLiveBuild`), `durationTimer` (Stand des Dauer-Timers zu einem Zeitpunkt:
+  Vorbereitung, Zielzeit, Extra-Runden und Multiplikator – die Zeit kommt als Parameter
+  herein, gezeichnet wird in `DurationTimerOverlay`) und `liveStart` (die drei Startwege
+  Kraft / Skill / 1RM-Test als Fabriken, Kennung und Startzeit kommen herein). Der Store enthält selbst keine
   Datenumformung mehr; bewusst dort geblieben sind nur `cyclePlateMode` (Anzeige, keine
   Fachregel) und die Skill-Uhr, die nur festhält, welche Uhr gerade läuft.
   Der Store ist dabei bewusst **ein** Modul geblieben statt in mehrere Stores zerlegt zu

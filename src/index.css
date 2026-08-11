@@ -93,6 +93,9 @@
   --skill-foreground: #0a7d5e;
   --yoga: #0c9d77; /* Yoga nutzt den Akzent (Gruen); frueher Lila #8478c9 */
   --yoga-foreground: #0a7d5e;
+  --timer-surface: #1c1c1e; /* dunkle Flaeche der grossen Timer-Ansicht */
+  --timer-surface-foreground: #ffffff;
+  --primary-soft: #4fd3a8; /* helleres Gruen: Extra-Runden ueber der Zielzeit */
 }
 
 @theme inline {
@@ -166,6 +169,9 @@
   --color-skill-foreground: var(--skill-foreground);
   --color-yoga: var(--yoga);
   --color-yoga-foreground: var(--yoga-foreground);
+  --color-timer-surface: var(--timer-surface);
+  --color-timer-surface-foreground: var(--timer-surface-foreground);
+  --color-primary-soft: var(--primary-soft);
 }
 
 @layer base {
