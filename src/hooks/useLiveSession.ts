@@ -6,6 +6,7 @@ import {
   serializeLive,
   hasEntries,
   type LiveEntry,
+  type LiveGeneralWarmupSet,
   type LiveSession,
   type WorkoutSession,
   type RmTestSession,
@@ -27,6 +28,14 @@ import {
   withWarmDone,
   withWarmValue,
 } from "@/lib/liveEntries";
+import {
+  withAppendedGeneral,
+  withGeneralDone,
+  withGeneralMinutes,
+  withGeneralMode,
+  withRemovedGeneral,
+} from "@/lib/liveWarmup";
+import { withSkillDone, withSkillValue } from "@/lib/liveSkillEdit";
 import { clickTick, ensureAudio } from "@/lib/liveAudio";
 import { istDesktopJetzt } from "@/hooks/useIsDesktop";
 
@@ -36,6 +45,19 @@ import { istDesktopJetzt } from "@/hooks/useIsDesktop";
 // haelt das global gemountete Live-Panel und die Trainingsseite in Sync, ohne
 // Props durchzureichen. Persistiert werden nur `session` und `collapsed`; die
 // Uebergangs-Flags (pending/ending/entering) sind fluechtig.
+//
+// Zustaendigkeit (Vorhaben #55): Der Store HAELT den Zustand, SICHERT ihn im
+// Geraetespeicher und loest die Seiteneffekte aus (Ton, Pause, Uhr). ENTSCHIEDEN
+// und UMGEFORMT wird ausserhalb, in reinen und getesteten Funktionen:
+//   liveFlow      - naechstes To-do, Pausen-Typ, Fortschritt
+//   liveEntries   - Saetze und Aufwaermsaetze je Uebung
+//   liveRest      - Pausen-Rechnung
+//   liveAutoRest  - Entscheidung nach einem abgehakten Satz
+//   liveWarmup    - allgemeines Aufwaermen (Cardio)
+//   liveSkillEdit - Aenderungen an den Skill-Uebungen
+// Der Store enthaelt selbst keine Datenumformung mehr. Bewusst hier geblieben:
+// cyclePlateMode (Anzeige, keine Fachregel) und die Skill-Uhr, die nur festhaelt,
+// welche Uhr gerade laeuft - der Takt liegt in SkillWatchValue.tsx.
 //
 // Start-Uebergang wie V1: beim Bestaetigen faehrt erst das Start-Popup nach
 // unten raus, dann steigt das Panel von unten herein - die beiden Bewegungen
@@ -346,6 +368,28 @@ function applyEntries(fn: (entries: LiveEntry[]) => LiveEntry[]): void {
   set({ session: { ...s, entries } });
 }
 
+/** Wie applyEntries, aber fuer das allgemeine Aufwaermen (`@/lib/liveWarmup`). */
+function applyGeneralWarmup(
+  fn: (sets: LiveGeneralWarmupSet[]) => LiveGeneralWarmupSet[],
+): void {
+  const s = state.session;
+  if (!hasEntries(s)) return;
+  const sets = fn(s.generalWarmup.sets);
+  if (sets === s.generalWarmup.sets) return;
+  set({ session: { ...s, generalWarmup: { sets } } });
+}
+
+/** Wie applyEntries, aber fuer die Skill-Uebungen (`@/lib/liveSkillEdit`). */
+function applySkillExercises(
+  fn: (exercises: SkillLiveExercise[]) => SkillLiveExercise[],
+): void {
+  const s = state.session;
+  if (!s || s.kind !== "skill") return;
+  const exercises = fn(s.exercises);
+  if (exercises === s.exercises) return;
+  set({ session: { ...s, exercises } });
+}
+
 /** Pause starten (nur wenn Sekunden > 0). Gerechnet wird in `@/lib/liveRest`. */
 function startRest(type: RestState["type"], sec: number): void {
   set({ rest: startedRest(type, sec, Date.now()) });
@@ -402,10 +446,7 @@ function toggleGeneralWarmup(si: number): void {
   const nextDone = !cur.done;
   ensureAudio();
   clickTick(nextDone, audioPrefs());
-  const sets = s.generalWarmup.sets.map((w, j) =>
-    j === si ? { ...w, done: nextDone } : w,
-  );
-  set({ session: { ...s, generalWarmup: { sets } } });
+  applyGeneralWarmup((sets) => withGeneralDone(sets, si, nextDone));
 }
 
 /** Wert eines Arbeitssatzes uebernehmen (Wdh/kg/RIR). */
@@ -450,48 +491,27 @@ function cyclePlateMode(ei: number): void {
   set({ plateShow: { ...state.plateShow, [ei]: next } });
 }
 
-function patchGeneralWarmup(
-  fn: (sets: WorkoutSession["generalWarmup"]["sets"]) => WorkoutSession["generalWarmup"]["sets"],
-): void {
-  const s = state.session;
-  if (!hasEntries(s)) return;
-  set({ session: { ...s, generalWarmup: { sets: fn(s.generalWarmup.sets) } } });
-}
-
 /** Dauer (Minuten) eines Aufwaerm-Cardio-Satzes uebernehmen. */
 function commitGeneralWarmupMinutes(si: number, value: number): void {
-  patchGeneralWarmup((sets) =>
-    sets.map((w, j) => (j === si ? { ...w, minutes: Math.max(0, Math.round(value) || 0) } : w)),
-  );
+  applyGeneralWarmup((sets) => withGeneralMinutes(sets, si, value));
 }
 
 /** Art (Rad/Rudern/...) eines Aufwaerm-Cardio-Satzes setzen. */
 function setGeneralWarmupMode(si: number, mode: string): void {
-  patchGeneralWarmup((sets) => sets.map((w, j) => (j === si ? { ...w, mode } : w)));
+  applyGeneralWarmup((sets) => withGeneralMode(sets, si, mode));
 }
 
 /** Aufwaerm-Cardio-Satz anhaengen (5 min, Art Vario). */
 function addGeneralWarmup(): void {
-  patchGeneralWarmup((sets) => [...sets, { minutes: 5, mode: "vario", done: false }]);
+  applyGeneralWarmup(withAppendedGeneral);
 }
 
 /** Letzten Aufwaerm-Cardio-Satz entfernen (mindestens einer bleibt). */
 function delGeneralWarmup(): void {
-  patchGeneralWarmup((sets) => (sets.length > 1 ? sets.slice(0, -1) : sets));
+  applyGeneralWarmup(withRemovedGeneral);
 }
 
 // ---- Skill-Einheit (Lieferung 5) -------------------------------------------
-
-/** Eine Skill-Uebung immutabel ersetzen. */
-function patchSkillExercise(
-  ei: number,
-  fn: (e: SkillLiveExercise) => SkillLiveExercise,
-): void {
-  const s = state.session;
-  if (!s || s.kind !== "skill") return;
-  const exercises = s.exercises.map((e, i) => (i === ei ? fn(e) : e));
-  set({ session: { ...s, exercises } });
-}
 
 /** Skill-Satz abhaken/loesen; bei Abhaken ggf. Auto-Pause (wie V1). */
 function toggleSkillSet(ei: number, si: number): void {
@@ -502,22 +522,13 @@ function toggleSkillSet(ei: number, si: number): void {
   const nextDone = !cur.done;
   ensureAudio();
   clickTick(nextDone, audioPrefs());
-  const exercises = s.exercises.map((e, i) =>
-    i === ei
-      ? { ...e, sets: e.sets.map((x, j) => (j === si ? { ...x, done: nextDone } : x)) }
-      : e,
-  );
-  set({ session: { ...s, exercises } });
+  applySkillExercises((exercises) => withSkillDone(exercises, ei, si, nextDone));
   if (nextDone) applyAutoRest(autoRestAfterSkillSet(prefs));
 }
 
 /** Ergebniswert eines Skill-Satzes uebernehmen (Wdh oder Sekunden, ganzzahlig). */
 function commitSkillValue(ei: number, si: number, value: number): void {
-  const v = Number.isFinite(value) ? Math.max(0, Math.round(value)) : 0;
-  patchSkillExercise(ei, (e) => ({
-    ...e,
-    sets: e.sets.map((x, j) => (j === si ? { ...x, value: v } : x)),
-  }));
+  applySkillExercises((exercises) => withSkillValue(exercises, ei, si, value));
 }
 
 /** Stoppuhr einer Skill-Dauer-Uebung scharfschalten (nur eine zugleich). */

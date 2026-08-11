@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.25.13",
+      "date": "2026-08-11",
+      "changes": [
+        "Aufräumen im Live-Training, Schritt 3 von 4: Auch das allgemeine Aufwärmen (Dauer, Art, Sätze hinzufügen und entfernen) und die Skill-Übungen (Abhaken, Wert eintragen) liegen jetzt in eigenen, geprüften Bausteinen.",
+        "Damit ist der Umbau inhaltlich durch: Das laufende Training verwaltet nur noch, was gerade gilt, und sichert es – gerechnet und entschieden wird ausschließlich in Bausteinen, die automatisch geprüft sind.",
+        "Für dich ändert sich nichts sichtbar."
+      ]
+    },
+    {
       "version": "1.25.12",
       "date": "2026-08-11",
       "changes": [
