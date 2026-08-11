@@ -14,7 +14,6 @@ import type {
 import { testResult, asRmFormula } from "@/lib/rmTest";
 import { fmtWeight } from "@/lib/format";
 import type { RmFormula } from "@/engine/types";
-import type { AudioPrefs } from "@/lib/liveAudio";
 import { useLiveClock } from "./useLiveClock";
 import { useGripDrag } from "./useGripDrag";
 import { LiveMiniBar } from "./LiveMiniBar";
@@ -23,6 +22,7 @@ import { LoadNoteBanner } from "./LoadNoteBanner";
 import { ExerciseLiveCard } from "./ExerciseLiveCard";
 import { SkillLiveCard } from "./SkillLiveCard";
 import { RestBar } from "./RestBar";
+import { DurationTimerOverlay } from "./DurationTimerOverlay";
 
 // Globales Live-Panel der gefuehrten Session.
 //  - Desktop (>= 960px): Vollbild-Overlay; eingeklappt eine freischwebende Pille.
@@ -184,11 +184,9 @@ function RmTestPanelContent({
 function SkillPanelContent({
   session,
   live,
-  audioPrefs,
 }: {
   session: SkillSession;
   live: UseLiveSession;
-  audioPrefs: AudioPrefs;
 }): React.ReactElement {
   const watch = live.skillWatch;
   return (
@@ -203,7 +201,6 @@ function SkillPanelContent({
           key={ex.name + i}
           exercise={ex}
           watchSi={watch && watch.ei === i ? watch.si : null}
-          audioPrefs={audioPrefs}
           onToggleSet={(si) => live.toggleSkillSet(i, si)}
           onValue={(si, v) => live.commitSkillValue(i, si, v)}
           onStartWatch={(si) => live.startSkillWatch(i, si)}
@@ -311,7 +308,7 @@ export function LivePanel(): React.ReactElement | null {
   const formula = asRmFormula(settingsQ.data?.rm_formula);
   const content =
     s.kind === "skill" ? (
-      <SkillPanelContent session={s} live={live} audioPrefs={audioPrefs} />
+      <SkillPanelContent session={s} live={live} />
     ) : s.kind === "rmtest" ? (
       <RmTestPanelContent
         session={s}
@@ -336,16 +333,40 @@ export function LivePanel(): React.ReactElement | null {
       />
     ) : null;
 
+  // Grosse Timer-Ansicht der Dauer-Uebungen: haengt an derselben Stelle wie die
+  // Pausen-Leiste, liegt aber als eigene Schicht ueber allem (Portal).
+  const watchEx =
+    s.kind === "skill" && live.skillWatch ? s.exercises[live.skillWatch.ei] : undefined;
+  const durationTimer =
+    live.skillWatch && watchEx ? (
+      <DurationTimerOverlay
+        key={live.skillWatch.ei + "-" + live.skillWatch.si}
+        exerciseName={watchEx.name}
+        setLabel={"Satz " + (live.skillWatch.si + 1) + " von " + watchEx.sets.length}
+        target={watchEx.target}
+        baseValue={watchEx.sets[live.skillWatch.si]?.value ?? 0}
+        audioPrefs={audioPrefs}
+        onEnd={(sec) => {
+          const w = live.skillWatch;
+          if (w) live.commitSkillValue(w.ei, w.si, sec);
+          live.stopSkillWatch();
+        }}
+      />
+    ) : null;
+
   // --- Desktop ---
   if (isDesktop) {
     if (live.collapsed) {
       return (
-        <LiveMiniBar
-          title={title + " läuft"}
-          subtitle={subtitle}
-          clock={clock}
-          onExpand={live.expand}
-        />
+        <>
+          <LiveMiniBar
+            title={title + " läuft"}
+            subtitle={subtitle}
+            clock={clock}
+            onExpand={live.expand}
+          />
+          {durationTimer}
+        </>
       );
     }
     return (
@@ -361,6 +382,7 @@ export function LivePanel(): React.ReactElement | null {
           <div className="kl-ov-inner">{content}</div>
         </div>
         {restBar}
+        {durationTimer}
       </div>
     );
   }
@@ -386,6 +408,7 @@ export function LivePanel(): React.ReactElement | null {
         <div className="kl-ov-scroll">{content}</div>
       </div>
       {restBar}
+      {durationTimer}
     </>
   );
 }

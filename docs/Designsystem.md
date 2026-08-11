@@ -75,6 +75,17 @@ gegen die weiße Karte behaupten muss: `body-base` (`#cfd3d8`, Körperform) und 
 | Skill | `skill` | `#0c9d77` | Skill-Bereich (heute = Akzent) |
 | Yoga | `yoga` | `#0c9d77` | Yoga-Bereich (heute = Akzent) |
 
+#### Timer-Flächen
+
+Zwei Rollen nur für die dunklen Timer-Ansichten des Live-Trainings (große Timer-Ansicht
+der Dauer-Übungen; die Pausenleiste trägt denselben Ton noch als eigenen Wert):
+
+| Rolle | Token | Wert | Verwendung |
+|---|---|---|---|
+| Timer-Fläche | `timer-surface` | `#1c1c1e` | dunkle Karte der großen Timer-Ansicht |
+| Schrift darauf | `timer-surface-foreground` | `#ffffff` | Typografie auf der Timer-Fläche |
+| Helles Grün | `primary-soft` | `#4fd3a8` | Extra-Runden über der Zielzeit, abgesetzt vom `primary`-Ring |
+
 `good`, `skill` und `yoga` tragen denselben Wert wie `primary`, bleiben aber eigene Token:
 Sie sind eigene Rollen, und ein Bereich soll später wieder eine eigene Farbe bekommen
 können, ohne dass man dafür durch die ganze App muss.
@@ -180,6 +191,7 @@ Doku nur als Beispiel im Text stehen – samt Farben, die es in der App gar nich
 | **JourneyChip** | Kleiner Journey-Marker als weiche grüne Tönung (`bg-primary/10`) mit dem Karten-Icon der Journey (wie im Hauptmenü), nur Icon ohne Text; Label als aria-label. Auf der Trainingsseite („Weitere Workouts“) und der Workouts-Seite; die Bedeutung („in der Journey“ vs. „journey-fähig“) trägt der Seitenkontext. |
 | **WorkoutIcon / YogaIcon** | Zwei eigene Trainingstyp-Symbole im Lucide-Stil (24er-Raster, currentColor): Stoppuhr für Workout/Kraft, sitzende Figur für Yoga. Für Skills dient das Lucide-Symbol „Zap“. Genutzt als `leading` in Listenzeilen (Workouts-Seite, Trainingsseite, Journey-Seite) und im Kopf der Skill-Karten (dezent grau); WorkoutIcon ist zudem das Navigations-Icon für „Workouts“. Im Verlauf (SessionLogCard) ersetzen dieselben Symbole den früheren Farbpunkt, dort in der Typfarbe (Grün bzw. Bernstein bei Satz-Abweichung). |
 | **ProgressDots** | Punktreihe für Fortschritt (z. B. Einheiten der Woche): gefüllt in Akzentfarbe, Rest gedeckt. |
+| **ProgressRing** | Runder Fortschrittsring als SVG: ruhender Spurkreis, darüber der Fortschritt von oben im Uhrzeigersinn. Kennt nur einen Füllgrad von 0 bis 1, Größe und Strichstärke; Farben kommen als Klassen von außen (`stroke-*`), Inhalt in der Mitte als `children`. Heute in der großen Timer-Ansicht der Dauer-Übungen. |
 | **PhaseBar** | Segmentbalken für den Phasen-Stand eines Skills: ein Segment je Phase über die volle Breite, erledigte gefüllt (Skill-Farbe gedeckt), die aktuelle kräftig, künftige blass; gemeistert = alle gefüllt. Auf der Trainingsseite in der Skill-Liste (als `footer` der Listenzeile) und im Kopf der Skill-Karte, dort nur zugeklappt sichtbar (aufgeklappt unsichtbar geschaltet, damit die Kopfhoehe gleich bleibt). Bewusst andere Optik als ProgressDots, die für Wocheneinheiten stehen. |
 | **Chart** | Generisches Verlaufschart-Fundament (D3): misst die Breite, wird am Handy scrollbar, zeichnet einheitlich (glatte Linie, weiche Fläche, Tooltip). |
 | **Calendar** | Generisches Monatsgitter; was in einer Tageszelle steht, liefert der Aufrufer (renderCell). |

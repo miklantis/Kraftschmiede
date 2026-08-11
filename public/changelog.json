@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.0",
+      "date": "2026-08-11",
+      "changes": [
+        "Dauer-Übungen wie Dead Hang oder Plank haben jetzt eine große Timer-Ansicht: Startest du die Uhr, legt sich eine dunkle Karte über den Bildschirm – mit dickem Fortschrittsring und einer Zahl, die du auch aus Armlänge noch liest. Zuerst laufen fünf Sekunden zum Einhängen herunter, dann füllt sich der Ring grün bis zu deiner Zielzeit. Ist sie geschafft, wird die Karte kurz kräftig grün. Hältst du länger durch, startet der Ring in hellerem Grün eine neue Runde, und bei jeder weiteren geschafften Zielzeit erscheint ein Zähler (×1, ×2, ×3 ...). Ein Tipp irgendwo auf die Karte beendet die Uhr, die erreichten Sekunden stehen danach im Ergebnisfeld des Satzes."
+      ]
+    },
+    {
       "version": "1.25.15",
       "date": "2026-08-11",
       "changes": [
