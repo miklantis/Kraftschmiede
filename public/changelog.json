@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.25.15",
+      "date": "2026-08-11",
+      "changes": [
+        "Live-Training: Du kannst jetzt mitten in der Einheit einsteigen. Ist das Rack belegt und du machst erst Bankdrücken, merkt die App das beim ersten Haken und führt dich dort weiter – die Ruhepause startet wieder, und zwar mit der kurzen Satzpause statt der langen Übungspause. Der grüne Rahmen und die Anzeige „Übung X von Y“ stehen auf der Übung, an der du wirklich arbeitest. Ist sie fertig, springt die Führung von selbst zur nächsten offenen Übung zurück."
+      ]
+    },
+    {
       "version": "1.25.14",
       "date": "2026-08-11",
       "changes": [
@@ -107,8 +114,8 @@
       "version": "1.25.2",
       "date": "2026-08-10",
       "changes": [
-        "Aufr\u00e4umen unter der Haube: Die App merkt sich geladene Listen (\u00dcbungen, Einheiten, Journey, Inventar und so weiter) in einem Zwischenspeicher. Bisher war an \u00fcber 50 Stellen im Code einzeln notiert, wie diese Listen hei\u00dfen und wann sie nach einer \u00c4nderung neu geladen werden m\u00fcssen. Das steht jetzt an einer einzigen Stelle, nach Ereignis sortiert \u2013 also \"nach dem Beenden einer Einheit\" statt einer Liste von Namen.",
-        "Dabei fiel auf, dass die Trainings-\u00dcbersicht nach dem Zur\u00fccksetzen eines Skills auf eine Liste verwies, die es gar nicht gibt. Der Aufruf lief bisher ins Leere; die \u00dcbersicht aktualisiert sich ohnehin \u00fcber ihre Quelldaten. F\u00fcr dich \u00e4ndert sich nichts sichtbar \u2013 Ziel ist, dass k\u00fcnftige \u00c4nderungen nicht mehr versehentlich veraltete Werte stehen lassen."
+        "Aufräumen unter der Haube: Die App merkt sich geladene Listen (Übungen, Einheiten, Journey, Inventar und so weiter) in einem Zwischenspeicher. Bisher war an über 50 Stellen im Code einzeln notiert, wie diese Listen heißen und wann sie nach einer Änderung neu geladen werden müssen. Das steht jetzt an einer einzigen Stelle, nach Ereignis sortiert – also \"nach dem Beenden einer Einheit\" statt einer Liste von Namen.",
+        "Dabei fiel auf, dass die Trainings-Übersicht nach dem Zurücksetzen eines Skills auf eine Liste verwies, die es gar nicht gibt. Der Aufruf lief bisher ins Leere; die Übersicht aktualisiert sich ohnehin über ihre Quelldaten. Für dich ändert sich nichts sichtbar – Ziel ist, dass künftige Änderungen nicht mehr versehentlich veraltete Werte stehen lassen."
       ]
     },
     {

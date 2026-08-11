@@ -316,12 +316,16 @@ function syncPrefs(p: LivePrefs): void {
  * `@/lib/liveEntries`; hier wird nur gehalten und gesichert. Kam dieselbe
  * Referenz zurueck, gab es nichts zu aendern - dann feuert auch kein set().
  */
-function applyEntries(fn: (entries: LiveEntry[]) => LiveEntry[]): void {
+function applyEntries(
+  fn: (entries: LiveEntry[]) => LiveEntry[],
+  focusEi?: number,
+): void {
   const s = state.session;
   if (!hasEntries(s)) return;
   const entries = fn(s.entries);
-  if (entries === s.entries) return;
-  set({ session: { ...s, entries } });
+  const focus = focusEi === undefined ? s.focusEi : focusEi;
+  if (entries === s.entries && focus === s.focusEi) return;
+  set({ session: { ...s, entries, focusEi: focus } });
 }
 
 /** Wie applyEntries, aber fuer das allgemeine Aufwaermen (`@/lib/liveWarmup`). */
@@ -377,7 +381,9 @@ function toggleWorkSet(ei: number, si: number): void {
   ensureAudio();
   clickTick(nextDone, audioPrefs());
   const entries = withSetDone(s.entries, ei, si, nextDone);
-  set({ session: { ...s, entries } });
+  // Der Haken sagt zugleich, wo gerade gearbeitet wird (Vorhaben #100) - auch
+  // beim Loesen, denn korrigiert wird dort, wo man steht.
+  set({ session: { ...s, entries, focusEi: ei } });
   if (nextDone) applyAutoRest(autoRestAfterWorkSet(entries, ei, prefs));
 }
 
@@ -390,7 +396,7 @@ function toggleWarmSet(ei: number, wi: number): void {
   const nextDone = !cur.done;
   ensureAudio();
   clickTick(nextDone, audioPrefs());
-  applyEntries((entries) => withWarmDone(entries, ei, wi, nextDone));
+  applyEntries((entries) => withWarmDone(entries, ei, wi, nextDone), ei);
 }
 
 /** Allgemeines Aufwaermen (Cardio) abhaken/loesen. */
@@ -413,7 +419,7 @@ function commitSetValue(
   value: number,
 ): void {
   const istRmTest = state.session?.kind === "rmtest";
-  applyEntries((entries) => withSetValue(entries, ei, si, kind, value, istRmTest));
+  applyEntries((entries) => withSetValue(entries, ei, si, kind, value, istRmTest), ei);
 }
 
 /** Wert eines Aufwaermsatzes uebernehmen (Wdh/kg). */
@@ -423,7 +429,7 @@ function commitWarmupValue(
   kind: "reps" | "weight",
   value: number,
 ): void {
-  applyEntries((entries) => withWarmValue(entries, ei, wi, kind, value));
+  applyEntries((entries) => withWarmValue(entries, ei, wi, kind, value), ei);
 }
 
 /** Satz anhaengen (Zielwerte des letzten Satzes). */

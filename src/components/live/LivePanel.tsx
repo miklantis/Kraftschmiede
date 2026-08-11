@@ -45,7 +45,7 @@ function PanelContent({
   bars: { id: string; name: string; weight: number }[];
   unit: string;
 }): React.ReactElement {
-  const active = computeActive(session.entries);
+  const active = computeActive(session.entries, session.focusEi);
   return (
     <div className="flex flex-col gap-3">
       {session.loadNote !== null && <LoadNoteBanner text={session.loadNote} />}
@@ -100,7 +100,7 @@ function RmTestPanelContent({
   unit: string;
   formula: RmFormula;
 }): React.ReactElement {
-  const active = computeActive(session.entries);
+  const active = computeActive(session.entries, session.focusEi);
   const entry = session.entries[0];
   const result = testResult(
     (entry?.sets ?? []).map((x) => ({
@@ -297,7 +297,10 @@ export function LivePanel(): React.ReactElement | null {
   };
   const isSkill = s.kind === "skill";
   const title = isSkill ? "Skill " + s.title : s.title;
-  const prog = s.kind === "skill" ? skillProgressInfo(s.exercises) : progressInfo(s.entries);
+  const prog =
+    s.kind === "skill"
+      ? skillProgressInfo(s.exercises)
+      : progressInfo(s.entries, s.focusEi);
   const exCount = s.kind === "skill" ? s.exercises.length : s.entries.length;
   const subtitle =
     s.kind === "rmtest"

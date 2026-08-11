@@ -44,6 +44,7 @@ const SESSION: WorkoutSession = {
       ],
     },
   ],
+  focusEi: 1,
 };
 
 describe("liveSession", () => {
@@ -83,6 +84,27 @@ describe("liveSession", () => {
     it("macht einen Roundtrip ueber serialize -> parse", () => {
       const raw = serializeLive({ session: SESSION, collapsed: true });
       expect(parseLive(raw)).toEqual({ session: SESSION, collapsed: true });
+    });
+
+    // Vorhaben #100: der Merker, an welcher Uebung gearbeitet wird, ueberlebt
+    // den Reload. Einheiten aus der Zeit davor kennen ihn nicht.
+    it("liest focusEi und macht aus einem fehlenden oder unsinnigen Wert null", () => {
+      const gelesen = (focusEi: unknown): number | null => {
+        const obj = JSON.parse(
+          serializeLive({ session: SESSION, collapsed: false }),
+        ) as { session: Record<string, unknown> };
+        if (focusEi === undefined) delete obj.session.focusEi;
+        else obj.session.focusEi = focusEi;
+        const s = parseLive(JSON.stringify(obj)).session;
+        return s !== null && s.kind === "workout" ? s.focusEi : null;
+      };
+      expect(gelesen(0)).toBe(0);
+      expect(gelesen(2)).toBe(2);
+      expect(gelesen(undefined)).toBeNull();
+      expect(gelesen(null)).toBeNull();
+      expect(gelesen(-1)).toBeNull();
+      expect(gelesen(1.5)).toBeNull();
+      expect(gelesen("1")).toBeNull();
     });
 
     it("behaelt collapsed, verwirft aber eine unvollstaendige Session", () => {

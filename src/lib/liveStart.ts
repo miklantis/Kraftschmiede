@@ -63,6 +63,7 @@ export function buildWorkoutSession(
     startedAt: now,
     generalWarmup: input.generalWarmup,
     entries: input.entries,
+    focusEi: null,
   };
 }
 
@@ -99,5 +100,6 @@ export function buildRmTestSession(
     previousRm: input.previousRm,
     generalWarmup: input.generalWarmup,
     entries: [input.entry],
+    focusEi: null,
   };
 }
