@@ -43,6 +43,7 @@ function session(entries: LiveEntry[]): WorkoutSession {
     title: "Push",
     startedAt: 1_000_000,
     generalWarmup: { sets: [{ minutes: 7, mode: "bike", done: true }] },
+    focusEi: null,
     entries,
   };
 }

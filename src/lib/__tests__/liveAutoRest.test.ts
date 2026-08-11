@@ -50,6 +50,19 @@ describe("autoRestAfterWorkSet", () => {
     });
   });
 
+  // Vorhaben #100: Einstieg bei der zweiten Uebung, waehrend die erste noch
+  // Aufwaermsaetze offen hat. Frueher lieferte das {kind:"clear"} - die Pause
+  // blieb nicht nur aus, eine laufende wurde sogar abgebrochen.
+  it("startet die Satzpause auch bei Einstieg mitten in der Einheit", () => {
+    const kreuzheben = entry({ warmupSets: [warm(false)], sets: [set(false)] });
+    const bank = entry({ sets: [set(true), set(false)] });
+    expect(autoRestAfterWorkSet([kreuzheben, bank], 1, PREFS)).toEqual({
+      kind: "start",
+      type: "set",
+      sec: 90,
+    });
+  });
+
   it("startet eine Uebungspause, wenn die naechste Uebung dran ist", () => {
     const a = entry({ sets: [set(true)] });
     const b = entry({ sets: [set(false)] });

@@ -135,6 +135,9 @@ export interface WorkoutSession extends LiveSessionBase {
   generalWarmup: { sets: LiveGeneralWarmupSet[] };
   /** Die vom Coach aufgebauten Uebungen mit ihren Saetzen (Lieferung 2). */
   entries: LiveEntry[];
+  /** Index der Uebung, an der gerade gearbeitet wird, oder null (Vorhaben #100).
+   *  Siehe die Erklaerung an `EntrySession`. */
+  focusEi: number | null;
 }
 
 /** Laufender 1RM-Test: genau eine Uebung, keine Aufwaermsaetze an der Uebung,
@@ -151,6 +154,8 @@ export interface RmTestSession extends LiveSessionBase {
   /** Genau eine Uebung - dieselbe Form wie im Workout, damit die Satz-Karte und
    *  die Satz-Aktionen unveraendert wiederverwendet werden. */
   entries: LiveEntry[];
+  /** Wie beim Workout - bei nur einer Uebung ohne Wirkung, aber gleich geformt. */
+  focusEi: number | null;
 }
 
 /** Laufende Skill-Einheit (Lieferung 5). Traegt den Skill-Bezug und die
@@ -170,7 +175,17 @@ export interface SkillSession extends LiveSessionBase {
 export type LiveSession = WorkoutSession | SkillSession | RmTestSession;
 
 /** Die Arten mit Uebungs-Eintraegen und allgemeinem Aufwaermen (Workout und
- *  1RM-Test). Alle Satz-Aktionen des Live-Stores arbeiten auf dieser Menge. */
+ *  1RM-Test). Alle Satz-Aktionen des Live-Stores arbeiten auf dieser Menge.
+ *
+ *  `focusEi` haelt fest, an welcher Uebung tatsaechlich gearbeitet wird - noetig,
+ *  weil nicht zwingend von oben nach unten trainiert wird (belegtes Rack: erst
+ *  Bankdruecken, Kreuzheben spaeter). Ohne diesen Merker wuerde `computeActive`
+ *  weiter die erste Uebung als aktiv fuehren und die Ruhepause ausbleiben.
+ *  Gesetzt wird er im Store beim Abhaken/Werteintragen, nie von Hand; `null`
+ *  heisst "noch nichts angefasst" und ergibt das rein lineare Verhalten. Er
+ *  gehoert bewusst in die Einheit (und nicht zu den fluechtigen Feldern), damit
+ *  er Reload und Tab-Wechsel uebersteht, wird aber beim Beenden nicht
+ *  mitgeschrieben. */
 export type EntrySession = WorkoutSession | RmTestSession;
 
 /** Traegt die laufende Einheit Uebungs-Eintraege (Workout oder 1RM-Test)? */
@@ -235,6 +250,7 @@ export function parseLive(raw: string | null): PersistedLive {
           previousRm: typeof sr.previousRm === "number" ? sr.previousRm : null,
           generalWarmup: parseGeneralWarmup(sr.generalWarmup),
           entries: parseEntries(sr.entries),
+          focusEi: parseFocus(sr.focusEi),
         },
         collapsed,
       };
@@ -252,6 +268,7 @@ export function parseLive(raw: string | null): PersistedLive {
           startedAt: sr.startedAt,
           generalWarmup: parseGeneralWarmup(sr.generalWarmup),
           entries: parseEntries(sr.entries),
+          focusEi: parseFocus(sr.focusEi),
         },
         collapsed,
       };
@@ -270,6 +287,14 @@ function bool(v: unknown): boolean {
 }
 function str(v: unknown, fallback = ""): string {
   return typeof v === "string" ? v : fallback;
+}
+
+/** Fokus-Index aus dem Speicher: nur eine ganze Zahl ab 0 zaehlt, alles andere
+ *  (fehlend, alte Einheit vor Vorhaben #100, Unsinn) wird zu null und damit zum
+ *  rein linearen Verhalten. Ob der Index noch in die Uebungsliste passt, prueft
+ *  `computeActive` selbst - die Liste kann sich unabhaengig aendern. */
+function parseFocus(v: unknown): number | null {
+  return typeof v === "number" && Number.isInteger(v) && v >= 0 ? v : null;
 }
 
 function parseGeneralWarmup(v: unknown): { sets: LiveGeneralWarmupSet[] } {

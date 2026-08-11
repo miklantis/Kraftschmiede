@@ -33,16 +33,38 @@ function firstOpenSet(en: LiveEntry): number {
   return -1;
 }
 
+/** Erstes offenes To-do innerhalb EINER Uebung: erst Aufwaerm-, dann
+ *  Arbeitssatz. null = diese Uebung ist durch. */
+function openInEntry(en: LiveEntry, ei: number): ActiveSet | null {
+  const w = firstOpenWarm(en);
+  if (w >= 0) return { ei, si: w, warm: true };
+  const s = firstOpenSet(en);
+  if (s >= 0) return { ei, si: s, warm: false };
+  return null;
+}
+
 /**
- * Naechstes offenes To-do ueber alle Uebungen: pro Uebung erst die Aufwaerm-,
- * dann die Arbeitssaetze; danach die naechste Uebung. null = alles erledigt.
+ * Naechstes offenes To-do: pro Uebung erst die Aufwaerm-, dann die
+ * Arbeitssaetze; danach die naechste Uebung. null = alles erledigt.
+ *
+ * `focusEi` ist die Uebung, an der gerade tatsaechlich gearbeitet wird (Vorhaben
+ * #100). Sie hat Vorrang, solange sie noch etwas Offenes hat - sonst wuerde bei
+ * einem Einstieg mitten in der Einheit (belegtes Rack: erst Bankdruecken) weiter
+ * die erste Uebung als aktiv gefuehrt. Ist die Fokus-Uebung durch oder der Index
+ * veraltet, faellt die Suche von selbst auf die lineare Reihenfolge zurueck; ein
+ * Aufraeumen des Merkers braucht es deshalb nicht.
  */
-export function computeActive(entries: LiveEntry[]): ActiveSet | null {
+export function computeActive(
+  entries: LiveEntry[],
+  focusEi: number | null = null,
+): ActiveSet | null {
+  if (focusEi !== null && focusEi >= 0 && focusEi < entries.length) {
+    const inFocus = openInEntry(entries[focusEi], focusEi);
+    if (inFocus) return inFocus;
+  }
   for (let i = 0; i < entries.length; i++) {
-    const w = firstOpenWarm(entries[i]);
-    if (w >= 0) return { ei: i, si: w, warm: true };
-    const s = firstOpenSet(entries[i]);
-    if (s >= 0) return { ei: i, si: s, warm: false };
+    const open = openInEntry(entries[i], i);
+    if (open) return open;
   }
   return null;
 }
@@ -58,19 +80,28 @@ export function isActive(
 }
 
 /**
- * Pausen-Entscheidung nach einem abgehakten Arbeitssatz - 1:1 wie V1
- * onSetCompleted: ist als Naechstes ein Aufwaermsatz dran oder alles erledigt,
- * kommt KEINE Pause; liegt der naechste offene Satz in derselben Uebung, ist es
- * eine Satzpause, sonst die laengere Uebungspause. `entries` muss schon den
- * abgehakten Stand tragen.
+ * Pausen-Entscheidung nach einem abgehakten Arbeitssatz. `entries` muss schon
+ * den abgehakten Stand tragen.
+ *
+ * Massgeblich ist die Uebung `ei`, in der gerade gearbeitet wurde - nicht die
+ * globale Reihenfolge (Vorhaben #100): Hat sie noch einen offenen Arbeitssatz,
+ * ist die kurze Satzpause faellig, egal was sonst in der Einheit noch offen ist.
+ * Frueher entschied das der global naechste offene Satz; standen bei einer
+ * anderen Uebung noch Aufwaermsaetze aus, blieb die Pause deshalb ganz aus.
+ *
+ * Ist die Uebung durch, entscheidet wie bisher der lineare Rest: alles erledigt
+ * oder als Naechstes ein Aufwaermsatz (dafuer braucht es keine Pause) -> keine
+ * Pause, sonst die laengere Uebungspause.
  */
 export function restAfterSet(
   entries: LiveEntry[],
   ei: number,
 ): "set" | "exercise" | null {
+  const own = entries[ei];
+  if (own && firstOpenSet(own) >= 0) return "set";
   const a = computeActive(entries);
   if (!a || a.warm) return null;
-  return a.ei === ei ? "set" : "exercise";
+  return "exercise";
 }
 
 /** Fortschritt fuer den eingeklappten Mini-Streifen (V1 liveProgressInfo). */
@@ -82,7 +113,13 @@ export interface ProgressInfo {
   progress: string;
 }
 
-export function progressInfo(entries: LiveEntry[]): ProgressInfo {
+/** Wie `computeActive` bekommt auch der Fortschritt die Fokus-Uebung herein,
+ *  damit "Uebung X von Y" dieselbe Uebung nennt, die im Panel gruen umrandet
+ *  ist. Aufwaermsaetze zaehlen hier bewusst nicht mit (wie bisher). */
+export function progressInfo(
+  entries: LiveEntry[],
+  focusEi: number | null = null,
+): ProgressInfo {
   let total = 0;
   let done = 0;
   entries.forEach((en) => {
@@ -92,11 +129,17 @@ export function progressInfo(entries: LiveEntry[]): ProgressInfo {
     });
   });
   const exCount = entries.length;
-  let curIdx = 0;
-  for (let i = 0; i < entries.length; i++) {
-    if (entries[i].sets.some((x) => !x.done)) {
-      curIdx = i;
-      break;
+  let curIdx = -1;
+  if (focusEi !== null && focusEi >= 0 && focusEi < entries.length) {
+    if (entries[focusEi].sets.some((x) => !x.done)) curIdx = focusEi;
+  }
+  if (curIdx < 0) {
+    curIdx = 0;
+    for (let i = 0; i < entries.length; i++) {
+      if (entries[i].sets.some((x) => !x.done)) {
+        curIdx = i;
+        break;
+      }
     }
   }
   return {

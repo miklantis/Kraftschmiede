@@ -273,7 +273,12 @@ betroffene Tabelle beim Wiederherstellen leer.
   `src/hooks/useLiveSession.ts` hält den Zustand der laufenden Einheit, sichert ihn im
   Gerätespeicher und löst die Seiteneffekte aus (Ton, Pause, Uhr). Entschieden und
   umgeformt wird ausschließlich in reinen Funktionen ohne React-/DOM-/DB-Bezug, jede mit
-  eigenen Vitest-Tests: `liveFlow` (nächstes To-do, Pausen-Typ, Fortschritt),
+  eigenen Vitest-Tests: `liveFlow` (nächstes To-do, Pausen-Typ, Fortschritt – das
+  nächste To-do wird nicht stur linear gesucht, sondern kennt mit `focusEi` die Übung,
+  an der gerade gearbeitet wird, damit ein Einstieg mitten in der Einheit Timer und
+  Markierung richtig führt; der Merker liegt in der Einheit, wird im Store beim
+  Abhaken/Werteintragen gesetzt und fällt von selbst auf die lineare Reihenfolge
+  zurück, sobald die Übung durch ist),
   `liveEntries` (Sätze und Aufwärmsätze je Übung samt der Regeln „Gewicht weicht ab →
   Vermerk", „Bewertung 5 → gescheitert", Klemmen im 1RM-Test), `liveRest`
   (Pausen-Rechnung, Zeit kommt als Parameter herein), `liveAutoRest` (Entscheidung nach
