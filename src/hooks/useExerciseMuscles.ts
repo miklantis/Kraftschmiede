@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { leseZeilen } from "@/lib/tabelleLesen";
 import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { ExerciseMuscleRow } from "@/schemas";
@@ -13,12 +13,7 @@ export function useExerciseMuscles() {
   return useQuery({
     queryKey: queryKeys.exerciseMuscles(userId),
     enabled: userId !== null,
-    queryFn: async (): Promise<ExerciseMuscleRow[]> => {
-      const { data, error } = await supabase
-        .from("exercise_muscles")
-        .select("*");
-      if (error) throw new Error(error.message);
-      return (data ?? []) as ExerciseMuscleRow[];
-    },
+    queryFn: (): Promise<ExerciseMuscleRow[]> =>
+      leseZeilen<ExerciseMuscleRow>({ tabelle: "exercise_muscles" }),
   });
 }

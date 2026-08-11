@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { leseZeilen } from "@/lib/tabelleLesen";
 import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 
@@ -14,12 +14,11 @@ export function useJourneyWorkouts(journeyId: string | null) {
     queryKey: queryKeys.journeyWorkouts(userId, journeyId),
     enabled: userId !== null && journeyId !== null,
     queryFn: async (): Promise<string[]> => {
-      const { data, error } = await supabase
-        .from("journey_workouts")
-        .select("template_id")
-        .eq("journey_id", journeyId as string);
-      if (error) throw new Error(error.message);
-      const rows = (data ?? []) as Array<{ template_id: string }>;
+      const rows = await leseZeilen<{ template_id: string }>({
+        tabelle: "journey_workouts",
+        spalten: "template_id",
+        gleich: { journey_id: journeyId as string },
+      });
       return rows.map((r) => r.template_id);
     },
   });

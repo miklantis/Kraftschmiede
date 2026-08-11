@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { leseZeilen } from "@/lib/tabelleLesen";
 import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { SkillProgressRow } from "@/schemas";
@@ -65,14 +65,12 @@ export function useSkills() {
     queryKey: queryKeys.skills(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<SkillDefAssembled[]> => {
-      const { data, error } = await supabase
-        .from("skills")
-        .select(
+      const rows = await leseZeilen<SkillLink>({
+        tabelle: "skills",
+        spalten:
           "id, key, name, position, skill_phases(id, label, consecutive_sessions, position, skill_phase_exercises(name, metric, target, sets, tempo, position), skill_phase_equipment(equipment_key))",
-        )
-        .order("position", { ascending: true });
-      if (error) throw new Error(error.message);
-      const rows = (data ?? []) as SkillLink[];
+        sortierung: [{ spalte: "position" }],
+      });
       return rows.map((skill) => ({
         id: skill.id,
         key: skill.key,
@@ -109,10 +107,7 @@ export function useSkillProgress() {
   return useQuery({
     queryKey: queryKeys.skillProgress(userId),
     enabled: userId !== null,
-    queryFn: async (): Promise<SkillProgressRow[]> => {
-      const { data, error } = await supabase.from("skill_progress").select("*");
-      if (error) throw new Error(error.message);
-      return (data ?? []) as SkillProgressRow[];
-    },
+    queryFn: (): Promise<SkillProgressRow[]> =>
+      leseZeilen<SkillProgressRow>({ tabelle: "skill_progress" }),
   });
 }

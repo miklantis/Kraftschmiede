@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { leseZeilen } from "@/lib/tabelleLesen";
 import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { ExerciseMilestoneRow } from "@/schemas";
@@ -12,15 +12,11 @@ export function useMilestones(exerciseId: string) {
   return useQuery({
     queryKey: queryKeys.milestones(userId, exerciseId),
     enabled: userId !== null && exerciseId !== "",
-    queryFn: async (): Promise<ExerciseMilestoneRow[]> => {
-      const { data, error } = await supabase
-        .from("exercise_milestones")
-        .select("*")
-        .eq("exercise_id", exerciseId)
-        .order("position", { ascending: true })
-        .order("created_at", { ascending: true });
-      if (error) throw new Error(error.message);
-      return (data ?? []) as ExerciseMilestoneRow[];
-    },
+    queryFn: (): Promise<ExerciseMilestoneRow[]> =>
+      leseZeilen<ExerciseMilestoneRow>({
+        tabelle: "exercise_milestones",
+        gleich: { exercise_id: exerciseId },
+        sortierung: [{ spalte: "position" }, { spalte: "created_at" }],
+      }),
   });
 }

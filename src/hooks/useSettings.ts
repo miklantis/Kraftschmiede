@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { leseZeile } from "@/lib/tabelleLesen";
 import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { SettingsRow } from "@/schemas";
@@ -11,13 +11,7 @@ export function useSettings() {
   return useQuery({
     queryKey: queryKeys.settings(userId),
     enabled: userId !== null,
-    queryFn: async (): Promise<SettingsRow | null> => {
-      const { data, error } = await supabase
-        .from("settings")
-        .select("*")
-        .maybeSingle();
-      if (error) throw new Error(error.message);
-      return (data as SettingsRow | null) ?? null;
-    },
+    queryFn: (): Promise<SettingsRow | null> =>
+      leseZeile<SettingsRow>({ tabelle: "settings" }),
   });
 }

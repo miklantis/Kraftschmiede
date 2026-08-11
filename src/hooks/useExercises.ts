@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { leseZeilen } from "@/lib/tabelleLesen";
 import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { ExerciseRow } from "@/schemas";
@@ -11,13 +11,10 @@ export function useExercises() {
   return useQuery({
     queryKey: queryKeys.exercises(userId),
     enabled: userId !== null,
-    queryFn: async (): Promise<ExerciseRow[]> => {
-      const { data, error } = await supabase
-        .from("exercises")
-        .select("*")
-        .order("position", { ascending: true });
-      if (error) throw new Error(error.message);
-      return (data ?? []) as ExerciseRow[];
-    },
+    queryFn: (): Promise<ExerciseRow[]> =>
+      leseZeilen<ExerciseRow>({
+        tabelle: "exercises",
+        sortierung: [{ spalte: "position" }],
+      }),
   });
 }

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { leseZeilen } from "@/lib/tabelleLesen";
 import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { CompositionMilestoneRow } from "@/schemas";
@@ -14,14 +14,10 @@ export function useCompositionMilestones() {
   return useQuery({
     queryKey: queryKeys.compMilestones(userId),
     enabled: userId !== null,
-    queryFn: async (): Promise<CompositionMilestoneRow[]> => {
-      const { data, error } = await supabase
-        .from("composition_milestones")
-        .select("*")
-        .order("position", { ascending: true })
-        .order("created_at", { ascending: true });
-      if (error) throw new Error(error.message);
-      return (data ?? []) as CompositionMilestoneRow[];
-    },
+    queryFn: (): Promise<CompositionMilestoneRow[]> =>
+      leseZeilen<CompositionMilestoneRow>({
+        tabelle: "composition_milestones",
+        sortierung: [{ spalte: "position" }, { spalte: "created_at" }],
+      }),
   });
 }

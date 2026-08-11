@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { leseZeilen } from "@/lib/tabelleLesen";
 import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { SessionRow } from "@/schemas";
@@ -21,14 +21,13 @@ export function useSessions() {
     queryKey: queryKeys.sessions(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<SessionWithExercises[]> => {
-      const { data, error } = await supabase
-        .from("sessions")
-        .select("*, session_exercises(exercise_id)")
-        .order("date", { ascending: true });
-      if (error) throw new Error(error.message);
-      const rows = (data ?? []) as Array<
+      const rows = await leseZeilen<
         SessionRow & { session_exercises: SessionExerciseLink[] }
-      >;
+      >({
+        tabelle: "sessions",
+        spalten: "*, session_exercises(exercise_id)",
+        sortierung: [{ spalte: "date" }],
+      });
       return rows.map((row) => {
         const { session_exercises, ...session } = row;
         const exerciseIds = (session_exercises ?? [])
