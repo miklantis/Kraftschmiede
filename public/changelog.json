@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.25.11",
+      "date": "2026-08-11",
+      "changes": [
+        "Aufräumen im Live-Training, Schritt 1 von 4: Die dichtesten Regeln des laufenden Trainings – Sätze abhaken, Wiederholungen, Gewicht und Bewertung eintragen, Sätze hinzufügen oder entfernen und die Stange wechseln – liegen jetzt in einem eigenen, klar abgegrenzten Baustein.",
+        "Damit ist erstmals automatisch geprüft, was bisher nur im Kopf stand: dass ein abweichendes Gewicht den Satz als angepasst vermerkt, dass Bewertung 5 den Satz als nicht geschafft markiert, dass der letzte verbleibende Satz sich nicht löschen lässt und dass im 1RM-Test die Wiederholungen nach oben begrenzt bleiben.",
+        "Für dich ändert sich nichts sichtbar: Das Live-Training verhält sich genau wie vorher."
+      ]
+    },
+    {
       "version": "1.25.10",
       "date": "2026-08-11",
       "changes": [
