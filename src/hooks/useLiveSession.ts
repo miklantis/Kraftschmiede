@@ -12,8 +12,16 @@ import {
   type SkillSession,
   type SkillLiveExercise,
 } from "@/lib/liveSession";
-import { clampTestReps } from "@/lib/rmTest";
-import { appendedSet, restAfterSet } from "@/lib/liveFlow";
+import { restAfterSet } from "@/lib/liveFlow";
+import {
+  withAppendedSet,
+  withBar,
+  withRemovedSet,
+  withSetDone,
+  withSetValue,
+  withWarmDone,
+  withWarmValue,
+} from "@/lib/liveEntries";
 import { clickTick, ensureAudio } from "@/lib/liveAudio";
 import { istDesktopJetzt } from "@/hooks/useIsDesktop";
 
@@ -332,11 +340,16 @@ function syncPrefs(p: LivePrefs): void {
   prefs = p;
 }
 
-/** Eine Uebung immutabel ersetzen. */
-function patchEntry(ei: number, fn: (e: LiveEntry) => LiveEntry): void {
+/**
+ * Umgeformte Uebungen uebernehmen. Die Umformung selbst liegt in
+ * `@/lib/liveEntries`; hier wird nur gehalten und gesichert. Kam dieselbe
+ * Referenz zurueck, gab es nichts zu aendern - dann feuert auch kein set().
+ */
+function applyEntries(fn: (entries: LiveEntry[]) => LiveEntry[]): void {
   const s = state.session;
   if (!hasEntries(s)) return;
-  const entries = s.entries.map((e, i) => (i === ei ? fn(e) : e));
+  const entries = fn(s.entries);
+  if (entries === s.entries) return;
   set({ session: { ...s, entries } });
 }
 
@@ -369,11 +382,7 @@ function toggleWorkSet(ei: number, si: number): void {
   const nextDone = !cur.done;
   ensureAudio();
   clickTick(nextDone, audioPrefs());
-  const entries = s.entries.map((e, i) =>
-    i === ei
-      ? { ...e, sets: e.sets.map((x, j) => (j === si ? { ...x, done: nextDone } : x)) }
-      : e,
-  );
+  const entries = withSetDone(s.entries, ei, si, nextDone);
   set({ session: { ...s, entries } });
   if (nextDone) {
     const type = restAfterSet(entries, ei); // null, wenn als Naechstes Aufwaermen/Ende
@@ -395,10 +404,7 @@ function toggleWarmSet(ei: number, wi: number): void {
   const nextDone = !cur.done;
   ensureAudio();
   clickTick(nextDone, audioPrefs());
-  patchEntry(ei, (e) => ({
-    ...e,
-    warmupSets: e.warmupSets.map((w, j) => (j === wi ? { ...w, done: nextDone } : w)),
-  }));
+  applyEntries((entries) => withWarmDone(entries, ei, wi, nextDone));
 }
 
 /** Allgemeines Aufwaermen (Cardio) abhaken/loesen. */
@@ -423,31 +429,8 @@ function commitSetValue(
   kind: "reps" | "weight" | "score",
   value: number,
 ): void {
-  patchEntry(ei, (e) => ({
-    ...e,
-    sets: e.sets.map((x, j) => {
-      if (j !== si) return x;
-      if (kind === "reps") {
-        // Im 1RM-Test nimmt ein Satz hoechstens RECORD_MAX_REPS Wiederholungen -
-        // darueber ist eine 1RM-Schaetzung nicht mehr belastbar.
-        const reps =
-          state.session?.kind === "rmtest"
-            ? clampTestReps(value)
-            : Math.max(0, Math.round(value) || 0);
-        return { ...x, reps };
-      }
-      if (kind === "weight") {
-        // Weicht das Gewicht vom geplanten Ziel ab, wird der Satz als angepasst
-        // vermerkt (relevant fuer den Verlauf in Lieferung 4) - wie V1 markAdjust.
-        if (value !== x.targetWeight) {
-          return { ...x, weight: value, adjusted: true, adjustNote: "Gewicht angepasst" };
-        }
-        return { ...x, weight: value };
-      }
-      // score: 5 (RIR 0) markiert den Satz als nicht geschafft (V1 failed).
-      return { ...x, score: value, failed: value === 5 };
-    }),
-  }));
+  const istRmTest = state.session?.kind === "rmtest";
+  applyEntries((entries) => withSetValue(entries, ei, si, kind, value, istRmTest));
 }
 
 /** Wert eines Aufwaermsatzes uebernehmen (Wdh/kg). */
@@ -457,34 +440,22 @@ function commitWarmupValue(
   kind: "reps" | "weight",
   value: number,
 ): void {
-  patchEntry(ei, (e) => ({
-    ...e,
-    warmupSets: e.warmupSets.map((w, j) =>
-      j === wi
-        ? { ...w, [kind]: kind === "reps" ? Math.max(0, Math.round(value) || 0) : value }
-        : w,
-    ),
-  }));
+  applyEntries((entries) => withWarmValue(entries, ei, wi, kind, value));
 }
 
 /** Satz anhaengen (Zielwerte des letzten Satzes). */
 function addSet(ei: number): void {
-  patchEntry(ei, (e) => ({ ...e, sets: [...e.sets, appendedSet(e)] }));
+  applyEntries((entries) => withAppendedSet(entries, ei));
 }
 
 /** Letzten Satz entfernen (mindestens einer bleibt). */
 function delSet(ei: number): void {
-  patchEntry(ei, (e) => (e.sets.length > 1 ? { ...e, sets: e.sets.slice(0, -1) } : e));
+  applyEntries((entries) => withRemovedSet(entries, ei));
 }
 
 /** Stange einer Langhantel-Uebung wechseln. */
 function changeBar(ei: number, bar: { id: string; name: string; weight: number }): void {
-  patchEntry(ei, (e) => ({
-    ...e,
-    barId: bar.id,
-    barName: bar.name,
-    barWeight: bar.weight,
-  }));
+  applyEntries((entries) => withBar(entries, ei, bar));
 }
 
 /** Scheiben-Anzeige je Uebung durchschalten (0 -> 1 -> 2 -> 0). */
