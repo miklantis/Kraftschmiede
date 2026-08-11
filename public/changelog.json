@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.25.8",
+      "date": "2026-08-11",
+      "changes": [
+        "Aufräumen unter der Haube: Das Pflegen des Inventars (Scheiben, Kettlebells, Kurzhanteln, Equipment), das Ändern der Einstellungen, der Befinden-Eintrag, das Eintragen einer Yoga-Einheit, das Löschen einer Einheit und die manuellen Eingriffe in den Skill-Fortschritt laufen jetzt über denselben klar getrennten Weg zur Datenbank wie Zeiträume, Messungen, Übungen und Journey.",
+        "Damit ist erstmals automatisch geprüft, dass die Einstellungen die eine vorhandene Zeile ändern statt eine zweite anzulegen, dass beim Befinden immer der heutige Tag geschrieben wird und dass ein Zurückstufen nie unter die erste Phase rutscht.",
+        "Für dich ändert sich nichts sichtbar: Alle sechs Stellen verhalten sich genau wie vorher."
+      ]
+    },
+    {
       "version": "1.25.7",
       "date": "2026-08-10",
       "changes": [
