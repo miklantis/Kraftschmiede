@@ -305,6 +305,10 @@ body.ks-live-collapsed main { padding-bottom: calc(150px + env(safe-area-inset-b
   --ks-reveal-shift: 10px;
   --ks-reveal-dur: .34s;
   --ks-reveal-step: 55ms;
+  /* Grundbewegung der App: Popups, Timer, Leisten fahren mit derselben Dauer
+     und derselben Kurve rein und raus. */
+  --ks-motion-dur: .3s;
+  --ks-motion-ease: cubic-bezier(.22, 1, .36, 1);
 }
 @keyframes ksReveal {
   from { opacity: 0; transform: translateY(var(--ks-reveal-shift)); }
@@ -316,6 +320,9 @@ body.ks-live-collapsed main { padding-bottom: calc(150px + env(safe-area-inset-b
 }
 @media (prefers-reduced-motion: reduce) {
   .ks-reveal-item { animation: none; }
+  /* Timer und Leisten erscheinen dann ohne Fahrt - Inhalt und Bedienung bleiben
+     unveraendert. */
+  .kl-restbar, .ks-motion { transition: none; }
 }
 
 /* --- Griff + Kopf --- */
@@ -371,17 +378,29 @@ body.ks-live-collapsed main { padding-bottom: calc(150px + env(safe-area-inset-b
 /* --- Pausen-Leiste (Lieferung 3) --- */
 /* Schwebt ueber dem Panel: Desktop zentriert (~460px), Mobile von Rand zu Rand
    ueber der Navigation. Laeuft die Pause ab, wird der Balken gruen. */
+/* Die Leiste faehrt von unten herein und beim Skip wieder weg (Vorhaben #106):
+   Ruhezustand ist unten ausserhalb des Bildes, `.is-in` ist die Endlage. Weil
+   der Desktop ueber translateX(-50%) zentriert, muss jede Lage diesen Anteil
+   mitfuehren. */
 .kl-restbar {
   position: fixed; z-index: 90; display: flex; align-items: center; gap: 10px;
   background: #1c1c1e; color: #fff; border-radius: 16px; padding: 10px 12px;
   box-shadow: 0 16px 40px -12px rgba(0, 0, 0, .45);
-  left: 50%; transform: translateX(-50%); width: 460px; max-width: 92%; bottom: 26px;
+  left: 50%; width: 460px; max-width: 92%; bottom: 26px;
+  transform: translate(-50%, calc(100% + 40px)); opacity: 0;
+  transition: transform var(--ks-motion-dur) var(--ks-motion-ease),
+              opacity var(--ks-motion-dur) ease,
+              background-color var(--ks-motion-dur) ease;
+  will-change: transform;
 }
+.kl-restbar.is-in { transform: translate(-50%, 0); opacity: 1; }
 .kl-restbar[data-desk] { /* nur Marker; Desktop nutzt die Default-Position */ }
 .kl-restbar:not([data-desk]) {
-  left: 14px; right: 14px; transform: none; width: auto; max-width: none;
+  left: 14px; right: 14px; width: auto; max-width: none;
   bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  transform: translateY(calc(100% + 40px));
 }
+.kl-restbar:not([data-desk]).is-in { transform: translateY(0); }
 .kl-restbar.is-done { background: var(--primary); }
 .kl-restbar-btn {
   flex: none; border: 1px solid rgba(255, 255, 255, .25); background: rgba(255, 255, 255, .08);

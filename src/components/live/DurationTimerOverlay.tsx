@@ -13,6 +13,7 @@ import type { AudioPrefs } from "@/lib/liveAudio";
 import { durTick, LEAD_SEC } from "@/lib/durationTimer";
 import type { DurTick } from "@/lib/durationTimer";
 import { fmtDur } from "@/lib/liveSession";
+import { useEnterExit } from "@/hooks/useEnterExit";
 import { useScrollLock } from "@/hooks/useScrollLock";
 import { ProgressRing } from "@/components/ui/progress-ring";
 
@@ -28,8 +29,13 @@ import { ProgressRing } from "@/components/ui/progress-ring";
 // Toene und Vibration bleiben exakt wie in der bisherigen Zelle: Ticks in der
 // Vorbereitung, Piep zum Start, Erfolgs-Dreiklang beim Ziel, leise Bonus-Ticks
 // je weiterer Sekunde darueber.
+//
+// Die Karte faehrt von unten herein und beim Beenden wieder nach unten weg, die
+// Verdunkelung blendet mit (Vorhaben #106). Der Ergebniswert geht erst nach dem
+// Ausfahren nach oben, damit die Bewegung sichtbar bleibt.
 
 const RING_STROKE = 16;
+const EXIT_MS = 300; // muss zur Transition der Karte unten passen
 
 function ringSizeFor(w: number, h: number): number {
   return Math.round(Math.max(168, Math.min(252, Math.min(w * 0.56, h * 0.26))));
@@ -38,6 +44,68 @@ function ringSizeFor(w: number, h: number): number {
 /** Grosse Zahl: bis 99 Sekunden schlicht, darueber als m:ss lesbarer. */
 function bigValue(sec: number): string {
   return sec < 100 ? String(sec) : fmtDur(sec);
+}
+
+/**
+ * Fuellgrad des Rings zu einem Zeitpunkt - dieselbe Rechnung wie im Takt unten,
+ * inklusive Vorsprung durch einen bereits eingetragenen Wert. Waehrend des
+ * Erfolgssignals steht der Ring voll.
+ */
+function ringFracAt(startMs: number, nowMs: number, target: number, baseValue: number): number {
+  const raw = durTick(startMs, nowMs, target);
+  const t = raw.phase === "lead" ? raw : durTick(startMs, nowMs + baseValue * 1000, target);
+  return t.flash ? 1 : t.frac;
+}
+
+/**
+ * Der Ring bekommt einen eigenen Takt Bild fuer Bild (requestAnimationFrame),
+ * damit er durchgehend laeuft statt in Schritten zu springen. Bewusst als
+ * eigene Komponente: so zeichnet nur der Ring haeufig neu, waehrend Zahl,
+ * Untertitel und Chip als `children` unveraendert von aussen kommen und am
+ * ruhigen 100-ms-Takt der Ansicht haengen.
+ */
+function TimerRing({
+  startMs,
+  target,
+  baseValue,
+  size,
+  className,
+  trackClassName,
+  children,
+}: {
+  startMs: number;
+  target: number;
+  baseValue: number;
+  size: number;
+  className: string;
+  trackClassName: string;
+  children: React.ReactNode;
+}): React.ReactElement {
+  const [frac, setFrac] = useState<number>(() =>
+    ringFracAt(startMs, Date.now(), target, baseValue),
+  );
+
+  useEffect(() => {
+    let id = 0;
+    const loop = (): void => {
+      setFrac(ringFracAt(startMs, Date.now(), target, baseValue));
+      id = window.requestAnimationFrame(loop);
+    };
+    id = window.requestAnimationFrame(loop);
+    return () => window.cancelAnimationFrame(id);
+  }, [startMs, target, baseValue]);
+
+  return (
+    <ProgressRing
+      frac={frac}
+      size={size}
+      stroke={RING_STROKE}
+      className={className}
+      trackClassName={trackClassName}
+    >
+      {children}
+    </ProgressRing>
+  );
 }
 
 export function DurationTimerOverlay({
@@ -66,14 +134,36 @@ export function DurationTimerOverlay({
   );
   const valueRef = useRef<number>(baseValue);
   const endedRef = useRef(false);
+  const [open, setOpen] = useState(true);
+  const { shown, rootRef } = useEnterExit(open, EXIT_MS);
+  const exitTimer = useRef<number | null>(null);
+  const onEndRef = useRef(onEnd);
+  onEndRef.current = onEnd;
 
   useScrollLock(true);
 
+  // Beenden: Wert einfrieren, Karte herausfahren lassen und erst danach nach
+  // oben melden. Wird die Ansicht vorher von aussen ausgehaengt (z. B. Einheit
+  // beendet), geht der Wert trotzdem nicht verloren.
   const end = useCallback(() => {
     if (endedRef.current) return;
     endedRef.current = true;
-    onEnd(valueRef.current);
-  }, [onEnd]);
+    const value = valueRef.current;
+    setOpen(false);
+    exitTimer.current = window.setTimeout(() => {
+      exitTimer.current = null;
+      onEndRef.current(value);
+    }, EXIT_MS);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (exitTimer.current !== null) {
+        window.clearTimeout(exitTimer.current);
+        onEndRef.current(valueRef.current);
+      }
+    };
+  }, []);
 
   // Takt und Signale. Laeuft genau einmal; target/baseValue/audioPrefs werden
   // beim Start eingefroren (wie bisher in der Zelle).
@@ -165,7 +255,6 @@ export function DurationTimerOverlay({
           : "Ziel " + target + " s"
         : "läuft";
 
-  const ringFrac = flash ? 1 : tick.frac;
   const ringClass = flash
     ? "stroke-white"
     : isLead
@@ -176,14 +265,20 @@ export function DurationTimerOverlay({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[94] flex items-center justify-center bg-black/60 p-4"
+      ref={rootRef}
+      className={
+        "ks-motion fixed inset-0 z-[94] flex items-center justify-center p-4 transition-colors duration-300 " +
+        (shown ? "bg-black/60" : "bg-black/0")
+      }
       role="dialog"
       aria-label={"Timer " + exerciseName}
       onClick={end}
     >
       <div
         className={
-          "flex h-[54vh] max-h-[560px] min-h-[360px] w-full max-w-[430px] flex-col items-center justify-between rounded-[28px] px-6 py-6 text-timer-surface-foreground shadow-pop transition-colors duration-200 " +
+          "ks-motion flex h-[54vh] max-h-[560px] min-h-[360px] w-full max-w-[430px] flex-col items-center justify-between rounded-[28px] px-6 py-6 text-timer-surface-foreground shadow-pop will-change-transform " +
+          "transition-[transform,opacity,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] " +
+          (shown ? "translate-y-0 opacity-100 " : "translate-y-full opacity-0 ") +
           (flash ? "bg-primary" : "bg-timer-surface")
         }
       >
@@ -194,10 +289,11 @@ export function DurationTimerOverlay({
           </div>
         </div>
 
-        <ProgressRing
-          frac={ringFrac}
+        <TimerRing
+          startMs={startRef.current}
+          target={target}
+          baseValue={baseValue}
           size={ringSize}
-          stroke={RING_STROKE}
           className={ringClass}
           trackClassName={flash ? "stroke-white/30" : "stroke-white/15"}
         >
@@ -212,7 +308,7 @@ export function DurationTimerOverlay({
               ×{tick.mult}
             </div>
           )}
-        </ProgressRing>
+        </TimerRing>
 
         <div className="flex w-full flex-col items-center gap-2">
           <button

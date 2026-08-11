@@ -1,7 +1,8 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
+import { useEnterExit } from "@/hooks/useEnterExit";
 import { useScrollLock } from "@/hooks/useScrollLock";
 import { cn } from "@/lib/utils";
 
@@ -41,46 +42,10 @@ export function Overlay({
   children: ReactNode;
   className?: string;
 }): React.ReactElement | null {
-  // mounted = im DOM (auch waehrend des Ausfahrens); shown = sichtbarer Endzustand
-  // (loest die Transition aus). Zwei Stufen, damit das Rausfahren animiert und
-  // erst danach ausgehaengt wird.
-  const [mounted, setMounted] = useState(open);
-  const [shown, setShown] = useState(false);
-  const closeTimer = useRef<number | null>(null);
-  const rootRef = useRef<HTMLDivElement>(null);
-
-  // Mounten/Aushaengen am open-Zustand. Beim Schliessen erst ausblenden, dann
-  // nach Ablauf der Transition aus dem DOM nehmen.
-  useEffect(() => {
-    if (open) {
-      if (closeTimer.current !== null) {
-        window.clearTimeout(closeTimer.current);
-        closeTimer.current = null;
-      }
-      setMounted(true);
-      return undefined;
-    }
-    setShown(false);
-    closeTimer.current = window.setTimeout(() => {
-      setMounted(false);
-      closeTimer.current = null;
-    }, EXIT_MS);
-    return undefined;
-  }, [open]);
-
-  // Reinfahren: erst wenn das Overlay frisch im DOM steht, den Startzustand
-  // (Blatt unten, Hintergrund transparent) per erzwungenem Reflow materialisieren
-  // und dann auf sichtbar schalten. Ohne diesen Schritt fasst der Browser Start-
-  // und Endzustand in einem Frame zusammen und springt ohne Transition ans Ziel
-  // (Popup "taucht auf" statt reinzufahren). Entspricht dem V1-Reflow-Trick.
-  useLayoutEffect(() => {
-    if (!open || !mounted) return undefined;
-    if (rootRef.current) void rootRef.current.offsetHeight;
-    const id = window.requestAnimationFrame(() => {
-      if (open) setShown(true);
-    });
-    return () => window.cancelAnimationFrame(id);
-  }, [open, mounted]);
+  // Ein-/Ausfahren samt verzoegertem Aushaengen kommt aus dem gemeinsamen Hook
+  // (mounted = im DOM, shown = sichtbarer Endzustand, Reflow gegen das
+  // Zusammenfassen der Frames auf iOS).
+  const { mounted, shown, rootRef } = useEnterExit(open, EXIT_MS);
 
   // Escape schliesst.
   useEffect(() => {
