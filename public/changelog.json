@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.25.14",
+      "date": "2026-08-11",
+      "changes": [
+        "Aufräumen im Live-Training, Schritt 4 von 4 – abgeschlossen: Die drei Wege, auf denen eine Einheit beginnt (Kraft, Skill, 1RM-Test), bauen ihre Einheit jetzt über geprüfte Bausteine auf, statt jeder für sich Feld für Feld. Kommt künftig ein Feld dazu, fällt es nicht mehr an einer der drei Stellen unter den Tisch.",
+        "Ebenso werden die kurzlebigen Zustände – laufende Pause, Scheiben-Anzeige, Skill-Uhr und die Popups – beim Starten, Beenden und beim Abgleich zwischen zwei offenen Tabs nur noch an einer Stelle zurückgesetzt statt an vier.",
+        "Für dich ändert sich nichts sichtbar: Start-Animation, Abbrechen, 1RM-Test und Beenden verhalten sich genau wie vorher."
+      ]
+    },
+    {
       "version": "1.25.13",
       "date": "2026-08-11",
       "changes": [
