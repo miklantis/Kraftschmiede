@@ -12,7 +12,12 @@ import {
   type SkillSession,
   type SkillLiveExercise,
 } from "@/lib/liveSession";
-import { restAfterSet } from "@/lib/liveFlow";
+import { adjustedRest, startedRest, type RestState } from "@/lib/liveRest";
+import {
+  autoRestAfterSkillSet,
+  autoRestAfterWorkSet,
+  type AutoRestDecision,
+} from "@/lib/liveAutoRest";
 import {
   withAppendedSet,
   withBar,
@@ -39,18 +44,6 @@ import { istDesktopJetzt } from "@/hooks/useIsDesktop";
 
 /** Muss zur Ausblende-Dauer des Overlay-Primitives passen (overlay.tsx). */
 const START_EXIT_MS = 320;
-
-/**
- * Laufende Pause (Lieferung 3). Fluechtig, NICHT persistiert: ein Reload mitten
- * in der Pause laesst sie fallen - der Stand der Saetze bleibt aber erhalten.
- * `endsAt` ist die absolute Endzeit (ms); die Pausen-Leiste rechnet daraus den
- * Countdown und feuert das Signal beim Nulldurchgang.
- */
-export interface RestState {
-  type: "set" | "exercise";
-  endsAt: number;
-  baseSec: number;
-}
 
 /** Timer-/Ton-Einstellungen, vom Panel je Render hereingereicht (syncPrefs). */
 interface LivePrefs {
@@ -353,24 +346,25 @@ function applyEntries(fn: (entries: LiveEntry[]) => LiveEntry[]): void {
   set({ session: { ...s, entries } });
 }
 
-/** Pause starten (nur wenn Sekunden > 0). */
-function startRest(type: "set" | "exercise", sec: number): void {
-  if (sec <= 0) {
-    set({ rest: null });
-    return;
-  }
-  set({ rest: { type, endsAt: Date.now() + sec * 1000, baseSec: sec } });
+/** Pause starten (nur wenn Sekunden > 0). Gerechnet wird in `@/lib/liveRest`. */
+function startRest(type: RestState["type"], sec: number): void {
+  set({ rest: startedRest(type, sec, Date.now()) });
 }
 
 function adjustRest(delta: number): void {
   const r = state.rest;
   if (!r) return;
-  const endsAt = Math.max(Date.now(), r.endsAt) + delta * 1000;
-  set({ rest: { ...r, endsAt: Math.max(Date.now(), endsAt) } });
+  set({ rest: adjustedRest(r, delta, Date.now()) });
 }
 
 function skipRest(): void {
   if (state.rest) set({ rest: null });
+}
+
+/** Die Auto-Pausen-Entscheidung ausfuehren (entschieden wird in liveAutoRest). */
+function applyAutoRest(decision: AutoRestDecision): void {
+  if (decision.kind === "clear") skipRest();
+  else if (decision.kind === "start") startRest(decision.type, decision.sec);
 }
 
 /** Arbeitssatz abhaken/loesen; bei Abhaken ggf. Auto-Pause (V1 onSetCompleted). */
@@ -384,15 +378,7 @@ function toggleWorkSet(ei: number, si: number): void {
   clickTick(nextDone, audioPrefs());
   const entries = withSetDone(s.entries, ei, si, nextDone);
   set({ session: { ...s, entries } });
-  if (nextDone) {
-    const type = restAfterSet(entries, ei); // null, wenn als Naechstes Aufwaermen/Ende
-    if (type === null) {
-      skipRest();
-    } else if (prefs.autoStart) {
-      startRest(type, type === "set" ? prefs.setRestSec : prefs.exerciseRestSec);
-    }
-    // autoStart aus + naechster Satz regulaer: laufende Pause unberuehrt (V1).
-  }
+  if (nextDone) applyAutoRest(autoRestAfterWorkSet(entries, ei, prefs));
 }
 
 /** Aufwaermsatz abhaken/loesen (kein Pausen-Timer). */
@@ -522,9 +508,7 @@ function toggleSkillSet(ei: number, si: number): void {
       : e,
   );
   set({ session: { ...s, exercises } });
-  if (nextDone && prefs.autoStart) {
-    startRest("set", prefs.setRestSec);
-  }
+  if (nextDone) applyAutoRest(autoRestAfterSkillSet(prefs));
 }
 
 /** Ergebniswert eines Skill-Satzes uebernehmen (Wdh oder Sekunden, ganzzahlig). */

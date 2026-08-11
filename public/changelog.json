@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.25.12",
+      "date": "2026-08-11",
+      "changes": [
+        "Aufräumen im Live-Training, Schritt 2 von 4: Die Ruhepausen und vor allem die Entscheidung, was nach einem abgehakten Satz passiert, liegen jetzt als eigene, geprüfte Bausteine vor.",
+        "Diese Entscheidung ist die kniffligste Regel des Live-Trainings und war bisher nirgends beschrieben: Folgt noch ein Satz in derselben Übung, kommt die kurze Satzpause; folgt die nächste Übung, die längere Übungspause; steht als Nächstes ein Aufwärmsatz an oder ist alles erledigt, wird eine laufende Pause beendet – auch wenn der automatische Start ausgeschaltet ist. Alle Fälle sind jetzt als Tabelle abgesichert.",
+        "Für dich ändert sich nichts sichtbar: Pausen starten, verlängern und enden genau wie vorher."
+      ]
+    },
+    {
       "version": "1.25.11",
       "date": "2026-08-11",
       "changes": [
