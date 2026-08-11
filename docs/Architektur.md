@@ -158,7 +158,7 @@ Jeder Eintrag führt:
 - **schema** – Name des zugehörigen Row-Schemas in `src/schemas`
 
 Daraus lesen: `exportSource.ts` (Abruf), `exportData.ts` (Aufbau des Export-JSON),
-`restoreData.ts` (Prüfung und Aufbereitung) und `useRestore.ts` (Löschen/Einfügen).
+`restoreData.ts` (Prüfung und Aufbereitung) und `restoreWrite.ts` (Löschen/Einfügen).
 Die Reihenfolge der Einträge im Register ist zugleich die Reihenfolge der Schlüssel im
 Export-JSON – nach Themen gruppiert, damit die Datei lesbar bleibt.
 
@@ -232,8 +232,12 @@ betroffene Tabelle beim Wiederherstellen leer.
   weil beides in derselben Ansicht gepflegt wird) sowie die kurzen Erfassungen am
   eigenen Verlauf (`erfassungStore`/`erfassungWrite`, ein Store für `body_log`, das
   Anlegen/Löschen einzelner `sessions` außerhalb des geführten Ablaufs und die manuellen
-  Eingriffe in `skill_progress`; der geführte Schreibpfad bleibt im `historyStore`);
-  die übrigen Bereiche folgen schrittweise (Issue #57).
+  Eingriffe in `skill_progress`; der geführte Schreibpfad bleibt im `historyStore`)
+  sowie das Wiederherstellen einer Sicherung (`restoreStore`/`restoreWrite`, ein Store
+  mit drei Handgriffen – Tabelle leeren, Zeilen einfügen, Einzelzeile ersetzen –, die
+  Reihenfolgen kommen unverändert aus dem Bestandsregister). Damit ist der heikelste
+  Schreibpfad der App (erst den kompletten Bestand löschen, dann neu einfügen) erstmals
+  ohne echte Datenbank geprüft. Offen bleibt die Lese-Seite (Issue #57, Schritt 7).
   Bei den registrierten (pausierbaren) Mutationen tauscht die Naht ausschließlich den
   Rumpf der `mutationFn`: Mutations-Kennung, Nutzlast-Felder und Registrier-Reihenfolge
   bleiben unverändert, damit offline pausierte Schreibvorgänge einen App-Neustart

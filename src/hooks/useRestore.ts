@@ -1,29 +1,18 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
 import { useUserId } from "./useUserId";
+import { supabaseRestoreStore } from "@/lib/restoreStore";
+import { writeRestore } from "@/lib/restoreWrite";
 import type { RestoreTables } from "@/lib/restoreData";
-import type { Row } from "@/lib/exportData";
-import {
-  EINFUEGE_REIHENFOLGE,
-  LOESCH_REIHENFOLGE,
-} from "@/lib/bestandsregister";
 
 // Voll-Restore: ersetzt den kompletten Bestand des Nutzers durch den Inhalt
-// eines eigenen V2-Exports. Kein Anhaengen/Aktualisieren. Ablauf: erst alle
-// eigenen Zeilen loeschen (Kinder vor Eltern, damit keine FK-Verletzung), dann
-// in Eltern-vor-Kinder-Reihenfolge wieder einfuegen; je Zeile wird user_id auf
-// den aktuellen Nutzer gesetzt, ids/Fremdschluessel bleiben erhalten, damit die
-// Beziehungen halten. settings wird per Upsert ersetzt (eine Zeile pro Nutzer).
-// Die Komponente kennt Supabase nicht direkt.
-
-// Loesch- und Einfuege-Reihenfolge kommen aus dem Bestandsregister: Kinder
-// zuerst loeschen, Eltern zuerst einfuegen. settings ist in beiden nicht
-// enthalten, das wird geupsertet.
-
-function withUser(rows: Row[], userId: string): Row[] {
-  return rows.map((r) => ({ ...r, user_id: userId }));
-}
+// eines eigenen Exports (v2/v3). Kein Anhaengen/Aktualisieren.
+//
+// Der Hook traegt nur noch Absicht, Lade-/Fehler-/Fertig-Zustand und die
+// abschliessende Auffrischung. Die Datenbank-Handgriffe liegen hinter der Naht
+// (lib/restoreStore.ts), die Abfolge – loeschen, einfuegen, Einstellungen
+// ersetzen, samt Reihenfolgen aus dem Bestandsregister – in lib/restoreWrite.ts
+// und ist dort mit Tests abgedeckt.
 
 export function useRestore(): {
   apply: (tables: RestoreTables) => Promise<void>;
@@ -46,35 +35,7 @@ export function useRestore(): {
     setError(null);
     setDone(false);
     try {
-      // 1) Alles Eigene loeschen (Kinder zuerst).
-      for (const table of LOESCH_REIHENFOLGE) {
-        const { error: delErr } = await supabase
-          .from(table)
-          .delete()
-          .eq("user_id", userId);
-        if (delErr) throw new Error(`${table} (loeschen): ${delErr.message}`);
-      }
-
-      // 2) Neu einfuegen (Eltern zuerst), user_id gesetzt.
-      for (const table of EINFUEGE_REIHENFOLGE) {
-        const rows = tables[table];
-        if (rows.length === 0) continue;
-        const { error: insErr } = await supabase
-          .from(table)
-          .insert(withUser(rows, userId));
-        if (insErr) throw new Error(`${table} (einfuegen): ${insErr.message}`);
-      }
-
-      // 3) Einstellungen ersetzen (eine Zeile pro Nutzer), falls vorhanden.
-      if (tables.settings != null) {
-        const { error: setErr } = await supabase
-          .from("settings")
-          .upsert({ ...tables.settings, user_id: userId }, {
-            onConflict: "user_id",
-          });
-        if (setErr) throw new Error(`settings: ${setErr.message}`);
-      }
-
+      await writeRestore(supabaseRestoreStore, userId, tables);
       // Alles neu laden, damit die App den neuen Bestand zeigt.
       await queryClient.invalidateQueries();
       setDone(true);
