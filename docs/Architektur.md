@@ -226,7 +226,14 @@ betroffene Tabelle beim Wiederherstellen leer.
   (`journeyStore`/`journeyWrite`, ein Store für `journeys`, `phases`,
   `journey_workouts`, `templates`, `template_exercises` und die Referenzgewichte in
   `exercises`, weil der Journey-Start Referenzgewichte einfriert und der Wechsel
-  Zuordnungen übernimmt); die übrigen Bereiche folgen schrittweise (Issue #57).
+  Zuordnungen übernimmt), Ausstattung samt Einstellungen
+  (`ausstattungStore`/`ausstattungWrite`, ein Store für `inventory_plates`,
+  `inventory_kettlebells`, `inventory_dumbbells`, `inventory_equipment` und `settings`,
+  weil beides in derselben Ansicht gepflegt wird) sowie die kurzen Erfassungen am
+  eigenen Verlauf (`erfassungStore`/`erfassungWrite`, ein Store für `body_log`, das
+  Anlegen/Löschen einzelner `sessions` außerhalb des geführten Ablaufs und die manuellen
+  Eingriffe in `skill_progress`; der geführte Schreibpfad bleibt im `historyStore`);
+  die übrigen Bereiche folgen schrittweise (Issue #57).
   Bei den registrierten (pausierbaren) Mutationen tauscht die Naht ausschließlich den
   Rumpf der `mutationFn`: Mutations-Kennung, Nutzlast-Felder und Registrier-Reihenfolge
   bleiben unverändert, damit offline pausierte Schreibvorgänge einen App-Neustart
