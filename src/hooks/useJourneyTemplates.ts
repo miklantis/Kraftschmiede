@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { leseZeilen } from "@/lib/tabelleLesen";
 import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { JourneyTemplateRow, JourneyTemplatePhaseRow } from "@/schemas";
@@ -18,16 +18,15 @@ export function useJourneyTemplates() {
     queryKey: queryKeys.journeyTemplates(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<JourneyTemplateWithPhases[]> => {
-      const { data, error } = await supabase
-        .from("journey_templates")
-        .select("*, journey_template_phases(*)")
-        .order("position", { ascending: true });
-      if (error) throw new Error(error.message);
-      const rows = (data ?? []) as Array<
+      const rows = await leseZeilen<
         JourneyTemplateRow & {
           journey_template_phases: JourneyTemplatePhaseRow[];
         }
-      >;
+      >({
+        tabelle: "journey_templates",
+        spalten: "*, journey_template_phases(*)",
+        sortierung: [{ spalte: "position" }],
+      });
       return rows.map((row) => {
         const { journey_template_phases, ...template } = row;
         const phases = (journey_template_phases ?? [])

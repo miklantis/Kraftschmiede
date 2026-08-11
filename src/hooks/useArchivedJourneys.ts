@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { leseZeilen } from "@/lib/tabelleLesen";
 import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { JourneyRow } from "@/schemas";
@@ -12,13 +12,10 @@ export function useArchivedJourneys() {
   return useQuery({
     queryKey: queryKeys.archivedJourneys(userId),
     enabled: userId !== null,
-    queryFn: async (): Promise<JourneyRow[]> => {
-      const { data, error } = await supabase
-        .from("journeys")
-        .select("*")
-        .eq("active", false);
-      if (error) throw new Error(error.message);
-      return (data ?? []) as JourneyRow[];
-    },
+    queryFn: (): Promise<JourneyRow[]> =>
+      leseZeilen<JourneyRow>({
+        tabelle: "journeys",
+        gleich: { active: false },
+      }),
   });
 }

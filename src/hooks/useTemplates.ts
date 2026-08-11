@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { leseZeilen } from "@/lib/tabelleLesen";
 import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { TemplateRow } from "@/schemas";
@@ -32,14 +32,13 @@ export function useTemplates() {
     queryKey: queryKeys.templates(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<TemplateWithExercises[]> => {
-      const { data, error } = await supabase
-        .from("templates")
-        .select("*, template_exercises(exercise_id, position)")
-        .order("position", { ascending: true });
-      if (error) throw new Error(error.message);
-      const rows = (data ?? []) as Array<
+      const rows = await leseZeilen<
         TemplateRow & { template_exercises: TemplateExerciseLink[] }
-      >;
+      >({
+        tabelle: "templates",
+        spalten: "*, template_exercises(exercise_id, position)",
+        sortierung: [{ spalte: "position" }],
+      });
       return rows.map((row) => {
         const { template_exercises, ...template } = row;
         const exercises = (template_exercises ?? [])

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { leseZeilen } from "@/lib/tabelleLesen";
 import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { BodyLogRow } from "@/schemas";
@@ -13,13 +13,10 @@ export function useBodyLog() {
   return useQuery({
     queryKey: queryKeys.bodyLog(userId),
     enabled: userId !== null,
-    queryFn: async (): Promise<BodyLogRow[]> => {
-      const { data, error } = await supabase
-        .from("body_log")
-        .select("*")
-        .order("date", { ascending: false });
-      if (error) throw new Error(error.message);
-      return (data ?? []) as BodyLogRow[];
-    },
+    queryFn: (): Promise<BodyLogRow[]> =>
+      leseZeilen<BodyLogRow>({
+        tabelle: "body_log",
+        sortierung: [{ spalte: "date", absteigend: true }],
+      }),
   });
 }

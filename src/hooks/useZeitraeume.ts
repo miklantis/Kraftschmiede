@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { leseZeilen } from "@/lib/tabelleLesen";
 import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { ZeitraumRow } from "@/schemas";
@@ -12,14 +12,13 @@ export function useZeitraeume() {
   return useQuery({
     queryKey: queryKeys.zeitraeume(userId),
     enabled: userId !== null,
-    queryFn: async (): Promise<ZeitraumRow[]> => {
-      const { data, error } = await supabase
-        .from("zeitraeume")
-        .select("*")
-        .order("start_datum", { ascending: false })
-        .order("created_at", { ascending: false });
-      if (error) throw new Error(error.message);
-      return (data ?? []) as ZeitraumRow[];
-    },
+    queryFn: (): Promise<ZeitraumRow[]> =>
+      leseZeilen<ZeitraumRow>({
+        tabelle: "zeitraeume",
+        sortierung: [
+          { spalte: "start_datum", absteigend: true },
+          { spalte: "created_at", absteigend: true },
+        ],
+      }),
   });
 }

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { leseZeilen } from "@/lib/tabelleLesen";
 import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { CompositionRow } from "@/schemas";
@@ -11,13 +11,10 @@ export function useComposition() {
   return useQuery({
     queryKey: queryKeys.composition(userId),
     enabled: userId !== null,
-    queryFn: async (): Promise<CompositionRow[]> => {
-      const { data, error } = await supabase
-        .from("composition")
-        .select("*")
-        .order("date", { ascending: false });
-      if (error) throw new Error(error.message);
-      return (data ?? []) as CompositionRow[];
-    },
+    queryFn: (): Promise<CompositionRow[]> =>
+      leseZeilen<CompositionRow>({
+        tabelle: "composition",
+        sortierung: [{ spalte: "date", absteigend: true }],
+      }),
   });
 }

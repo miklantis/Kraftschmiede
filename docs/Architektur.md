@@ -237,11 +237,27 @@ betroffene Tabelle beim Wiederherstellen leer.
   mit drei Handgriffen – Tabelle leeren, Zeilen einfügen, Einzelzeile ersetzen –, die
   Reihenfolgen kommen unverändert aus dem Bestandsregister). Damit ist der heikelste
   Schreibpfad der App (erst den kompletten Bestand löschen, dann neu einfügen) erstmals
-  ohne echte Datenbank geprüft. Offen bleibt die Lese-Seite (Issue #57, Schritt 7).
+  ohne echte Datenbank geprüft.
   Bei den registrierten (pausierbaren) Mutationen tauscht die Naht ausschließlich den
   Rumpf der `mutationFn`: Mutations-Kennung, Nutzlast-Felder und Registrier-Reihenfolge
   bleiben unverändert, damit offline pausierte Schreibvorgänge einen App-Neustart
   weiterhin überleben (ADR-0009).
+- **Naht zur Leseseite** (`src/lib/tabelleLesen.ts`) – das Gegenstück zu den
+  Schreib-Stores, aber eines für alle Bereiche statt eines je Bereich, weil das Lesen
+  überall dieselbe Form hat. Ein `LeseAbfrage`-Wert beschreibt Tabelle, Spaltenauswahl,
+  Gleichheits-Filter, Sortierstufen und Grenze; `leseZeilen`/`leseZeile` spielen ihn im
+  Betrieb über `supabaseTabellenLeser` ab, `createMemoryTabellenLeser()` bedient in Tests
+  aus dem Arbeitsspeicher und protokolliert jede Abfrage. Die Regel „Supabase-Fehler wird
+  zu einem `Error`" und die Kettenreihenfolge (auswählen → filtern → sortieren →
+  begrenzen) stehen damit einmal statt in zwanzig Hooks. Kein Lese-Hook importiert noch
+  `@/lib/supabase`. Die Nutzer-Kennung ist bewusst kein Teil der Abfrage: RLS scope't
+  ohnehin auf den angemeldeten Nutzer, sie trägt allein der Query-Schlüssel. Die
+  Umformung der Zeilen (verschachtelte Auswahl auspacken, nach `position` sortieren,
+  abgeleitete Ansichten) bleibt beim jeweiligen Hook – Sonderformen wie `useTemplates`,
+  `useSkills` oder `useSessionsDetailed` werden nicht in ein Schema gepresst, ihnen nimmt
+  die Grundlage nur den wiederkehrenden Teil ab. Geprüft ist die Grundlage selbst
+  (`src/lib/__tests__/tabelleLesen.test.ts`); die Hooks bleiben ungetestet, solange keine
+  Test-Bibliothek für React installiert ist.
 - **Query-Schlüssel und Auffrischung an einer Stelle** (`src/lib/queryKeys.ts`). Kein
   Schlüssel steht als loses Textliteral in Hook, Komponente oder Route. Drei Regeln:
   `queryKeys.<entität>(userId, …)` baut jeden Leseschlüssel und verlangt die

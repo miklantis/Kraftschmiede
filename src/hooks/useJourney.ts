@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { leseZeile } from "@/lib/tabelleLesen";
 import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 import type { JourneyRow, PhaseRow } from "@/schemas";
@@ -16,14 +16,12 @@ export function useActiveJourney() {
     queryKey: queryKeys.activeJourney(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<ActiveJourney | null> => {
-      const { data, error } = await supabase
-        .from("journeys")
-        .select("*, phases(*)")
-        .eq("active", true)
-        .maybeSingle();
-      if (error) throw new Error(error.message);
-      if (!data) return null;
-      const row = data as JourneyRow & { phases: PhaseRow[] };
+      const row = await leseZeile<JourneyRow & { phases: PhaseRow[] }>({
+        tabelle: "journeys",
+        spalten: "*, phases(*)",
+        gleich: { active: true },
+      });
+      if (!row) return null;
       const { phases, ...journey } = row;
       const sorted = (phases ?? [])
         .slice()

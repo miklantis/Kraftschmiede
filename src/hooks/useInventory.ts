@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { leseZeilen } from "@/lib/tabelleLesen";
 import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
 
@@ -16,14 +16,12 @@ export function useEquipment() {
   return useQuery({
     queryKey: queryKeys.equipment(userId),
     enabled: userId !== null,
-    queryFn: async (): Promise<EquipmentItem[]> => {
-      const { data, error } = await supabase
-        .from("inventory_equipment")
-        .select("key, label, active")
-        .order("position", { ascending: true });
-      if (error) throw new Error(error.message);
-      return (data ?? []) as EquipmentItem[];
-    },
+    queryFn: (): Promise<EquipmentItem[]> =>
+      leseZeilen<EquipmentItem>({
+        tabelle: "inventory_equipment",
+        spalten: "key, label, active",
+        sortierung: [{ spalte: "position" }],
+      }),
   });
 }
 
@@ -35,12 +33,12 @@ export function useOwnedEquipmentKeys() {
     queryKey: queryKeys.ownedEquipment(userId),
     enabled: userId !== null,
     queryFn: async (): Promise<string[]> => {
-      const { data, error } = await supabase
-        .from("inventory_equipment")
-        .select("key, active")
-        .eq("active", true);
-      if (error) throw new Error(error.message);
-      return ((data ?? []) as Array<{ key: string }>).map((e) => e.key);
+      const rows = await leseZeilen<{ key: string }>({
+        tabelle: "inventory_equipment",
+        spalten: "key, active",
+        gleich: { active: true },
+      });
+      return rows.map((e) => e.key);
     },
   });
 }
@@ -58,14 +56,12 @@ export function useBars() {
   return useQuery({
     queryKey: queryKeys.bars(userId),
     enabled: userId !== null,
-    queryFn: async (): Promise<BarItem[]> => {
-      const { data, error } = await supabase
-        .from("inventory_bars")
-        .select("id, name, weight, is_default")
-        .order("position", { ascending: true });
-      if (error) throw new Error(error.message);
-      return (data ?? []) as BarItem[];
-    },
+    queryFn: (): Promise<BarItem[]> =>
+      leseZeilen<BarItem>({
+        tabelle: "inventory_bars",
+        spalten: "id, name, weight, is_default",
+        sortierung: [{ spalte: "position" }],
+      }),
   });
 }
 
@@ -79,14 +75,12 @@ export function usePlates() {
   return useQuery({
     queryKey: queryKeys.plates(userId),
     enabled: userId !== null,
-    queryFn: async (): Promise<WeightItem[]> => {
-      const { data, error } = await supabase
-        .from("inventory_plates")
-        .select("id, weight")
-        .order("weight", { ascending: true });
-      if (error) throw new Error(error.message);
-      return (data ?? []) as WeightItem[];
-    },
+    queryFn: (): Promise<WeightItem[]> =>
+      leseZeilen<WeightItem>({
+        tabelle: "inventory_plates",
+        spalten: "id, weight",
+        sortierung: [{ spalte: "weight" }],
+      }),
   });
 }
 
@@ -96,14 +90,12 @@ export function useKettlebells() {
   return useQuery({
     queryKey: queryKeys.kettlebells(userId),
     enabled: userId !== null,
-    queryFn: async (): Promise<WeightItem[]> => {
-      const { data, error } = await supabase
-        .from("inventory_kettlebells")
-        .select("id, weight")
-        .order("weight", { ascending: true });
-      if (error) throw new Error(error.message);
-      return (data ?? []) as WeightItem[];
-    },
+    queryFn: (): Promise<WeightItem[]> =>
+      leseZeilen<WeightItem>({
+        tabelle: "inventory_kettlebells",
+        spalten: "id, weight",
+        sortierung: [{ spalte: "weight" }],
+      }),
   });
 }
 
@@ -113,13 +105,11 @@ export function useDumbbells() {
   return useQuery({
     queryKey: queryKeys.dumbbells(userId),
     enabled: userId !== null,
-    queryFn: async (): Promise<WeightItem[]> => {
-      const { data, error } = await supabase
-        .from("inventory_dumbbells")
-        .select("id, weight")
-        .order("weight", { ascending: true });
-      if (error) throw new Error(error.message);
-      return (data ?? []) as WeightItem[];
-    },
+    queryFn: (): Promise<WeightItem[]> =>
+      leseZeilen<WeightItem>({
+        tabelle: "inventory_dumbbells",
+        spalten: "id, weight",
+        sortierung: [{ spalte: "weight" }],
+      }),
   });
 }
