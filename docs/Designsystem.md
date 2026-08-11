@@ -136,6 +136,23 @@ Schatten sind Tokens und werden nie im Code ausgeschrieben: `shadow-card` (Karte
 `shadow-hi` (grüner Schimmer), `shadow-pop` (Popup), `shadow-auth` (freistehende
 Anmelde-Karte), `shadow-nav` (mobile Navigationsleiste).
 
+### Bewegung
+
+Alles, was kommt und geht, bewegt sich gleich: **300 ms** mit der Kurve
+`cubic-bezier(.22, 1, .36, 1)` – zentral als `--ks-motion-dur` und `--ks-motion-ease` in
+`index.css`. Das Muster ist immer dasselbe: von unten herein, beim Schließen wieder nach
+unten weg, dazu ein leichtes Auf- und Abblenden; liegt eine Verdunkelung dahinter, blendet
+sie in derselben Zeit mit. So laufen Popups (`Overlay`), die Pausen-Leiste und die große
+Timer-Ansicht der Dauer-Übungen.
+
+Technisch steckt das Verhalten im Hook `useEnterExit` (`src/hooks/useEnterExit.ts`): er hält
+das Element bis zum Ende der Ausfahrt im DOM und erzwingt vor dem Einfahren einen Reflow –
+ohne den springen Elemente auf iOS Safari ohne Bewegung an ihr Ziel. Neue ein- und
+ausfahrende Elemente nutzen diesen Hook, statt eigene Zeiten zu erfinden.
+
+„Bewegung reduzieren" wird respektiert: Elemente mit der Marker-Klasse `ks-motion` und die
+Pausen-Leiste erscheinen dann ohne Fahrt, Inhalt und Bedienung bleiben unverändert.
+
 **Nichts Unbenutztes.** Die Liste enthält nur Token, die tatsächlich irgendwo greifen. Was
 die shadcn-Grundausstattung sonst noch mitbringt (Popover-, Sidebar- und Accent-Farben),
 ist entfernt; die Seitenleiste nutzt `card`, `border` und `muted` mit. Wer ein neues Token
@@ -191,7 +208,7 @@ Doku nur als Beispiel im Text stehen – samt Farben, die es in der App gar nich
 | **JourneyChip** | Kleiner Journey-Marker als weiche grüne Tönung (`bg-primary/10`) mit dem Karten-Icon der Journey (wie im Hauptmenü), nur Icon ohne Text; Label als aria-label. Auf der Trainingsseite („Weitere Workouts“) und der Workouts-Seite; die Bedeutung („in der Journey“ vs. „journey-fähig“) trägt der Seitenkontext. |
 | **WorkoutIcon / YogaIcon** | Zwei eigene Trainingstyp-Symbole im Lucide-Stil (24er-Raster, currentColor): Stoppuhr für Workout/Kraft, sitzende Figur für Yoga. Für Skills dient das Lucide-Symbol „Zap“. Genutzt als `leading` in Listenzeilen (Workouts-Seite, Trainingsseite, Journey-Seite) und im Kopf der Skill-Karten (dezent grau); WorkoutIcon ist zudem das Navigations-Icon für „Workouts“. Im Verlauf (SessionLogCard) ersetzen dieselben Symbole den früheren Farbpunkt, dort in der Typfarbe (Grün bzw. Bernstein bei Satz-Abweichung). |
 | **ProgressDots** | Punktreihe für Fortschritt (z. B. Einheiten der Woche): gefüllt in Akzentfarbe, Rest gedeckt. |
-| **ProgressRing** | Runder Fortschrittsring als SVG: ruhender Spurkreis, darüber der Fortschritt von oben im Uhrzeigersinn. Kennt nur einen Füllgrad von 0 bis 1, Größe und Strichstärke; Farben kommen als Klassen von außen (`stroke-*`), Inhalt in der Mitte als `children`. Heute in der großen Timer-Ansicht der Dauer-Übungen. |
+| **ProgressRing** | Runder Fortschrittsring als SVG: ruhender Spurkreis, darüber der Fortschritt von oben im Uhrzeigersinn. Kennt nur einen Füllgrad von 0 bis 1, Größe und Strichstärke; Farben kommen als Klassen von außen (`stroke-*`), Inhalt in der Mitte als `children`. Heute in der großen Timer-Ansicht der Dauer-Übungen – dort bekommt der Füllgrad einen eigenen Takt Bild für Bild, damit der Ring durchgehend läuft und nicht in Sekundenschritten springt. |
 | **PhaseBar** | Segmentbalken für den Phasen-Stand eines Skills: ein Segment je Phase über die volle Breite, erledigte gefüllt (Skill-Farbe gedeckt), die aktuelle kräftig, künftige blass; gemeistert = alle gefüllt. Auf der Trainingsseite in der Skill-Liste (als `footer` der Listenzeile) und im Kopf der Skill-Karte, dort nur zugeklappt sichtbar (aufgeklappt unsichtbar geschaltet, damit die Kopfhoehe gleich bleibt). Bewusst andere Optik als ProgressDots, die für Wocheneinheiten stehen. |
 | **Chart** | Generisches Verlaufschart-Fundament (D3): misst die Breite, wird am Handy scrollbar, zeichnet einheitlich (glatte Linie, weiche Fläche, Tooltip). |
 | **Calendar** | Generisches Monatsgitter; was in einer Tageszelle steht, liefert der Aufrufer (renderCell). |

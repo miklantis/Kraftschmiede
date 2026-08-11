@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.1",
+      "date": "2026-08-11",
+      "changes": [
+        "Die Timer wirken jetzt ruhiger: Pausenleiste und die große Timer-Ansicht der Dauer-Übungen fahren sanft von unten herein statt plötzlich aufzutauchen, und beim Beenden oder Skippen fahren sie genauso wieder nach unten weg. Die dunkle Abdeckung des Hintergrunds blendet dabei mit auf und ab. Außerdem läuft der Fortschrittsring der Dauer-Übungen jetzt durchgehend rund – vorher rückte er bei kurzen Zielzeiten sichtbar von Schritt zu Schritt weiter. Hast du in den Systemeinstellungen „Bewegung reduzieren“ aktiv, erscheinen die Timer wie bisher ohne Fahrt."
+      ]
+    },
+    {
       "version": "1.26.0",
       "date": "2026-08-11",
       "changes": [

@@ -322,16 +322,17 @@ export function LivePanel(): React.ReactElement | null {
       <PanelContent session={s} live={live} plates={plates} bars={bars} unit={unit} />
     );
 
-  const restBar =
-    live.rest && !live.collapsed ? (
-      <RestBar
-        endsAt={live.rest.endsAt}
-        audioPrefs={audioPrefs}
-        isDesktop={isDesktop}
-        onAdjust={live.adjustRest}
-        onSkip={live.skipRest}
-      />
-    ) : null;
+  // Die Leiste bleibt gemountet und faehrt selbst herein/heraus; null als
+  // Endzeit heisst "zu" (kein Rest oder Panel eingeklappt).
+  const restBar = (
+    <RestBar
+      endsAt={live.rest && !live.collapsed ? live.rest.endsAt : null}
+      audioPrefs={audioPrefs}
+      isDesktop={isDesktop}
+      onAdjust={live.adjustRest}
+      onSkip={live.skipRest}
+    />
+  );
 
   // Grosse Timer-Ansicht der Dauer-Uebungen: haengt an derselben Stelle wie die
   // Pausen-Leiste, liegt aber als eigene Schicht ueber allem (Portal).
@@ -365,6 +366,7 @@ export function LivePanel(): React.ReactElement | null {
             clock={clock}
             onExpand={live.expand}
           />
+          {restBar}
           {durationTimer}
         </>
       );
