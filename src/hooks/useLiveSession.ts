@@ -8,9 +8,6 @@ import {
   type LiveEntry,
   type LiveGeneralWarmupSet,
   type LiveSession,
-  type WorkoutSession,
-  type RmTestSession,
-  type SkillSession,
   type SkillLiveExercise,
 } from "@/lib/liveSession";
 import { adjustedRest, startedRest, type RestState } from "@/lib/liveRest";
@@ -36,6 +33,14 @@ import {
   withRemovedGeneral,
 } from "@/lib/liveWarmup";
 import { withSkillDone, withSkillValue } from "@/lib/liveSkillEdit";
+import {
+  buildRmTestSession,
+  buildSkillSession,
+  buildWorkoutSession,
+  type StartRmTestInput,
+  type StartSkillInput,
+  type StartWorkoutInput,
+} from "@/lib/liveStart";
 import { clickTick, ensureAudio } from "@/lib/liveAudio";
 import { istDesktopJetzt } from "@/hooks/useIsDesktop";
 
@@ -155,22 +160,37 @@ function set(patch: Partial<LiveState>): void {
   emit();
 }
 
+/**
+ * Die fluechtigen Felder in ihrem Ruhezustand. Starten, Beenden und der Abgleich
+ * zwischen offenen Tabs setzen alle dieselbe Liste zurueck - hier steht sie
+ * einmal, damit ein neues Feld nicht an drei Stellen vergessen wird. `collapsed`
+ * und `entering` bleiben bewusst draussen: sie sind je Stelle unterschiedlich.
+ *
+ * Das leere `plateShow` darf geteilt werden, weil es nie an Ort und Stelle
+ * veraendert, sondern immer neu aufgebaut wird (cyclePlateMode).
+ */
+const TRANSIENT_RESET = {
+  pending: null,
+  ending: false,
+  rest: null,
+  plateShow: {},
+  skillWatch: null,
+} satisfies Partial<LiveState>;
+
 function subscribe(cb: () => void): () => void {
   listeners.add(cb);
   // Aenderungen in einem anderen Tab uebernehmen (z. B. dort beendet).
   const onStorage = (e: StorageEvent): void => {
     if (e.key === LIVE_STORAGE_KEY) {
       const next = read();
+      // Bewusst direkt geschrieben und selbst benachrichtigt statt ueber set():
+      // sonst wuerde der Abgleich zurueck in den Speicher schreiben (Schleife).
       state = {
         ...state,
+        ...TRANSIENT_RESET,
         session: next.session,
         collapsed: next.collapsed,
-        pending: null,
-        ending: false,
         entering: false,
-        rest: null,
-        plateShow: {},
-        skillWatch: null,
       };
       emit();
     }
@@ -192,33 +212,14 @@ function getSnapshot(): LiveState {
 
 // ---- Aktionen ---------------------------------------------------------------
 
-export interface StartWorkoutInput {
-  templateId: string;
-  title: string;
-  journeyId: string | null;
-  phaseId: string | null;
-  /** Hinweis zur vorgegebenen Last der Phase; null ohne Lastfaktor-Journey. */
-  loadNote: string | null;
-  entries: WorkoutSession["entries"];
-  generalWarmup: WorkoutSession["generalWarmup"];
-}
+// Die Eingaben der drei Startwege liegen bei den Fabriken (lib/liveStart) und
+// werden hier weitergereicht, damit die Aufrufer wie bisher nur den Hook kennen.
+export type { StartWorkoutInput, StartSkillInput, StartRmTestInput };
 
 /** Start-Popup oeffnen: die Einheit vormerken (noch nicht laufen lassen). */
 function openStartWorkout(input: StartWorkoutInput): void {
   if (state.session) return; // bereits eine Einheit aktiv
-  const pending: LiveSession = {
-    id: newLiveId(),
-    kind: "workout",
-    templateId: input.templateId,
-    journeyId: input.journeyId,
-    phaseId: input.phaseId,
-    loadNote: input.loadNote,
-    title: input.title,
-    startedAt: Date.now(),
-    generalWarmup: input.generalWarmup,
-    entries: input.entries,
-  };
-  set({ pending });
+  set({ pending: buildWorkoutSession(input, newLiveId(), Date.now()) });
 }
 
 /** Start abbrechen (Popup schliessen, Vormerkung verwerfen). */
@@ -226,38 +227,10 @@ function cancelStart(): void {
   set({ pending: null });
 }
 
-export interface StartSkillInput {
-  skillId: string;
-  skillName: string;
-  phaseIndex: number;
-  mastered: boolean;
-  exercises: SkillLiveExercise[];
-}
-
 /** Skill-Start-Popup oeffnen: die Einheit vormerken (noch nicht laufen lassen). */
 function openStartSkill(input: StartSkillInput): void {
   if (state.session) return;
-  const pending: SkillSession = {
-    id: newLiveId(),
-    kind: "skill",
-    title: input.skillName,
-    startedAt: Date.now(),
-    skillId: input.skillId,
-    phaseIndex: input.phaseIndex,
-    mastered: input.mastered,
-    exercises: input.exercises,
-  };
-  set({ pending });
-}
-
-export interface StartRmTestInput {
-  exerciseId: string;
-  /** Anzeigename der Uebung (Kopf, Mini-Streifen, Dialoge). */
-  exerciseName: string;
-  /** Rekord vor dem Test. */
-  previousRm: number | null;
-  entry: LiveEntry;
-  generalWarmup: RmTestSession["generalWarmup"];
+  set({ pending: buildSkillSession(input, newLiveId(), Date.now()) });
 }
 
 /** 1RM-Test starten. Bewusst ohne Start-Popup: der Test wird auf der
@@ -265,23 +238,10 @@ export interface StartRmTestInput {
 function startRmTest(input: StartRmTestInput): void {
   if (state.session) return; // nur eine laufende Einheit zugleich
   set({
-    session: {
-      id: newLiveId(),
-      kind: "rmtest",
-      title: "1RM-Test · " + input.exerciseName,
-      startedAt: Date.now(),
-      exerciseId: input.exerciseId,
-      previousRm: input.previousRm,
-      generalWarmup: input.generalWarmup,
-      entries: [input.entry],
-    },
-    pending: null,
-    ending: false,
+    ...TRANSIENT_RESET,
+    session: buildRmTestSession(input, newLiveId(), Date.now()),
     collapsed: false,
     entering: !istDesktopJetzt(),
-    rest: null,
-    plateShow: {},
-    skillWatch: null,
   });
 }
 
@@ -295,14 +255,14 @@ function confirmStart(): void {
   if (!p) return;
   set({ pending: null });
   window.setTimeout(() => {
+    // Schutz gegen doppeltes Starten: wurde zwischenzeitlich eine Einheit
+    // gestartet (z. B. ein 1RM-Test), wird sie nicht ueberschrieben.
     if (state.session) return;
     set({
+      ...TRANSIENT_RESET,
       session: { ...p, startedAt: Date.now() },
       collapsed: false,
       entering: !istDesktopJetzt(),
-      rest: null,
-      plateShow: {},
-      skillWatch: null,
     });
   }, START_EXIT_MS);
 }
@@ -332,14 +292,10 @@ function closeEnd(): void {
  */
 function endSession(): void {
   set({
+    ...TRANSIENT_RESET,
     session: null,
-    pending: null,
-    ending: false,
     collapsed: false,
     entering: false,
-    rest: null,
-    plateShow: {},
-    skillWatch: null,
   });
 }
 

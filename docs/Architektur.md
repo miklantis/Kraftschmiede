@@ -269,6 +269,28 @@ betroffene Tabelle beim Wiederherstellen leer.
   haben bewusst keinen eigenen Schlüssel: sie rechnen im Speicher aus den Hooks und
   ziehen automatisch nach, sobald eine ihrer Quellen aufgefrischt wird. Die Wurzelnamen
   sind zugleich der Vertrag mit dem Offline-Cache und werden nicht umbenannt.
+- **Live-Training: der Store hält, `lib/live*` entscheidet.** Der geräte-lokale Store
+  `src/hooks/useLiveSession.ts` hält den Zustand der laufenden Einheit, sichert ihn im
+  Gerätespeicher und löst die Seiteneffekte aus (Ton, Pause, Uhr). Entschieden und
+  umgeformt wird ausschließlich in reinen Funktionen ohne React-/DOM-/DB-Bezug, jede mit
+  eigenen Vitest-Tests: `liveFlow` (nächstes To-do, Pausen-Typ, Fortschritt),
+  `liveEntries` (Sätze und Aufwärmsätze je Übung samt der Regeln „Gewicht weicht ab →
+  Vermerk", „Bewertung 5 → gescheitert", Klemmen im 1RM-Test), `liveRest`
+  (Pausen-Rechnung, Zeit kommt als Parameter herein), `liveAutoRest` (Entscheidung nach
+  einem abgehakten Satz: keine / abbrechen / starten), `liveWarmup` (allgemeines
+  Aufwärmen), `liveSkillEdit` (Ändern der Skill-Übungen; der Aufbau liegt getrennt in
+  `skillLiveBuild`) und `liveStart` (die drei Startwege Kraft / Skill / 1RM-Test als
+  Fabriken, Kennung und Startzeit kommen herein). Der Store enthält selbst keine
+  Datenumformung mehr; bewusst dort geblieben sind nur `cyclePlateMode` (Anzeige, keine
+  Fachregel) und die Skill-Uhr, die nur festhält, welche Uhr gerade läuft.
+  Der Store ist dabei bewusst **ein** Modul geblieben statt in mehrere Stores zerlegt zu
+  werden: Sicherung und Abgleich zwischen offenen Tabs hängen an einem einzigen
+  Speicher-Schlüssel, und Start, 1RM-Test-Start und Beenden setzen Einheit *und* die
+  flüchtigen Felder (Pause, Scheiben-Anzeige, Skill-Uhr, Popup-Zustände – gemeinsam in
+  `TRANSIENT_RESET`) in einem Zug. Getrennte Stores würden daraus zwei Benachrichtigungen
+  machen und damit einen sichtbaren Zwischenstand erzeugen (Panel schon weg,
+  Pausenleiste noch da). Ein Testgewinn wäre davon ohnehin nicht zu erwarten: Hooks und
+  Stores sind ungetestet, solange keine Test-Bibliothek für React installiert ist.
 - **Wiederverwendbare Primitives** in `src/components/ui` (Modal, DataTable, Sheet,
   MuscleMap, Chart). Genau das Ziel: einmal bauen, überall nutzen.
 - **shadcn/ui als Fundament, nicht als Optik.** shadcn liefert die unsichtbare Mechanik
