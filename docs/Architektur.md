@@ -187,9 +187,11 @@ betroffene Tabelle beim Wiederherstellen leer.
 - **Phasen-Repband schlägt Übungs-Repband.** Läuft eine Journey, rechnet der Coach bei
   Kraftübungen mit dem Wiederholungsband der aktiven Phase (ersatzweise aus deren Fokus
   abgeleitet); das Band aus dem Übungskatalog ruht solange. Core- und
-  Bodyweight-Übungen behalten ihr eigenes Band. Die Regel steht an einer Stelle
-  (`activeRepTarget` in `lib/liveBuild.ts`) und wird von Trainingsbildschirm,
-  Übungs-Statusanzeige und Coach-Export genutzt – der Export weist beide Bänder getrennt
+  Bodyweight-Übungen behalten ihr eigenes Band. Gerechnet wird das Band der Phase an
+  einer Stelle (`phaseRepBand` in `engine/journey.ts`, angewandt in
+  `derivePhaseContext`); ob es die Übung überstimmt, entscheidet allein das Profil-Tor
+  `activeRepTarget` in `lib/liveBuild.ts`. Genutzt wird das von Trainingsbildschirm,
+  Übungs-Statusanzeige und Coach-Export – der Export weist beide Bänder getrennt
   aus (`repBand` = Katalog, `activeRepBand` = was gerade gilt), damit von außen nicht das
   falsche für maßgeblich gehalten wird.
 - **Lastfaktor schlägt Doppelprogression.** Arbeitet die laufende Journey mit
@@ -201,8 +203,11 @@ betroffene Tabelle beim Wiederherstellen leer.
   (`rampLoad` in `coach.ts`, angewandt in `progression.ts`); der 1RM-Einstieg beim
   Phasenwechsel ruht solange. Ohne Lastfaktor-Journey ändert sich nichts – auch dann
   nicht, wenn an den Übungen noch ein altes Referenzgewicht hängt.
-- **Lastfaktor ist überall sichtbar, aber nur wenn er wirkt.** Die Anzeigetexte
-  entstehen an einer Stelle (`lib/loadFactor.ts`: Prozentangabe und Hinweistext) und
+- **Lastfaktor ist überall sichtbar, aber nur wenn er wirkt.** Ob ein Faktor überhaupt
+  wirkt, entscheidet ein Prüfwort an einer Stelle (`isNeutralLoad` in
+  `lib/loadFactor.ts`, samt Rundungstoleranz) – genutzt von Journey-Start,
+  Coach-Rampe und Hinweistext. Die Anzeigetexte
+  entstehen ebenfalls dort (Prozentangabe und Hinweistext) und
   werden von Phasenliste, Periodisierungskurve (Lastfaktor steckt in der
   Intensitätslinie), Trainingsbildschirm (`phaseContext.loadNote`, eingefroren auf die
   laufende Einheit), Rückschau und Coach-Export genutzt. Journeys mit Lastfaktor 1

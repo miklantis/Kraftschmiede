@@ -3,7 +3,7 @@
 // Reine Ableitung ohne DB-/DOM-Bezug, aus useLiveBuilder herausgezogen, damit der
 // Live-Aufbau und die Uebungs-Statusanzeige dieselbe Rechnung nutzen.
 
-import { journeyPlacement } from "@/engine";
+import { journeyPlacement, phaseRepBand } from "@/engine";
 import type { VolumePhase } from "@/engine/types";
 import { loadFactorNote, usesLoadFactor } from "@/lib/loadFactor";
 import type { JourneyRow, PhaseRow } from "@/schemas";
@@ -20,6 +20,8 @@ export interface SessionForPhase {
 
 export interface PhaseContext {
   phaseFocus: { focus?: string } | null;
+  // Ziel-Repband der laufenden Phase: gesetzte Grenzen, sonst aus dem Fokus
+  // abgeleitet (phaseRepBand). null = die Phase gibt kein Band vor.
   phaseRepTarget: [number, number] | null;
   volumePhase: VolumePhase | null;
   weekInPhase: number;
@@ -75,9 +77,13 @@ export function derivePhaseContext(
         deloadWeek: phase.deload_week,
       };
       weekInPhase = Math.max(0, placement.weekInPhase - 1);
-      if (phase.rep_target_min != null && phase.rep_target_max != null) {
-        phaseRepTarget = [phase.rep_target_min, phase.rep_target_max];
-      }
+      // Band der Phase: gesetzte Grenzen, sonst aus dem Fokus – gerechnet wird
+      // das an einer Stelle (phaseRepBand in der Engine).
+      phaseRepTarget = phaseRepBand(
+        phase.rep_target_min,
+        phase.rep_target_max,
+        phase.focus,
+      );
       if (usesLoadFactor(journey.phases.map((p) => p.load_factor))) {
         loadFactor = phase.load_factor ?? 1;
         loadNote = loadFactorNote(

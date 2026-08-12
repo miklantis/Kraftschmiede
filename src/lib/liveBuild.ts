@@ -5,7 +5,7 @@
 // hier nur das Zusammensetzen. Die Zustandsbeschaffung (letzter Eintrag, Phase,
 // Stangen/Scheiben) macht der Daten-Hook useLiveBuilder.
 
-import { repTargetForFocus, workWeightForPhase } from "@/engine";
+import { workWeightForPhase } from "@/engine";
 import type { SetEntry, VolumePhase } from "@/engine/types";
 import {
   suggestWithBar,
@@ -40,7 +40,8 @@ export interface LiveBuildInput {
   // Uebungs-Ids der Vorlage in Reihenfolge.
   exerciseIds: string[];
   exercisesById: Record<string, LiveBuildExercise>;
-  // Phasen-Fokus (nur focus noetig) und das explizite Ziel-Repband der Phase.
+  // Phasen-Fokus (nur focus noetig; steuert z. B. den Wiedereinstieg) und das
+  // fertig gerechnete Ziel-Repband der Phase (derivePhaseContext).
   phaseFocus: { focus?: string } | null;
   phaseRepTarget: [number, number] | null;
   // Volumensteuerung der aktuellen Phase (Satzrampe/Deload) oder null.
@@ -66,17 +67,18 @@ export interface LiveBuildResult {
   entries: LiveEntry[];
 }
 
-// Ziel-Repband, das gerade gilt: hat die Phase ein Ziel (oder einen Fokus mit
-// Band), ueberstimmt es das Uebungs-Repband - aber nur fuer Kraftuebungen.
-// Exportiert, damit die Uebungs-Statusanzeige dieselbe Regel nutzt.
+// Ziel-Repband, das gerade gilt: das Band der Phase ueberstimmt das
+// Uebungs-Repband - aber nur fuer Kraftuebungen. Gerechnet wird das Band nicht
+// mehr hier, sondern einmal in derivePhaseContext (ueber phaseRepBand); hier
+// bleibt nur das Tor. Exportiert, damit die Uebungs-Statusanzeige dieselbe
+// Abgrenzung nutzt.
 export function activeRepTarget(
   exo: { profile: "strength" | "core" | "bodyweight" },
-  phaseFocus: { focus?: string } | null,
   phaseRepTarget: [number, number] | null,
   hasPhase: boolean,
 ): [number, number] | null {
   if (!hasPhase || exo.profile !== "strength") return null;
-  return phaseRepTarget ?? repTargetForFocus(phaseFocus?.focus ?? "") ?? null;
+  return phaseRepTarget;
 }
 
 // Repband, in dem die letzte Einheit gerechnet wurde: Spanne der Ziel-Wdh der
@@ -211,12 +213,7 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
     // schwerste, die noch <= Ziel ist, sonst die leichteste; (3) mit dieser Stange
     // endgueltig rechnen (Gewicht ladbar + Aufwaermrampe). So klebt eine leichte
     // Uebung nicht mehr am Gewicht der schwersten Stange.
-    const repTarget = activeRepTarget(
-      exo,
-      input.phaseFocus,
-      input.phaseRepTarget,
-      hasPhase,
-    );
+    const repTarget = activeRepTarget(exo, input.phaseRepTarget, hasPhase);
     const lastEntry = input.lastEntryByExercise[id] ?? null;
 
     const { suggestion: sug, bar } = suggestWithBar(exo, {

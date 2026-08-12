@@ -26,6 +26,7 @@ import type {
   VorlageUebungRow,
   ZuordnungRow,
 } from "./journeyStore";
+import { usesLoadFactor } from "./loadFactor";
 
 /** Eine Phase der gewaehlten Journey-Vorlage, so wie sie in die neue Journey
  *  kopiert wird. Nutzer, Journey und Reihenfolge kommen erst beim Kopieren
@@ -84,9 +85,10 @@ export type VorlageAction =
   | { type: "setActive"; templateId: string; aktiv: boolean };
 
 /** Nutzt die Vorlage einen Lastfaktor? Nur dann wird beim Start ein
- *  Referenzgewicht eingefroren. */
+ *  Referenzgewicht eingefroren. Was als neutral gilt, entscheidet
+ *  usesLoadFactor/isNeutralLoad – dort liegt die Toleranz. */
 function nutztLastfaktor(phases: JourneyStartPhase[]): boolean {
-  return phases.some((p) => Math.abs((p.load_factor ?? 1) - 1) > 1e-9);
+  return usesLoadFactor(phases.map((p) => p.load_factor));
 }
 
 /** Referenzgewicht aller Uebungen des Nutzers auf den aktuellen Stand

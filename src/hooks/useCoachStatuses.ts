@@ -105,12 +105,7 @@ export function useCoachStatuses(): UseCoachStatuses {
       };
       const lastEntry = lastEntryByExercise[e.id] ?? null;
       const hadPriorData = workSets(lastEntry).length > 0;
-      const repTarget = activeRepTarget(
-        exo,
-        ph.phaseFocus,
-        ph.phaseRepTarget,
-        hasPhase,
-      );
+      const repTarget = activeRepTarget(exo, ph.phaseRepTarget, hasPhase);
       const { suggestion, bar } = suggestWithBar(exo, {
         phaseFocus: ph.phaseFocus,
         lastEntry,

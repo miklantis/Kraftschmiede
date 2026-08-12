@@ -32,7 +32,7 @@ export function loadFactorNote(
 ): string | null {
   if (factor == null) return null;
   const pct = loadPercent(factor);
-  if (factor < 1 - 1e-9) {
+  if (!isNeutralLoad(factor) && factor < 1) {
     return `Vorgegebene Last: ${pct} deines Standes vor der Pause. Der niedrige Vorschlag ist gewollt.`;
   }
   if (isLastPhase) {
