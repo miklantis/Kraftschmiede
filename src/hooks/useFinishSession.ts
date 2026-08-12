@@ -5,6 +5,7 @@ import { todayISO } from "@/lib/format";
 import { asRmFormula } from "@/lib/rmTest";
 import { buildFinishRows } from "@/lib/liveFinish";
 import { katalogPatch } from "@/lib/katalogPatch";
+import { toPlacementSessions } from "@/lib/phaseContext";
 import {
   FINISH_MUTATION_KEY,
   type ExercisePatch,
@@ -67,12 +68,7 @@ export function useFinishSession(): UseFinishSession {
       let week: number | null = null;
       let journeyArchive: { journeyId: string; endDate: string } | undefined;
       if (session.journeyId) {
-        const sessions = (sessionsQ.data ?? []).map((s) => ({
-          date: s.date,
-          status: s.status,
-          type: s.type,
-          journeyId: s.journey_id,
-        }));
+        const sessions = toPlacementSessions(sessionsQ.data ?? []);
         week = journeyWeekForDate(date, sessions, session.journeyId, freqTarget);
         const journey = journeyQ.data;
         if (

@@ -1,10 +1,6 @@
 import { useMemo } from "react";
-import {
-  journeyPlacement,
-  weekProgress,
-  skillAdvice,
-  type Exercise,
-} from "@/engine";
+import { weekProgress, skillAdvice, type Exercise } from "@/engine";
+import { derivePhaseContext, toPlacementSessions } from "@/lib/phaseContext";
 import {
   buildSuitabilityCtx,
   rankWorkouts,
@@ -158,31 +154,19 @@ export function useTrainingOverview(): {
       showDots: false,
     };
     if (journey) {
-      const placement = journeyPlacement(
-        { id: journey.id, phases: journey.phases },
-        sessions.map((s) => ({
-          date: s.date,
-          status: s.status,
-          type: s.type,
-          journeyId: s.journey_id,
-        })),
-        freqTarget,
-        today,
-      );
-      const currentPhase = journey.phases[placement.phaseIndex] ?? null;
-      phaseFocus = currentPhase ? { focus: currentPhase.focus } : null;
+      // Standort in der Journey kommt aus der einen Stelle (derivePhaseContext).
+      const ph = derivePhaseContext(journey, sessions, freqTarget, today);
+      const placement = ph.placement;
+      const currentPhase = ph.phase;
+      phaseFocus = ph.phaseFocus;
 
       const wp = weekProgress(
-        sessions.map((s) => ({
-          date: s.date,
-          status: s.status,
-          type: s.type,
-          journeyId: s.journey_id,
-        })),
+        toPlacementSessions(sessions),
         journey.id,
         freqTarget,
         today,
       );
+      const weekInPhase = placement?.weekInPhase ?? "?";
       const phaseWeeks = currentPhase?.weeks ?? "?";
       const focusName = currentPhase
         ? focusLabel(currentPhase.focus) || currentPhase.name
@@ -191,7 +175,7 @@ export function useTrainingOverview(): {
         title: journey.name + (focusName ? " · " + focusName : ""),
         subtitle:
           "Woche " +
-          placement.weekInPhase +
+          weekInPhase +
           " von " +
           phaseWeeks +
           " · " +

@@ -107,6 +107,25 @@ describe("derivePhaseContext", () => {
       phaseId: null,
       loadFactor: null,
       loadNote: null,
+      placement: null,
+      phase: null,
     });
+  });
+
+  it("gibt Platzierung und laufende Phase heraus", () => {
+    const ctx = derivePhaseContext(
+      journeyWith([phase({ name: "Aufbau", weeks: 4 })]),
+      [],
+      3,
+      "2026-08-05",
+    );
+    expect(ctx.placement).toMatchObject({
+      phaseIndex: 0,
+      weekInPhase: 1,
+      globalWeek: 1,
+      done: false,
+    });
+    expect(ctx.phase?.name).toBe("Aufbau");
+    expect(ctx.phaseId).toBe(ctx.phase?.id);
   });
 });

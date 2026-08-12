@@ -184,6 +184,15 @@ betroffene Tabelle beim Wiederherstellen leer.
   Glue-/Coach-Schicht greift darauf zu.
 - **Coach als eigenes, testbares Modul** (`coach.ts`): nimmt Zustand explizit herein,
   gibt Entscheidungen heraus – gleiche Form wie die Engine. Kein DOM-Bezug.
+- **Journey-Standort an einer Stelle.** „Wo stehe ich gerade?" beantwortet
+  `derivePhaseContext` (`lib/phaseContext.ts`): es nimmt die Session-Zeilen herein,
+  bringt sie selbst auf die Engine-Form (`toPlacementSessions`), ruft
+  `journeyPlacement` und liefert Platzierung, laufende Phase, Fokus, Repband,
+  Volumen-Phase, Woche und Lastfaktor. Trainingsbildschirm, Journey-Seite,
+  Übungs-Statusanzeige, Live-Aufbau und das „Übung anpassen"-Popup setzen sich daraus
+  zusammen, ohne selbst zu platzieren. Ausnahme: der Coach-Export liest aus einem
+  Export-JSON statt aus Hooks und behält seine eigene Zeilenform – die Regeln (Band,
+  Lastfaktor) teilt er trotzdem.
 - **Phasen-Repband schlägt Übungs-Repband.** Läuft eine Journey, rechnet der Coach bei
   Kraftübungen mit dem Wiederholungsband der aktiven Phase (ersatzweise aus deren Fokus
   abgeleitet); das Band aus dem Übungskatalog ruht solange. Core- und

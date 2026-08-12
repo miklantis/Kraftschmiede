@@ -1,9 +1,14 @@
-// Phasen-Kontext der aktiven Journey: aus der trainingsgetriebenen Platzierung
-// (journeyPlacement) der aktuelle Fokus, das Ziel-Repband und die Volumen-Phase.
-// Reine Ableitung ohne DB-/DOM-Bezug, aus useLiveBuilder herausgezogen, damit der
-// Live-Aufbau und die Uebungs-Statusanzeige dieselbe Rechnung nutzen.
+// Journey-Standort: die eine Stelle fuer die Frage „wo stehe ich gerade?“. Aus
+// der aktiven Journey und den Einheiten entsteht die trainingsgetriebene
+// Platzierung (journeyPlacement) und daraus alles, was die Anzeige und der Coach
+// davon brauchen: aktuelle Phase, Fokus, Ziel-Repband, Volumen-Phase, Woche und
+// Lastfaktor. Reine Ableitung ohne DB-/DOM-Bezug.
+//
+// Auch die Abbildung der DB-Zeilen auf die Engine-Form liegt hier
+// (toPlacementSessions) – sie stand vorher in jedem Aufrufer wortgleich.
 
 import { journeyPlacement, phaseRepBand } from "@/engine";
+import type { JourneySession, Placement } from "@/engine";
 import type { VolumePhase } from "@/engine/types";
 import { loadFactorNote, usesLoadFactor } from "@/lib/loadFactor";
 import type { JourneyRow, PhaseRow } from "@/schemas";
@@ -16,6 +21,19 @@ export interface SessionForPhase {
   status: string;
   type: string;
   journey_id: string | null;
+}
+
+/** DB-Zeilen (snake_case) auf die Engine-Form der Platzierung bringen. Eine
+ *  Stelle statt in jedem Aufrufer. */
+export function toPlacementSessions(
+  sessions: ReadonlyArray<SessionForPhase>,
+): JourneySession[] {
+  return sessions.map((s) => ({
+    date: s.date,
+    status: s.status,
+    type: s.type,
+    journeyId: s.journey_id,
+  }));
 }
 
 export interface PhaseContext {
@@ -36,6 +54,12 @@ export interface PhaseContext {
   // wenn die laufende Journey ohne Lastfaktor arbeitet. In der letzten Phase
   // sagt er zusaetzlich, dass die Vorgabe endet.
   loadNote: string | null;
+  // Die Platzierung selbst (Phasen-Index, Woche in der Phase ab 1, globale
+  // Woche, durchlaufen ja/nein); null ohne aktive Journey.
+  placement: Placement | null;
+  // Die laufende Phase als ganze Zeile – fuer Anzeigen, die mehr brauchen als
+  // Fokus und Band (Name, Wochenzahl). null ohne aktive Journey/Phase.
+  phase: PhaseRow | null;
 }
 
 export function derivePhaseContext(
@@ -52,21 +76,18 @@ export function derivePhaseContext(
   let phaseId: string | null = null;
   let loadFactor: number | null = null;
   let loadNote: string | null = null;
+  let placement: Placement | null = null;
+  let phase: PhaseRow | null = null;
 
   if (journey) {
     journeyId = journey.id;
-    const placement = journeyPlacement(
+    placement = journeyPlacement(
       { id: journey.id, phases: journey.phases },
-      sessions.map((s) => ({
-        date: s.date,
-        status: s.status,
-        type: s.type,
-        journeyId: s.journey_id,
-      })),
+      toPlacementSessions(sessions),
       freqTarget,
       today,
     );
-    const phase = journey.phases[placement.phaseIndex] ?? null;
+    phase = journey.phases[placement.phaseIndex] ?? null;
     if (phase) {
       phaseId = phase.id;
       phaseFocus = { focus: phase.focus };
@@ -103,5 +124,7 @@ export function derivePhaseContext(
     phaseId,
     loadFactor,
     loadNote,
+    placement,
+    phase,
   };
 }
