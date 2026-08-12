@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
-import type { RmFormula } from "@/engine/types";
+import { asRmFormula } from "@/lib/rmTest";
 import {
   buildEditPayload,
   buildSkillEditPayload,
@@ -14,11 +14,6 @@ import { useUserId } from "./useUserId";
 import { useSettings } from "./useSettings";
 import { useExercises } from "./useExercises";
 import { useSessionsDetailed } from "./useSessionsDetailed";
-
-const RM_FORMULAS: RmFormula[] = ["brzycki", "epley", "wathan", "mean"];
-function asRmFormula(v: string | null | undefined): RmFormula {
-  return RM_FORMULAS.includes(v as RmFormula) ? (v as RmFormula) : "mean";
-}
 
 /** Eingabe fuer das Speichern einer Bearbeitung – der Entwurf aus dem Panel. */
 export interface EditSaveInput {

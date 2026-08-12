@@ -15,10 +15,10 @@
 // 1RM) fortgeschrieben; sonst bleibt die laufende Empfehlung stehen. Das 1RM
 // folgt dabei der Rekord-Regel (nur anheben, nur aus wenigen Wiederholungen).
 
-import { nextRecord1RM } from "@/engine/oneRM";
 import type { RmFormula } from "@/engine/types";
 import type { SetInsert } from "@/schemas";
 import { deriveWorkSets, deriveSkillSets } from "./setResult";
+import { katalogPatch } from "./katalogPatch";
 import type { ExercisePatch } from "./finishMutation";
 
 /** Ein Arbeitssatz im Bearbeiten-Entwurf. target* tragen den geplanten Wert
@@ -111,21 +111,17 @@ export function buildEditPayload(ctx: EditContext): EditPayload {
 
     // Coach nur bei der juengsten Einheit dieser Uebung fortschreiben.
     if (ex.exerciseId && ex.sets.length > 0 && ctx.isYoungest(ex.exerciseId)) {
-      const workWeight = work.workWeight ?? 0;
-      const patch: ExercisePatch = { id: ex.exerciseId, work_weight: workWeight };
-      const nextRm = ctx.tracksRm(ex.exerciseId)
-        ? nextRecord1RM({
-            current: ctx.currentRm(ex.exerciseId),
-            record: work.record1RM,
-            estimate: work.est1RM,
-          })
-        : null;
-      if (nextRm != null) {
-        patch.rm = nextRm;
-        patch.rm_as_of = date;
-        patch.rm_stale = false;
-      }
-      exercisePatches.push(patch);
+      exercisePatches.push(
+        katalogPatch({
+          exerciseId: ex.exerciseId,
+          workWeight: work.workWeight ?? 0,
+          tracksRm: ctx.tracksRm(ex.exerciseId),
+          currentRm: ctx.currentRm(ex.exerciseId),
+          record1RM: work.record1RM,
+          est1RM: work.est1RM,
+          date,
+        }),
+      );
     }
   });
 
