@@ -8,7 +8,12 @@ import { useSkills } from "@/hooks/useSkills";
 import { useEditSession } from "@/hooks/useEditSession";
 import type { HistorySessionInput, HistoryExercise } from "@/lib/history";
 import type { SkillDefAssembled } from "@/hooks/useSkills";
-import type { LiveEntry, SkillLiveExercise } from "@/lib/liveSession";
+import {
+  withSetValue,
+  withAppendedSet,
+  withRemovedSet,
+} from "@/lib/liveEntries";
+import type { LiveEntry, LiveSet, SkillLiveExercise } from "@/lib/liveSession";
 
 // Panel zum nachtraeglichen Korrigieren einer abgeschlossenen Einheit (Verlauf,
 // Schritt 2a/2b). Wiederverwendet die Live-Karten im Bearbeiten-Modus – gleiche
@@ -21,20 +26,15 @@ import type { LiveEntry, SkillLiveExercise } from "@/lib/liveSession";
 // Eintrag.
 
 // ---- Kraft-Entwurf ----------------------------------------------------------
-interface PanelSet {
-  reps: number;
-  weight: number;
-  score: number;
-  targetReps: number;
-  targetWeight: number;
-  adjusted: boolean;
-  adjustNote: string;
-}
+// Die Saetze des Entwurfs haben bewusst dieselbe Form wie die der laufenden
+// Einheit (LiveSet). Damit laufen Korrektur und Live-Erfassung durch dieselbe
+// gepruefte Satz-Logik (lib/liveEntries.ts) statt durch zwei Nachbauten – die
+// Fachregel „Gewicht weicht vom Ziel ab -> angepasst“ gilt hier wie dort.
 interface PanelExercise {
   sessionExerciseId: string;
   exerciseId: string | null;
   name: string;
-  sets: PanelSet[];
+  sets: LiveSet[];
 }
 
 // ---- Skill-Entwurf ----------------------------------------------------------
@@ -56,7 +56,7 @@ function minutesOf(input: HistorySessionInput): number {
 }
 
 // ---- Kraft-Aufbau -----------------------------------------------------------
-function workSetsOf(ex: HistoryExercise): PanelSet[] {
+function workSetsOf(ex: HistoryExercise): LiveSet[] {
   return ex.sets
     .filter((s) => s.kind !== "warmup")
     .map((s) => {
@@ -68,8 +68,15 @@ function workSetsOf(ex: HistoryExercise): PanelSet[] {
         score: s.score ?? 3,
         targetReps: s.targetReps ?? reps,
         targetWeight: s.targetWeight ?? weight,
+        // Kein Ablauf im Bearbeiten-Modus: kein Haken, kein aktiver Satz.
+        done: false,
+        // `failed` wird angezeigt wie gespeichert, aber nie zurueckgeschrieben –
+        // die Korrektur kennt kein Versagen (setResult.ts).
+        failed: s.failed ?? false,
+        // Der gespeicherte Vermerk bleibt stehen, statt beim Oeffnen zu
+        // verschwinden.
         adjusted: s.adjusted ?? false,
-        adjustNote: "",
+        adjustNote: s.adjustNote ?? "",
       };
     });
 }
@@ -143,6 +150,8 @@ function buildDraft(
 }
 
 // ---- Karten-Adapter ---------------------------------------------------------
+/** Nur noch der Kartenrahmen: die Saetze liegen bereits in der Live-Form vor.
+ *  Dient zugleich als Huelle fuer die Satz-Logik aus lib/liveEntries.ts. */
 function toLiveEntry(ex: PanelExercise): LiveEntry {
   return {
     exerciseId: ex.exerciseId ?? "",
@@ -153,17 +162,7 @@ function toLiveEntry(ex: PanelExercise): LiveEntry {
     barName: null,
     barWeight: null,
     warmupSets: [],
-    sets: ex.sets.map((s) => ({
-      reps: s.reps,
-      weight: s.weight,
-      score: s.score,
-      targetReps: s.targetReps,
-      targetWeight: s.targetWeight,
-      done: false,
-      failed: false,
-      adjusted: s.adjusted,
-      adjustNote: s.adjustNote,
-    })),
+    sets: ex.sets,
   };
 }
 
@@ -247,38 +246,35 @@ export function SessionEditPanel({
       d && d.type === "strength" ? { ...d, exercises: fn(d.exercises) } : d,
     );
   }
+  /** Die Satz-Logik der laufenden Einheit auf den Entwurf anwenden: Uebungen als
+   *  Live-Eintraege einpacken, Regel anwenden, geaenderte Saetze zurueckschreiben.
+   *  Unveraenderte Uebungen behalten ihre Referenz (liveEntries gibt dieselben
+   *  Saetze zurueck), damit nur die betroffene Karte neu rendert. */
+  function withLiveEntries(fn: (entries: LiveEntry[]) => LiveEntry[]): void {
+    setKraftExercises((exs) => {
+      const next = fn(exs.map(toLiveEntry));
+      return exs.map((ex, i) =>
+        next[i].sets === ex.sets ? ex : { ...ex, sets: next[i].sets },
+      );
+    });
+  }
   function updateSet(
     ei: number,
     si: number,
     kind: "reps" | "weight" | "score",
     value: number,
   ): void {
-    setKraftExercises((exs) =>
-      exs.map((ex, i) =>
-        i !== ei
-          ? ex
-          : { ...ex, sets: ex.sets.map((s, j) => (j !== si ? s : { ...s, [kind]: value })) },
-      ),
+    // istRmTest ist im Verlauf immer false: ein 1RM-Test ist keine Einheit und
+    // wird hier nicht bearbeitet.
+    withLiveEntries((entries) =>
+      withSetValue(entries, ei, si, kind, value, false),
     );
   }
   function addSet(ei: number): void {
-    setKraftExercises((exs) =>
-      exs.map((ex, i) => {
-        if (i !== ei) return ex;
-        const last = ex.sets[ex.sets.length - 1];
-        const next: PanelSet = last
-          ? { ...last, adjusted: false, adjustNote: "" }
-          : { reps: 8, weight: 0, score: 3, targetReps: 8, targetWeight: 0, adjusted: false, adjustNote: "" };
-        return { ...ex, sets: [...ex.sets, next] };
-      }),
-    );
+    withLiveEntries((entries) => withAppendedSet(entries, ei));
   }
   function delSet(ei: number): void {
-    setKraftExercises((exs) =>
-      exs.map((ex, i) =>
-        i !== ei || ex.sets.length <= 1 ? ex : { ...ex, sets: ex.sets.slice(0, -1) },
-      ),
-    );
+    withLiveEntries((entries) => withRemovedSet(entries, ei));
   }
 
   // --- Skill-Mutationen ---

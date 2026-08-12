@@ -19,6 +19,9 @@ export interface HistorySet {
   weight: number | null;
   durationSec: number | null;
   adjusted: boolean;
+  /** Vermerk zur Anpassung („Gewicht angepasst“). Optional, weil reine Anzeige
+   *  ihn nicht braucht – das Bearbeiten-Panel schon. */
+  adjustNote?: string;
   score?: number | null;
   done?: boolean;
   failed?: boolean;
