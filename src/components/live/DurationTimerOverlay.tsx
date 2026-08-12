@@ -277,7 +277,10 @@ export function DurationTimerOverlay({
       <div
         className={
           "ks-motion flex h-[54vh] max-h-[560px] min-h-[360px] w-full max-w-[430px] flex-col items-center justify-between rounded-[28px] px-6 py-6 text-timer-surface-foreground shadow-pop will-change-transform " +
-          "transition-[transform,opacity,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] " +
+          // `translate` muss mit in die Liste: die Verschiebung laeuft ueber diese
+          // eigene Eigenschaft, nicht ueber `transform` - fehlt sie, springt die
+          // Karte an ihren Platz und nur die Deckkraft blendet (Issue #110).
+          "transition-[translate,opacity,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] " +
           (shown ? "translate-y-0 opacity-100 " : "translate-y-full opacity-0 ") +
           (flash ? "bg-primary" : "bg-timer-surface")
         }

@@ -150,6 +150,11 @@ das Element bis zum Ende der Ausfahrt im DOM und erzwingt vor dem Einfahren eine
 ohne den springen Elemente auf iOS Safari ohne Bewegung an ihr Ziel. Neue ein- und
 ausfahrende Elemente nutzen diesen Hook, statt eigene Zeiten zu erfinden.
 
+**Stolperfalle:** Wer den Übergang selbst auf einzelne Eigenschaften begrenzt
+(`transition-[…]`), muss `translate` nennen. Tailwind verschiebt Elemente über diese
+eigene CSS-Eigenschaft und nicht über `transform` – steht dort nur `transform`, springt
+das Element an seinen Platz und lediglich die Deckkraft blendet.
+
 „Bewegung reduzieren" wird respektiert: Elemente mit der Marker-Klasse `ks-motion` und die
 Pausen-Leiste erscheinen dann ohne Fahrt, Inhalt und Bedienung bleiben unverändert.
 

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.2",
+      "date": "2026-08-12",
+      "changes": [
+        "Die große Timer-Ansicht der Dauer-Übungen fährt jetzt wirklich von unten herein und beim Beenden wieder nach unten weg – wie die Pausenleiste. Bisher blendete sie nur auf und ab und sprang dabei an ihren Platz."
+      ]
+    },
+    {
       "version": "1.26.1",
       "date": "2026-08-11",
       "changes": [
