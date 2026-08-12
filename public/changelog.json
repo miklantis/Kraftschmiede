@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.4",
+      "date": "2026-08-12",
+      "changes": [
+        "Zwei Fehler behoben: Korrigierst du im Verlauf nachträglich das Gewicht eines Satzes, wird er jetzt genauso als angepasst vermerkt wie beim Training selbst – der Vermerk bleibt außerdem erhalten, wenn du die Einheit erneut öffnest. Und startest du eine Journey mit Lastvorgabe, greift das vorgegebene Arbeitsgewicht schon in der ersten Einheit danach; bisher musste die App dafür erst neu geladen werden."
+      ]
+    },
+    {
       "version": "1.26.3",
       "date": "2026-08-12",
       "changes": [

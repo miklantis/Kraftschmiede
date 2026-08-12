@@ -176,8 +176,14 @@ export const INVALIDATE = {
   /** Yoga-Einheit nachgetragen. */
   addYoga: [QUERY_ROOTS.sessions, QUERY_ROOTS.sessionsDetailed],
   /** Journey angelegt, gewechselt oder umbenannt – die abgeloeste landet im
-   *  Archiv. */
-  journeyChange: [QUERY_ROOTS.activeJourney, QUERY_ROOTS.archivedJourneys],
+   *  Archiv. Der Katalog gehoert dazu: der Journey-Start friert die
+   *  Referenzgewichte in `exercises` ein bzw. raeumt sie weg (journeyWrite.ts),
+   *  und ohne Auffrischung greift der Lastfaktor in der ersten Einheit nicht. */
+  journeyChange: [
+    QUERY_ROOTS.activeJourney,
+    QUERY_ROOTS.archivedJourneys,
+    QUERY_ROOTS.exercises,
+  ],
   /** Workout-Zuweisung einer Journey geaendert. */
   journeyWorkouts: [QUERY_ROOTS.journeyWorkouts],
   /** Uebung im Katalog geaendert. */

@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { buildEditPayload, type EditContext } from "../editSession";
+import { withSetValue } from "../liveEntries";
+import type { LiveEntry } from "../liveSession";
 
 // Deterministische IDs fuer stabile Vergleiche.
 function idGen() {
@@ -73,6 +75,87 @@ describe("buildEditPayload", () => {
     expect(p.exercisePatches).toHaveLength(1);
     expect(p.exercisePatches[0].work_weight).toBe(100);
     expect(p.exercisePatches[0].rm).toBeUndefined();
+  });
+});
+
+describe("Korrektur im Verlauf ueber die Live-Satzlogik", () => {
+  // Das Bearbeiten-Panel formt die Saetze nicht mehr selbst um, sondern schickt
+  // sie durch dieselbe Satz-Logik wie das Live-Training (#114). Geprueft wird
+  // die Naht: was withSetValue erzeugt, muss buildEditPayload unveraendert in
+  // die Satz-Zeile tragen. Die Regel selbst deckt liveEntries.test.ts ab.
+  const entry = (): LiveEntry => ({
+    exerciseId: "ex1",
+    exerciseName: "Kniebeuge",
+    equipment: "bodyweight",
+    tag: "",
+    barId: null,
+    barName: null,
+    barWeight: null,
+    warmupSets: [],
+    sets: [
+      {
+        reps: 5,
+        weight: 100,
+        score: 3,
+        targetReps: 5,
+        targetWeight: 100,
+        done: false,
+        failed: false,
+        adjusted: false,
+        adjustNote: "",
+      },
+    ],
+  });
+
+  function zeileNachKorrektur(gewicht: number) {
+    const entries = withSetValue([entry()], 0, 0, "weight", gewicht, false);
+    const p = buildEditPayload(
+      ctx({
+        exercises: [
+          {
+            sessionExerciseId: "se1",
+            exerciseId: "ex1",
+            sets: entries[0].sets,
+          },
+        ],
+      }),
+    );
+    return p.exercises[0].workSetRows[0];
+  }
+
+  it("vermerkt ein vom Ziel abweichendes Gewicht als angepasst", () => {
+    const row = zeileNachKorrektur(90);
+    expect(row.weight).toBe(90);
+    expect(row.adjusted).toBe(true);
+    expect(row.adjust_note).toBe("Gewicht angepasst");
+    // Unter dem Zielgewicht gilt das Ziel als verfehlt – live wie im Verlauf.
+    expect(row.met).toBe(false);
+  });
+
+  it("laesst einen Satz auf dem Zielgewicht unangetastet", () => {
+    const row = zeileNachKorrektur(100);
+    expect(row.adjusted).toBe(false);
+    expect(row.adjust_note).toBe("");
+    expect(row.met).toBe(true);
+  });
+
+  it("uebernimmt die Bewertung 5, ohne den Satz als gescheitert zu schreiben", () => {
+    // Bewusste Festlegung aus #114: die Korrektur kennt kein Versagen.
+    const entries = withSetValue([entry()], 0, 0, "score", 5, false);
+    const p = buildEditPayload(
+      ctx({
+        exercises: [
+          {
+            sessionExerciseId: "se1",
+            exerciseId: "ex1",
+            sets: entries[0].sets,
+          },
+        ],
+      }),
+    );
+    const row = p.exercises[0].workSetRows[0];
+    expect(row.score).toBe(5);
+    expect(row.failed).toBe(false);
   });
 });
 

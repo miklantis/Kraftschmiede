@@ -18,6 +18,7 @@ interface SetRowLite {
   duration_sec: number | null;
   score: number | null;
   adjusted: boolean;
+  adjust_note: string;
   done: boolean;
   failed: boolean;
   met: boolean | null;
@@ -46,7 +47,7 @@ export function useSessionsDetailed() {
       >({
         tabelle: "sessions",
         spalten:
-          "*, session_exercises(id, exercise_id, name, metric, position, tested_1rm, sets(kind, reps, weight, duration_sec, score, adjusted, done, failed, met, target_reps, target_weight))",
+          "*, session_exercises(id, exercise_id, name, metric, position, tested_1rm, sets(kind, reps, weight, duration_sec, score, adjusted, adjust_note, done, failed, met, target_reps, target_weight))",
         gleich: { status: "done" },
         sortierung: [{ spalte: "date" }],
       });
@@ -75,6 +76,7 @@ export function useSessionsDetailed() {
             durationSec: s.duration_sec,
             score: s.score,
             adjusted: s.adjusted,
+            adjustNote: s.adjust_note ?? "",
             done: s.done,
             failed: s.failed,
             met: s.met,
