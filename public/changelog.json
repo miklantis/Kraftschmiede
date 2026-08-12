@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.3",
+      "date": "2026-08-12",
+      "changes": [
+        "In der großen Timer-Ansicht der Dauer-Übungen bleibt jetzt alles grün, sobald du die Zielzeit geschafft hast – vorher wurde es kurz grün und fiel dann wieder auf Schwarz zurück. Der Fortschrittsring wird dabei weiß und läuft direkt in den nächsten Durchlauf weiter. Außerdem stimmt die Zählung: Der erste geschaffte Durchlauf zeigt jetzt ×1, jeder weitere ×2, ×3 und so fort."
+      ]
+    },
+    {
       "version": "1.26.2",
       "date": "2026-08-12",
       "changes": [

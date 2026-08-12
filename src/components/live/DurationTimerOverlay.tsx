@@ -48,13 +48,14 @@ function bigValue(sec: number): string {
 
 /**
  * Fuellgrad des Rings zu einem Zeitpunkt - dieselbe Rechnung wie im Takt unten,
- * inklusive Vorsprung durch einen bereits eingetragenen Wert. Waehrend des
- * Erfolgssignals steht der Ring voll.
+ * inklusive Vorsprung durch einen bereits eingetragenen Wert. Der Ring haelt bei
+ * der Zielzeit nicht an, sondern laeuft direkt in den naechsten Durchlauf
+ * weiter (Issue #112); das Erreichen zeigen Farbe, Ton und Multiplikator.
  */
 function ringFracAt(startMs: number, nowMs: number, target: number, baseValue: number): number {
   const raw = durTick(startMs, nowMs, target);
   const t = raw.phase === "lead" ? raw : durTick(startMs, nowMs + baseValue * 1000, target);
-  return t.flash ? 1 : t.frac;
+  return t.frac;
 }
 
 /**
@@ -242,26 +243,22 @@ export function DurationTimerOverlay({
 
   const isLead = tick.phase === "lead";
   const flash = tick.flash;
+  // Ab der ersten vollen Zielzeit bleibt die Ansicht im Erfolgs-Zustand: gruene
+  // Karte, weisser Ring. Vorher schaltete das nur kurz um und fiel wieder auf
+  // Schwarz zurueck (Issue #112).
+  const done = tick.reached;
 
   const caption = isLead
     ? "Fertig machen"
     : flash
-      ? tick.mult > 0
-        ? "×" + tick.mult + " geschafft"
-        : "Geschafft"
+      ? "×" + tick.mult + " geschafft"
       : target > 0
-        ? tick.reached
+        ? done
           ? "Ziel " + target + " s geschafft"
           : "Ziel " + target + " s"
         : "läuft";
 
-  const ringClass = flash
-    ? "stroke-white"
-    : isLead
-      ? "stroke-white/50"
-      : tick.reached
-        ? "stroke-primary-soft"
-        : "stroke-primary";
+  const ringClass = done ? "stroke-white" : isLead ? "stroke-white/50" : "stroke-primary";
 
   return createPortal(
     <div
@@ -282,7 +279,7 @@ export function DurationTimerOverlay({
           // Karte an ihren Platz und nur die Deckkraft blendet (Issue #110).
           "transition-[translate,opacity,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] " +
           (shown ? "translate-y-0 opacity-100 " : "translate-y-full opacity-0 ") +
-          (flash ? "bg-primary" : "bg-timer-surface")
+          (done ? "bg-primary" : "bg-timer-surface")
         }
       >
         <div className="w-full text-center">
@@ -298,7 +295,7 @@ export function DurationTimerOverlay({
           baseValue={baseValue}
           size={ringSize}
           className={ringClass}
-          trackClassName={flash ? "stroke-white/30" : "stroke-white/15"}
+          trackClassName={done ? "stroke-white/30" : "stroke-white/15"}
         >
           <div className="font-mono text-[56px] font-bold leading-none tabular-nums">
             {isLead ? tick.leadLeft : bigValue(tick.elapsed)}

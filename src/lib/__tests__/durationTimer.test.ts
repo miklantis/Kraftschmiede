@@ -64,7 +64,7 @@ describe("durTick – Zielerreichung und Extra-Runden", () => {
     expect(t.phase).toBe("over");
     expect(t.reached).toBe(true);
     expect(t.rounds).toBe(1);
-    expect(t.mult).toBe(0);
+    expect(t.mult).toBe(1);
     expect(t.flash).toBe(true);
   });
 
@@ -78,11 +78,12 @@ describe("durTick – Zielerreichung und Extra-Runden", () => {
     expect(durTick(START, at(75), 30).frac).toBeCloseTo(0.5, 5);
   });
 
-  it("erhoeht den Multiplikator je weiterer voller Zielzeit", () => {
-    expect(durTick(START, at(59), 30).mult).toBe(0);
-    expect(durTick(START, at(60), 30).mult).toBe(1);
-    expect(durTick(START, at(90), 30).mult).toBe(2);
-    expect(durTick(START, at(120), 30).mult).toBe(3);
+  it("zeigt den ersten Durchlauf als x1 und zaehlt je Zielzeit hoch", () => {
+    expect(durTick(START, at(29), 30).mult).toBe(0);
+    expect(durTick(START, at(30), 30).mult).toBe(1);
+    expect(durTick(START, at(59), 30).mult).toBe(1);
+    expect(durTick(START, at(60), 30).mult).toBe(2);
+    expect(durTick(START, at(90), 30).mult).toBe(3);
   });
 
   it("zaehlt in der Extra-Phase die Gesamtsekunden weiter", () => {

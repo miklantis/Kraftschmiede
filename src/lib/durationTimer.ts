@@ -6,8 +6,9 @@
 // Ablauf einer Dauer-Uebung:
 //   1) Vorbereitung: LEAD_SEC Sekunden zum Einhaengen / in Position kommen.
 //   2) Zielzeit: der Ring fuellt sich einmal bis zur Zieldauer der Uebung.
-//   3) Extra: der Timer laeuft weiter, der Ring fuellt sich erneut. Jede weitere
-//      volle Zielzeit erhoeht den sichtbaren Multiplikator (x1, x2, x3 ...).
+//   3) Extra: der Timer laeuft weiter, der Ring fuellt sich erneut. Jede volle
+//      Zielzeit erhoeht den sichtbaren Multiplikator - der erste Durchlauf ist
+//      x1, jeder weitere x2, x3 ... (Issue #112).
 
 /** Vorbereitungszeit vor dem eigentlichen Timer (wie bisher in der Zelle). */
 export const LEAD_SEC = 5;
@@ -28,7 +29,7 @@ export interface DurTick {
   frac: number;
   /** Wie oft die Zielzeit voll durchlaufen wurde. */
   rounds: number;
-  /** Sichtbarer Multiplikator der Extra-Runden: 0 = keiner, sonst x1, x2 ... */
+  /** Sichtbarer Multiplikator der Durchlaeufe: 0 = keiner, sonst x1, x2 ... */
   mult: number;
   /** Zielzeit erreicht (ab hier laeuft die Extra-Phase). */
   reached: boolean;
@@ -86,7 +87,7 @@ export function durTick(startMs: number, nowMs: number, target: number): DurTick
     elapsed,
     frac: intoRound / targetMs,
     rounds,
-    mult: Math.max(0, rounds - 1),
+    mult: rounds,
     reached,
     flash: reached && intoRound < FLASH_MS,
   };
