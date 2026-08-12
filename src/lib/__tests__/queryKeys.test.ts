@@ -102,6 +102,54 @@ describe("INVALIDATE", () => {
     }
   });
 
+  it("deckt jede Gruppe die Tabellen ab, die ihr Schreib-Baustein anfasst", () => {
+    // Der Fehler aus #114: `writeJourneyStart` schreibt Referenzgewichte nach
+    // `exercises`, die Gruppe nannte den Katalog aber nicht – die Lastvorgabe
+    // der frisch gestarteten Journey griff in der ersten Einheit nicht.
+    //
+    // Die Tabellen sind am Protokoll der Memory-Speicher abgelesen (siehe
+    // journeyWrite.test.ts): welche Handgriffe ein Schreib-Baustein ausloest,
+    // steht dort Zeile fuer Zeile. Kommt ein Schreibpfad dazu, wird er hier
+    // eingetragen – dann faellt eine fehlende Wurzel sofort auf.
+    const wurzelnJeTabelle: Record<string, readonly QueryRoot[]> = {
+      sessions: [QUERY_ROOTS.sessions, QUERY_ROOTS.sessionsDetailed],
+      session_exercises: [QUERY_ROOTS.sessionsDetailed],
+      sets: [QUERY_ROOTS.sessionsDetailed],
+      exercises: [QUERY_ROOTS.exercises],
+      journeys: [QUERY_ROOTS.activeJourney, QUERY_ROOTS.archivedJourneys],
+      journey_phases: [QUERY_ROOTS.activeJourney],
+    };
+    const tabellenJeEreignis: Record<string, readonly string[]> = {
+      // writeJourneyStart / writeJourneyRename: Journey ab- und anlegen,
+      // Phasen kopieren, Referenzgewichte einfrieren bzw. wegraeumen.
+      journeyChange: ["journeys", "journey_phases", "exercises"],
+      // writeFinishStrength: Einheit samt Uebungen und Saetzen anlegen, Katalog
+      // fortschreiben, ggf. die Journey archivieren.
+      finishStrength: [
+        "sessions",
+        "session_exercises",
+        "sets",
+        "exercises",
+        "journeys",
+      ],
+      // writeEditSession: Einheit-Felder, Arbeitssaetze ersetzen, tested_1rm
+      // setzen, Katalog nachziehen.
+      editSession: ["sessions", "sets", "session_exercises", "exercises"],
+    };
+
+    for (const [ereignis, tabellen] of Object.entries(tabellenJeEreignis)) {
+      const gruppe = INVALIDATE[ereignis as keyof typeof INVALIDATE];
+      for (const tabelle of tabellen) {
+        const moegliche = wurzelnJeTabelle[tabelle];
+        expect(moegliche, `${ereignis} -> ${tabelle}`).toBeDefined();
+        expect(
+          moegliche.some((w) => (gruppe as readonly QueryRoot[]).includes(w)),
+          `${ereignis} frischt ${tabelle} nicht auf`,
+        ).toBe(true);
+      }
+    }
+  });
+
   it("frischt jedes Schreib-Ereignis die erwarteten Wurzeln auf", () => {
     expect(INVALIDATE.finishStrength).toEqual([
       "sessions",
@@ -109,6 +157,11 @@ describe("INVALIDATE", () => {
       "exercises",
       "activeJourney",
       "archivedJourneys",
+    ]);
+    expect(INVALIDATE.journeyChange).toEqual([
+      "activeJourney",
+      "archivedJourneys",
+      "exercises",
     ]);
     expect(INVALIDATE.finishSkill).toEqual([
       "sessions",
