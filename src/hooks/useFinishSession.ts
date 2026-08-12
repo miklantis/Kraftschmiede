@@ -1,10 +1,11 @@
 import { useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { completesJourney, journeyWeekForDate } from "@/engine/journey";
-import { nextRecord1RM } from "@/engine/oneRM";
-import type { RmFormula } from "@/engine/types";
 import { todayISO } from "@/lib/format";
+import { asRmFormula } from "@/lib/rmTest";
 import { buildFinishRows } from "@/lib/liveFinish";
+import { katalogPatch } from "@/lib/katalogPatch";
+import { toPlacementSessions } from "@/lib/phaseContext";
 import {
   FINISH_MUTATION_KEY,
   type ExercisePatch,
@@ -19,11 +20,6 @@ import { useExercises } from "./useExercises";
 import { useBodyLog } from "./useBodyLog";
 import { useActiveJourney } from "./useJourney";
 import { notifyJourneyDone } from "@/lib/journeyDone";
-
-const RM_FORMULAS: RmFormula[] = ["brzycki", "epley", "wathan", "mean"];
-function asRmFormula(v: string | null | undefined): RmFormula {
-  return RM_FORMULAS.includes(v as RmFormula) ? (v as RmFormula) : "mean";
-}
 
 export interface UseFinishSession {
   /** Beendet die Einheit: Verlaufszeilen schreiben + Katalog fortschreiben.
@@ -72,12 +68,7 @@ export function useFinishSession(): UseFinishSession {
       let week: number | null = null;
       let journeyArchive: { journeyId: string; endDate: string } | undefined;
       if (session.journeyId) {
-        const sessions = (sessionsQ.data ?? []).map((s) => ({
-          date: s.date,
-          status: s.status,
-          type: s.type,
-          journeyId: s.journey_id,
-        }));
+        const sessions = toPlacementSessions(sessionsQ.data ?? []);
         week = journeyWeekForDate(date, sessions, session.journeyId, freqTarget);
         const journey = journeyQ.data;
         if (
@@ -105,27 +96,20 @@ export function useFinishSession(): UseFinishSession {
         newId: () => crypto.randomUUID(),
       });
 
-      // Katalog-Patches: Arbeitsgewicht immer; das 1RM ist ein Rekord und wird
-      // nur angehoben, wenn ein Satz mit wenigen Wiederholungen den bisherigen
-      // Wert schlaegt (nextRecord1RM). Nie automatisch senken.
+      // Katalog-Patches: die Regel steht in katalogPatch, hier wird nur der
+      // Katalog-Stand der Uebung dazugeholt.
       const byId = new Map((exercisesQ.data ?? []).map((e) => [e.id, e]));
       const exercisePatches: ExercisePatch[] = rows.exerciseUpdates.map((u) => {
         const exo = byId.get(u.exerciseId);
-        const tracksRm = exo ? exo.profile !== "bodyweight" : false;
-        const patch: ExercisePatch = { id: u.exerciseId, work_weight: u.workWeight };
-        const nextRm = tracksRm
-          ? nextRecord1RM({
-              current: exo?.rm ?? null,
-              record: u.record1RM,
-              estimate: u.est1RM,
-            })
-          : null;
-        if (nextRm != null) {
-          patch.rm = nextRm;
-          patch.rm_as_of = date;
-          patch.rm_stale = false;
-        }
-        return patch;
+        return katalogPatch({
+          exerciseId: u.exerciseId,
+          workWeight: u.workWeight,
+          tracksRm: exo ? exo.profile !== "bodyweight" : false,
+          currentRm: exo?.rm ?? null,
+          record1RM: u.record1RM,
+          est1RM: u.est1RM,
+          date,
+        });
       });
 
       mutation.mutate({

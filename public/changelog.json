@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.5",
+      "date": "2026-08-12",
+      "changes": [
+        "Aufräumarbeiten unter der Haube: Vier Regeln, die bisher an mehreren Stellen doppelt gepflegt wurden – wie der Katalog nach einer Einheit nachzieht, wie der Einstieg nach einem Phasenwechsel gerechnet wird, welches Wiederholungsband die Phase vorgibt und wo du in der Journey stehst – stehen jetzt jeweils nur noch an einer Stelle. Für dich ändert sich nichts sichtbar; künftige Änderungen wirken dadurch überall gleich, statt in einer Ansicht vergessen zu werden. Ganz nebenbei behoben: Die Übungsliste zeigte nach einem Phasenwechsel mit deutlich anderem Wiederholungsband ein anderes Gewicht als die gestartete Einheit."
+      ]
+    },
+    {
       "version": "1.26.4",
       "date": "2026-08-12",
       "changes": [

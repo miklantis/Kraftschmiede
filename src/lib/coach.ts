@@ -25,6 +25,7 @@ import type {
   VolumePhase,
 } from "@/engine/types";
 import { isoWeekKey } from "@/engine/journey";
+import { isNeutralLoad } from "./loadFactor";
 
 // Eine abgeschlossene Krafteinheit, reduziert auf das fuer das Ranking Noetige:
 // Datum und die enthaltenen Uebungs-Ids.
@@ -277,7 +278,12 @@ export function rampLoad(
   if (loadFactor == null || !(loadFactor > 0)) return null;
   const ref = exo.referenceWeight;
   if (ref == null || !(ref > 0)) return null;
-  return { weight: ref * loadFactor, cap: loadFactor < 1 - 1e-9 };
+  // Gedeckelt wird nur unterhalb der vollen Last; was als "voll" gilt, sagt
+  // isNeutralLoad (dort liegt die Toleranz).
+  return {
+    weight: ref * loadFactor,
+    cap: !isNeutralLoad(loadFactor) && loadFactor < 1,
+  };
 }
 
 // Gewichts-/Wdh.-Vorschlag. Core/Bodyweight -> coreCarry; sonst Doppelprogression

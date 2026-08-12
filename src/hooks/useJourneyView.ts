@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { journeyPlacement } from "@/engine";
+import { derivePhaseContext } from "@/lib/phaseContext";
 import {
   buildPhaseViews,
   type JourneyPhaseInput,
@@ -62,17 +62,14 @@ export function useJourneyView(): {
     const freqTarget = settings?.weekly_frequency_target || 3;
     const today = todayISO();
 
-    const placement = journeyPlacement(
-      { id: journey.id, phases: journey.phases },
-      sessions.map((s) => ({
-        date: s.date,
-        status: s.status,
-        type: s.type,
-        journeyId: s.journey_id,
-      })),
+    // Standort in der Journey kommt aus der einen Stelle (derivePhaseContext).
+    const placement = derivePhaseContext(
+      journey,
+      sessions,
       freqTarget,
       today,
-    );
+    ).placement;
+    if (!placement) return null;
 
     const templateName =
       templates.find((t) => t.id === journey.source_template_id)?.name ?? null;

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildLiveEntries } from "../liveBuild";
-import type { LiveBuildExercise, LiveBuildInput } from "../liveBuild";
+import { buildLiveEntries, phaseEntryOverride } from "../liveBuild";
+import type {
+  LiveBuildExercise,
+  LiveBuildInput,
+  PhaseEntryInput,
+} from "../liveBuild";
 import type { SetEntry } from "@/engine/types";
 
 const squat: LiveBuildExercise = {
@@ -304,5 +308,59 @@ describe("freies Training (keine aktive Journey)", () => {
     expect(e.sets).toHaveLength(3);
     expect(e.sets[0]!.weight).toBe(60);
     expect(e.sets[0]!.reps).toBe(12);
+  });
+});
+
+// Der Phasenwechsel-Einstieg wird direkt geprueft, weil ihn seit AP4 auch die
+// Uebungs-Statusanzeige (useCoachStatuses) nutzt, nicht nur der Live-Aufbau.
+describe("phaseEntryOverride", () => {
+  const lastHypertrophy: SetEntry = {
+    sets: [
+      { type: "work", weight: 60, reps: 12, targetReps: 12, targetWeight: 60, done: true },
+    ],
+  };
+
+  function entryInput(
+    overrides: Partial<PhaseEntryInput> = {},
+  ): PhaseEntryInput {
+    return {
+      exo: squat,
+      rm: 120,
+      repTarget: [4, 6],
+      bar: { weight: 20 },
+      lastEntry: lastHypertrophy,
+      plates: PLATES,
+      loadFactor: null,
+      suggestion: { weight: 60, targetReps: 12 },
+      ...overrides,
+    };
+  }
+
+  it("greift bei getrennten Baendern: Last aus dem 1RM, Wdh am oberen Bandende", () => {
+    const r = phaseEntryOverride(entryInput());
+    expect(r).toEqual({ weight: 65, targetReps: 6, phaseEntry: true });
+  });
+
+  it("laesst den Vorschlag bei ueberlappenden Baendern unveraendert", () => {
+    // Letztes Band [12,12] beruehrt [10,14] -> kein Sprung.
+    const r = phaseEntryOverride(entryInput({ repTarget: [10, 14] }));
+    expect(r).toEqual({ weight: 60, targetReps: 12, phaseEntry: false });
+  });
+
+  it("laesst den Vorschlag unveraendert, wenn die Journey die Last vorgibt", () => {
+    const r = phaseEntryOverride(
+      entryInput({
+        exo: { ...squat, referenceWeight: 80 },
+        loadFactor: 0.9,
+      }),
+    );
+    expect(r).toEqual({ weight: 60, targetReps: 12, phaseEntry: false });
+  });
+
+  it("greift ohne sauberes 1RM, ohne Stange und ohne letzte Einheit nicht", () => {
+    expect(phaseEntryOverride(entryInput({ rm: null })).phaseEntry).toBe(false);
+    expect(phaseEntryOverride(entryInput({ bar: null })).phaseEntry).toBe(false);
+    expect(phaseEntryOverride(entryInput({ lastEntry: null })).phaseEntry).toBe(false);
+    expect(phaseEntryOverride(entryInput({ repTarget: null })).phaseEntry).toBe(false);
   });
 });
