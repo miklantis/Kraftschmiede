@@ -109,6 +109,80 @@ function topWorkWeight(lastEntry: SetEntry | null): number | null {
   return top;
 }
 
+/** Eingabe fuer den Phasenwechsel-Einstieg: der fertige Vorschlag samt der
+ *  Vordaten, aus denen der Einstieg entschieden wird. */
+export interface PhaseEntryInput {
+  exo: CoachBuildExercise;
+  /** Getestetes 1RM der Uebung (null = keins). */
+  rm: number | null;
+  /** Ziel-Repband, das gerade gilt (activeRepTarget). */
+  repTarget: [number, number] | null;
+  /** Gewaehlte Stange; null ohne Langhantel. */
+  bar: { weight: number } | null;
+  lastEntry: SetEntry | null;
+  plates: number[];
+  loadFactor: number | null;
+  /** Vorschlag des Coaches (suggestWithBar), der ueberschrieben werden kann. */
+  suggestion: { weight: number; targetReps: number };
+}
+
+export interface PhaseEntryResult {
+  weight: number;
+  targetReps: number;
+  /** true = der Einstieg hat gegriffen (Kartenhinweis in der Einheit). */
+  phaseEntry: boolean;
+}
+
+// Phasenwechsel-Einstieg: springt die Zielzone der neuen Phase deutlich (echt
+// getrennt) vom Repband der letzten Einheit weg und liegt ein sauberes 1RM
+// vor, zieht die erste Einheit ihr Startgewicht einmalig aus dem 1RM statt aus
+// der Doppelprogression. Nur Langhantel (Scheiben-Rechnung). Verletzungs-
+// bewusst gedeckelt und abgerundet (workWeightForPhase). Selbstbegrenzt: ab
+// der zweiten Einheit liegt das letzte Band in der neuen Zone -> kein Sprung.
+// Gibt die Journey die Last selbst vor (Lastfaktor-Rampe), steuert sie den
+// Phasenwechsel bereits im Vorschlag - der 1RM-Umweg wuerde dagegenhalten.
+//
+// Exportiert, damit die Uebungs-Statusanzeige (useCoachStatuses) denselben
+// Einstieg anwendet wie die gestartete Einheit; greift der Einstieg nicht,
+// kommt der Vorschlag unveraendert zurueck.
+export function phaseEntryOverride(input: PhaseEntryInput): PhaseEntryResult {
+  const unchanged: PhaseEntryResult = {
+    weight: input.suggestion.weight,
+    targetReps: input.suggestion.targetReps,
+    phaseEntry: false,
+  };
+
+  const ramp = rampLoad(input.exo, input.loadFactor);
+  if (
+    ramp ||
+    input.exo.profile !== "strength" ||
+    !input.repTarget ||
+    !input.bar ||
+    input.rm == null ||
+    !(input.rm > 0)
+  ) {
+    return unchanged;
+  }
+
+  const prev = lastBand(input.lastEntry);
+  if (!prev || !bandsSeparated(prev, input.repTarget)) return unchanged;
+
+  const carried = topWorkWeight(input.lastEntry) ?? input.suggestion.weight;
+  const res = workWeightForPhase(input.rm, input.repTarget, {
+    bar: { weight: input.bar.weight },
+    plates: input.plates,
+    currentWeight: carried,
+  });
+  if (res.decision === "hold") return unchanged;
+
+  return {
+    weight: res.weight,
+    // konservativ am leichteren (oberen) Bandende einsteigen
+    targetReps: input.repTarget[1],
+    phaseEntry: true,
+  };
+}
+
 // Kartenkopf-Tag: getestetes 1RM, sonst die Muskelgruppen.
 function tagFor(exo: LiveBuildExercise, unit: string): string {
   if (exo.rm != null) return "1RM " + fmtNum(exo.rm) + " " + unit;
@@ -156,41 +230,20 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
       loadFactor: input.loadFactor,
     });
 
-    // Phasenwechsel-Einstieg: springt die Zielzone der neuen Phase deutlich (echt
-    // getrennt) vom Repband der letzten Einheit weg und liegt ein sauberes 1RM
-    // vor, zieht die erste Einheit ihr Startgewicht einmalig aus dem 1RM statt aus
-    // der Doppelprogression. Nur Langhantel (Scheiben-Rechnung). Verletzungs-
-    // bewusst gedeckelt und abgerundet (workWeightForPhase). Selbstbegrenzt: ab
-    // der zweiten Einheit liegt das letzte Band in der neuen Zone -> kein Sprung.
-    // Gibt die Journey die Last selbst vor (Lastfaktor-Rampe), steuert sie den
-    // Phasenwechsel bereits im Vorschlag - der 1RM-Umweg wuerde dagegenhalten.
-    const ramp = rampLoad(exo, input.loadFactor);
-    let wWeight = sug.weight;
-    let wReps = sug.targetReps;
-    let phaseEntry = false;
-    if (
-      !ramp &&
-      exo.profile === "strength" &&
-      repTarget &&
-      bar &&
-      exo.rm != null &&
-      exo.rm > 0
-    ) {
-      const prev = lastBand(lastEntry);
-      if (prev && bandsSeparated(prev, repTarget)) {
-        const carried = topWorkWeight(lastEntry) ?? sug.weight;
-        const res = workWeightForPhase(exo.rm, repTarget, {
-          bar: { weight: bar.weight },
-          plates: input.plates,
-          currentWeight: carried,
-        });
-        if (res.decision !== "hold") {
-          wWeight = res.weight;
-          wReps = repTarget[1]; // konservativ am leichteren (oberen) Bandende einsteigen
-          phaseEntry = true;
-        }
-      }
-    }
+    // Phasenwechsel-Einstieg (Regel s. phaseEntryOverride).
+    const entry = phaseEntryOverride({
+      exo,
+      rm: exo.rm,
+      repTarget,
+      bar: bar ? { weight: bar.weight } : null,
+      lastEntry,
+      plates: input.plates,
+      loadFactor: input.loadFactor,
+      suggestion: sug,
+    });
+    const wWeight = entry.weight;
+    const wReps = entry.targetReps;
+    const phaseEntry = entry.phaseEntry;
 
     // Satzzahl: Core fix 3; im freien Training die Satzzahl der letzten Einheit
     // dieser Uebung (ohne Vordaten der Standard), sonst die Phasen-Rampe.

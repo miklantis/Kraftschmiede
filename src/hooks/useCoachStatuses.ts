@@ -6,7 +6,7 @@ import {
   type CoachBuildExercise,
   type CoachStatus,
 } from "@/lib/coach";
-import { activeRepTarget } from "@/lib/liveBuild";
+import { activeRepTarget, phaseEntryOverride } from "@/lib/liveBuild";
 import { buildLastEntries } from "@/lib/lastEntries";
 import { derivePhaseContext } from "@/lib/phaseContext";
 import { todayISO } from "@/lib/format";
@@ -111,7 +111,7 @@ export function useCoachStatuses(): UseCoachStatuses {
         ph.phaseRepTarget,
         hasPhase,
       );
-      const { suggestion } = suggestWithBar(exo, {
+      const { suggestion, bar } = suggestWithBar(exo, {
         phaseFocus: ph.phaseFocus,
         lastEntry,
         bars,
@@ -121,7 +121,24 @@ export function useCoachStatuses(): UseCoachStatuses {
         freeMode,
         loadFactor: ph.loadFactor,
       });
-      out[e.id] = coachStatusFromSuggestion(suggestion, hadPriorData);
+      // Denselben Phasenwechsel-Einstieg anwenden wie der Live-Aufbau, sonst
+      // zeigt die Statusanzeige bei getrennten Repbaendern ein anderes Gewicht
+      // als die gestartete Einheit. Die Coach-Entscheidung (steigern/halten/
+      // senken) bleibt die des Vorschlags - der Einstieg setzt nur die Last.
+      const entry = phaseEntryOverride({
+        exo,
+        rm: e.rm,
+        repTarget,
+        bar: bar ? { weight: bar.weight } : null,
+        lastEntry,
+        plates,
+        loadFactor: ph.loadFactor,
+        suggestion,
+      });
+      out[e.id] = coachStatusFromSuggestion(
+        { ...suggestion, weight: entry.weight, targetReps: entry.targetReps },
+        hadPriorData,
+      );
     }
     return out;
   }, [
