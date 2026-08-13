@@ -11,9 +11,15 @@ import { useEffect } from "react";
 // Sperren gleichzeitig aktiv. Erst greift die erste, erst die letzte gibt frei
 // und springt an die urspruengliche Seitenposition zurueck - sonst wuerde das
 // Schliessen eines Popups die Seite auf Position 0 werfen.
+//
+// Ausnahme: Wird aus dem Popup heraus auf eine andere Seite gewechselt (z. B.
+// Uebungsname im Start-Popup), laeuft die Ausblende-Animation noch, waehrend die
+// neue Seite schon steht. Die gemerkte Position gehoert dann zur alten Seite -
+// zurueckgesprungen wird nur, wenn der Pfad derselbe geblieben ist.
 
 let lockCount = 0;
 let savedY = 0;
+let savedPath = "";
 let savedStyle: {
   position: string;
   top: string;
@@ -23,9 +29,19 @@ let savedStyle: {
   overflow: string;
 } | null = null;
 
+/** Position nach dem Freigeben: gemerkte Stelle auf derselben Seite, sonst oben. */
+export function zielNachFreigabe(
+  gemerkterPfad: string,
+  aktuellerPfad: string,
+  gemerkteY: number,
+): number {
+  return gemerkterPfad === aktuellerPfad ? gemerkteY : 0;
+}
+
 function applyLock(): void {
   const b = document.body;
   savedY = window.scrollY;
+  savedPath = window.location.pathname;
   savedStyle = {
     position: b.style.position,
     top: b.style.top,
@@ -53,7 +69,10 @@ function releaseLock(): void {
     b.style.overflow = savedStyle.overflow;
     savedStyle = null;
   }
-  window.scrollTo(0, savedY);
+  window.scrollTo(
+    0,
+    zielNachFreigabe(savedPath, window.location.pathname, savedY),
+  );
 }
 
 /** Haelt die Seite hinter der Schicht still, solange `locked` gilt. */
