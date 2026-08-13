@@ -21,19 +21,33 @@ import { LoadNoteBanner } from "./LoadNoteBanner";
 //     Karte mit "N x Satz" plus Ziel-Chips (Ziel-Wdh bzw. Ziel-Sekunden); KEIN
 //     Koerper-Banner.
 // "Los geht's" laesst das Popup ausfahren und danach das Panel hereinfahren.
+// Im Workout-Popup ist der Uebungsname eine Schaltflaeche: sie verwirft den noch
+// nicht gestarteten Start (cancelStart) und fuehrt auf die Uebungs-Detailseite.
+// Skill-Uebungen haben keine Katalog-ID und bleiben deshalb reiner Text.
 
 // Satz-Chip wie V1: "Wdh × kg" mit deutschem Komma (z. B. "7 × 25 kg").
 function setChip(reps: number, weight: number): string {
   return reps + " × " + fmtKg(weight) + " kg";
 }
 
-function StartCard({ entry }: { entry: LiveEntry }): React.ReactElement {
+function StartCard({
+  entry,
+  onOpen,
+}: {
+  entry: LiveEntry;
+  onOpen: () => void;
+}): React.ReactElement {
   return (
     <div className="rounded-[14px] bg-card p-4 shadow-card">
-      <div className="flex items-center justify-between">
-        <span className="text-[15px] font-semibold text-foreground">
+      <div className="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={onOpen}
+          aria-label={entry.exerciseName + " öffnen"}
+          className="cursor-pointer rounded-[8px] text-left text-[15px] font-semibold text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+        >
           {entry.exerciseName}
-        </span>
+        </button>
         <span className="text-[13px] text-muted-foreground">
           {entry.sets.length} × Satz
         </span>
@@ -97,6 +111,11 @@ function WorkoutPreview({ p }: { p: WorkoutSession }): React.ReactElement {
     live.cancelStart();
     void navigate({ to: "/koerper" });
   };
+  // Nachschlagen vor dem Start: Start verwerfen, dann zur Uebungsseite.
+  const toExercise = (exerciseId: string): void => {
+    live.cancelStart();
+    void navigate({ to: "/uebungen/$exerciseId", params: { exerciseId } });
+  };
   return (
     <>
       <div className="mb-3 text-[13px] text-muted-foreground">
@@ -126,7 +145,11 @@ function WorkoutPreview({ p }: { p: WorkoutSession }): React.ReactElement {
       )}
       <div className="mb-4 flex flex-col gap-3">
         {p.entries.map((entry, i) => (
-          <StartCard key={entry.exerciseId + i} entry={entry} />
+          <StartCard
+            key={entry.exerciseId + i}
+            entry={entry}
+            onOpen={() => toExercise(entry.exerciseId)}
+          />
         ))}
       </div>
     </>

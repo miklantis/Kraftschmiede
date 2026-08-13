@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.7",
+      "date": "2026-08-13",
+      "changes": [
+        "Im Start-Fenster eines Workouts kannst du jetzt auf einen Übungsnamen tippen und landest direkt auf der Detailseite dieser Übung. Der noch nicht gestartete Workout-Start wird dabei verworfen – du kannst ihn danach wie gewohnt neu öffnen. Bei Skill-Einheiten bleibt die Vorschau unverändert."
+      ]
+    },
+    {
       "version": "1.26.6",
       "date": "2026-08-13",
       "changes": [
