@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.6",
+      "date": "2026-08-13",
+      "changes": [
+        "Im Kalender rutschten in einer Woche mit eingetragenem Zeitraum (z. B. Urlaub) die Workout- und Skill-Markierungen an allen anderen Tagen dieser Woche eine Zeile nach unten und hingen unter einer leeren Lücke. Sie beginnen jetzt wieder direkt unter der Tagesnummer – auf derselben Höhe wie der Zeitraum-Balken daneben."
+      ]
+    },
+    {
       "version": "1.26.5",
       "date": "2026-08-12",
       "changes": [
