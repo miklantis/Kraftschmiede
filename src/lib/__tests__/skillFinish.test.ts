@@ -10,6 +10,7 @@ import type { SkillSession, SkillLiveExercise } from "../liveSession";
 function ex(over: Partial<SkillLiveExercise> = {}): SkillLiveExercise {
   return {
     name: "Dead Hang",
+    exerciseId: null,
     metric: "duration",
     target: 30,
     tempo: null,

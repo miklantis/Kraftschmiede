@@ -85,6 +85,9 @@ export interface SkillLiveSet {
 /** Eine Uebung der laufenden Skill-Einheit (aus der aktuellen Phase). */
 export interface SkillLiveExercise {
   name: string;
+  /** Katalog-Uebung, falls verknuepft. Null (oder in alten, noch laufenden
+   *  Einheiten aus dem Speicher gar nicht vorhanden) heisst: kein Link. */
+  exerciseId: string | null;
   metric: "reps" | "duration";
   target: number;
   tempo: string | null;
@@ -372,6 +375,9 @@ function parseSkillExercises(v: unknown): SkillLiveExercise[] {
       });
       return {
         name: o.name,
+        // Einheiten aus der Zeit vor der Katalog-Verknuepfung haben das Feld
+        // nicht - dann bleibt es null und der Name ist nicht verlinkt.
+        exerciseId: typeof o.exerciseId === "string" ? o.exerciseId : null,
         metric,
         target: num(o.target),
         tempo: typeof o.tempo === "string" ? o.tempo : null,

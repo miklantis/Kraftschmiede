@@ -15,6 +15,8 @@ export interface SkillBuildPhaseExercise {
   target: number;
   sets: number;
   tempo: string | null;
+  /** Katalog-Uebung, falls verknuepft - sonst null (dann kein Link im Popup). */
+  exerciseId: string | null;
 }
 
 /** Eine Phase eines Skills (Definition). */
@@ -83,6 +85,7 @@ export function buildSkillLive(
     metric: e.metric,
     target: e.target,
     tempo: e.tempo ?? null,
+    exerciseId: e.exerciseId ?? null,
     sets: Array.from({ length: Math.max(1, e.sets) }, () => ({
       value: null,
       done: false,

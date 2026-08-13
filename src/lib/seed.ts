@@ -203,6 +203,22 @@ async function seedSkills(userId: string): Promise<void> {
     phaseIdBy.set(`${row.skill_id}:${String(row.position)}`, row.id);
   }
 
+  // Katalog-Uebungen des Nutzers einmal lesen, um exercise_id je Phasen-Uebung
+  // aus dem exerciseKey des Seeds aufzuloesen. Ohne diese Verknuepfung findet
+  // weder der Uebungs-Verlauf die Skill-Saetze noch das Start-Popup die
+  // Detailseite. Fehlt eine Katalog-Uebung, bleibt die Zeile ohne Verknuepfung.
+  const { data: catalog, error: catalogError } = await supabase
+    .from("exercises")
+    .select("id, key")
+    .returns<Array<{ id: string; key: string | null }>>();
+  if (catalogError) {
+    throw new Error(`Uebungskatalog lesen fehlgeschlagen: ${catalogError.message}`);
+  }
+  const exerciseIdByKey = new Map<string, string>();
+  for (const row of catalog ?? []) {
+    if (row.key !== null) exerciseIdByKey.set(row.key, row.id);
+  }
+
   const exInserts: SkillPhaseExerciseInsert[] = [];
   const eqInserts: SkillPhaseEquipmentInsert[] = [];
   for (const s of skillSeeds) {
@@ -222,7 +238,10 @@ async function seedSkills(userId: string): Promise<void> {
           sets: e.sets,
           target: e.target,
           tempo: e.tempo,
-          exercise_id: null,
+          exercise_id:
+            e.exerciseKey === null
+              ? null
+              : (exerciseIdByKey.get(e.exerciseKey) ?? null),
           position: ei,
         });
       });

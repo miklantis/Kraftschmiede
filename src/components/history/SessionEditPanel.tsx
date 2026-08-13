@@ -169,6 +169,8 @@ function toLiveEntry(ex: PanelExercise): LiveEntry {
 function toSkillExercise(ex: SkillPanelExercise): SkillLiveExercise {
   return {
     name: ex.name,
+    // Im Bearbeiten-Modus wird nichts verlinkt, daher keine Katalog-Uebung.
+    exerciseId: null,
     metric: ex.metric,
     target: ex.target,
     tempo: null,

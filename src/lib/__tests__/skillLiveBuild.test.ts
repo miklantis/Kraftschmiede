@@ -13,15 +13,15 @@ const DEF: SkillBuildDef = {
       consecutiveSessions: 2,
       equipment: ["pullup-bar"],
       exercises: [
-        { name: "Dead Hang", metric: "duration", target: 30, sets: 3, tempo: null },
-        { name: "Scapular Pull-Up", metric: "reps", target: 5, sets: 3, tempo: "langsam" },
+        { name: "Dead Hang", metric: "duration", target: 30, sets: 3, tempo: null, exerciseId: "ex-dead-hang" },
+        { name: "Scapular Pull-Up", metric: "reps", target: 5, sets: 3, tempo: "langsam", exerciseId: null },
       ],
     },
     {
       consecutiveSessions: 2,
       equipment: ["pullup-bar", "band-heavy"],
       exercises: [
-        { name: "Band Pull-Up", metric: "reps", target: 6, sets: 3, tempo: null },
+        { name: "Band Pull-Up", metric: "reps", target: 6, sets: 3, tempo: null, exerciseId: "ex-band" },
       ],
     },
   ],
@@ -48,6 +48,12 @@ describe("buildSkillLive", () => {
     expect(dead.sets).toHaveLength(3);
     expect(dead.sets[0]).toEqual({ value: null, done: false, met: false });
     expect(scap.tempo).toBe("langsam");
+  });
+
+  it("reicht die Katalog-Verknuepfung durch, auch wenn sie fehlt", () => {
+    const r = buildSkillLive(DEF, prog());
+    expect(r?.exercises[0].exerciseId).toBe("ex-dead-hang");
+    expect(r?.exercises[1].exerciseId).toBeNull();
   });
 
   it("nutzt die Phase aus dem Fortschritt", () => {

@@ -8,6 +8,7 @@ function satz(over: Partial<SkillLiveSet> = {}): SkillLiveSet {
 function uebung(over: Partial<SkillLiveExercise> = {}): SkillLiveExercise {
   return {
     name: "Klimmzug",
+    exerciseId: null,
     metric: "reps",
     target: 8,
     tempo: null,
