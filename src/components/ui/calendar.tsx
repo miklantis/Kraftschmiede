@@ -75,12 +75,15 @@ export function Calendar({
   // ISO-Tage der Woche (null = Leerzelle) und den Wochenindex und liefert die
   // Balken-Elemente samt Zeilenzahl. Die Balken platzieren sich selbst per
   // gridColumn (colStart / span) und gridRow (Slot ab Zeile 2); der Baustein
-  // reserviert `rows` Zeilen und schiebt die Session-Markierungen entsprechend
-  // nach unten. Rueckgabe null -> die Woche hat keine Baender.
+  // reserviert `rows` Zeilen fuer die Band-Ebene. Optional gibt `colRows` je
+  // Spalte (Index 0 = Montag) an, wie viele Band-Zeilen dort wirklich belegt
+  // sind – Tage ohne Band behalten ihre Markierungen dann direkt unter der
+  // Tagesnummer, statt unter einer leeren Luecke zu haengen. Fehlt colRows,
+  // gelten alle `rows` Zeilen als belegt. Rueckgabe null -> keine Baender.
   renderWeekBands?: (
     weekIsos: (string | null)[],
     weekIndex: number,
-  ) => { rows: number; content: ReactNode } | null;
+  ) => { rows: number; content: ReactNode; colRows?: number[] } | null;
 }): React.ReactElement {
   const today = todayISO();
   const { y, m } = month;
@@ -141,8 +144,12 @@ export function Calendar({
           const bandRows = wb?.rows ?? 0;
           // Zeilenaufbau je Woche: Zeile 1 Nummer, Zeilen 2..(1+bandRows) Baender,
           // Zeile (2+bandRows) Zellinhalt. Der graue Zellhintergrund spannt alle.
-          const inhaltRow = bandRows + 2;
           const bgEndLine = bandRows + 3;
+          // Startzeile des Zellinhalts pro Spalte: nur so weit nach unten, wie in
+          // dieser Spalte tatsaechlich Baender liegen. Der Inhalt spannt bis zum
+          // Zeilenende, damit er die restliche Zellhoehe fuellt.
+          const inhaltRow = (ci: number): number =>
+            (wb?.colRows?.[ci] ?? bandRows) + 2;
           return (
             <div
               key={"w" + wi}
@@ -187,7 +194,7 @@ export function Calendar({
                 iso === null ? null : (
                   <div
                     key={"c" + iso}
-                    style={{ gridColumn: ci + 1, gridRow: inhaltRow }}
+                    style={{ gridColumn: ci + 1, gridRow: inhaltRow(ci) + " / " + bgEndLine }}
                     className="flex flex-col gap-0.5 overflow-hidden px-[3px] pb-1 min-[960px]:px-[5px] min-[960px]:pb-1.5"
                   >
                     {renderCell?.(iso)}

@@ -111,6 +111,15 @@ export function HistorySection(): React.ReactElement {
         const segs = wochenBaender[weekIndex];
         if (!segs || segs.length === 0) return null;
         const rows = segs.reduce((max, s) => Math.max(max, s.slot), 0) + 1;
+        // Je Wochentag zaehlen, bis zu welcher Ebene dort wirklich ein Balken
+        // liegt. Tage ohne Balken behalten so ihre Markierungen direkt unter
+        // der Tagesnummer.
+        const colRows = [0, 0, 0, 0, 0, 0, 0];
+        for (const seg of segs) {
+          for (let c = seg.colStart - 1; c < seg.colStart - 1 + seg.colSpan; c++) {
+            colRows[c] = Math.max(colRows[c] ?? 0, seg.slot + 1);
+          }
+        }
         const content = segs.map((seg) => (
           <span
             key={seg.id + "-" + seg.colStart}
@@ -131,7 +140,7 @@ export function HistorySection(): React.ReactElement {
             {seg.label}
           </span>
         ));
-        return { rows, content };
+        return { rows, content, colRows };
       }}
       renderCell={(iso) => {
         const entries = data.byDate[iso];
