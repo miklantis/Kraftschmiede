@@ -127,6 +127,7 @@ describe("liveSession", () => {
         exercises: [
           {
             name: "Dead Hang",
+            exerciseId: null,
             metric: "duration",
             target: 30,
             tempo: null,
@@ -137,6 +138,7 @@ describe("liveSession", () => {
           },
           {
             name: "Scapular Pull-Up",
+            exerciseId: null,
             metric: "reps",
             target: 5,
             tempo: "langsam",

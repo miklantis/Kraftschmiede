@@ -18,6 +18,8 @@ export interface SkillPhaseAssembled {
     target: number;
     sets: number;
     tempo: string | null;
+    /** Katalog-Uebung, falls verknuepft (fuer Verlauf und Detailseite). */
+    exerciseId: string | null;
   }>;
 }
 
@@ -34,6 +36,7 @@ interface SkillPhaseExerciseLink {
   target: number;
   sets: number;
   tempo: string | null;
+  exercise_id: string | null;
   position: number;
 }
 
@@ -68,7 +71,7 @@ export function useSkills() {
       const rows = await leseZeilen<SkillLink>({
         tabelle: "skills",
         spalten:
-          "id, key, name, position, skill_phases(id, label, consecutive_sessions, position, skill_phase_exercises(name, metric, target, sets, tempo, position), skill_phase_equipment(equipment_key))",
+          "id, key, name, position, skill_phases(id, label, consecutive_sessions, position, skill_phase_exercises(name, metric, target, sets, tempo, exercise_id, position), skill_phase_equipment(equipment_key))",
         sortierung: [{ spalte: "position" }],
       });
       return rows.map((skill) => ({
@@ -94,6 +97,7 @@ export function useSkills() {
                 target: ex.target,
                 sets: ex.sets,
                 tempo: ex.tempo,
+                exerciseId: ex.exercise_id,
               })),
           })),
       }));

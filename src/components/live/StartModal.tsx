@@ -21,13 +21,39 @@ import { LoadNoteBanner } from "./LoadNoteBanner";
 //     Karte mit "N x Satz" plus Ziel-Chips (Ziel-Wdh bzw. Ziel-Sekunden); KEIN
 //     Koerper-Banner.
 // "Los geht's" laesst das Popup ausfahren und danach das Panel hereinfahren.
-// Im Workout-Popup ist der Uebungsname eine Schaltflaeche: sie verwirft den noch
+// In beiden Popups ist der Uebungsname eine Schaltflaeche: sie verwirft den noch
 // nicht gestarteten Start (cancelStart) und fuehrt auf die Uebungs-Detailseite.
-// Skill-Uebungen haben keine Katalog-ID und bleiben deshalb reiner Text.
+// Skill-Uebungen ohne Katalog-Verknuepfung bleiben reiner Text.
 
 // Satz-Chip wie V1: "Wdh × kg" mit deutschem Komma (z. B. "7 × 25 kg").
 function setChip(reps: number, weight: number): string {
   return reps + " × " + fmtKg(weight) + " kg";
+}
+
+// Uebungsname im Kartenkopf. Ohne onOpen (keine Katalog-Uebung hinterlegt)
+// bleibt es bei reinem Text - Optik ist in beiden Faellen dieselbe.
+function CardTitle({
+  name,
+  onOpen,
+}: {
+  name: string;
+  onOpen: (() => void) | null;
+}): React.ReactElement {
+  const base = "text-[15px] font-semibold text-foreground";
+  if (onOpen === null) return <span className={base}>{name}</span>;
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={name + " öffnen"}
+      className={
+        base +
+        " cursor-pointer rounded-[8px] text-left transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+      }
+    >
+      {name}
+    </button>
+  );
 }
 
 function StartCard({
@@ -40,14 +66,7 @@ function StartCard({
   return (
     <div className="rounded-[14px] bg-card p-4 shadow-card">
       <div className="flex items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={onOpen}
-          aria-label={entry.exerciseName + " öffnen"}
-          className="cursor-pointer rounded-[8px] text-left text-[15px] font-semibold text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-        >
-          {entry.exerciseName}
-        </button>
+        <CardTitle name={entry.exerciseName} onOpen={onOpen} />
         <span className="text-[13px] text-muted-foreground">
           {entry.sets.length} × Satz
         </span>
@@ -68,15 +87,17 @@ function StartCard({
 
 function SkillStartCard({
   exercise,
+  onOpen,
 }: {
   exercise: SkillLiveExercise;
+  onOpen: (() => void) | null;
 }): React.ReactElement {
   const target =
     exercise.metric === "duration" ? exercise.target + " s" : exercise.target + " Wdh";
   return (
     <div className="rounded-[14px] bg-card p-4 shadow-card">
-      <div className="flex items-center justify-between">
-        <span className="text-[15px] font-semibold text-foreground">{exercise.name}</span>
+      <div className="flex items-center justify-between gap-3">
+        <CardTitle name={exercise.name} onOpen={onOpen} />
         <span className="text-[13px] text-muted-foreground">
           {exercise.sets.length} × Satz
         </span>
@@ -95,10 +116,22 @@ function SkillStartCard({
   );
 }
 
+// Nachschlagen vor dem Start: Start verwerfen, dann zur Uebungsseite. Beide
+// Vorschauen nutzen dasselbe Verhalten.
+function useToExercise(): (exerciseId: string) => void {
+  const navigate = useNavigate();
+  const live = useLiveSession();
+  return (exerciseId: string): void => {
+    live.cancelStart();
+    void navigate({ to: "/uebungen/$exerciseId", params: { exerciseId } });
+  };
+}
+
 function WorkoutPreview({ p }: { p: WorkoutSession }): React.ReactElement {
   const navigate = useNavigate();
   const bodyQ = useLatestBody();
   const live = useLiveSession();
+  const toExercise = useToExercise();
   // Banner nur, wenn heute noch kein Koerperzustand erfasst ist (V1 todayBody()).
   const todayBodyDone = bodyQ.data?.date === todayISO();
   // Woraus der Coach heute rechnet: letzter Eintrag mit Datum, sonst neutral.
@@ -110,11 +143,6 @@ function WorkoutPreview({ p }: { p: WorkoutSession }): React.ReactElement {
   const toBody = (): void => {
     live.cancelStart();
     void navigate({ to: "/koerper" });
-  };
-  // Nachschlagen vor dem Start: Start verwerfen, dann zur Uebungsseite.
-  const toExercise = (exerciseId: string): void => {
-    live.cancelStart();
-    void navigate({ to: "/uebungen/$exerciseId", params: { exerciseId } });
   };
   return (
     <>
@@ -157,6 +185,7 @@ function WorkoutPreview({ p }: { p: WorkoutSession }): React.ReactElement {
 }
 
 function SkillPreview({ p }: { p: SkillSession }): React.ReactElement {
+  const toExercise = useToExercise();
   return (
     <>
       <div className="mb-3 text-[13px] text-muted-foreground">
@@ -168,9 +197,24 @@ function SkillPreview({ p }: { p: SkillSession }): React.ReactElement {
         </div>
       )}
       <div className="mb-4 flex flex-col gap-3">
-        {p.exercises.map((ex, i) => (
-          <SkillStartCard key={ex.name + i} exercise={ex} />
-        ))}
+        {p.exercises.map((ex, i) => {
+          // Aeltere, noch laufende Einheiten aus dem Speicher kennen das Feld
+          // nicht - dann bleibt der Name reiner Text.
+          const id = ex.exerciseId ?? null;
+          return (
+            <SkillStartCard
+              key={ex.name + i}
+              exercise={ex}
+              onOpen={
+                id === null
+                  ? null
+                  : () => {
+                      toExercise(id);
+                    }
+              }
+            />
+          );
+        })}
       </div>
     </>
   );

@@ -42,6 +42,7 @@ export function useSkillLiveBuilder(): UseSkillLiveBuilder {
               target: e.target,
               sets: e.sets,
               tempo: e.tempo,
+              exerciseId: e.exerciseId,
             })),
           })),
         },

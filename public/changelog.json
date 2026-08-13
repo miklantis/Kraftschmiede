@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.8",
+      "date": "2026-08-13",
+      "changes": [
+        "Auch im Start-Fenster einer Skill-Einheit kannst du jetzt auf einen Übungsnamen tippen und landest direkt auf der Detailseite dieser Übung – wie beim Workout wird der noch nicht gestartete Start dabei verworfen. Dafür wurden die Skill-Übungen von Klimmzug und Liegestütz mit dem Übungskatalog verknüpft; das war bisher nur beim Plank der Fall."
+      ]
+    },
+    {
       "version": "1.26.7",
       "date": "2026-08-13",
       "changes": [
