@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.9",
+      "date": "2026-08-13",
+      "changes": [
+        "Nach einem Seitenwechsel beginnt die neue Seite jetzt immer ganz oben, statt an der Stelle stehenzubleiben, an der die vorherige Seite gescrollt war. Besonders sichtbar beim Tippen auf einen Übungsnamen im Start-Fenster: die Übungsseite öffnet sich am Anfang und rutscht auch nicht mehr nachträglich zurück. Der Zurück-Weg bleibt wie gewohnt – dort landest du wieder an deiner alten Stelle."
+      ]
+    },
+    {
       "version": "1.26.8",
       "date": "2026-08-13",
       "changes": [

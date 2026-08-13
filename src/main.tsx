@@ -22,10 +22,14 @@ initPwaUpdate();
 
 // Router aus dem generierten Routenbaum. basepath folgt dem Vite-base,
 // damit Routing lokal (/) und auf GitHub Pages (/Kraftschmiede/) gleich funktioniert.
+// scrollRestoration: eine neue Seite beginnt oben, Zurueck stellt die vorherige
+// Position wieder her. Gescrollt wird das Dokument selbst (AppShell hat keinen
+// eigenen Scrollbereich), daher genuegt die Option ohne weitere Kennzeichnung.
 const router = createRouter({
   routeTree,
   basepath: import.meta.env.BASE_URL,
   defaultPreload: "intent",
+  scrollRestoration: true,
 });
 
 // Typsicherheit fuer den Router (Links, Params) projektweit.
