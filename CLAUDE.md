@@ -141,6 +141,18 @@ Migration und Code gehoeren zusammen in dieselbe Auslieferung. Die Datenbank hae
 am Deploy: eine ausgefuehrte Migration wirkt sofort, der Code erst nach dem Push auf
 `main` – bei der Rueckmeldung beides sauber auseinanderhalten.
 
+**Kein Datenbank-Eingriff ohne Datei im Repo (ausnahmslos):** Jede Aenderung am Schema
+oder an Stammdaten existiert zuerst als Migrationsdatei und wird erst danach ausgefuehrt –
+egal wie klein sie ist, egal ob sie ueber den Connector oder von Hand im
+Supabase-SQL-Editor laeuft. Auch reine Loeschungen (Spalte oder Tabelle entfernen)
+brauchen eine Datei. Wird direkt in der Datenbank gearbeitet, ohne dass die Datei
+existiert, laesst sich das Schema nicht mehr aus den Migrationen neu aufbauen: der
+Neuaufbau erzeugt dann Stand X, live laeuft Stand Y, und der Unterschied faellt erst
+Monate spaeter auf. Genau so ging Migration 0007 verloren (nachgezogen in
+`0007_exercises_active_entfernen.sql`). Faellt beim Arbeiten auf, dass eine Datei fehlt,
+wird sie sofort nachgezogen, bevor irgendetwas anderes gemacht wird – Nummer beibehalten,
+idempotent geschrieben, sodass sie auf der bestehenden Datenbank folgenlos bleibt.
+
 ## Token-sparsam arbeiten
 
 - Gezielt lesen: nur betroffene Ausschnitte ansehen (grep, Zeilenbereiche), nicht
