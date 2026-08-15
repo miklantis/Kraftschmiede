@@ -68,7 +68,8 @@ export function NumberField({
         onKeyDown={(e) => {
           if (e.key === "Enter") e.currentTarget.blur();
         }}
-        className="h-9 w-[68px] rounded-control border border-border bg-input px-2 text-right text-sm text-foreground tabular-nums outline-none transition-[color,box-shadow,border-color] focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        // 16px auf Mobile verhindert den Auto-Zoom von iOS Safari beim Antippen.
+        className="h-9 w-[68px] rounded-control border border-border bg-input px-2 text-right text-[16px] text-foreground tabular-nums outline-none transition-[color,box-shadow,border-color] focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none min-[960px]:text-sm"
       />
       {suffix != null && suffix !== "" && (
         <span className="select-none">{suffix}</span>

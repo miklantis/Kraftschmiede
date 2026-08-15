@@ -100,7 +100,8 @@ export function DataRestore(): ReactElement {
         onChange={(e) => setText(e.target.value)}
         placeholder="… oder JSON hier einfügen"
         rows={3}
-        className="border-border bg-card w-full rounded-md border p-2 font-mono text-xs"
+        // 16px auf Mobile verhindert den Auto-Zoom von iOS Safari beim Antippen.
+        className="border-border bg-card w-full rounded-md border p-2 font-mono text-[16px] min-[960px]:text-xs"
       />
 
       {parseError !== null ? (

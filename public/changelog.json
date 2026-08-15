@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.18",
+      "date": "2026-08-15",
+      "changes": [
+        "Auf dem iPhone zoomt die App nicht mehr automatisch hinein, wenn man in ein Notiz- oder Zahlenfeld tippt. Das lästige Herauszoomen von Hand entfällt, der Blick auf die Karte bleibt beim Schreiben erhalten."
+      ]
+    },
+    {
       "version": "1.26.17",
       "date": "2026-08-15",
       "changes": [
