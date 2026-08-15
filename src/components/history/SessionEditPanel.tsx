@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Overlay } from "@/components/ui/overlay";
+import { NoteBlock } from "@/components/ui/note-block";
 import { ExerciseLiveCard } from "@/components/live/ExerciseLiveCard";
 import { SkillLiveCard } from "@/components/live/SkillLiveCard";
 import { useSessionsDetailed } from "@/hooks/useSessionsDetailed";
@@ -35,6 +36,8 @@ interface PanelExercise {
   exerciseId: string | null;
   name: string;
   sets: LiveSet[];
+  /** Freitext-Notiz zur Uebung (session_exercises.note). */
+  note: string;
 }
 
 // ---- Skill-Entwurf ----------------------------------------------------------
@@ -47,7 +50,14 @@ interface SkillPanelExercise {
 }
 
 type PanelDraft =
-  | { type: "strength"; date: string; minutes: number; exercises: PanelExercise[] }
+  | {
+      type: "strength";
+      date: string;
+      minutes: number;
+      exercises: PanelExercise[];
+      /** Notiz der ganzen Einheit (sessions.notes). */
+      notes: string;
+    }
   | { type: "skill"; date: string; minutes: number; exercises: SkillPanelExercise[] }
   | { type: "yoga"; date: string; minutes: number; notes: string };
 
@@ -95,8 +105,15 @@ function buildStrengthDraft(
       name:
         (ex.exerciseId ? exName(ex.exerciseId) : undefined) || ex.name || "Übung",
       sets: workSetsOf(ex),
+      note: ex.note ?? "",
     }));
-  return { type: "strength", date: input.date, minutes: minutesOf(input), exercises };
+  return {
+    type: "strength",
+    date: input.date,
+    minutes: minutesOf(input),
+    exercises,
+    notes: input.notes ?? "",
+  };
 }
 
 // ---- Skill-Aufbau -----------------------------------------------------------
@@ -163,8 +180,7 @@ function toLiveEntry(ex: PanelExercise): LiveEntry {
     barWeight: null,
     warmupSets: [],
     sets: ex.sets,
-    // Notizen im Verlauf haengt Schritt 3 von Vorhaben #136 an.
-    note: "",
+    note: ex.note,
   };
 }
 
@@ -236,9 +252,14 @@ export function SessionEditPanel({
     setDraft((d) => (d ? { ...d, minutes: Math.max(0, value) } : d));
   }
 
+  // Notiz der ganzen Einheit – bei Yoga wie bisher, bei Kraft neu (#136).
   function setNotes(value: string): void {
     touch();
-    setDraft((d) => (d && d.type === "yoga" ? { ...d, notes: value } : d));
+    setDraft((d) =>
+      d && (d.type === "yoga" || d.type === "strength")
+        ? { ...d, notes: value }
+        : d,
+    );
   }
 
   // --- Kraft-Mutationen ---
@@ -279,6 +300,11 @@ export function SessionEditPanel({
   }
   function delSet(ei: number): void {
     withLiveEntries((entries) => withRemovedSet(entries, ei));
+  }
+  function setExerciseNote(ei: number, note: string): void {
+    setKraftExercises((exs) =>
+      exs.map((ex, i) => (i !== ei ? ex : { ...ex, note })),
+    );
   }
 
   // --- Skill-Mutationen ---
@@ -338,10 +364,12 @@ export function SessionEditPanel({
         sessionId,
         date: draft.date,
         durationSec,
+        notes: draft.notes,
         exercises: draft.exercises.map((ex) => ({
           sessionExerciseId: ex.sessionExerciseId,
           exerciseId: ex.exerciseId,
           sets: ex.sets,
+          note: ex.note,
         })),
       });
     }
@@ -399,7 +427,9 @@ export function SessionEditPanel({
 
           {/* Uebungen als Live-Karten im Bearbeiten-Modus; Yoga: Notiz */}
           {draft.type === "strength"
-            ? draft.exercises.map((ex, ei) => (
+            ? (
+              <>
+                {draft.exercises.map((ex, ei) => (
                 <ExerciseLiveCard
                   key={ex.sessionExerciseId}
                   entry={toLiveEntry(ex)}
@@ -418,8 +448,17 @@ export function SessionEditPanel({
                   onDelSet={() => delSet(ei)}
                   onChangeBar={() => {}}
                   onCyclePlate={() => {}}
+                  onNote={(note) => setExerciseNote(ei, note)}
                 />
-              ))
+                ))}
+                {/* Notiz zur ganzen Einheit: schlanke Zeile unter allen Karten. */}
+                <NoteBlock
+                  value={draft.notes}
+                  onChange={setNotes}
+                  placeholder="Was ist in dieser Einheit passiert?"
+                />
+              </>
+            )
             : draft.type === "skill"
             ? draft.exercises.map((ex, ei) => (
                 <SkillLiveCard

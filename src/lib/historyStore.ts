@@ -38,6 +38,9 @@ export interface HistoryStore {
   updateSession(id: string, patch: Record<string, unknown>): Promise<void>;
   /** tested_1rm einer session_exercises-Zeile setzen. */
   setTested1RM(sessionExerciseId: string, value: number | null): Promise<void>;
+  /** Felder einer session_exercises-Zeile aktualisieren (z. B. die Notiz).
+   *  Aufrufer reicht nur die gesetzten Felder. */
+  updateSessionExercise(id: string, patch: Record<string, unknown>): Promise<void>;
   /** Katalog-Zeile fortschreiben (Arbeitsgewicht, optional 1RM). */
   updateExercise(id: string, patch: Record<string, unknown>): Promise<void>;
   /** Journey abschliessen: inaktiv, Status archiviert, Enddatum setzen. */
@@ -86,6 +89,9 @@ export const supabaseHistoryStore: HistoryStore = {
         .update({ tested_1rm: value })
         .eq("id", sessionExerciseId),
     );
+  },
+  async updateSessionExercise(id, patch) {
+    must(await supabase.from("session_exercises").update(patch).eq("id", id));
   },
   async updateExercise(id, patch) {
     must(await supabase.from("exercises").update(patch).eq("id", id));
@@ -145,6 +151,7 @@ export interface MemoryHistoryLog {
   replacedWorkSets: Array<{ sessionExerciseId: string; rows: SetRowIns[] }>;
   sessionPatches: Array<{ id: string; patch: Record<string, unknown> }>;
   tested1RM: Array<{ sessionExerciseId: string; value: number | null }>;
+  sessionExercisePatches: Array<{ id: string; patch: Record<string, unknown> }>;
   exercisePatches: Array<{ id: string; patch: Record<string, unknown> }>;
   skillProgress: SkillProgressWrite[];
   archivedJourneys: Array<{ id: string; endDate: string }>;
@@ -164,6 +171,7 @@ export function createMemoryHistoryStore(): {
     replacedWorkSets: [],
     sessionPatches: [],
     tested1RM: [],
+    sessionExercisePatches: [],
     exercisePatches: [],
     skillProgress: [],
     archivedJourneys: [],
@@ -187,6 +195,9 @@ export function createMemoryHistoryStore(): {
     },
     async setTested1RM(sessionExerciseId, value) {
       log.tested1RM.push({ sessionExerciseId, value });
+    },
+    async updateSessionExercise(id, patch) {
+      log.sessionExercisePatches.push({ id, patch });
     },
     async updateExercise(id, patch) {
       log.exercisePatches.push({ id, patch });

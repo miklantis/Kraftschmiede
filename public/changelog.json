@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.13",
+      "date": "2026-08-15",
+      "changes": [
+        "Notizen erscheinen jetzt auch im Verlauf: Klappst du ein altes Kraft- oder Skill-Training auf, stehen die Notizen zur Übung unter den Sätzen und die Notiz zur Einheit ganz unten. Im Bearbeiten-Panel lassen sie sich nachträglich ändern, ergänzen oder entfernen – eine leere Notiz löscht den Eintrag."
+      ]
+    },
+    {
       "version": "1.26.12",
       "date": "2026-08-15",
       "changes": [

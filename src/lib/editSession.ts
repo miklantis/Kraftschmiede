@@ -40,6 +40,9 @@ export interface EditDraftExercise {
   /** Katalog-Bezug (fuer das Coach-Nachziehen); null bei katalogfreier Uebung. */
   exerciseId: string | null;
   sets: EditDraftSet[];
+  /** Freitext-Notiz zur Uebung (session_exercises.note). Leer = keine Notiz;
+   *  undefined = nicht anfassen. */
+  note?: string;
 }
 
 export interface EditContext {
@@ -49,6 +52,8 @@ export interface EditContext {
   userId: string;
   rmFormula: RmFormula;
   exercises: EditDraftExercise[];
+  /** Notiz der ganzen Einheit (sessions.notes); undefined = nicht anfassen. */
+  notes?: string;
   /** Ist die bearbeitete Einheit die juengste mit dieser Uebung? Steuert das
    *  Coach-Nachziehen (true = Katalog fortschreiben). */
   isYoungest: (exerciseId: string) => boolean;
@@ -68,6 +73,10 @@ export interface EditExerciseWrite {
   sessionExerciseId: string;
   tested1RM: number | null;
   workSetRows: Array<SetInsert & { id: string }>;
+  /** Notiz der Uebung; undefined = unveraendert lassen. Haengt bewusst an
+   *  session_exercises und nicht am Satz – das Ersetzen der Arbeitssaetze
+   *  laesst sie unberuehrt. */
+  note?: string;
 }
 
 /** Fertiges Schreib-Paket der Bearbeitung (alle IDs vergeben). */
@@ -76,7 +85,8 @@ export interface EditPayload {
   durationSec: number | null;
   /** Yoga: Minuten der Einheit (sessions.minutes). undefined = nicht anfassen. */
   minutes?: number | null;
-  /** Yoga: Notiz (sessions.notes). undefined = nicht anfassen. */
+  /** Notiz der Einheit (sessions.notes). undefined = nicht anfassen. Wird von
+   *  Yoga und Kraft gleichermassen genutzt – eine Spalte, ein Weg. */
   notes?: string;
   exercises: EditExerciseWrite[];
   exercisePatches: ExercisePatch[];
@@ -107,6 +117,7 @@ export function buildEditPayload(ctx: EditContext): EditPayload {
       sessionExerciseId: ex.sessionExerciseId,
       tested1RM: work.est1RM,
       workSetRows: work.setRows,
+      ...(ex.note !== undefined ? { note: ex.note.trim() } : {}),
     });
 
     // Coach nur bei der juengsten Einheit dieser Uebung fortschreiben.
@@ -128,6 +139,7 @@ export function buildEditPayload(ctx: EditContext): EditPayload {
   return {
     sessionId: ctx.sessionId,
     durationSec: ctx.durationSec,
+    ...(ctx.notes !== undefined ? { notes: ctx.notes.trim() } : {}),
     exercises,
     exercisePatches,
   };

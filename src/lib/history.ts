@@ -41,6 +41,9 @@ export interface HistoryExercise {
   position: number;
   sets: HistorySet[];
   tested1RM?: number | null;
+  /** Freitext-Notiz zur Uebung (session_exercises.note). Optional, weil aeltere
+   *  Aufrufer sie nicht mitliefern; leer = keine Notiz. */
+  note?: string;
 }
 
 export interface HistorySessionInput {
@@ -201,25 +204,44 @@ function durationLabel(s: HistorySessionInput): string {
   return s.durationSec ? Math.round(s.durationSec / 60) + " min" : "";
 }
 
+// Notiz einer Uebung als zusaetzliche Zeile unter den Saetzen (Vorhaben #136).
+// Sie laeuft bewusst durch dieselbe `lines`-Liste wie die Saetze, damit die
+// Verlaufskarte generisch bleibt.
+function withExerciseNote(lines: string[], ex: HistoryExercise): string[] {
+  const note = ex.note?.trim();
+  return note ? [...lines, "Notiz: " + note] : lines;
+}
+
+// Notiz der Einheit als eigene Zeile ganz unten – fuer alle Arten gleich
+// (frueher nur Yoga).
+function sessionNoteRow(s: HistorySessionInput): DetailRow[] {
+  const note = s.notes?.trim();
+  return note ? [{ label: "Notiz", lines: [note] }] : [];
+}
+
 function detailRows(s: HistorySessionInput, lk: HistoryLookups): DetailRow[] {
-  if (s.type === "yoga") {
-    return s.notes ? [{ label: "Notiz", lines: [s.notes] }] : [];
-  }
+  if (s.type === "yoga") return sessionNoteRow(s);
   const sorted = s.exercises.slice().sort((a, b) => a.position - b.position);
   if (s.type === "skill") {
-    return sorted.map((ex) => ({
-      label: ex.name || "Skill",
-      lines: skillLines(ex),
-    }));
+    return [
+      ...sorted.map((ex) => ({
+        label: ex.name || "Skill",
+        lines: withExerciseNote(skillLines(ex), ex),
+      })),
+      ...sessionNoteRow(s),
+    ];
   }
-  return sorted.map((ex) => ({
-    label:
-      (ex.exerciseId && lk.exerciseName(ex.exerciseId)) ||
-      ex.name ||
-      ex.exerciseId ||
-      "Übung",
-    lines: strengthLines(ex),
-  }));
+  return [
+    ...sorted.map((ex) => ({
+      label:
+        (ex.exerciseId && lk.exerciseName(ex.exerciseId)) ||
+        ex.name ||
+        ex.exerciseId ||
+        "Übung",
+      lines: withExerciseNote(strengthLines(ex), ex),
+    })),
+    ...sessionNoteRow(s),
+  ];
 }
 
 // --- Modellaufbau ---------------------------------------------------------
