@@ -112,7 +112,8 @@ Begründung in ADR-0003.
   duration_sec, minutes (yoga), notes, started_at, body (jsonb Befinden-Snapshot),
   general_warmup (jsonb), skill_phase, skill_result (completed/missed/skipped)
 - **session_exercises** – Übung-in-Einheit: session_id (FK), exercise_id
-  (FK, nullable), name, bar_id (FK), metric, tested_1rm, suggestion (jsonb), position
+  (FK, nullable), name, bar_id (FK), metric, tested_1rm, suggestion (jsonb), position,
+  note (Freitext-Notiz zur Übung, Leerstring = keine Notiz, Migration 0025)
 - **sets** – session_exercise_id (FK), kind (warmup/work), position, reps, weight,
   duration_sec, score, failed, done, target_reps, target_weight, target_score, adjusted,
   adjust_note, met (Skill: Ziel erreicht)
@@ -130,7 +131,8 @@ Begründung in ADR-0003.
   (weight/fat/muscle/muscle_mass/water/phase/bmr), name, target, position
   (Migration 0012, erweitert in 0021)
 - **rm_tests** – bewusste 1RM-Tests je Übung: exercise_id (FK), date, weight, reps, est_rm,
-  previous_rm (Rekord vor dem Test, nullable), created_at (Migration 0013). Bewusst ohne
+  previous_rm (Rekord vor dem Test, nullable), notiz (Freitext-Notiz zum Test, Leerstring
+  = keine Notiz, Migration 0025), created_at (Migration 0013). Bewusst ohne
   Bezug zu `sessions`: ein Test ist keine Trainingseinheit und zählt nirgends als solche
 - **settings** – user_id (PK), rm_formula, weekly_frequency_target, weight_step, unit,
   recovery_windows (jsonb), timers (jsonb)

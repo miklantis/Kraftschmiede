@@ -75,6 +75,9 @@ export const sessionExerciseRow = z.object({
   tested_1rm: z.number().nullable(),
   suggestion: suggestionSchema,
   position: z.number().int(),
+  // Freitext-Notiz zur Uebung ("hier abgebrochen", "fiel schwer"). Leerstring
+  // = keine Notiz, nie null (Migration 0025).
+  note: z.string(),
 });
 export type SessionExerciseRow = z.infer<typeof sessionExerciseRow>;
 
@@ -88,6 +91,7 @@ export const sessionExerciseInsert = sessionExerciseRow
     tested_1rm: true,
     suggestion: true,
     position: true,
+    note: true,
   });
 export type SessionExerciseInsert = z.infer<typeof sessionExerciseInsert>;
 

@@ -16,11 +16,13 @@ export const rmTestRow = z.object({
   reps: z.number().int(),
   est_rm: z.number(),
   previous_rm: z.number().nullable(),
+  // Freitext-Notiz zum Test. Leerstring = keine Notiz, nie null (Migration 0025).
+  notiz: z.string(),
   created_at: isoTimestamp,
 });
 export type RmTestRow = z.infer<typeof rmTestRow>;
 
 export const rmTestInsert = rmTestRow
   .omit({ id: true, created_at: true })
-  .partial({ previous_rm: true });
+  .partial({ previous_rm: true, notiz: true });
 export type RmTestInsert = z.infer<typeof rmTestInsert>;
