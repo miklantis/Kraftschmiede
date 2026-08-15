@@ -90,6 +90,9 @@ export interface DetailRow {
   // Eine Angabe je Arbeitssatz (Kraft/Skill); bei der Yoga-Notiz eine einzelne
   // Zeile. So kann die Karte jeden Satz untereinander zeigen.
   lines: string[];
+  /** Notiz der Uebung – wird in der Karte mit Abstand unter den Saetzen
+   *  gezeigt, ohne Praefix. */
+  note?: string;
 }
 
 // Anzeigefertige Einheit fuer die Liste.
@@ -207,12 +210,11 @@ function durationLabel(s: HistorySessionInput): string {
   return s.durationSec ? Math.round(s.durationSec / 60) + " min" : "";
 }
 
-// Notiz einer Uebung als zusaetzliche Zeile unter den Saetzen (Vorhaben #136).
-// Sie laeuft bewusst durch dieselbe `lines`-Liste wie die Saetze, damit die
-// Verlaufskarte generisch bleibt.
-function withExerciseNote(lines: string[], ex: HistoryExercise): string[] {
+// Notiz einer Uebung als eigenes Feld neben den Satz-Zeilen (Vorhaben #136).
+// Die Karte setzt sie mit Abstand unter die Saetze und ohne Praefix.
+function exerciseNote(ex: HistoryExercise): string | undefined {
   const note = ex.note?.trim();
-  return note ? [...lines, "Notiz: " + note] : lines;
+  return note ? note : undefined;
 }
 
 // Notiz der Einheit als eigene Zeile ganz unten – fuer alle Arten gleich
@@ -229,7 +231,8 @@ function detailRows(s: HistorySessionInput, lk: HistoryLookups): DetailRow[] {
     return [
       ...sorted.map((ex) => ({
         label: ex.name || "Skill",
-        lines: withExerciseNote(skillLines(ex), ex),
+        lines: skillLines(ex),
+        note: exerciseNote(ex),
       })),
       ...sessionNoteRow(s),
     ];
@@ -241,7 +244,8 @@ function detailRows(s: HistorySessionInput, lk: HistoryLookups): DetailRow[] {
         ex.name ||
         ex.exerciseId ||
         "Übung",
-      lines: withExerciseNote(strengthLines(ex), ex),
+      lines: strengthLines(ex),
+      note: exerciseNote(ex),
     })),
     ...sessionNoteRow(s),
   ];

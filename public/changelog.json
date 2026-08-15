@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.20",
+      "date": "2026-08-15",
+      "changes": [
+        "Im Verlauf steht die Übungs-Notiz jetzt mit etwas Abstand unter den Sätzen statt direkt daran zu kleben, und sie wird ohne das vorangestellte „Notiz:“ gezeigt – nur noch der Text selbst."
+      ]
+    },
+    {
       "version": "1.26.19",
       "date": "2026-08-15",
       "changes": [
