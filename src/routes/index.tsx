@@ -10,6 +10,7 @@ import { PhaseBar } from "@/components/ui/phase-bar";
 import { WorkoutIcon, YogaIcon } from "@/components/ui/training-icons";
 import { TwoColumn } from "@/components/ui/two-column";
 import { PageReveal } from "@/components/ui/page-reveal";
+import { SkillTitle } from "@/components/skills/SkillTitle";
 import { JourneyStrip } from "@/components/training/JourneyStrip";
 import { UpdateBanner } from "@/components/training/UpdateBanner";
 import { RecommendedWorkout } from "@/components/training/RecommendedWorkout";
@@ -152,8 +153,7 @@ function TrainingPage(): React.ReactElement {
             data.skills.map((sk) => (
               <ListRow
                 key={sk.id}
-                title={sk.name}
-                subtitle={sk.subtitle}
+                title={<SkillTitle name={sk.name} phaseLabel={sk.phaseLabel} />}
                 footer={
                   <PhaseBar
                     index={sk.phaseIndex}

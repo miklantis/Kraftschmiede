@@ -39,7 +39,8 @@ export interface WorkoutCard {
 export interface SkillCard {
   id: string;
   name: string;
-  subtitle: string;
+  /** Name der aktuellen Phase - steht klein und grau neben dem Skill-Namen. */
+  phaseLabel: string;
   gated: boolean;
   /** Nullbasierter Index der aktuellen Phase – fuer den Phasen-Balken. */
   phaseIndex: number;
@@ -297,17 +298,10 @@ export function useTrainingOverview(): {
         ownedKeys,
       );
       const ph = def.phases[adv.phaseIndex];
-      const subtitle =
-        "Phase " +
-        (adv.phaseIndex + 1) +
-        " / " +
-        def.phases.length +
-        (ph ? " · " + ph.label : "") +
-        (adv.equipmentMissing ? " · Gerät fehlt" : "");
       return {
         id: def.id,
         name: def.name,
-        subtitle,
+        phaseLabel: ph?.label ?? "",
         gated: adv.equipmentMissing,
         phaseIndex: adv.phaseIndex,
         phaseCount: def.phases.length,

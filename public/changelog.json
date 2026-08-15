@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.10",
+      "date": "2026-08-15",
+      "changes": [
+        "Skills werden auf der Trainingsseite und der Skills-Seite jetzt schlichter angezeigt: nur noch zwei Zeilen. Neben dem Skill-Namen steht klein und grau der Name der aktuellen Phase, darunter der Fortschrittsbalken. Die Zeile \"Phase 1 / 10\" entfällt, weil der Balken denselben Stand schon zeigt."
+      ]
+    },
+    {
       "version": "1.26.9",
       "date": "2026-08-13",
       "changes": [
