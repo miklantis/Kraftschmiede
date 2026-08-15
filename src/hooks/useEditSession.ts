@@ -21,9 +21,12 @@ export interface EditSaveInput {
   /** Datum der bearbeiteten Einheit (ISO) – fuer die „nur juengste“-Regel. */
   date: string;
   durationSec: number | null;
+  /** Notiz der Einheit (sessions.notes); undefined = nicht anfassen. */
+  notes?: string;
   exercises: Array<
     Pick<EditDraftExercise, "sessionExerciseId" | "exerciseId"> & {
       sets: EditDraftExercise["sets"];
+      note?: string;
     }
   >;
 }
@@ -97,10 +100,12 @@ export function useEditSession(): UseEditSession {
         userId,
         rmFormula,
         date: input.date,
+        notes: input.notes,
         exercises: input.exercises.map((e) => ({
           sessionExerciseId: e.sessionExerciseId,
           exerciseId: e.exerciseId,
           sets: e.sets,
+          note: e.note,
         })),
         isYoungest,
         tracksRm,

@@ -46,6 +46,50 @@ describe("buildEditPayload", () => {
     expect(rows[0].weight).toBe(100);
   });
 
+  it("reicht Notizen durch und schneidet Leerraum ab", () => {
+    const p = buildEditPayload(
+      ctx({
+        notes: "  zaeh  ",
+        exercises: [
+          {
+            sessionExerciseId: "se1",
+            exerciseId: "ex1",
+            note: "  Schulter  ",
+            sets: [
+              { reps: 5, weight: 100, score: 3, targetReps: 5, targetWeight: 100, adjusted: false, adjustNote: "" },
+            ],
+          },
+        ],
+      }),
+    );
+    expect(p.notes).toBe("zaeh");
+    expect(p.exercises[0].note).toBe("Schulter");
+  });
+
+  it("ohne Notizen bleiben die Felder ungesetzt", () => {
+    const p = buildEditPayload(ctx());
+    expect(p.notes).toBeUndefined();
+    expect(p.exercises[0].note).toBeUndefined();
+  });
+
+  it("leere Notiz entfernt sie (leerer Text statt undefined)", () => {
+    const p = buildEditPayload(
+      ctx({
+        notes: "   ",
+        exercises: [
+          {
+            sessionExerciseId: "se1",
+            exerciseId: "ex1",
+            note: "",
+            sets: [],
+          },
+        ],
+      }),
+    );
+    expect(p.notes).toBe("");
+    expect(p.exercises[0].note).toBe("");
+  });
+
   it("reicht die Dauer durch", () => {
     expect(buildEditPayload(ctx({ durationSec: 1800 })).durationSec).toBe(1800);
     expect(buildEditPayload(ctx({ durationSec: null })).durationSec).toBeNull();

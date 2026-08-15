@@ -33,6 +33,7 @@ interface SessionExerciseLite {
   metric: "reps" | "duration" | null;
   position: number;
   tested_1rm: number | null;
+  note: string | null;
   sets: SetRowLite[];
 }
 
@@ -47,7 +48,7 @@ export function useSessionsDetailed() {
       >({
         tabelle: "sessions",
         spalten:
-          "*, session_exercises(id, exercise_id, name, metric, position, tested_1rm, sets(kind, reps, weight, duration_sec, score, adjusted, adjust_note, done, failed, met, target_reps, target_weight))",
+          "*, session_exercises(id, exercise_id, name, metric, position, tested_1rm, note, sets(kind, reps, weight, duration_sec, score, adjusted, adjust_note, done, failed, met, target_reps, target_weight))",
         gleich: { status: "done" },
         sortierung: [{ spalte: "date" }],
       });
@@ -69,6 +70,7 @@ export function useSessionsDetailed() {
           metric: se.metric,
           position: se.position,
           tested1RM: se.tested_1rm,
+          note: se.note ?? "",
           sets: (se.sets ?? []).map((s) => ({
             kind: s.kind,
             reps: s.reps,

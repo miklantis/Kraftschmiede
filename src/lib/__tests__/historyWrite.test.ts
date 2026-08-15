@@ -143,6 +143,34 @@ describe("writeEditSession", () => {
     };
   }
 
+  it("schreibt Notizen: Einheit und Uebung", async () => {
+    const { store, log } = createMemoryHistoryStore();
+    await writeEditSession(
+      store,
+      editPayload({
+        notes: "insgesamt zaeh",
+        exercises: [
+          {
+            sessionExerciseId: "se1",
+            tested1RM: null,
+            workSetRows: [],
+            note: "linke Schulter",
+          },
+        ],
+      }),
+    );
+    expect(log.sessionPatches[0].patch.notes).toBe("insgesamt zaeh");
+    expect(log.sessionExercisePatches).toEqual([
+      { id: "se1", patch: { note: "linke Schulter" } },
+    ]);
+  });
+
+  it("laesst die Notiz der Uebung unberuehrt, wenn keine mitkommt", async () => {
+    const { store, log } = createMemoryHistoryStore();
+    await writeEditSession(store, editPayload());
+    expect(log.sessionExercisePatches).toEqual([]);
+  });
+
   it("ersetzt je Uebung die Arbeitssaetze und setzt tested_1rm", async () => {
     const { store, log } = createMemoryHistoryStore();
     await writeEditSession(store, editPayload());

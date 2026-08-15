@@ -138,6 +138,44 @@ describe("Detail-Aufbereitung", () => {
     expect(hs.durationLabel).toBe("30 min");
     expect(hs.detail).toEqual([{ label: "Notiz", lines: ["Rücken locker"] }]);
   });
+
+  it("Kraft: Uebungs-Notiz als Zeile unter den Saetzen", () => {
+    const s = strength({
+      exercises: [
+        {
+          exerciseId: "ex1",
+          name: null,
+          metric: "reps",
+          position: 0,
+          note: "  fiel schwer  ",
+          sets: [
+            { kind: "work", reps: 5, weight: 100, durationSec: null, adjusted: false },
+          ],
+        },
+      ],
+    });
+    const hs = buildHistorySession(s, lk);
+    expect(hs.detail[0].lines[hs.detail[0].lines.length - 1]).toBe(
+      "Notiz: fiel schwer",
+    );
+  });
+
+  it("Kraft: Einheit-Notiz als eigene Zeile ganz unten", () => {
+    const s = strength({ notes: "Rücken zwickt" });
+    const hs = buildHistorySession(s, lk);
+    expect(hs.detail[hs.detail.length - 1]).toEqual({
+      label: "Notiz",
+      lines: ["Rücken zwickt"],
+    });
+  });
+
+  it("ohne Notizen bleibt der Verlauf unveraendert", () => {
+    const hs = buildHistorySession(strength({}), lk);
+    expect(hs.detail.some((r) => r.label === "Notiz")).toBe(false);
+    expect(hs.detail.every((r) => r.lines.every((l) => !l.startsWith("Notiz")))).toBe(
+      true,
+    );
+  });
 });
 
 describe("Modellaufbau", () => {

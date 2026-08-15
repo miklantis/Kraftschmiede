@@ -96,6 +96,11 @@ export async function writeEditSession(
   for (const ex of payload.exercises) {
     await store.replaceWorkSets(ex.sessionExerciseId, ex.workSetRows);
     await store.setTested1RM(ex.sessionExerciseId, ex.tested1RM);
+    // Die Notiz haengt an der Uebungszeile, nicht am Satz – das Ersetzen der
+    // Arbeitssaetze darueber laesst sie unberuehrt.
+    if (ex.note !== undefined) {
+      await store.updateSessionExercise(ex.sessionExerciseId, { note: ex.note });
+    }
   }
 
   for (const p of payload.exercisePatches) {
