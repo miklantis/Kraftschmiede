@@ -139,7 +139,7 @@ describe("Detail-Aufbereitung", () => {
     expect(hs.detail).toEqual([{ label: "Notiz", lines: ["Rücken locker"] }]);
   });
 
-  it("Kraft: Uebungs-Notiz als Zeile unter den Saetzen", () => {
+  it("Kraft: Uebungs-Notiz als eigenes Feld, ohne Praefix", () => {
     const s = strength({
       exercises: [
         {
@@ -155,9 +155,8 @@ describe("Detail-Aufbereitung", () => {
       ],
     });
     const hs = buildHistorySession(s, lk);
-    expect(hs.detail[0].lines[hs.detail[0].lines.length - 1]).toBe(
-      "Notiz: fiel schwer",
-    );
+    expect(hs.detail[0].note).toBe("fiel schwer");
+    expect(hs.detail[0].lines).toEqual(["5 × 100 kg"]);
   });
 
   it("Kraft: Einheit-Notiz als eigene Zeile ganz unten", () => {

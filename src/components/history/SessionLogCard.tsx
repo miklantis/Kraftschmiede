@@ -98,6 +98,12 @@ export function SessionLogCard({
                     <span>{line}</span>
                   </li>
                 ))}
+                {row.note && (
+                  <li className="mt-2 flex items-baseline gap-2 font-mono text-[13px] text-muted-foreground">
+                    <span className="flex-none text-primary/40">•</span>
+                    <span>{row.note}</span>
+                  </li>
+                )}
               </ul>
             </div>
           ))}
