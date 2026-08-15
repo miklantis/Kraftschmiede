@@ -28,6 +28,7 @@ function entry(over: Partial<LiveEntry> = {}): LiveEntry {
     barWeight: 20,
     warmupSets: [],
     sets: [],
+    note: "",
     ...over,
   };
 }
@@ -44,6 +45,7 @@ function session(entries: LiveEntry[]): WorkoutSession {
     startedAt: 1_000_000,
     generalWarmup: { sets: [{ minutes: 7, mode: "bike", done: true }] },
     focusEi: null,
+    note: "",
     entries,
   };
 }
@@ -166,5 +168,40 @@ describe("buildFinishRows", () => {
     expect(rows.sessionRow.week).toBe(7);
     expect(rows.sessionRow.duration_sec).toBe(90);
     expect(rows.sessionRow.body?.pain_flag).toBe(true);
+  });
+});
+
+describe("Notizen (Vorhaben #136)", () => {
+  it("schreibt Uebungs- und Einheit-Notiz in die Zeilen", () => {
+    counter = 0;
+    const s = session([entry({ note: "hier abgebrochen", sets: [set({ done: true })] })]);
+    const rows = buildFinishRows({
+      session: { ...s, note: "insgesamt schwer" },
+      userId: "u1",
+      rmFormula: "mean",
+      body: { legs: 0, upper_body: 0, overall: 0, readiness: 3, pain_flag: false, pain_note: "", notes: "" },
+      week: null,
+      date: "2026-06-23",
+      endedAt: 1_000_000,
+      newId,
+    });
+    expect(rows.sessionRow.notes).toBe("insgesamt schwer");
+    expect(rows.exerciseRows[0].note).toBe("hier abgebrochen");
+  });
+
+  it("laesst die Felder leer, wenn nichts notiert wurde", () => {
+    counter = 0;
+    const rows = buildFinishRows({
+      session: session([entry({ sets: [set({ done: true })] })]),
+      userId: "u1",
+      rmFormula: "mean",
+      body: { legs: 0, upper_body: 0, overall: 0, readiness: 3, pain_flag: false, pain_note: "", notes: "" },
+      week: null,
+      date: "2026-06-23",
+      endedAt: 1_000_000,
+      newId,
+    });
+    expect(rows.sessionRow.notes).toBe("");
+    expect(rows.exerciseRows[0].note).toBe("");
   });
 });

@@ -19,6 +19,7 @@ import {
 import {
   withAppendedSet,
   withBar,
+  withEntryNote,
   withRemovedSet,
   withSetDone,
   withSetValue,
@@ -442,6 +443,21 @@ function delSet(ei: number): void {
   applyEntries((entries) => withRemovedSet(entries, ei));
 }
 
+/** Notiz einer Uebung setzen (leerer Text entfernt sie). Wie alle Aenderungen
+ *  waehrend der Einheit nur lokal - geschrieben wird erst beim Beenden. */
+function setEntryNote(ei: number, note: string): void {
+  applyEntries((entries) => withEntryNote(entries, ei, note));
+}
+
+/** Notiz zur ganzen Einheit setzen (nur Workout; leerer Text entfernt sie). */
+function setSessionNote(note: string): void {
+  const s = state.session;
+  if (s == null || s.kind !== "workout") return;
+  const next = note.trim();
+  if (s.note === next) return;
+  set({ session: { ...s, note: next } });
+}
+
 /** Stange einer Langhantel-Uebung wechseln. */
 function changeBar(ei: number, bar: { id: string; name: string; weight: number }): void {
   applyEntries((entries) => withBar(entries, ei, bar));
@@ -538,6 +554,8 @@ export interface UseLiveSession extends LiveState {
   addSet: (ei: number) => void;
   delSet: (ei: number) => void;
   changeBar: (ei: number, bar: LiveBarChoice) => void;
+  setEntryNote: (ei: number, note: string) => void;
+  setSessionNote: (note: string) => void;
   cyclePlateMode: (ei: number) => void;
   commitGeneralWarmupMinutes: (si: number, value: number) => void;
   setGeneralWarmupMode: (si: number, mode: string) => void;
@@ -578,6 +596,8 @@ export function useLiveSession(): UseLiveSession {
     addSet,
     delSet,
     changeBar,
+    setEntryNote,
+    setSessionNote,
     cyclePlateMode,
     commitGeneralWarmupMinutes,
     setGeneralWarmupMode,

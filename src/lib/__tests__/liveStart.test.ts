@@ -22,6 +22,7 @@ function entry(over: Partial<LiveEntry> = {}): LiveEntry {
     barName: "Standard",
     barWeight: 20,
     warmupSets: [{ reps: 5, weight: 40, done: false }],
+    note: "",
     sets: [],
     ...over,
   };

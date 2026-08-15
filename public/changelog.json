@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.12",
+      "date": "2026-08-15",
+      "changes": [
+        "Im laufenden Kraft-Workout lassen sich jetzt Notizen festhalten: je Übung ein schlanker \"+ Notiz\"-Knopf neben \"+ Satz\", und ganz unten im Panel eine Notiz zur ganzen Einheit. Getippter Text bleibt beim Neuladen erhalten und wird beim Beenden mitgespeichert. Ohne Notiz steht nur der kleine Knopf da – kein leeres Feld im Weg."
+      ]
+    },
+    {
       "version": "1.26.11",
       "date": "2026-08-15",
       "changes": [

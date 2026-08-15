@@ -281,6 +281,7 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
       barWeight: bar?.weight ?? null,
       warmupSets: warm,
       sets,
+      note: "",
     });
   });
 

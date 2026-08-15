@@ -132,6 +132,17 @@ export function withRemovedSet(entries: LiveEntry[], ei: number): LiveEntry[] {
   );
 }
 
+/** Notiz einer Uebung setzen oder (leerer Text) entfernen. Unveraenderte Notiz
+ *  laesst die Referenzen stehen. */
+export function withEntryNote(
+  entries: LiveEntry[],
+  ei: number,
+  note: string,
+): LiveEntry[] {
+  const next = note.trim();
+  return mapEntry(entries, ei, (e) => (e.note === next ? e : { ...e, note: next }));
+}
+
 /** Stange einer Langhantel-Uebung wechseln. */
 export function withBar(
   entries: LiveEntry[],

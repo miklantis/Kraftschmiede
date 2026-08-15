@@ -92,6 +92,7 @@ describe("Korrektur im Verlauf ueber die Live-Satzlogik", () => {
     barName: null,
     barWeight: null,
     warmupSets: [],
+    note: "",
     sets: [
       {
         reps: 5,

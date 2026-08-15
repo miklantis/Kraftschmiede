@@ -29,6 +29,7 @@ const SESSION: WorkoutSession = {
       barName: "Olympia",
       barWeight: 20,
       warmupSets: [{ reps: 5, weight: 20, done: false }],
+      note: "Ellenbogen zwickt",
       sets: [
         {
           reps: 8,
@@ -45,6 +46,7 @@ const SESSION: WorkoutSession = {
     },
   ],
   focusEi: 1,
+  note: "Insgesamt schwer heute",
 };
 
 describe("liveSession", () => {
@@ -105,6 +107,19 @@ describe("liveSession", () => {
       expect(gelesen(-1)).toBeNull();
       expect(gelesen(1.5)).toBeNull();
       expect(gelesen("1")).toBeNull();
+    });
+
+    // Vorhaben #136: eine Einheit, die vor den Notizen gestartet wurde, darf
+    // beim Weiterlaufen nicht kaputtgehen - fehlende Notizen werden leer.
+    it("laedt eine laufende Einheit ohne Notiz-Felder sauber", () => {
+      const obj = JSON.parse(
+        serializeLive({ session: SESSION, collapsed: false }),
+      ) as { session: Record<string, unknown> };
+      delete obj.session.note;
+      delete (obj.session.entries as Record<string, unknown>[])[0].note;
+      const s = parseLive(JSON.stringify(obj)).session;
+      expect(s !== null && s.kind === "workout" ? s.note : null).toBe("");
+      expect(s !== null && s.kind === "workout" ? s.entries[0].note : null).toBe("");
     });
 
     it("behaelt collapsed, verwirft aber eine unvollstaendige Session", () => {
@@ -183,6 +198,7 @@ describe("liveSession", () => {
           barWeight: null,
           warmupSets: [],
           sets: [],
+          note: "",
         },
       ]);
     });

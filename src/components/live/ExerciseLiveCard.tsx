@@ -8,6 +8,7 @@ import type { LiveBarChoice } from "@/hooks/useLiveSession";
 import { PlateChips } from "./PlateChips";
 import { LiveNumberInput } from "./LiveNumberInput";
 import { SetCheck } from "./SetCheck";
+import { NoteBlock } from "@/components/ui/note-block";
 
 // Eine Uebungskarte der laufenden Session (Phase 11, Lieferung 3, interaktiv):
 // Kopf mit Name/Tag, Stangenauswahl und Scheiben-Schalter; Tabelle Satz | Wdh |
@@ -50,6 +51,7 @@ export function ExerciseLiveCard({
   onDelSet,
   onChangeBar,
   onCyclePlate,
+  onNote,
   editMode = false,
   hideScore = false,
 }: {
@@ -68,6 +70,10 @@ export function ExerciseLiveCard({
   onDelSet: () => void;
   onChangeBar: (bar: LiveBarChoice) => void;
   onCyclePlate: () => void;
+  /** Notiz zur Uebung uebernehmen (Vorhaben #136). Fehlt der Rueckruf, zeigt die
+   *  Karte gar keine Notiz - so bleibt der Verlaufs-Bearbeiten-Modus vorerst
+   *  unveraendert (Schritt 3 haengt ihn an). */
+  onNote?: (note: string) => void;
   /** Bearbeiten-Modus (Verlauf): Stange/Scheiben/Haken/Aufwaermsaetze aus,
    *  Werte + RIR + „+/- Satz“ bleiben. Default false = unveraenderter Live-Look. */
   editMode?: boolean;
@@ -78,6 +84,30 @@ export function ExerciseLiveCard({
   const isBar = entry.equipment === "barbell" && entry.barWeight != null;
   const hasPlates = isBar && plates.length > 0;
   const grid = editMode ? ROW_EDIT : hideScore ? ROW_TEST : ROW;
+
+  // Fusszeile: „+ Satz“ / „– Satz“. Traegt die Karte eine Notiz (onNote gesetzt),
+  // sitzt der „+ Notiz“-Knopf in derselben Zeile rechts daneben und das Feld
+  // klappt darunter auf - sonst bleibt die Zeile unveraendert.
+  const setButtons = (
+    <>
+      <button
+        type="button"
+        onClick={onAddSet}
+        className="text-[13px] font-semibold text-primary"
+      >
+        + Satz
+      </button>
+      {entry.sets.length > 1 && (
+        <button
+          type="button"
+          onClick={onDelSet}
+          className="text-[13px] font-semibold text-muted-foreground"
+        >
+          – Satz
+        </button>
+      )}
+    </>
+  );
 
   function chips(weight: number, warm: boolean, idx: number, done: boolean): React.ReactElement | null {
     if (!hasPlates || plateMode === 0 || done) return null;
@@ -240,22 +270,17 @@ export function ExerciseLiveCard({
           );
         })}
 
-        <div className="flex gap-4 px-1.5 pb-1 pt-4">
-          <button
-            type="button"
-            onClick={onAddSet}
-            className="text-[13px] font-semibold text-primary"
-          >
-            + Satz
-          </button>
-          {entry.sets.length > 1 && (
-            <button
-              type="button"
-              onClick={onDelSet}
-              className="text-[13px] font-semibold text-muted-foreground"
-            >
-              – Satz
-            </button>
+        <div className="px-1.5 pb-1 pt-4">
+          {onNote ? (
+            <NoteBlock
+              value={entry.note}
+              onChange={onNote}
+              compact
+              placeholder="Was ist bei dieser Übung passiert?"
+              actions={setButtons}
+            />
+          ) : (
+            <div className="flex items-center gap-4">{setButtons}</div>
           )}
         </div>
       </div>

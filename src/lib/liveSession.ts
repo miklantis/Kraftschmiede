@@ -109,6 +109,8 @@ export interface LiveEntry {
   barWeight: number | null;
   warmupSets: LiveWarmupSet[];
   sets: LiveSet[];
+  /** Freie Notiz zur Uebung (Vorhaben #136). Leerer Text = keine Notiz. */
+  note: string;
 }
 
 /** Gemeinsame Felder beider Einheit-Arten. */
@@ -141,6 +143,9 @@ export interface WorkoutSession extends LiveSessionBase {
   /** Index der Uebung, an der gerade gearbeitet wird, oder null (Vorhaben #100).
    *  Siehe die Erklaerung an `EntrySession`. */
   focusEi: number | null;
+  /** Freie Notiz zur ganzen Einheit (Vorhaben #136). Landet beim Beenden in
+   *  `sessions.notes`. Leerer Text = keine Notiz. */
+  note: string;
 }
 
 /** Laufender 1RM-Test: genau eine Uebung, keine Aufwaermsaetze an der Uebung,
@@ -272,6 +277,8 @@ export function parseLive(raw: string | null): PersistedLive {
           generalWarmup: parseGeneralWarmup(sr.generalWarmup),
           entries: parseEntries(sr.entries),
           focusEi: parseFocus(sr.focusEi),
+          // Einheiten aus der Zeit vor den Notizen (#136) haben das Feld nicht.
+          note: str(sr.note),
         },
         collapsed,
       };
@@ -353,6 +360,8 @@ function parseEntries(v: unknown): LiveEntry[] {
         barWeight: typeof o.barWeight === "number" ? o.barWeight : null,
         warmupSets,
         sets,
+        // Fehlt in Eintraegen aus der Zeit vor den Notizen (#136) - dann leer.
+        note: str(o.note),
       };
     })
     .filter((e): e is LiveEntry => e !== null);

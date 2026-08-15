@@ -64,6 +64,7 @@ export function buildWorkoutSession(
     generalWarmup: input.generalWarmup,
     entries: input.entries,
     focusEi: null,
+    note: "",
   };
 }
 

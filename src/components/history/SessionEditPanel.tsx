@@ -163,6 +163,8 @@ function toLiveEntry(ex: PanelExercise): LiveEntry {
     barWeight: null,
     warmupSets: [],
     sets: ex.sets,
+    // Notizen im Verlauf haengt Schritt 3 von Vorhaben #136 an.
+    note: "",
   };
 }
 
