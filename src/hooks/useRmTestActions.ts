@@ -23,6 +23,13 @@ export interface RmTestAddInput {
   reps: number;
   estRm: number;
   previousRm: number | null;
+  /** Freitext-Notiz zum Test (leer = keine Notiz). */
+  notiz: string;
+}
+
+export interface RmTestNoteInput {
+  id: string;
+  notiz: string;
 }
 
 export interface RmTestRemoveInput {
@@ -34,6 +41,7 @@ export interface RmTestRemoveInput {
 
 export function useRmTestActions(): {
   add: (input: RmTestAddInput) => Promise<void>;
+  setNote: (input: RmTestNoteInput) => Promise<void>;
   remove: (input: RmTestRemoveInput) => Promise<void>;
   isPending: boolean;
   error: unknown;
@@ -51,6 +59,7 @@ export function useRmTestActions(): {
 
   return {
     add: (input) => mutation.mutateAsync({ type: "add", ...input }),
+    setNote: (input) => mutation.mutateAsync({ type: "updateNote", ...input }),
     remove: (input) => mutation.mutateAsync({ type: "delete", ...input }),
     isPending: mutation.isPending,
     error: mutation.error,

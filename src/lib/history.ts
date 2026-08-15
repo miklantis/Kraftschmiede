@@ -80,6 +80,9 @@ export interface HistoryRmTestInput {
   estRm: number;
   /** Rekord vor dem Test (null = erster Wert). */
   previousRm: number | null;
+  /** Freitext-Notiz zum Test (rm_tests.notiz). Optional, weil aeltere Aufrufer
+   *  sie nicht mitliefern; leer = keine Notiz. */
+  notiz?: string;
 }
 
 export interface DetailRow {
@@ -277,6 +280,9 @@ export function buildHistoryRmTest(
 ): HistorySession {
   const name = lk.exerciseName(t.exerciseId) || "Übung";
   const from = t.previousRm != null ? fmtKg(t.previousRm) + " kg" : "–";
+  // Die Notiz steht hier nur zum Nachlesen; geaendert wird sie im 1RM-Block der
+  // Uebung (der Test ist im Verlauf bewusst readOnly).
+  const note = t.notiz?.trim();
   return {
     id: t.id,
     date: t.date,
@@ -292,6 +298,7 @@ export function buildHistoryRmTest(
           from + " → " + fmtKg(t.estRm) + " kg" + rmDirection(t),
         ],
       },
+      ...(note ? [{ label: "Notiz", lines: [note] }] : []),
     ],
     readOnly: true,
   };
