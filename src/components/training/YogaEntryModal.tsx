@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { Overlay } from "@/components/ui/overlay";
+import { NoteBlock } from "@/components/ui/note-block";
 import { useAddYoga } from "@/hooks/useAddYoga";
 import { todayISO } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-// Yoga-Eintrag-Popup (1:1 wie V1): Datum als drei Schnellwahl-Knoepfe und Dauer
-// als Stepper. Keine freie Kalenderwahl, kein Notizfeld – bewusst schlicht.
+// Yoga-Eintrag-Popup: Datum als drei Schnellwahl-Knoepfe und Dauer als Stepper.
+// Keine freie Kalenderwahl – bewusst schlicht. Die Notiz laeuft ueber denselben
+// Baustein wie bei allen anderen Einheiten-Arten: ohne Notiz nur ein schlanker
+// "+ Notiz"-Knopf, damit die Optik schlicht bleibt.
 // Akzent durchgehend Yoga-Lila. Nutzt das generische Overlay-Fundament.
 const DAYS = ["Heute", "Gestern", "Vorgestern"];
 const MIN_START = 80;
@@ -29,6 +32,7 @@ export function YogaEntryModal({
 }): React.ReactElement {
   const [dayOffset, setDayOffset] = useState(0);
   const [minutes, setMinutes] = useState(MIN_START);
+  const [notes, setNotes] = useState("");
   const { add, isPending } = useAddYoga();
 
   // Beim Oeffnen den Entwurf zuruecksetzen.
@@ -36,6 +40,7 @@ export function YogaEntryModal({
     if (open) {
       setDayOffset(0);
       setMinutes(MIN_START);
+      setNotes("");
     }
   }, [open]);
 
@@ -43,7 +48,7 @@ export function YogaEntryModal({
     setMinutes((m) => Math.max(MIN_LO, Math.min(MIN_HI, m + delta)));
 
   const save = async (): Promise<void> => {
-    await add(dateForOffset(dayOffset), minutes);
+    await add(dateForOffset(dayOffset), minutes, notes.trim());
     onClose();
   };
 
@@ -102,6 +107,14 @@ export function YogaEntryModal({
           +
         </button>
       </div>
+
+      {/* Notiz zur Einheit: schlanke Zeile unter der Dauer. */}
+      <NoteBlock
+        value={notes}
+        onChange={setNotes}
+        placeholder="Was ist in dieser Einheit passiert?"
+        className="mb-5"
+      />
 
       <button
         type="button"

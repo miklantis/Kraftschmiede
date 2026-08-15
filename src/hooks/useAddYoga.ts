@@ -6,13 +6,14 @@ import { useUserId } from "./useUserId";
 import { todayISO } from "@/lib/format";
 
 // Traegt eine Yoga-/Mobility-Einheit als abgeschlossene Einheit ein (kein
-// gefuehrter Ablauf, keine Eignung/Coach – nur Datum und Dauer, 1:1 wie V1).
+// gefuehrter Ablauf, keine Eignung/Coach – nur Datum, Dauer und eine optionale
+// Notiz (sessions.notes, dasselbe Feld wie im Bearbeiten-Panel).
 // Nach Erfolg werden die Trainings-Uebersicht (letzte Einheit) und der Verlauf
 // (Kalender + Liste) neu geladen, damit beides sofort stimmt. Der
 // Datenbank-Handgriff liegt hinter der Naht (lib/erfassungStore.ts), die
 // Abfolge in lib/erfassungWrite.ts.
 export function useAddYoga(): {
-  add: (date: string, minutes: number) => Promise<void>;
+  add: (date: string, minutes: number, notes?: string) => Promise<void>;
   isPending: boolean;
   error: unknown;
 } {
@@ -20,11 +21,16 @@ export function useAddYoga(): {
   const userId = useUserId();
 
   const mutation = useMutation({
-    mutationFn: (vars: { date: string; minutes: number }): Promise<void> =>
+    mutationFn: (vars: {
+      date: string;
+      minutes: number;
+      notes: string;
+    }): Promise<void> =>
       writeErfassungAction(supabaseErfassungStore, userId, todayISO(), {
         type: "addYoga",
         datum: vars.date,
         minuten: vars.minutes,
+        notiz: vars.notes,
       }),
     onSuccess: () => {
       invalidateGroup(queryClient, INVALIDATE.addYoga);
@@ -32,8 +38,8 @@ export function useAddYoga(): {
   });
 
   return {
-    add: (date: string, minutes: number) =>
-      mutation.mutateAsync({ date, minutes }),
+    add: (date: string, minutes: number, notes = "") =>
+      mutation.mutateAsync({ date, minutes, notes }),
     isPending: mutation.isPending,
     error: mutation.error,
   };

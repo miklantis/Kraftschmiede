@@ -510,19 +510,12 @@ export function SessionEditPanel({
               </>
             )
             : (
-                <div className="flex flex-col gap-2">
-                  <span className="text-[13px] font-semibold text-muted-foreground">
-                    Notiz
-                  </span>
-                  <textarea
-                    aria-label="Notiz"
-                    rows={4}
-                    placeholder="z. B. Schwerpunkt, Stimmung, Besonderheiten …"
-                    className="w-full resize-none rounded-control border border-border bg-card px-3 py-2.5 text-[14px] text-foreground outline-none focus:border-primary"
-                    value={draft.notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                  />
-                </div>
+                /* Yoga: dieselbe Notiz-Mechanik wie bei Kraft und Skill. */
+                <NoteBlock
+                  value={draft.notes}
+                  onChange={setNotes}
+                  placeholder="Was ist in dieser Einheit passiert?"
+                />
               )}
 
           <div className="flex flex-col gap-2 pt-1">
