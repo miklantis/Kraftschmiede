@@ -91,6 +91,7 @@ export function buildSkillLive(
       done: false,
       met: false,
     })),
+    note: "",
   }));
 
   return {

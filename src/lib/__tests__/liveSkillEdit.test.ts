@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { withSkillDone, withSkillValue } from "../liveSkillEdit";
+import { withSkillDone, withSkillValue, withSkillNote } from "../liveSkillEdit";
 import type { SkillLiveExercise, SkillLiveSet } from "../liveSession";
 
 function satz(over: Partial<SkillLiveSet> = {}): SkillLiveSet {
@@ -13,6 +13,7 @@ function uebung(over: Partial<SkillLiveExercise> = {}): SkillLiveExercise {
     target: 8,
     tempo: null,
     sets: [satz(), satz()],
+    note: "",
     ...over,
   };
 }
@@ -54,5 +55,24 @@ describe("withSkillValue", () => {
   it("laesst das erreichte Ziel unberuehrt", () => {
     const e = uebung({ sets: [satz({ value: 5, met: true })] });
     expect(withSkillValue([e], 0, 0, 9)[0].sets[0].met).toBe(true);
+  });
+});
+
+describe("withSkillNote", () => {
+  it("setzt die Notiz der gemeinten Uebung und trimmt sie", () => {
+    const next = withSkillNote([uebung(), uebung({ name: "Dip" })], 1, "  Schulter zwickt  ");
+    expect(next[1].note).toBe("Schulter zwickt");
+    expect(next[0].note).toBe("");
+  });
+
+  it("entfernt die Notiz bei leerem Text", () => {
+    const e = uebung({ note: "alt" });
+    expect(withSkillNote([e], 0, "   ")[0].note).toBe("");
+  });
+
+  it("gibt bei unveraenderter Notiz dieselbe Referenz zurueck", () => {
+    const list = [uebung({ note: "gleich" })];
+    expect(withSkillNote(list, 0, "gleich")).toBe(list);
+    expect(withSkillNote(list, 3, "egal")).toBe(list);
   });
 });

@@ -36,6 +36,17 @@ export function withSkillDone(
   });
 }
 
+/** Notiz einer Skill-Uebung setzen oder (leerer Text) entfernen. Unveraenderte
+ *  Notiz laesst die Referenzen stehen. */
+export function withSkillNote(
+  exercises: SkillLiveExercise[],
+  ei: number,
+  note: string,
+): SkillLiveExercise[] {
+  const next = note.trim();
+  return mapExercise(exercises, ei, (e) => (e.note === next ? e : { ...e, note: next }));
+}
+
 /** Ergebniswert eines Skill-Satzes uebernehmen (Wdh oder Sekunden, ganzzahlig,
  *  nie negativ). Ein noch leerer Satz (`value: null`) wird dabei belegt. */
 export function withSkillValue(

@@ -47,6 +47,8 @@ interface SkillPanelExercise {
   metric: "reps" | "duration";
   target: number;
   values: number[];
+  /** Freitext-Notiz zur Uebung (session_exercises.note). */
+  note: string;
 }
 
 type PanelDraft =
@@ -58,7 +60,14 @@ type PanelDraft =
       /** Notiz der ganzen Einheit (sessions.notes). */
       notes: string;
     }
-  | { type: "skill"; date: string; minutes: number; exercises: SkillPanelExercise[] }
+  | {
+      type: "skill";
+      date: string;
+      minutes: number;
+      exercises: SkillPanelExercise[];
+      /** Notiz der ganzen Einheit (sessions.notes). */
+      notes: string;
+    }
   | { type: "yoga"; date: string; minutes: number; notes: string };
 
 function minutesOf(input: HistorySessionInput): number {
@@ -144,9 +153,16 @@ function buildSkillDraft(
         metric,
         target,
         values,
+        note: ex.note ?? "",
       };
     });
-  return { type: "skill", date: input.date, minutes: minutesOf(input), exercises };
+  return {
+    type: "skill",
+    date: input.date,
+    minutes: minutesOf(input),
+    exercises,
+    notes: input.notes ?? "",
+  };
 }
 
 function buildDraft(
@@ -193,6 +209,7 @@ function toSkillExercise(ex: SkillPanelExercise): SkillLiveExercise {
     target: ex.target,
     tempo: null,
     sets: ex.values.map((v) => ({ value: v, done: false, met: false })),
+    note: ex.note,
   };
 }
 
@@ -256,7 +273,7 @@ export function SessionEditPanel({
   function setNotes(value: string): void {
     touch();
     setDraft((d) =>
-      d && (d.type === "yoga" || d.type === "strength")
+      d && (d.type === "yoga" || d.type === "strength" || d.type === "skill")
         ? { ...d, notes: value }
         : d,
     );
@@ -335,6 +352,11 @@ export function SessionEditPanel({
       }),
     );
   }
+  function setSkillExerciseNote(ei: number, note: string): void {
+    setSkillExercises((exs) =>
+      exs.map((ex, i) => (i !== ei ? ex : { ...ex, note })),
+    );
+  }
   function delSkillSet(ei: number): void {
     setSkillExercises((exs) =>
       exs.map((ex, i) =>
@@ -352,11 +374,13 @@ export function SessionEditPanel({
       edit.saveSkill({
         sessionId,
         durationSec,
+        notes: draft.notes,
         exercises: draft.exercises.map((ex) => ({
           sessionExerciseId: ex.sessionExerciseId,
           metric: ex.metric,
           target: ex.target,
           values: ex.values,
+          note: ex.note,
         })),
       });
     } else {
@@ -460,7 +484,9 @@ export function SessionEditPanel({
               </>
             )
             : draft.type === "skill"
-            ? draft.exercises.map((ex, ei) => (
+            ? (
+              <>
+                {draft.exercises.map((ex, ei) => (
                 <SkillLiveCard
                   key={ex.sessionExerciseId}
                   exercise={toSkillExercise(ex)}
@@ -472,8 +498,17 @@ export function SessionEditPanel({
                   onStopWatch={() => {}}
                   onAddSet={() => addSkillSet(ei)}
                   onDelSet={() => delSkillSet(ei)}
+                  onNote={(note) => setSkillExerciseNote(ei, note)}
                 />
-              ))
+                ))}
+                {/* Notiz zur ganzen Einheit: schlanke Zeile unter allen Karten. */}
+                <NoteBlock
+                  value={draft.notes}
+                  onChange={setNotes}
+                  placeholder="Was ist in dieser Einheit passiert?"
+                />
+              </>
+            )
             : (
                 <div className="flex flex-col gap-2">
                   <span className="text-[13px] font-semibold text-muted-foreground">

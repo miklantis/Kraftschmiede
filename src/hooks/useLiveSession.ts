@@ -33,7 +33,7 @@ import {
   withGeneralMode,
   withRemovedGeneral,
 } from "@/lib/liveWarmup";
-import { withSkillDone, withSkillValue } from "@/lib/liveSkillEdit";
+import { withSkillDone, withSkillValue, withSkillNote } from "@/lib/liveSkillEdit";
 import {
   buildRmTestSession,
   buildSkillSession,
@@ -449,10 +449,11 @@ function setEntryNote(ei: number, note: string): void {
   applyEntries((entries) => withEntryNote(entries, ei, note));
 }
 
-/** Notiz zur ganzen Einheit setzen (nur Workout; leerer Text entfernt sie). */
+/** Notiz zur ganzen Einheit setzen (Workout und Skill; leerer Text entfernt
+ *  sie). Der 1RM-Test hat keine Einheit-Notiz. */
 function setSessionNote(note: string): void {
   const s = state.session;
-  if (s == null || s.kind !== "workout") return;
+  if (s == null || (s.kind !== "workout" && s.kind !== "skill")) return;
   const next = note.trim();
   if (s.note === next) return;
   set({ session: { ...s, note: next } });
@@ -507,6 +508,12 @@ function toggleSkillSet(ei: number, si: number): void {
 /** Ergebniswert eines Skill-Satzes uebernehmen (Wdh oder Sekunden, ganzzahlig). */
 function commitSkillValue(ei: number, si: number, value: number): void {
   applySkillExercises((exercises) => withSkillValue(exercises, ei, si, value));
+}
+
+/** Notiz einer Skill-Uebung setzen (leerer Text entfernt sie). Wie beim Workout
+ *  nur lokal - geschrieben wird erst beim Beenden. */
+function setSkillNote(ei: number, note: string): void {
+  applySkillExercises((exercises) => withSkillNote(exercises, ei, note));
 }
 
 /** Stoppuhr einer Skill-Dauer-Uebung scharfschalten (nur eine zugleich). */
@@ -566,6 +573,7 @@ export interface UseLiveSession extends LiveState {
   // Skill-Einheit (Lieferung 5)
   toggleSkillSet: (ei: number, si: number) => void;
   commitSkillValue: (ei: number, si: number, value: number) => void;
+  setSkillNote: (ei: number, note: string) => void;
   startSkillWatch: (ei: number, si: number) => void;
   stopSkillWatch: () => void;
 }
@@ -607,6 +615,7 @@ export function useLiveSession(): UseLiveSession {
     skipRest,
     toggleSkillSet,
     commitSkillValue,
+    setSkillNote,
     startSkillWatch,
     stopSkillWatch,
   };

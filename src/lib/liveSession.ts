@@ -92,6 +92,8 @@ export interface SkillLiveExercise {
   target: number;
   tempo: string | null;
   sets: SkillLiveSet[];
+  /** Freie Notiz zur Uebung (Vorhaben #136). Leerer Text = keine Notiz. */
+  note: string;
 }
 
 /** Eine Uebung der laufenden Kraft-Einheit samt Aufwaerm- und Arbeitssaetzen. */
@@ -178,6 +180,9 @@ export interface SkillSession extends LiveSessionBase {
   /** Skill schon gemeistert (Erhaltungstraining der letzten Phase). */
   mastered: boolean;
   exercises: SkillLiveExercise[];
+  /** Freie Notiz zur ganzen Einheit (Vorhaben #136). Landet beim Beenden in
+   *  `sessions.notes`. Leerer Text = keine Notiz. */
+  note: string;
 }
 
 export type LiveSession = WorkoutSession | SkillSession | RmTestSession;
@@ -243,6 +248,8 @@ export function parseLive(raw: string | null): PersistedLive {
           phaseIndex: num(sr.phaseIndex, 0),
           mastered: bool(sr.mastered),
           exercises: parseSkillExercises(sr.exercises),
+          // Einheiten aus der Zeit vor den Notizen (#136) haben das Feld nicht.
+          note: str(sr.note),
         },
         collapsed,
       };
@@ -391,6 +398,8 @@ function parseSkillExercises(v: unknown): SkillLiveExercise[] {
         target: num(o.target),
         tempo: typeof o.tempo === "string" ? o.tempo : null,
         sets,
+        // Fehlt in Uebungen aus der Zeit vor den Notizen (#136) - dann leer.
+        note: str(o.note),
       };
     })
     .filter((e): e is SkillLiveExercise => e !== null);

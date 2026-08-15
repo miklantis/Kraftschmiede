@@ -46,6 +46,8 @@ export interface SkillEditSaveInput {
   sessionId: string;
   durationSec: number | null;
   exercises: SkillEditDraftExercise[];
+  /** Notiz der ganzen Einheit (sessions.notes); undefined = nicht anfassen. */
+  notes?: string;
 }
 
 /** Eingabe fuer das Speichern einer Yoga-Bearbeitung. */
@@ -126,6 +128,7 @@ export function useEditSession(): UseEditSession {
         durationSec: input.durationSec,
         userId,
         exercises: input.exercises,
+        notes: input.notes,
         newId: () => crypto.randomUUID(),
       });
       mutation.mutate(payload);

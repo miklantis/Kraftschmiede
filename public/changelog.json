@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.15",
+      "date": "2026-08-15",
+      "changes": [
+        "Skill-Einheiten haben jetzt dieselben Notizen wie Kraft-Trainings: je Übung eine Notiz und einmal eine Notiz zur ganzen Einheit. Beides lässt sich während der Einheit erfassen und später im Verlauf ansehen und ändern. Der Phasen-Fortschritt bleibt davon unberührt."
+      ]
+    },
+    {
       "version": "1.26.14",
       "date": "2026-08-15",
       "changes": [
