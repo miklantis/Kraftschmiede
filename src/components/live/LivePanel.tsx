@@ -215,8 +215,17 @@ function SkillPanelContent({
           onValue={(si, v) => live.commitSkillValue(i, si, v)}
           onStartWatch={(si) => live.startSkillWatch(i, si)}
           onStopWatch={live.stopSkillWatch}
+          onNote={(note) => live.setSkillNote(i, note)}
         />
       ))}
+      <div className="rounded-[14px] bg-card px-4 py-3 shadow-card">
+        <NoteBlock
+          value={session.note}
+          onChange={live.setSessionNote}
+          label="Notiz zur Einheit"
+          placeholder="Wie lief das Training?"
+        />
+      </div>
     </div>
   );
 }

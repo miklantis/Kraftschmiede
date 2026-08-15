@@ -15,6 +15,7 @@ function ex(over: Partial<SkillLiveExercise> = {}): SkillLiveExercise {
     target: 30,
     tempo: null,
     sets: [],
+    note: "",
     ...over,
   };
 }
@@ -29,6 +30,7 @@ function session(exercises: SkillLiveExercise[]): SkillSession {
     phaseIndex: 0,
     mastered: false,
     exercises,
+    note: "",
   };
 }
 
@@ -83,6 +85,15 @@ describe("skillEndSummary", () => {
 
 describe("buildSkillFinishRows", () => {
   const plan: SkillFinishPlanExercise[] = [{ metric: "duration", target: 30, sets: 2 }];
+
+  it("schreibt die Notizen der Einheit und der Uebung mit", () => {
+    const s0 = session([ex({ sets: [{ value: 31, done: true, met: false }], note: "Griff rutschte" })]);
+    const r = buildSkillFinishRows(
+      ctx({ session: { ...s0, note: "guter Tag" }, planExercises: plan }),
+    );
+    expect(r.sessionRow.notes).toBe("guter Tag");
+    expect(r.exerciseRows[0].note).toBe("Griff rutschte");
+  });
 
   it("completed: alle Saetze erreicht, Konsekutiv-Zaehler steigt", () => {
     const s = session([

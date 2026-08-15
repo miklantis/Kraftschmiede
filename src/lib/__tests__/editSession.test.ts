@@ -247,6 +247,27 @@ describe("buildSkillEditPayload", () => {
   it("reicht die Dauer durch", () => {
     expect(buildSkillEditPayload(skillCtx({ durationSec: null })).durationSec).toBeNull();
   });
+
+  it("gibt Notizen je Uebung und zur Einheit getrimmt mit", () => {
+    const p = buildSkillEditPayload(
+      skillCtx({
+        notes: "  ruhige Einheit  ",
+        exercises: [
+          { sessionExerciseId: "se1", metric: "reps", target: 5, values: [6], note: " fiel schwer " },
+          { sessionExerciseId: "se2", metric: "reps", target: 5, values: [6], note: "  " },
+        ],
+      }),
+    );
+    expect(p.notes).toBe("ruhige Einheit");
+    expect(p.exercises[0].note).toBe("fiel schwer");
+    expect(p.exercises[1].note).toBe("");
+  });
+
+  it("laesst Notizen unangetastet, wenn keine mitkommen", () => {
+    const p = buildSkillEditPayload(skillCtx());
+    expect("notes" in p).toBe(false);
+    expect(p.exercises.every((e) => e.note === undefined)).toBe(true);
+  });
 });
 
 import { buildYogaEditPayload } from "../editSession";

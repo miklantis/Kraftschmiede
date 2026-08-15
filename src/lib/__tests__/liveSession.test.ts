@@ -150,6 +150,7 @@ describe("liveSession", () => {
               { value: null, done: false, met: false },
               { value: 32, done: true, met: true },
             ],
+            note: "Griff rutschte",
           },
           {
             name: "Scapular Pull-Up",
@@ -158,11 +159,34 @@ describe("liveSession", () => {
             target: 5,
             tempo: "langsam",
             sets: [{ value: 5, done: true, met: true }],
+            note: "",
           },
         ],
+        note: "Insgesamt guter Tag",
       };
       const raw = serializeLive({ session: skill, collapsed: false });
       expect(parseLive(raw)).toEqual({ session: skill, collapsed: false });
+    });
+
+    it("stellt fehlende Notizen einer alten Skill-Einheit leer her", () => {
+      const raw = JSON.stringify({
+        collapsed: false,
+        session: {
+          id: "live_sk2",
+          kind: "skill",
+          title: "Strict Pull-Up",
+          startedAt: 1,
+          skillId: "skill-uuid",
+          phaseIndex: 0,
+          mastered: false,
+          exercises: [{ name: "Dead Hang", metric: "duration", target: 30, sets: [] }],
+        },
+      });
+      const got = parseLive(raw).session;
+      expect(got?.kind).toBe("skill");
+      if (got?.kind !== "skill") return;
+      expect(got.note).toBe("");
+      expect(got.exercises[0].note).toBe("");
     });
 
     it("verwirft eine Skill-Einheit ohne skillId", () => {

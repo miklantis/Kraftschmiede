@@ -185,6 +185,7 @@ export function buildSkillFinishRows(ctx: SkillFinishContext): SkillFinishRows {
       tested_1rm: null,
       suggestion: {},
       position: i,
+      note: we.note,
     });
 
     // Nur erledigte Saetze ueberleben; Zeilen + „Ziel erreicht“ kommen aus dem
@@ -212,6 +213,7 @@ export function buildSkillFinishRows(ctx: SkillFinishContext): SkillFinishRows {
     skill_phase: session.phaseIndex,
     skill_result: result,
     duration_sec: durationSec,
+    notes: session.note,
     started_at: new Date(session.startedAt).toISOString(),
   };
 

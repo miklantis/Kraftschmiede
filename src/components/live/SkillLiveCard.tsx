@@ -3,6 +3,7 @@ import { LiveNumberInput } from "./LiveNumberInput";
 import { SkillWatchValue } from "./SkillWatchValue";
 import { SetCheck } from "./SetCheck";
 import { skillTargetLabel } from "@/lib/labels";
+import { NoteBlock } from "@/components/ui/note-block";
 
 // Eine Uebungskarte der laufenden Skill-Einheit (Phase 11, Lieferung 5).
 // Kopf mit Name, optionalem Tempo und dem Metrik-Tag (WDH/DAUER); Tabelle
@@ -30,6 +31,7 @@ export function SkillLiveCard({
   editMode = false,
   onAddSet,
   onDelSet,
+  onNote,
 }: {
   exercise: SkillLiveExercise;
   /** Index des Satzes mit laufender Stoppuhr in dieser Uebung, sonst null. */
@@ -43,11 +45,38 @@ export function SkillLiveCard({
   editMode?: boolean;
   onAddSet?: () => void;
   onDelSet?: () => void;
+  /** Notiz der Uebung setzen (Vorhaben #136). Ohne diese Naht bleibt die Karte
+   *  unveraendert - dann gibt es keinen „+ Notiz“-Knopf. */
+  onNote?: (note: string) => void;
 }): React.ReactElement {
   const isDur = exercise.metric === "duration";
   const tag = isDur ? "DAUER" : "WDH";
   const targetLabel = skillTargetLabel(exercise.target, exercise.metric, true);
   const grid = editMode ? ROW_EDIT : ROW;
+
+  // Fusszeile: „+ Satz“ / „– Satz“ gibt es nur im Bearbeiten-Modus. Traegt die
+  // Karte eine Notiz (onNote gesetzt), sitzt „+ Notiz“ dort rechts daneben; im
+  // Live-Betrieb bleibt nur die schlanke Notiz-Zeile.
+  const setButtons = (
+    <>
+      <button
+        type="button"
+        onClick={onAddSet}
+        className="text-[13px] font-semibold text-primary"
+      >
+        + Satz
+      </button>
+      {exercise.sets.length > 1 && (
+        <button
+          type="button"
+          onClick={onDelSet}
+          className="text-[13px] font-semibold text-muted-foreground"
+        >
+          – Satz
+        </button>
+      )}
+    </>
+  );
 
   return (
     <div className="overflow-hidden rounded-[14px] bg-card shadow-card">
@@ -108,23 +137,18 @@ export function SkillLiveCard({
           </div>
         ))}
 
-        {editMode && (
-          <div className="flex gap-4 px-1.5 pb-1 pt-4">
-            <button
-              type="button"
-              onClick={onAddSet}
-              className="text-[13px] font-semibold text-primary"
-            >
-              + Satz
-            </button>
-            {exercise.sets.length > 1 && (
-              <button
-                type="button"
-                onClick={onDelSet}
-                className="text-[13px] font-semibold text-muted-foreground"
-              >
-                – Satz
-              </button>
+        {(editMode || onNote) && (
+          <div className="px-1.5 pb-1 pt-4">
+            {onNote ? (
+              <NoteBlock
+                value={exercise.note}
+                onChange={onNote}
+                compact
+                placeholder="Was ist bei dieser Übung passiert?"
+                actions={editMode ? setButtons : undefined}
+              />
+            ) : (
+              <div className="flex items-center gap-4">{setButtons}</div>
             )}
           </div>
         )}

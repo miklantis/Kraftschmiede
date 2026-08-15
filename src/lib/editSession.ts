@@ -159,6 +159,9 @@ export interface SkillEditDraftExercise {
   target: number;
   /** Ergebniswert je Satz (Wdh bzw. Sekunden). */
   values: number[];
+  /** Freitext-Notiz zur Uebung (session_exercises.note). Leer = keine Notiz;
+   *  undefined = nicht anfassen. */
+  note?: string;
 }
 
 export interface SkillEditContext {
@@ -166,6 +169,8 @@ export interface SkillEditContext {
   durationSec: number | null;
   userId: string;
   exercises: SkillEditDraftExercise[];
+  /** Notiz der ganzen Einheit (sessions.notes); undefined = nicht anfassen. */
+  notes?: string;
   newId: () => string;
 }
 
@@ -187,12 +192,14 @@ export function buildSkillEditPayload(ctx: SkillEditContext): EditPayload {
       sessionExerciseId: ex.sessionExerciseId,
       tested1RM: null, // Skill trackt kein 1RM
       workSetRows: skill.setRows,
+      ...(ex.note !== undefined ? { note: ex.note.trim() } : {}),
     };
   });
 
   return {
     sessionId: ctx.sessionId,
     durationSec: ctx.durationSec,
+    ...(ctx.notes !== undefined ? { notes: ctx.notes.trim() } : {}),
     exercises,
     exercisePatches: [], // kein Coach/Katalog bei Skill
   };

@@ -71,7 +71,15 @@ describe("buildWorkoutSession", () => {
 
 describe("buildSkillSession", () => {
   const exercises: SkillLiveExercise[] = [
-    { name: "Klimmzug", exerciseId: null, metric: "reps", target: 8, tempo: null, sets: [] },
+    {
+      name: "Klimmzug",
+      exerciseId: null,
+      metric: "reps",
+      target: 8,
+      tempo: null,
+      sets: [],
+      note: "",
+    },
   ];
   const input: StartSkillInput = {
     skillId: "sk1",

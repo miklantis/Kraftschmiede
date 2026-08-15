@@ -83,6 +83,7 @@ export function buildSkillSession(
     phaseIndex: input.phaseIndex,
     mastered: input.mastered,
     exercises: input.exercises,
+    note: "",
   };
 }
 
