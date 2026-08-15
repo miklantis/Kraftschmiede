@@ -23,6 +23,7 @@ import { ExerciseLiveCard } from "./ExerciseLiveCard";
 import { SkillLiveCard } from "./SkillLiveCard";
 import { RestBar } from "./RestBar";
 import { DurationTimerOverlay } from "./DurationTimerOverlay";
+import { NoteBlock } from "@/components/ui/note-block";
 
 // Globales Live-Panel der gefuehrten Session.
 //  - Desktop (>= 960px): Vollbild-Overlay; eingeklappt eine freischwebende Pille.
@@ -75,8 +76,17 @@ function PanelContent({
           onDelSet={() => live.delSet(i)}
           onChangeBar={(bar) => live.changeBar(i, bar)}
           onCyclePlate={() => live.cyclePlateMode(i)}
+          onNote={(note) => live.setEntryNote(i, note)}
         />
       ))}
+      <div className="rounded-[14px] bg-card px-4 py-3 shadow-card">
+        <NoteBlock
+          value={session.note}
+          onChange={live.setSessionNote}
+          label="Notiz zur Einheit"
+          placeholder="Wie lief das Training?"
+        />
+      </div>
     </div>
   );
 }

@@ -158,6 +158,7 @@ export function buildFinishRows(ctx: FinishContext): FinishRows {
       tested_1rm: work.est1RM,
       suggestion: {},
       position: position++,
+      note: en.note,
     });
 
     exerciseUpdates.push({
@@ -181,7 +182,7 @@ export function buildFinishRows(ctx: FinishContext): FinishRows {
     week,
     duration_sec: durationSec,
     minutes: null,
-    notes: "",
+    notes: session.note,
     started_at: new Date(session.startedAt).toISOString(),
     body,
     general_warmup: { sets: session.generalWarmup.sets },

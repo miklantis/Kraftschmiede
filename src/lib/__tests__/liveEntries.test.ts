@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   withAppendedSet,
   withBar,
+  withEntryNote,
   withRemovedSet,
   withSetDone,
   withSetValue,
@@ -38,6 +39,7 @@ function entry(over: Partial<LiveEntry> = {}): LiveEntry {
     barWeight: 20,
     warmupSets: [warm()],
     sets: [set(), set()],
+    note: "",
     ...over,
   };
 }
@@ -159,5 +161,31 @@ describe("withBar", () => {
     expect(next[0].barId).toBe("b2");
     expect(next[0].barName).toBe("Kurz");
     expect(next[0].barWeight).toBe(10);
+  });
+});
+
+describe("withEntryNote", () => {
+  it("setzt die Notiz an der gemeinten Uebung und laesst die andere in Ruhe", () => {
+    const a = entry();
+    const b = entry({ exerciseId: "b" });
+    const next = withEntryNote([a, b], 1, "Schmerzen links");
+    expect(next[1].note).toBe("Schmerzen links");
+    expect(next[0]).toBe(a);
+  });
+
+  it("entfernt die Notiz bei leerem Text", () => {
+    const next = withEntryNote([entry({ note: "alt" })], 0, "   ");
+    expect(next[0].note).toBe("");
+  });
+
+  it("schneidet Leerraum ab", () => {
+    const next = withEntryNote([entry()], 0, "  fiel schwer  ");
+    expect(next[0].note).toBe("fiel schwer");
+  });
+
+  it("bleibt referenzgleich, wenn sich nichts aendert", () => {
+    const entries = [entry({ note: "gleich" })];
+    expect(withEntryNote(entries, 0, "gleich")).toBe(entries);
+    expect(withEntryNote(entries, 5, "egal")).toBe(entries);
   });
 });
