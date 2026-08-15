@@ -79,14 +79,15 @@ function PanelContent({
           onNote={(note) => live.setEntryNote(i, note)}
         />
       ))}
-      <div className="rounded-[14px] bg-card px-4 py-3 shadow-card">
-        <NoteBlock
-          value={session.note}
-          onChange={live.setSessionNote}
-          label="Notiz zur Einheit"
-          placeholder="Wie lief das Training?"
-        />
-      </div>
+      {/* Notiz zum ganzen Workout: bewusst ohne Karte direkt auf dem
+          Panel-Hintergrund, damit sie sich von den Uebungskarten absetzt. */}
+      <NoteBlock
+        value={session.note}
+        onChange={live.setSessionNote}
+        label="Workout-Notiz"
+        placeholder="Wie lief das Training?"
+        bare
+      />
     </div>
   );
 }
@@ -222,14 +223,14 @@ function SkillPanelContent({
           onNote={(note) => live.setSkillNote(i, note)}
         />
       ))}
-      <div className="rounded-[14px] bg-card px-4 py-3 shadow-card">
-        <NoteBlock
-          value={session.note}
-          onChange={live.setSessionNote}
-          label="Notiz zur Einheit"
-          placeholder="Wie lief das Training?"
-        />
-      </div>
+      {/* Notiz zur ganzen Skill-Einheit: wie beim Workout ohne Karte. */}
+      <NoteBlock
+        value={session.note}
+        onChange={live.setSessionNote}
+        label="Skill-Notiz"
+        placeholder="Wie lief das Training?"
+        bare
+      />
     </div>
   );
 }
