@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.14",
+      "date": "2026-08-15",
+      "changes": [
+        "Der Coach-Export nimmt die Notizen mit: je Übung die Notiz zur Übung, je Einheit die Notiz zur Einheit. Damit hat der Coach zu den Zahlen auch den Kontext – was schwerfiel, wo es weh tat, warum abgebrochen wurde."
+      ]
+    },
+    {
       "version": "1.26.13",
       "date": "2026-08-15",
       "changes": [

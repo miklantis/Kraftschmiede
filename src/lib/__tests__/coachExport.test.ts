@@ -130,6 +130,45 @@ describe("buildCoachExport - Zuordnung und Saetze", () => {
     ]);
   });
 
+  it("nimmt Notizen je Uebung und je Einheit mit, leere bleiben weg", () => {
+    const raw = emptyRaw();
+    raw.exercises = [
+      { id: "e1", name: "Back Squat", position: 0 },
+      { id: "e2", name: "Core Situps", position: 1 },
+    ];
+    raw.sessions = [
+      {
+        id: "s1",
+        date: "2026-06-20",
+        type: "strength",
+        notes: "  frueh abgebrochen  ",
+      } as RawSession,
+    ];
+    raw.sessionExercises = [
+      {
+        id: "x1",
+        session_id: "s1",
+        position: 0,
+        exercise_id: "e1",
+        note: "  Schmerzen links  ",
+      } as RawSessionExercise,
+      {
+        id: "x2",
+        session_id: "s1",
+        position: 1,
+        exercise_id: "e2",
+        note: "   ",
+      } as RawSessionExercise,
+    ];
+    raw.sets = [set("st1", "x1", 0, { reps: 5, weight: 20 })];
+
+    const out = buildCoachExport(raw, { weeks: null, today: TODAY });
+    const s = out.sessions[0];
+    expect(s.notes).toBe("frueh abgebrochen");
+    expect(s.exercises?.[0].note).toBe("Schmerzen links");
+    expect(s.exercises?.[1].note).toBeUndefined();
+  });
+
   it("zeigt aktive Journey mit Phasenplan und aktueller Phase", () => {
     const raw = emptyRaw();
     raw.journeys = [{ id: "j1", name: "Rückkehr", active: true, start_date: "2026-05-31" }];
