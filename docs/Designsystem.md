@@ -205,6 +205,8 @@ Doku nur als Beispiel im Text stehen – samt Farben, die es in der App gar nich
 | **NoteBlock** | Einzelne Freitext-Notiz in drei Zuständen: ohne Notiz nur ein schlanker Textknopf „+ Notiz", beim Schreiben ein mehrzeiliges Feld mit grünem Rahmen (Speichern / Abbrechen / Papierkorb), gespeichert reiner Text im ruhigen Block mit Stift zum Bearbeiten. Leer speichern = Notiz entfernen. **Verbindlich für alle Freitext-Notizen** (Übung, Einheit, 1RM-Test); der Slot `actions` nimmt eine bestehende Fußzeile auf, damit der Knopf rechts daneben sitzt und das Feld darunter aufklappt. |
 | **SortableList** | Vertikale Liste, deren Einträge sich per Ziehen an einem Griff umordnen lassen (Maus und Touch, ohne Zusatz-Bibliothek). Nur der Griff startet das Ziehen, die übrige Fläche bleibt bedienbar und die Seite scrollt weiter; umgeordnet wird beim Loslassen über `onReorder(from, to)`. Kennt die Inhalte nicht (Aufrufer liefert `renderItem`). Erstmals im Workout-Editor für die Übungsreihenfolge. |
 
+**Regel für alle Tippfelder (`input`, `textarea`):** auf Mobile mindestens 16px Schrift, kleinere Werte erst ab `min-[960px]`. iOS Safari zoomt sonst beim Antippen automatisch in das Feld hinein, und der Nutzer muss von Hand wieder herauszoomen.
+
 ### Anzeige & Visualisierung
 
 | Baustein | Wofür / wann nehmen |

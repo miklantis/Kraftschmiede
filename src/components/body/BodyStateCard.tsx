@@ -131,7 +131,8 @@ export function BodyStateCard({
         value={draft.notes}
         onChange={(e) => set("notes", e.target.value)}
         placeholder="Notiz (optional) …"
-        className="min-h-[46px] w-full resize-y rounded-[11px] border border-border bg-input px-3 py-2.5 text-[14px] text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none"
+        // 16px auf Mobile verhindert den Auto-Zoom von iOS Safari beim Antippen.
+        className="min-h-[46px] w-full resize-y rounded-[11px] border border-border bg-input px-3 py-2.5 text-[16px] text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none min-[960px]:text-[14px]"
       />
 
       <button

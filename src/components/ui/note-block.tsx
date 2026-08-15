@@ -115,7 +115,10 @@ export function NoteBlock({
               if (e.key === "Escape") cancel();
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) save();
             }}
-            className="w-full resize-none bg-transparent text-[14px] leading-snug text-foreground outline-none placeholder:text-muted-foreground"
+            // 16px auf Mobile: darunter zoomt iOS Safari beim Antippen
+            // automatisch ins Feld hinein. Ab Desktop wieder 14px wie der
+            // gespeicherte Notiztext.
+            className="w-full resize-none bg-transparent text-[16px] leading-snug text-foreground outline-none placeholder:text-muted-foreground min-[960px]:text-[14px]"
           />
           <div className="mt-1.5 flex items-center gap-4">
             <button
