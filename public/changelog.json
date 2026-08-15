@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.17",
+      "date": "2026-08-15",
+      "changes": [
+        "Yoga hat jetzt dieselbe Notiz wie alle anderen Einheiten: Sie lässt sich schon beim Eintragen erfassen und nicht erst nachträglich über das Bearbeiten-Panel. Damit sehen und verhalten sich die Notizen bei Kraft, Skill, Yoga und 1RM-Test überall gleich."
+      ]
+    },
+    {
       "version": "1.26.16",
       "date": "2026-08-15",
       "changes": [

@@ -89,6 +89,17 @@ describe("writeErfassungAction – Einheiten", () => {
     ]);
   });
 
+  it("legt eine Yoga-Einheit mit Notiz an", async () => {
+    const { store, log } = createMemoryErfassungStore();
+    await writeErfassungAction(store, "u1", HEUTE, {
+      type: "addYoga",
+      datum: "2026-08-09",
+      minuten: 45,
+      notiz: "Rücken fühlte sich gut an",
+    });
+    expect(log.einheitenInsert[0]?.notes).toBe("Rücken fühlte sich gut an");
+  });
+
   it("loescht eine Einheit ueber ihre Id", async () => {
     const { store, log } = createMemoryErfassungStore();
     await writeErfassungAction(store, "u1", HEUTE, {

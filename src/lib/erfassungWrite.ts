@@ -30,7 +30,7 @@ export interface BefindenFelder {
 /** Was der Nutzer will – der Hook traegt nur noch die Absicht herein. */
 export type ErfassungAction =
   | { type: "befinden"; felder: BefindenFelder }
-  | { type: "addYoga"; datum: string; minuten: number }
+  | { type: "addYoga"; datum: string; minuten: number; notiz?: string }
   | { type: "deleteEinheit"; id: string }
   | { type: "skillRegress"; skillId: string }
   | { type: "skillReset"; skillId: string };
@@ -79,7 +79,7 @@ export async function writeErfassungAction(
         type: "yoga",
         status: "done",
         minutes: action.minuten,
-        notes: "",
+        notes: action.notiz ?? "",
       });
       return;
     }
