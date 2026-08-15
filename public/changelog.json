@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.11",
+      "date": "2026-08-15",
+      "changes": [
+        "Vorarbeit für Notizen zu Übungen und Einheiten: Die Datenbank hat jetzt Platz für eine freie Notiz je Übung und je 1RM-Test, und der Notiz-Baustein für die Oberfläche ist gebaut. Zu sehen ist davon noch nichts – die Notizen tauchen mit den nächsten Auslieferungen im Training und im Verlauf auf."
+      ]
+    },
+    {
       "version": "1.26.10",
       "date": "2026-08-15",
       "changes": [
