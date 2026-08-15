@@ -2,6 +2,7 @@ import { Zap } from "lucide-react";
 import { AccordionItem } from "@/components/ui/accordion";
 import { PhaseBar } from "@/components/ui/phase-bar";
 import { SkillPhaseList } from "./SkillPhaseList";
+import { SkillTitle } from "./SkillTitle";
 import type { SkillCardView } from "@/hooks/useSkillsView";
 
 // Ein Skill als Karte. Jeder Skill ist immer aktiv (kein Aktiv-Schalter mehr).
@@ -18,18 +19,10 @@ export function SkillCard({
   onRegress: () => void;
   onReset: () => void;
 }): React.ReactElement {
-  // Kopf wie die Skill-Zeile auf der Trainingsseite: Symbol, Name, eine
-  // Phasenzeile, darunter der Balken. Zusatzhinweise stehen wie dort im Text
-  // der Phasenzeile statt als eigene Pille.
-  const subline =
-    "Phase " +
-    (model.phaseIndex + 1) +
-    " / " +
-    model.phaseCount +
-    (model.phaseLabel !== "" ? " · " + model.phaseLabel : "") +
-    (model.mastered ? " · Gemeistert" : "") +
-    (!model.startable ? " · Gerät fehlt" : "");
-
+  // Kopf wie die Skill-Zeile auf der Trainingsseite: Symbol, Name mit dem
+  // Phasennamen daneben, darunter der Balken. Zusatzhinweise ("Gerät fehlt",
+  // "Gemeistert") stehen aufgeklappt im Kartentext, nicht mehr im Kopf.
+  //
   // Aufgeklappt zeigt die Phasenliste denselben Stand ausfuehrlich - der Balken
   // waere doppelt. Er wird nur unsichtbar geschaltet, behaelt also seinen Platz,
   // damit die Kopfhoehe beim Auf- und Zuklappen gleich bleibt.
@@ -37,12 +30,7 @@ export function SkillCard({
     <div className="flex items-center gap-3">
       <Zap className="size-5 flex-none text-muted-foreground" />
       <div className="min-w-0 flex-1">
-        <div className="text-[17px] font-semibold text-foreground min-[960px]:text-[15px]">
-          {model.name}
-        </div>
-        <div className="mt-0.5 truncate text-[13px] text-muted-foreground">
-          {subline}
-        </div>
+        <SkillTitle name={model.name} phaseLabel={model.phaseLabel} />
         <PhaseBar
           index={model.phaseIndex}
           count={model.phaseCount}
