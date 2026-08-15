@@ -31,6 +31,13 @@ export interface UebungMeilensteinPatch {
 /** Zeile beim Anlegen eines 1RM-Tests. */
 export type RmTestRowIns = RmTestInsert;
 
+/** Nachtraeglich aenderbares Feld eines 1RM-Tests: nur die Freitext-Notiz. Die
+ *  Messwerte selbst bleiben unangetastet – ein Test wird nicht umgeschrieben,
+ *  sondern hoechstens geloescht und neu gemacht. */
+export interface RmTestPatch {
+  notiz: string;
+}
+
 /** Die Felder des Uebungskatalogs, die von diesem Bereich geschrieben werden:
  *  der Rekord samt Beleg-Datum und Veralten-Kennzeichen (1RM-Test) sowie die im
  *  "Uebung anpassen"-Popup gepflegten Werte. Bewusst genau diese Felder – der
@@ -57,6 +64,7 @@ export interface ExerciseStore {
    *  Guard sitzt in der Abfrage selbst und ueberschreibt kein aelteres Datum. */
   markMeilensteinAchieved(id: string, date: string): Promise<void>;
   insertRmTest(row: RmTestRowIns): Promise<void>;
+  updateRmTest(id: string, patch: RmTestPatch): Promise<void>;
   deleteRmTest(id: string): Promise<void>;
   updateUebung(id: string, patch: UebungPatch): Promise<void>;
 }
@@ -91,6 +99,9 @@ export const supabaseExerciseStore: ExerciseStore = {
   async insertRmTest(row) {
     must(await supabase.from("rm_tests").insert(row));
   },
+  async updateRmTest(id, patch) {
+    must(await supabase.from("rm_tests").update(patch).eq("id", id));
+  },
   async deleteRmTest(id) {
     must(await supabase.from("rm_tests").delete().eq("id", id));
   },
@@ -110,6 +121,7 @@ export interface MemoryExerciseLog {
   meilensteinDeleted: string[];
   meilensteinAchieved: Array<{ id: string; date: string }>;
   rmTestInserted: RmTestRowIns[];
+  rmTestPatches: Array<{ id: string; patch: RmTestPatch }>;
   rmTestDeleted: string[];
   uebungPatches: Array<{ id: string; patch: UebungPatch }>;
   folge: string[];
@@ -127,6 +139,7 @@ export function createMemoryExerciseStore(): {
     meilensteinDeleted: [],
     meilensteinAchieved: [],
     rmTestInserted: [],
+    rmTestPatches: [],
     rmTestDeleted: [],
     uebungPatches: [],
     folge: [],
@@ -151,6 +164,10 @@ export function createMemoryExerciseStore(): {
     async insertRmTest(row) {
       log.rmTestInserted.push(row);
       log.folge.push("insertRmTest");
+    },
+    async updateRmTest(id, patch) {
+      log.rmTestPatches.push({ id, patch });
+      log.folge.push("updateRmTest");
     },
     async deleteRmTest(id) {
       log.rmTestDeleted.push(id);

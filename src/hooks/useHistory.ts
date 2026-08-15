@@ -45,6 +45,7 @@ export function useHistory(): {
       reps: t.reps,
       estRm: t.est_rm,
       previousRm: t.previous_rm,
+      notiz: t.notiz,
     }));
 
     const exName: Record<string, string> = {};

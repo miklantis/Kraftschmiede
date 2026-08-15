@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.16",
+      "date": "2026-08-15",
+      "changes": [
+        "Auch der 1RM-Test hat jetzt eine Notiz: Sie wird direkt an der Testkarte erfasst und beim Speichern zum Test abgelegt. Im Verlauf steht sie unter dem Testergebnis zum Nachlesen, ändern lässt sie sich im 1RM-Block der Übung – dort, wo der Test auch sonst verwaltet wird."
+      ]
+    },
+    {
       "version": "1.26.15",
       "date": "2026-08-15",
       "changes": [

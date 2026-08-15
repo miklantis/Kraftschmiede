@@ -215,6 +215,26 @@ describe("buildHistoryModel – 1RM-Tests", () => {
     expect(row.readOnly).toBe(true);
     expect(row.detail[0]?.lines[1]).toContain("→");
     expect(m.byDate["2026-08-05"]?.[0]?.kind).toBe("rmtest");
+    // Ohne Notiz bleibt es bei der einen Zeile.
+    expect(row.detail).toHaveLength(1);
+  });
+
+  it("zeigt die Notiz eines Tests als eigene Zeile", () => {
+    const m = buildHistoryModel([], lk, [
+      {
+        id: "t1",
+        date: "2026-08-05",
+        exerciseId: "e1",
+        weight: 100,
+        reps: 3,
+        estRm: 108,
+        previousRm: 100,
+        notiz: "  Schmerzen links  ",
+      },
+    ]);
+    const detail = m.sessions[0]!.detail;
+    expect(detail).toHaveLength(2);
+    expect(detail[1]).toEqual({ label: "Notiz", lines: ["Schmerzen links"] });
   });
 
   it("ohne Tests bleibt das Modell unveraendert", () => {

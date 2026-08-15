@@ -94,7 +94,10 @@ function PanelContent({
 /** Inhalt des 1RM-Tests: allgemeines Aufwaermen wie beim Workout, darunter die
  *  eine getestete Uebung in der vertrauten Satz-Karte (ohne RIR-Spalte, ohne
  *  Aufwaermsaetze) und die Vorschau „altes → neues 1RM“, sobald ein Satz
- *  abgehakt ist. */
+ *  abgehakt ist.
+ *
+ *  Ein Test hat genau eine Uebung: die Notiz an der Testkarte ist zugleich die
+ *  Notiz zum Test – darum gibt es hier keine zweite Notiz zur Einheit. */
 function RmTestPanelContent({
   session,
   live,
@@ -147,6 +150,7 @@ function RmTestPanelContent({
           onDelSet={() => live.delSet(0)}
           onChangeBar={(bar) => live.changeBar(0, bar)}
           onCyclePlate={() => live.cyclePlateMode(0)}
+          onNote={(note) => live.setEntryNote(0, note)}
           hideScore
         />
       )}

@@ -40,6 +40,15 @@ export type RmTestAction =
       reps: number;
       estRm: number;
       previousRm: number | null;
+      /** Freitext-Notiz zum Test (leer = keine Notiz). */
+      notiz: string;
+    }
+  | {
+      // Nachtraegliche Notiz zum Test (1RM-Block der Uebungsseite). Die
+      // Messwerte bleiben unberuehrt.
+      type: "updateNote";
+      id: string;
+      notiz: string;
     }
   | {
       type: "delete";
@@ -93,9 +102,10 @@ export async function writeMilestoneAction(
   await store.deleteMeilenstein(action.id);
 }
 
-/** Eine 1RM-Test-Aktion abspielen. Zweistufig, und die Reihenfolge ist Teil der
- *  Absicht: erst die Test-Zeile, dann der Katalog – beim Loeschen erst die Zeile
- *  weg, dann (falls noetig) der Rekord zurueck. */
+/** Eine 1RM-Test-Aktion abspielen. Anlegen und Loeschen sind zweistufig, und die
+ *  Reihenfolge ist Teil der Absicht: erst die Test-Zeile, dann der Katalog –
+ *  beim Loeschen erst die Zeile weg, dann (falls noetig) der Rekord zurueck.
+ *  Die Notiz ist einstufig: sie beruehrt den Katalog nicht. */
 export async function writeRmTestAction(
   store: ExerciseStore,
   userId: string | null,
@@ -112,6 +122,7 @@ export async function writeRmTestAction(
       reps: action.reps,
       est_rm: action.estRm,
       previous_rm: action.previousRm,
+      notiz: action.notiz,
     };
     await store.insertRmTest(row);
     // Der Test ist der frische Beleg: Rekord auf den gemessenen Wert, Datum des
@@ -121,6 +132,11 @@ export async function writeRmTestAction(
       rm_as_of: action.date,
       rm_stale: false,
     });
+    return;
+  }
+
+  if (action.type === "updateNote") {
+    await store.updateRmTest(action.id, { notiz: action.notiz });
     return;
   }
 

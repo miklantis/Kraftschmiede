@@ -94,6 +94,7 @@ describe("writeRmTestAction", () => {
       reps: 3,
       estRm: 99,
       previousRm: 95,
+      notiz: "fiel schwer",
     });
     expect(log.folge).toEqual(["insertRmTest", "updateUebung"]);
     expect(log.rmTestInserted).toEqual([
@@ -105,6 +106,7 @@ describe("writeRmTestAction", () => {
         reps: 3,
         est_rm: 99,
         previous_rm: 95,
+        notiz: "fiel schwer",
       },
     ]);
     expect(log.uebungPatches).toEqual([
@@ -125,6 +127,7 @@ describe("writeRmTestAction", () => {
       reps: 5,
       estRm: 80,
       previousRm: null,
+      notiz: "",
     });
     expect(log.rmTestInserted[0]?.previous_rm).toBeNull();
     expect(log.uebungPatches).toEqual([
@@ -133,6 +136,20 @@ describe("writeRmTestAction", () => {
         patch: { rm: 80, rm_as_of: "2026-08-10", rm_stale: false },
       },
     ]);
+  });
+
+  it("schreibt eine nachtraegliche Notiz ohne den Katalog anzufassen", async () => {
+    const { store, log } = createMemoryExerciseStore();
+    await writeRmTestAction(store, "u1", {
+      type: "updateNote",
+      id: "t1",
+      notiz: "Schmerzen links",
+    });
+    expect(log.folge).toEqual(["updateRmTest"]);
+    expect(log.rmTestPatches).toEqual([
+      { id: "t1", patch: { notiz: "Schmerzen links" } },
+    ]);
+    expect(log.uebungPatches).toEqual([]);
   });
 
   it("nimmt beim Loeschen des juengsten Tests den Rekord zurueck", async () => {

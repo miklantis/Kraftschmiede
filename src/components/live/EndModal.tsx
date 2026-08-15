@@ -184,6 +184,9 @@ function RmTestEnd({ s }: { s: RmTestSession }): React.ReactElement {
       reps: result.best.reps,
       estRm: result.estRm,
       previousRm: s.previousRm,
+      // Die Notiz haengt beim Test an der einen Uebung und wandert von dort in
+      // die Test-Zeile (rm_tests.notiz).
+      notiz: entry?.note.trim() ?? "",
     });
     live.clear();
   }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Trash2, Target } from "lucide-react";
 import { Section } from "@/components/ui/section";
+import { NoteBlock } from "@/components/ui/note-block";
 import { useStartRmTest } from "@/hooks/useStartRmTest";
 import { useRmTests } from "@/hooks/useRmTests";
 import { useRmTestActions } from "@/hooks/useRmTestActions";
@@ -12,6 +13,10 @@ import type { ExerciseRow, RmTestRow } from "@/schemas";
 // beweisgebundener Rekord und bekommt hier einen eigenen Block, getrennt vom
 // Coach-Status (Arbeitsgewicht) und der Statistik-Reihe: aktueller Wert mit
 // Datum, der Test-Knopf und die Liste der bisherigen Tests.
+//
+// Nur hier ist auch die Notiz eines Tests aenderbar: im Verlauf steht sie
+// bewusst nur zum Nachlesen, damit ein Test nicht ueber zwei Wege bearbeitbar
+// wird.
 //
 // Nur hier ist ein Test loeschbar (Fehleingabe). Das 1RM wird dabei bewusst
 // NICHT auf einen frueheren Wert zurueckgerechnet – Korrektur laeuft ueber
@@ -30,7 +35,7 @@ export function RmSection({
   const currentRm = exercise.rm;
   const rmAsOf = exercise.rm_as_of;
   const testsQ = useRmTests(exerciseId);
-  const { remove, isPending } = useRmTestActions();
+  const { remove, setNote, isPending } = useRmTestActions();
   const { start, blocked } = useStartRmTest();
   // Welche Zeile fragt gerade nach (Inline-Rueckfrage wie im Verlauf).
   const [confirmId, setConfirmId] = useState<string | null>(null);
@@ -144,6 +149,14 @@ export function RmSection({
                   </button>
                 )}
               </div>
+
+              <NoteBlock
+                value={t.notiz}
+                onChange={(note) => void setNote({ id: t.id, notiz: note })}
+                compact
+                className="pt-2"
+                placeholder="Wie lief der Test?"
+              />
 
               {confirmId === t.id && (
                 <div className="flex flex-col gap-2.5 pt-3">
