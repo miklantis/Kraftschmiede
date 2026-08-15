@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.19",
+      "date": "2026-08-15",
+      "changes": [
+        "Die Notiz zum ganzen Training heißt jetzt „Workout-Notiz“ (in der Skill-Einheit „Skill-Notiz“) und sitzt nicht mehr in einer eigenen weißen Karte, sondern direkt auf dem Hintergrund unter den Übungen – ruhiger und klarer zuzuordnen."
+      ]
+    },
+    {
       "version": "1.26.18",
       "date": "2026-08-15",
       "changes": [

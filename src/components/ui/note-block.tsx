@@ -17,6 +17,10 @@ import { cn } from "@/lib/utils";
 // Leere Notiz beim Speichern = Notiz entfernen. Den Bearbeiten-Zustand haelt der
 // Baustein selbst; nach aussen geht nur der fertige Text (onChange).
 //
+// `bare` nimmt beide Flaechen weg: das Feld steht nur im gruenen Rahmen, die
+// gespeicherte Notiz als reiner Text - fuer Stellen, an denen die Notiz direkt
+// auf dem Seitenhintergrund liegt statt in einer Karte (Live-Panel).
+//
 // `actions` fuellt die linke Seite der Knopfzeile (z. B. die vorhandene
 // Fusszeile eines Blocks), damit der "+ Notiz"-Knopf rechts daneben sitzen kann
 // und das Eingabefeld trotzdem darunter aufklappt statt in der Zeile.
@@ -27,6 +31,7 @@ export function NoteBlock({
   label = "Notiz",
   placeholder = "Notiz …",
   compact = false,
+  bare = false,
   actions,
   className,
 }: {
@@ -35,6 +40,7 @@ export function NoteBlock({
   label?: string;
   placeholder?: string;
   compact?: boolean;
+  bare?: boolean;
   actions?: React.ReactNode;
   className?: string;
 }): React.ReactElement {
@@ -98,7 +104,12 @@ export function NoteBlock({
       )}
 
       {editing && (
-        <div className="rounded-control border-2 border-primary bg-card px-3 py-2.5">
+        <div
+          className={cn(
+            "rounded-control border-2 border-primary px-3 py-2.5",
+            bare ? "bg-transparent" : "bg-card",
+          )}
+        >
           {!compact && (
             <span className="mb-1.5 block text-[13px] font-semibold text-muted-foreground">
               {label}
@@ -150,7 +161,12 @@ export function NoteBlock({
       )}
 
       {!editing && hasNote && (
-        <div className="flex items-start gap-2 rounded-control bg-muted px-3 py-2.5">
+        <div
+          className={cn(
+            "flex items-start gap-2",
+            bare ? "px-0.5" : "rounded-control bg-muted px-3 py-2.5",
+          )}
+        >
           <div className="min-w-0 flex-1">
             {!compact && (
               <span className="mb-1 block text-[13px] font-semibold text-muted-foreground">
