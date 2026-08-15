@@ -83,6 +83,7 @@ export interface CoachExerciseCat {
 export interface CoachEntry {
   exercise: string;
   sets: string[]; // kompakte Satz-Strings, nur Arbeitssaetze
+  note?: string; // Freitext-Notiz zur Uebung, nur wenn gefuellt
 }
 
 export interface CoachSession {
@@ -524,7 +525,10 @@ export function buildCoachExport(
         const sets = (setsByExercise.get(ex.id) ?? []).map((st) =>
           setString(st, isSkill),
         );
-        return { exercise: name, sets };
+        const entry: CoachEntry = { exercise: name, sets };
+        const note = str(ex, "note");
+        if (note != null && note.trim() !== "") entry.note = note.trim();
+        return entry;
       });
       if (coachEntries.length > 0) out.exercises = coachEntries;
       return out;
