@@ -39,6 +39,38 @@ describe("bodyMetricSeries", () => {
     expect(bodyMetricSeries(rows, "phase").vals).toEqual([6.2]);
     expect(bodyMetricSeries(rows, "weight").vals).toEqual([]);
   });
+
+  it("mittelt mehrere Messungen derselben Kalenderwoche", () => {
+    // 1./3./7. Juni 2026 liegen alle in der Woche ab Montag, 1. Juni.
+    const rows = [
+      row({ date: "2026-06-01", weight: 80 }),
+      row({ date: "2026-06-03", weight: 82 }),
+      row({ date: "2026-06-07", weight: 84 }),
+    ];
+    const s = bodyMetricSeries(rows, "weight");
+    expect(s.weekPoints).toEqual([{ slot: 0, value: 82 }]);
+    expect(s.weekSlots).toBe(1);
+  });
+
+  it("haelt leere Wochen als Platz frei", () => {
+    // 1. Juni und 22. Juni: drei Wochen Abstand, dazwischen keine Messung.
+    const rows = [
+      row({ date: "2026-06-01", weight: 80 }),
+      row({ date: "2026-06-22", weight: 78 }),
+    ];
+    const s = bodyMetricSeries(rows, "weight");
+    expect(s.weekPoints).toEqual([
+      { slot: 0, value: 80 },
+      { slot: 3, value: 78 },
+    ]);
+    expect(s.weekSlots).toBe(4);
+  });
+
+  it("liefert ohne Messung eine leere Wochen-Reihe", () => {
+    const s = bodyMetricSeries([row({ date: "2026-06-01", weight: null })], "weight");
+    expect(s.weekPoints).toEqual([]);
+    expect(s.weekSlots).toBe(0);
+  });
 });
 
 describe("compChips", () => {

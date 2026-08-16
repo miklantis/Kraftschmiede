@@ -9,7 +9,8 @@ import {
 import type { CompositionRow } from "@/schemas";
 
 // Mess-Karte: Metrik-Umschalter (Gewicht/Fett/Muskel/Wasser/Phasenwinkel) plus
-// Verlaufslinie der gewaehlten Metrik. Bei gar keiner Messung ein Hinweis (die
+// Verlaufslinie der gewaehlten Metrik (ein Punkt je Kalenderwoche, mehrere
+// Messungen einer Woche als Mittelwert). Bei gar keiner Messung ein Hinweis (die
 // Mess-Liste zur Pflege von Hand liegt direkt darunter). Die gewaehlte Metrik
 // haelt das umgebende Panel
 // (damit der Meilenstein-Abschnitt derselben Metrik folgt); optional werden die
@@ -77,7 +78,8 @@ export function BodyMeasureCard({
         ariaLabel="Messmetrik"
       />
       <BodyMetricChart
-        vals={series.vals}
+        points={series.weekPoints}
+        slots={series.weekSlots}
         unit={series.unit}
         pad={series.pad}
         milestoneLines={milestoneLines}

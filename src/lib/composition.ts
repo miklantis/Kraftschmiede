@@ -41,15 +41,40 @@ export const BODY_METRIC_OPTIONS: ReadonlyArray<{ key: BodyMetric; label: string
   ["weight", "fat", "muscle", "muscle_mass", "water", "phase", "bmr"] as const
 ).map((k) => ({ key: k, label: BODY_METRIC[k].short }));
 
+// Ein Chart-Punkt der Wochen-Reihe: slot ist der Wochen-Abstand zur ersten
+// Messwoche (0 = erste Woche mit Messung), value der Wochen-Mittelwert.
+export interface BodyMetricWeekPoint {
+  slot: number;
+  value: number;
+}
+
 export interface BodyMetricSeries {
   vals: number[];
+  // Wochen-Reihe fuer den Chart: je Kalenderwoche hoechstens ein Punkt.
+  weekPoints: BodyMetricWeekPoint[];
+  // Anzahl Wochen-Plaetze von der ersten bis zur letzten Messwoche
+  // (einschliesslich der leeren Wochen dazwischen). 0 ohne Messung.
+  weekSlots: number;
   unit: string;
   pad: number;
   label: string;
 }
 
+// Montag der Kalenderwoche eines ISO-Datums (lokal, 00:00).
+function mondayOf(dateStr: string): Date {
+  const d = new Date(dateStr + "T00:00:00");
+  const day = (d.getDay() + 6) % 7; // Mo=0 .. So=6
+  d.setDate(d.getDate() - day);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 // Werte-Reihe einer Metrik aus den Messungen (alt -> neu), null-Werte fallen
 // weg. So zeigt der Chart nur Messungen, fuer die die Metrik vorliegt.
+// Zusaetzlich die Wochen-Reihe fuer den Chart: mehrere Messungen derselben
+// Kalenderwoche werden zu ihrem Mittelwert zusammengefasst, Wochen ganz ohne
+// Messung bekommen keinen Punkt, behalten aber ihren Platz auf der Achse –
+// so bleiben Mess-Luecken im Verlauf sichtbar.
 export function bodyMetricSeries(
   rows: readonly CompositionRow[],
   metric: BodyMetric,
@@ -59,11 +84,46 @@ export function bodyMetricSeries(
     .slice()
     .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
   const vals: number[] = [];
+  // Wochenweise sammeln (Montag als Schluessel, chronologisch durch die
+  // sortierte Eingabe).
+  const byWeek = new Map<number, { sum: number; count: number }>();
   for (const r of sorted) {
     const v = r[def.field];
-    if (typeof v === "number" && !Number.isNaN(v)) vals.push(v);
+    if (typeof v !== "number" || Number.isNaN(v)) continue;
+    vals.push(v);
+    const key = mondayOf(r.date).getTime();
+    const acc = byWeek.get(key);
+    if (acc) {
+      acc.sum += v;
+      acc.count += 1;
+    } else {
+      byWeek.set(key, { sum: v, count: 1 });
+    }
   }
-  return { vals, unit: def.unit, pad: def.pad, label: def.label };
+
+  const keys = [...byWeek.keys()].sort((a, b) => a - b);
+  const weekPoints: BodyMetricWeekPoint[] = [];
+  let weekSlots = 0;
+  if (keys.length > 0) {
+    const first = keys[0];
+    // Ueber die Tagesdifferenz gerechnet, damit Zeitumstellungen (23-/25-h-Tage)
+    // den Wochen-Abstand nicht verschieben.
+    const slotOf = (k: number) => Math.round((k - first) / 604800000);
+    for (const k of keys) {
+      const acc = byWeek.get(k) as { sum: number; count: number };
+      weekPoints.push({ slot: slotOf(k), value: acc.sum / acc.count });
+    }
+    weekSlots = slotOf(keys[keys.length - 1]) + 1;
+  }
+
+  return {
+    vals,
+    weekPoints,
+    weekSlots,
+    unit: def.unit,
+    pad: def.pad,
+    label: def.label,
+  };
 }
 
 // Anzeige-Chips einer Messung (nur vorhandene Felder). Fett bevorzugt Prozent.

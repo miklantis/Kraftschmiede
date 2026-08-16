@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { scaleLinear } from "d3-scale";
 import {
   appendAreaGradient,
@@ -17,21 +17,31 @@ import { fmtScore } from "@/lib/format";
 // Verlaufslinie einer Koerper-Messmetrik (Gewicht/Fett/Muskel/Wasser/Phasen-
 // winkel) auf dem geteilten D3-Fundament, im V1-Look: glatte gruene Kurve mit
 // weicher Flaeche, drei Hilfslinien und ein Mono-Wertlabel am letzten Punkt.
-// Reine Werte-Reihe (alt -> neu). Punkt-Darstellung und Tooltip folgen der
-// Linien-Ansicht des Uebungs-Charts: jede Messung bekommt einen Punkt, die
-// letzte den groesseren offenen Ring, Tippen/Hovern zeigt den Wert.
+// Punkt-Darstellung und Tooltip folgen der Linien-Ansicht des Uebungs-Charts:
+// je Punkt ein Punkt, der letzte als groesserer offener Ring, Tippen/Hovern
+// zeigt den Wert. Die x-Achse ist ein Wochenraster: jeder Punkt steht auf dem
+// Platz seiner Kalenderwoche (slot), Wochen ohne Messung bleiben leer, sodass
+// Mess-Luecken als groesserer Abstand sichtbar werden. Die Kurve laeuft dabei
+// durchgehend weiter.
 
 const MARGIN = { t: 18, r: 16, b: 16, l: 10 };
-const PER_POINT = 44;
+// Mindestbreite je Wochen-Platz; darunter wird der Chart scrollbar. Etwas
+// schmaler als frueher je Messung, weil das Wochenraster auch leere Plaetze
+// enthaelt.
+const PER_SLOT = 26;
 
 export function BodyMetricChart({
-  vals,
+  points,
+  slots,
   unit,
   pad,
   milestoneLines,
   height = 180,
 }: {
-  vals: number[];
+  // Wochen-Punkte (alt -> neu); slot = Wochen-Abstand zur ersten Messwoche.
+  points: readonly { slot: number; value: number }[];
+  // Anzahl Wochen-Plaetze einschliesslich der leeren dazwischen.
+  slots: number;
   unit: string;
   pad: number;
   // Optionale Ziel-Linien (Meilensteine) der gewaehlten Metrik. Jede zeichnet
@@ -41,7 +51,8 @@ export function BodyMetricChart({
   milestoneLines?: readonly { value: number; label: string }[];
   height?: number;
 }): React.ReactElement {
-  const n = vals.length;
+  const n = points.length;
+  const vals = useMemo(() => points.map((p) => p.value), [points]);
 
   const draw = useCallback(
     (svg: ChartSvg, dims: ChartDims) => {
@@ -94,10 +105,12 @@ export function BodyMetricChart({
         axisHi += (axisHi - axisLo) * 0.06;
       }
 
-      const x = scaleLinear()
-        .domain([0, Math.max(1, n - 1)])
-        .range([0, iw]);
-      const px = (i: number) => (n === 1 ? iw / 2 : x(i));
+      // x-Achse ist das Wochenraster: die Domaene spannt alle Wochen-Plaetze,
+      // ein Punkt sitzt auf dem Platz seiner Woche. Leere Wochen bleiben so als
+      // Abstand stehen.
+      const lastSlot = Math.max(1, slots - 1);
+      const x = scaleLinear().domain([0, lastSlot]).range([0, iw]);
+      const px = (slot: number) => (slots <= 1 ? iw / 2 : x(slot));
       const Y = (v: number) => ih - ((v - axisLo) / (axisHi - axisLo)) * ih;
 
       // Drei Hilfslinien (auf Basis der Ist-Wertespanne).
@@ -137,7 +150,7 @@ export function BodyMetricChart({
           .text(gl.label);
       });
 
-      const co = vals.map((v, i) => ({ y: v, cx: px(i) }));
+      const co = points.map((p) => ({ y: p.value, cx: px(p.slot) }));
 
       const gid = "bodyarea" + Math.random().toString(36).slice(2, 7);
       appendAreaGradient(svg.append("defs"), gid, ACC, 0.18);
@@ -152,7 +165,7 @@ export function BodyMetricChart({
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round");
 
-      // Punkte je Messung; der letzte als groesserer offener Ring.
+      // Punkt je Messwoche; der letzte als groesserer offener Ring.
       co.forEach((p, i) => {
         if (i === n - 1) return;
         g.append("circle")
@@ -211,14 +224,14 @@ export function BodyMetricChart({
           });
       });
     },
-    [vals, n, unit, pad, milestoneLines],
+    [points, vals, n, slots, unit, pad, milestoneLines],
   );
 
   return (
     <ChartCanvas
       height={height}
       margin={MARGIN}
-      minInnerWidth={n * PER_POINT}
+      minInnerWidth={slots * PER_SLOT}
       draw={draw}
       ariaLabel="Messverlauf"
     />
