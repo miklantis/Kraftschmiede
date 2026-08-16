@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.27.1",
+      "date": "2026-08-16",
+      "changes": [
+        "Der Journey-Block oben auf der Trainingsseite hat jetzt die Überschrift „Aktive Journey“ – so ist er wie die übrigen Blöcke der Seite („Heute empfohlen“, „Weitere Workouts“) benannt.",
+        "Im 1RM-Block einer Übung steht der Hinweis „Noch kein Test gemacht.“ jetzt ohne die Trennlinie darüber."
+      ]
+    },
+    {
       "version": "1.27.0",
       "date": "2026-08-16",
       "changes": [

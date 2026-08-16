@@ -107,10 +107,10 @@ export function RmSection({
         </button>
 
         {/* Solange es keinen Test gibt, steht der Hinweis in der Karte selbst -
-            unter dem Knopf, abgesetzt durch eine dezente Linie. Erst sobald
-            Tests da sind, folgt die Liste als eigene Karten unter dem Block. */}
+            unter dem Knopf, ohne Trennlinie. Erst sobald Tests da sind, folgt
+            die Liste als eigene Karten unter dem Block. */}
         {!testsQ.isLoading && rows.length === 0 && (
-          <p className="mt-3.5 border-t border-border pt-3.5 text-[14px] text-muted-foreground">
+          <p className="mt-3.5 text-[14px] text-muted-foreground">
             Noch kein Test gemacht.
           </p>
         )}
