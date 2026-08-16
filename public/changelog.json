@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.21",
+      "date": "2026-08-16",
+      "changes": [
+        "Der Verlauf der Körpermessungen zeigt jetzt jede Messung als Punkt auf der Linie – die letzte bleibt als größerer Punkt hervorgehoben. Tippst du einen Punkt an, erscheint der gemessene Wert als kleiner Hinweis, genau wie im Übungs-Verlauf."
+      ]
+    },
+    {
       "version": "1.26.20",
       "date": "2026-08-15",
       "changes": [

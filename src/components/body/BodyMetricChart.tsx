@@ -3,6 +3,7 @@ import { scaleLinear } from "d3-scale";
 import {
   appendAreaGradient,
   appendEndpointRing,
+  appendTooltip,
   ChartCanvas,
   CHART_MONO,
   readToken,
@@ -16,7 +17,9 @@ import { fmtScore } from "@/lib/format";
 // Verlaufslinie einer Koerper-Messmetrik (Gewicht/Fett/Muskel/Wasser/Phasen-
 // winkel) auf dem geteilten D3-Fundament, im V1-Look: glatte gruene Kurve mit
 // weicher Flaeche, drei Hilfslinien und ein Mono-Wertlabel am letzten Punkt.
-// Reine Werte-Reihe (alt -> neu); kein Tooltip (wie V1).
+// Reine Werte-Reihe (alt -> neu). Punkt-Darstellung und Tooltip folgen der
+// Linien-Ansicht des Uebungs-Charts: jede Messung bekommt einen Punkt, die
+// letzte den groesseren offenen Ring, Tippen/Hovern zeigt den Wert.
 
 const MARGIN = { t: 18, r: 16, b: 16, l: 10 };
 const PER_POINT = 44;
@@ -149,6 +152,16 @@ export function BodyMetricChart({
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round");
 
+      // Punkte je Messung; der letzte als groesserer offener Ring.
+      co.forEach((p, i) => {
+        if (i === n - 1) return;
+        g.append("circle")
+          .attr("cx", p.cx)
+          .attr("cy", Y(p.y))
+          .attr("r", 2.8)
+          .attr("fill", ACC);
+      });
+
       const last = co[n - 1];
       appendEndpointRing(g, last.cx, Y(last.y), ACC);
       g.append("text")
@@ -160,6 +173,43 @@ export function BodyMetricChart({
         .attr("font-weight", 700)
         .attr("font-family", CHART_MONO)
         .text(fmtScore(last.y) + " " + unit);
+
+      // Tooltip je Punkt (Tippen/Hovern), grosszuegige Trefferflaeche.
+      let tipTO: ReturnType<typeof setTimeout> | null = null;
+      const hideTip = () => g.selectAll(".body-tip").remove();
+      const showTip = (i: number) => {
+        if (tipTO) {
+          clearTimeout(tipTO);
+          tipTO = null;
+        }
+        hideTip();
+        const tip = g.append("g").attr("class", "body-tip");
+        appendTooltip(tip, {
+          cx: co[i].cx,
+          cy: Y(co[i].y),
+          innerWidth: iw,
+          text: fmtScore(co[i].y) + " " + unit,
+          bg: INK,
+          fontFamily: CHART_MONO,
+          fontSize: 14,
+          height: 26,
+        });
+      };
+      co.forEach((p, i) => {
+        g.append("circle")
+          .attr("cx", p.cx)
+          .attr("cy", Y(p.y))
+          .attr("r", 12)
+          .attr("fill", "transparent")
+          .style("cursor", "pointer")
+          .on("mouseenter", () => showTip(i))
+          .on("mouseleave", hideTip)
+          .on("touchstart", () => {
+            showTip(i);
+            if (tipTO) clearTimeout(tipTO);
+            tipTO = setTimeout(hideTip, 1800);
+          });
+      });
     },
     [vals, n, unit, pad, milestoneLines],
   );
