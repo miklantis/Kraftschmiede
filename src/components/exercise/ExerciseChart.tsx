@@ -15,6 +15,7 @@ import {
   type ChartDims,
   type ChartSvg,
 } from "@/components/ui/chart";
+import { timeSlots } from "@/lib/chartTime";
 import { fmtNum, fmtWeight } from "@/lib/format";
 import {
   exLineSeries,
@@ -30,11 +31,14 @@ import {
 // das geteilte D3-Fundament gehoben. Linien-Metriken (1RM/Top-Gewicht/Wdh/
 // Haltezeit) zeichnen eine glatte Kurve je Einheit mit weicher Flaeche, hellem
 // Endpunkt-Ring und Tooltip; Abweichungs-Einheiten bekommen einen roten Punkt.
+// Die x-Achse laeuft nach Datum (tagesgenau): jede Einheit bleibt ein eigener
+// Punkt, aber Trainingspausen bleiben als Luecke sichtbar.
 // "volume" zeichnet Wochenbalken (oben gerundet, gruener Verlauf).
 
 const MARGIN = { t: 14, r: 14, b: 8, l: 30 };
 const BAR_MARGIN = { t: 14, r: 6, b: 28, l: 30 };
 const PER_POINT = 26; // Mindestbreite je Punkt; darunter wird der Chart scrollbar.
+const PER_WEEK = 26; // Mindestbreite je Kalenderwoche der Zeitspanne.
 const PER_BAR = 30;
 
 function fmtLineVal(metric: ExLineMetric, v: number, unit: string): string {
@@ -138,10 +142,14 @@ export function ExerciseChart({
         domHi += (domHi - domLo) * 0.08;
       }
 
+      // x-Achse laeuft nach Datum: jeder Punkt sitzt auf seinem Tag, Wochen
+      // ohne Einheit bleiben als Luecke stehen. Ohne verwertbare Daten (oder
+      // wenn alles auf einen Tag faellt) gleichmaessige Verteilung wie frueher.
+      const slots = timeSlots(pts.map((p) => p.date));
       const x = scaleLinear()
-        .domain([0, Math.max(1, n - 1)])
+        .domain([0, slots ? slots[slots.length - 1] : Math.max(1, n - 1)])
         .range([0, iw]);
-      const px = (i: number) => (n === 1 ? iw / 2 : x(i));
+      const px = (i: number) => (n === 1 ? iw / 2 : x(slots ? slots[i] : i));
       const Y = (v: number) => ih - ((v - domLo) / (domHi - domLo)) * ih;
 
       // x-Position je Punkt einbacken (Helfer erwarten (d)=>number).
@@ -355,11 +363,15 @@ export function ExerciseChart({
       />
     );
   }
+  // Mindestbreite: Platz fuer alle Punkte, aber auch fuer die Zeitspanne, damit
+  // Pausen als Luecke sichtbar bleiben statt zusammengedrueckt zu werden.
+  const lineSlots = timeSlots(linePoints.map((p) => p.date));
+  const spanWeeks = lineSlots ? lineSlots[lineSlots.length - 1] / 7 : 0;
   return (
     <ChartCanvas
       height={height}
       margin={MARGIN}
-      minInnerWidth={n * PER_POINT}
+      minInnerWidth={Math.max(n * PER_POINT, Math.round(spanWeeks * PER_WEEK))}
       draw={drawLine}
       ariaLabel="Verlauf"
     />

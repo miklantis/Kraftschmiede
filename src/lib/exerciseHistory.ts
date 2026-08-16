@@ -285,6 +285,13 @@ export interface ExLinePoint {
   flag: boolean; // Abweichung in dieser Einheit
   /** Punkt stammt aus einem bewussten 1RM-Test, nicht aus einer Einheit. */
   test?: boolean;
+  /**
+   * Datum des Punktes (ISO, YYYY-MM-DD). Traegt die zeitliche Platzierung im
+   * Chart: die x-Achse laeuft nach Datum, damit Trainingspausen als Luecke
+   * sichtbar bleiben. Leer, wenn kein Datum bestimmbar ist (dann faellt der
+   * Chart auf gleichmaessige Verteilung zurueck).
+   */
+  date: string;
 }
 
 /** Ein 1RM-Test fuer die Chart-Reihe (aus rm_tests). */
@@ -310,7 +317,7 @@ export function exLineSeries(
   if (metric === "rm" || metric === "trend") {
     return h
       .filter((x) => x.est1RM != null)
-      .map((x) => ({ y: x.est1RM as number, flag: x.dev }));
+      .map((x) => ({ y: x.est1RM as number, flag: x.dev, date: x.date }));
   }
   const pick =
     metric === "weight"
@@ -318,7 +325,7 @@ export function exLineSeries(
       : metric === "reps"
         ? (x: ExHistoryEntry) => x.reps
         : (x: ExHistoryEntry) => x.sec || 0;
-  return h.map((x) => ({ y: pick(x), flag: x.dev }));
+  return h.map((x) => ({ y: pick(x), flag: x.dev, date: x.date }));
 }
 
 // Die 1RM-Rekord-Treppe: der beweisgebundene Rekord ueber die Zeit. Sie steigt
@@ -359,17 +366,26 @@ export function recordSeries(
     if (ev.test) {
       // Bewusster Test: setzt den Rekord hoch oder runter, immer eine Stufe.
       rec = ev.y;
-      pts.push({ y: rec, flag: false, test: true });
+      pts.push({ y: rec, flag: false, test: true, date: ev.date });
     } else if (rec == null || ev.y > rec + EPS) {
       // Trainings-PR: hebt den Rekord an (nie senken).
       rec = ev.y;
-      pts.push({ y: rec, flag: false, test: false });
+      pts.push({ y: rec, flag: false, test: false, date: ev.date });
     }
   }
 
   if (storedRm != null) {
     if (pts.length === 0 || Math.abs(pts[pts.length - 1].y - storedRm) > EPS) {
-      pts.push({ y: storedRm, flag: false, test: false });
+      // Der Blockwert traegt kein eigenes Datum; er gilt seit dem letzten
+      // bekannten Ereignis und sitzt daher auf dessen Tag (leer, wenn es gar
+      // keins gibt - dann ist er ohnehin der einzige Punkt).
+      const lastDate =
+        evs.length > 0
+          ? evs[evs.length - 1].date
+          : h.length > 0
+            ? h[h.length - 1].date
+            : "";
+      pts.push({ y: storedRm, flag: false, test: false, date: lastDate });
     }
   }
   return pts;

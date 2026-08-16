@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.27.0",
+      "date": "2026-08-16",
+      "changes": [
+        "Der Übungs-Verlauf sitzt jetzt zeitlich richtig: jede Einheit bleibt ein eigener Punkt, aber die Punkte stehen dort, wo sie im Kalender liegen. Trainingspausen siehst du damit als Lücke im Verlauf statt als gleichmäßige Reihe. Die Wochenvolumen-Balken bleiben unverändert."
+      ]
+    },
+    {
       "version": "1.26.22",
       "date": "2026-08-16",
       "changes": [
