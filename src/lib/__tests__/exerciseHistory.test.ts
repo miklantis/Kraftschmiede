@@ -220,6 +220,12 @@ describe("exLineSeries", () => {
   it("reps: Summe der Arbeitssatz-Wdh", () => {
     expect(exLineSeries(h, "reps").map((p) => p.y)).toEqual([5, 3]);
   });
+
+  it("traegt das Datum je Punkt fuer die Zeitachse", () => {
+    const dates = ["2026-01-01", "2026-01-08"];
+    expect(exLineSeries(h, "rm").map((p) => p.date)).toEqual(dates);
+    expect(exLineSeries(h, "weight").map((p) => p.date)).toEqual(dates);
+  });
 });
 
 describe("exVolumeSeries", () => {
@@ -450,6 +456,17 @@ describe("recordSeries – 1RM-Rekord-Treppe", () => {
   it("leere Historie mit gespeichertem Rekord: ein Punkt auf dem Blockwert", () => {
     const pts = recordSeries([], [], 120);
     expect(pts.map((p) => p.y)).toEqual([120]);
+  });
+
+  it("traegt Datum je Stufe, der Blockwert das letzte bekannte", () => {
+    const h = [rEntry("2026-01-01", 100), rEntry("2026-01-15", 110)];
+    const pts = recordSeries(h, [{ date: "2026-01-20", estRm: 105 }], 140);
+    expect(pts.map((p) => p.date)).toEqual([
+      "2026-01-01",
+      "2026-01-15",
+      "2026-01-20",
+      "2026-01-20",
+    ]);
   });
 
   it("ohne Kandidaten und ohne gespeicherten Rekord: keine Punkte", () => {
