@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.26.22",
+      "date": "2026-08-16",
+      "changes": [
+        "Der Verlauf der Körpermessungen läuft jetzt in Kalenderwochen: pro Woche ein Punkt, mehrere Messungen einer Woche werden gemittelt. Wochen ohne Messung bleiben als Lücke stehen – so siehst du im Verlauf, wann du länger nicht gemessen hast. Die Linie läuft über die Lücken durchgehend weiter."
+      ]
+    },
+    {
       "version": "1.26.21",
       "date": "2026-08-16",
       "changes": [
