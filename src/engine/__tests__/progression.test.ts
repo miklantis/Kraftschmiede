@@ -81,6 +81,84 @@ describe("suggestWeight – Doppelprogression", () => {
     expect(r.targetReps).toBe(10);
   });
 
+  it("fuenf Saetze, letzte zwei abgefallen => Gewicht steigt trotzdem", () => {
+    // Hypertrophie-Fall aus #174: Bandende erreicht, danach normale Ermuedung.
+    const r = suggestWeight(
+      EX,
+      entry([
+        work({ reps: 12, targetReps: 12 }),
+        work({ reps: 12, targetReps: 12 }),
+        work({ reps: 12, targetReps: 12 }),
+        work({ reps: 11, targetReps: 12 }),
+        work({ reps: 10, targetReps: 12 }),
+      ]),
+    );
+    expect(r.decision).toBe("increase");
+    expect(r.weight).toBe(62.5);
+    expect(r.targetReps).toBe(8);
+    expect(r.note).toContain("abgefallen");
+  });
+
+  it("zwei Saetze, letzter eine darunter => keine Toleranz, Gewicht haelt", () => {
+    const r = suggestWeight(
+      EX,
+      entry([work({ reps: 12, targetReps: 12 }), work({ reps: 11, targetReps: 12 })]),
+    );
+    expect(r.decision).toBe("hold");
+    expect(r.weight).toBe(60);
+  });
+
+  it("kein Satz am Bandende => Toleranz steigert nur die Wiederholungen", () => {
+    const r = suggestWeight(
+      EX,
+      entry([
+        work({ reps: 10, targetReps: 10 }),
+        work({ reps: 10, targetReps: 10 }),
+        work({ reps: 10, targetReps: 10 }),
+        work({ reps: 10, targetReps: 10 }),
+        work({ reps: 10, targetReps: 10 }),
+      ]),
+    );
+    expect(r.decision).toBe("increase-reps");
+    expect(r.weight).toBe(60);
+    expect(r.targetReps).toBe(11);
+  });
+
+  it("schmales Band deckelt die Toleranz auf eine Wiederholung", () => {
+    const kraft = { workWeight: 50, repRange: [4, 6] as [number, number], targetScore: 3 };
+    const satz = (reps: number): EngineSet => ({
+      type: "work",
+      weight: 50,
+      reps,
+      done: true,
+      targetReps: 6,
+      targetWeight: 50,
+      score: 3,
+    });
+    const eine = suggestWeight(kraft, entry([satz(6), satz(6), satz(6), satz(6), satz(5)]));
+    expect(eine.decision).toBe("increase");
+    expect(eine.weight).toBe(52.5);
+
+    const zwei = suggestWeight(kraft, entry([satz(6), satz(6), satz(6), satz(6), satz(4)]));
+    expect(zwei.decision).toBe("hold");
+    expect(zwei.weight).toBe(50);
+  });
+
+  it("Versagen im letzten Satz wird von der Toleranz nicht gerettet", () => {
+    const r = suggestWeight(
+      EX,
+      entry([
+        work({ reps: 12, targetReps: 12 }),
+        work({ reps: 12, targetReps: 12 }),
+        work({ reps: 12, targetReps: 12 }),
+        work({ reps: 12, targetReps: 12 }),
+        work({ reps: 11, targetReps: 12, failed: true }),
+      ]),
+    );
+    expect(r.decision).not.toBe("increase");
+    expect(r.weight).toBe(60);
+  });
+
   it("erfuellt, aber hart => Wiederholungen bleiben stehen", () => {
     const r = suggestWeight(EX, entry([work({ reps: 9, targetReps: 9, score: 4 })]));
     expect(r.decision).toBe("hold");

@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.29.0",
+      "date": "2026-08-17",
+      "changes": [
+        "Der Coach nimmt jetzt Rücksicht darauf, dass die Wiederholungen über die Sätze normal abfallen. Bisher musste jeder einzelne Arbeitssatz das obere Ende des Wiederholungsbands erreichen – bei fünf oder sechs Sätzen schaffte das der letzte praktisch nie, und das Gewicht blieb wochenlang stehen, obwohl du richtig trainiert hast.",
+        "Neue Regel: Das Gewicht steigt, wenn mindestens ein Satz das Bandende erreicht hat und die übrigen nicht zu weit darunter liegen. Erlaubt sind ab fünf Sätzen zwei Wiederholungen weniger, bei drei bis vier eine, bei ein bis zwei Sätzen keine – in engen Kraftbändern höchstens eine. Hast du abgebrochen, das Gewicht reduziert oder war die Einheit härter als vorgesehen, bleibt alles wie bisher streng.",
+        "Der Coach schreibt in dem Fall dazu, dass die späten Sätze abgefallen sind, damit der Gewichtssprung nachvollziehbar bleibt."
+      ]
+    },
+    {
       "version": "1.28.1",
       "date": "2026-08-17",
       "changes": [
