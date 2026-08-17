@@ -37,9 +37,13 @@ export function coachStateLabel(state: CoachState): string {
 
 export function CoachStatusDot({
   state,
+  provisional = false,
   className,
 }: {
   state: CoachState;
+  /** Zwischenstand, der noch wandern kann (offene Saetze im Block): gedaempft
+   *  dargestellt, damit man ihm ansieht, dass er nicht fest ist. */
+  provisional?: boolean;
   className?: string;
 }): React.ReactElement {
   const s = STYLES[state];
@@ -49,6 +53,7 @@ export function CoachStatusDot({
       className={cn(
         "inline-flex size-[26px] flex-none items-center justify-center rounded-full",
         s.cls,
+        provisional && "opacity-50",
         className,
       )}
     >
