@@ -199,6 +199,18 @@ export function suggestWeight(
   // sprang damit weiter als der zu leichte.
   if (allMet && avgScore <= tScore) {
     if (minReps >= range[1]) {
+      if (avgScore >= tScore) {
+        // Oberes Bandende voll, aber genau in der Zielanstrengung: Gewicht und
+        // Wiederholungen bleiben stehen. Die Steigerung kommt in dieser Woche
+        // aus der Satzrampe der Phase (Hypertrophie 2->6, Maximalkraft 3->5);
+        // zusaetzlich die Hantel anzuheben waere ein doppelter Sprung.
+        return withRamp({
+          weight: ld(W, false),
+          targetReps: clampReps(minReps),
+          decision: "hold",
+          note: "im Ziel am Bandende – Gewicht halten, Saetze steigern",
+        });
+      }
       // oberes Repband erreicht -> Gewicht hoch, Reps zurueck auf Minimum
       return withRamp(
         {
