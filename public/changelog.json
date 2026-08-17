@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.31.1",
+      "date": "2026-08-17",
+      "changes": [
+        "Das Coach-Zeichen im Training kommt jetzt schon nach dem ersten abgehakten Satz und rechnet nach jedem weiteren neu. Bisher erschien es erst, wenn alle geplanten Sätze abgehakt waren – wer mitten im Block abgebrochen hat, bekam also ausgerechnet dann keine Rückmeldung, wenn sie am meisten interessiert.",
+        "Solange noch offene Sätze im Block stehen, ist das Zeichen blasser und die aufgeklappte Zeile sagt dazu: Stand, wenn du jetzt beendest. Hakst du alle Sätze ab oder streichst die übrigen, steht es fest und wird kräftig dargestellt.",
+        "Das passt zu dem, was beim Beenden ohnehin passiert: nicht abgehakte Sätze verfallen. Brichst du nach zwei von vier Sätzen ab, wird die Einheit mit zwei Sätzen gespeichert – und genau damit rechnet der Coach."
+      ]
+    },
+    {
       "version": "1.31.0",
       "date": "2026-08-17",
       "changes": [

@@ -38,6 +38,8 @@ function entry(over: Partial<LiveEntry> = {}): LiveEntry {
   };
 }
 
+// isBlockComplete entscheidet nicht, OB gerechnet wird, sondern nur, ob der
+// Stand fest ist oder vorlaeufig (#193).
 describe("isBlockComplete", () => {
   it("ist fertig, wenn alle Arbeitssaetze abgehakt sind", () => {
     expect(isBlockComplete(entry())).toBe(true);
@@ -165,6 +167,31 @@ describe("Vorschau auf die Coach-Entscheidung", () => {
       })),
     };
     expect(previewState(entry({ sets }), prev)).toBe("down");
+  });
+
+  // Der Fall aus #193: vier geplante Saetze, die ersten beiden nicht geschafft
+  // (RIR 5), danach Abbruch. Der Block wird nie vollstaendig - eine Bewertung
+  // muss es trotzdem geben, und zwar die, die auch beim Beenden herauskaeme:
+  // offene Saetze verfallen dort.
+  it("bewertet einen abgebrochenen Block nach dem bisher Geleisteten", () => {
+    const e = entry({
+      sets: [
+        set({ reps: 6, targetReps: 12, score: 5, failed: true }),
+        set({ reps: 4, targetReps: 12, score: 5, failed: true }),
+        set({ done: false, reps: 12, targetReps: 12 }),
+        set({ done: false, reps: 12, targetReps: 12 }),
+      ],
+    });
+    expect(isBlockComplete(e)).toBe(false);
+    expect(liveEntryToSetEntry(e)?.sets).toHaveLength(2);
+    expect(previewState(e)).toBe("down");
+  });
+
+  it("rechnet bereits nach dem ersten abgehakten Satz", () => {
+    const e = entry({
+      sets: [set({ reps: 12, targetReps: 12, score: 3 }), set({ done: false })],
+    });
+    expect(previewState(e)).toBe("up");
   });
 
   it("wertet Begleituebungen nicht (carry)", () => {

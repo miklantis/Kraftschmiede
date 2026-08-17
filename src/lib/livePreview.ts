@@ -12,9 +12,24 @@
 //   Arbeitsgewicht -> hoechstes im Block geleistetes Gewicht (wie deriveWorkSets)
 //   letzte Einheit -> die gerade abgehakten Live-Saetze
 //   Einheit davor  -> der bisher letzte gespeicherte Eintrag
+//
+// Gerechnet wird ab dem ERSTEN abgehakten Satz, nicht erst beim vollstaendigen
+// Block (#193). Ein abgebrochener Block - zwei Saetze nicht geschafft, den Rest
+// gar nicht erst versucht - ist genau der Fall, in dem die Rueckmeldung zaehlt,
+// und er wird nie vollstaendig. Das deckt sich mit dem Beenden: offene Saetze
+// verfallen dort (liveFinish), gespeichert wird nur das Abgehakte. Die Vorschau
+// beantwortet also durchgehend "was kaeme heraus, wenn ich jetzt beende".
 
 import type { SetEntry, EngineSet } from "@/engine/types";
+import type { CoachStatus } from "./coach";
 import type { LiveEntry, LiveSet } from "./liveSession";
+
+/** Coach-Vorschau eines Uebungsblocks. `provisional` heisst: es stehen noch
+ *  offene Arbeitssaetze im Block, der Stand kann also noch wandern. */
+export interface LiveCoachPreview {
+  status: CoachStatus;
+  provisional: boolean;
+}
 
 // Ein Live-Arbeitssatz in die Engine-Satzform. Gegenstueck zu toEngineSet in
 // lastEntries.ts (dort fuer DB-Zeilen). Aufwaermsaetze koennen hier nicht
@@ -34,7 +49,11 @@ function toEngineWorkSet(s: LiveSet): EngineSet {
 }
 
 /** Ist der Uebungsblock fertig? Mindestens ein Arbeitssatz und alle abgehakt.
- *  Aufwaermsaetze zaehlen nicht mit - sie stehen in `warmupSets`. */
+ *  Aufwaermsaetze zaehlen nicht mit - sie stehen in `warmupSets`.
+ *
+ *  Entscheidet nicht mehr, OB gerechnet wird, sondern nur noch, ob der Stand
+ *  fest ist oder vorlaeufig (#193). Wer die restlichen Saetze streicht, statt
+ *  sie offen zu lassen, macht den Stand damit fest. */
 export function isBlockComplete(entry: LiveEntry): boolean {
   const sets = entry.sets ?? [];
   return sets.length > 0 && sets.every((s) => s.done);

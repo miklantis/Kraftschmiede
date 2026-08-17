@@ -5,7 +5,7 @@ import { fmtNum } from "@/lib/format";
 import type { LiveEntry } from "@/lib/liveSession";
 import type { ActiveSet } from "@/lib/liveFlow";
 import { isActive } from "@/lib/liveFlow";
-import type { CoachStatus } from "@/lib/coach";
+import type { LiveCoachPreview } from "@/lib/livePreview";
 import type { LiveBarChoice } from "@/hooks/useLiveSession";
 import { PlateChips } from "./PlateChips";
 import { LiveNumberInput } from "./LiveNumberInput";
@@ -79,10 +79,10 @@ export function ExerciseLiveCard({
    *  unveraendert (Schritt 3 haengt ihn an). */
   onNote?: (note: string) => void;
   /** Coach-Vorschau fuer diesen Block (#191): was der Coach beim naechsten Mal
-   *  vorschlagen wuerde, sobald alle Arbeitssaetze abgehakt sind. Fehlt sie,
+   *  vorschlagen wuerde, gerechnet ab dem ersten abgehakten Satz. Fehlt sie,
    *  zeigt die Karte gar kein Coach-Zeichen - so bleiben Verlauf-Bearbeiten und
    *  1RM-Test unveraendert. */
-  coach?: CoachStatus;
+  coach?: LiveCoachPreview;
   /** Bearbeiten-Modus (Verlauf): Stange/Scheiben/Haken/Aufwaermsaetze aus,
    *  Werte + RIR + „+/- Satz“ bleiben. Default false = unveraenderter Live-Look. */
   editMode?: boolean;
@@ -157,11 +157,16 @@ export function ExerciseLiveCard({
             type="button"
             onClick={() => setShowCoach((v) => !v)}
             aria-expanded={showCoach}
-            aria-label={"Coach: " + coachStateLabel(coach.state) + " – Vorschlag anzeigen"}
-            title={coachStateLabel(coach.state)}
+            aria-label={
+              "Coach: " +
+              coachStateLabel(coach.status.state) +
+              (coach.provisional ? " (Zwischenstand)" : "") +
+              " – Vorschlag anzeigen"
+            }
+            title={coachStateLabel(coach.status.state)}
             className="flex-none"
           >
-            <CoachStatusDot state={coach.state} />
+            <CoachStatusDot state={coach.status.state} provisional={coach.provisional} />
           </button>
         )}
         {!editMode && isBar && bars.length > 0 && (
@@ -201,12 +206,18 @@ export function ExerciseLiveCard({
 
       {coach && showCoach && (
         <div className="border-b border-border bg-muted/50 px-4 py-2.5">
-          <div className="text-[13px] font-semibold text-foreground">
-            Beim nächsten Mal: {fmtNum(coach.weight)} {unit} · {coach.targetReps} Wdh.
+          {coach.provisional && (
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Stand, wenn du jetzt beendest
+            </div>
+          )}
+          <div className="mt-0.5 text-[13px] font-semibold text-foreground">
+            Beim nächsten Mal: {fmtNum(coach.status.weight)} {unit} ·{" "}
+            {coach.status.targetReps} Wdh.
           </div>
-          {coach.note && (
+          {coach.status.note && (
             <div className="mt-0.5 text-[12px] leading-snug text-muted-foreground">
-              {coach.note}
+              {coach.status.note}
             </div>
           )}
         </div>

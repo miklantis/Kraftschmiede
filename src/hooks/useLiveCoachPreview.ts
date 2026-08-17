@@ -3,12 +3,16 @@ import {
   suggestWithBar,
   coachStatusFromSuggestion,
   type CoachBuildExercise,
-  type CoachStatus,
 } from "@/lib/coach";
 import { activeRepTarget } from "@/lib/liveBuild";
 import { buildLastEntries } from "@/lib/lastEntries";
 import { derivePhaseContext } from "@/lib/phaseContext";
-import { isBlockComplete, liveEntryToSetEntry, liveWorkWeight } from "@/lib/livePreview";
+import {
+  isBlockComplete,
+  liveEntryToSetEntry,
+  liveWorkWeight,
+  type LiveCoachPreview,
+} from "@/lib/livePreview";
 import { todayISO } from "@/lib/format";
 import { useLiveSession } from "./useLiveSession";
 import { useExercises } from "./useExercises";
@@ -19,9 +23,14 @@ import { useSettings } from "./useSettings";
 import { useBars, usePlates, useDumbbells } from "./useInventory";
 
 // Coach-Vorschau waehrend der laufenden Kraft-Einheit (#190): was der Coach aus
-// einem gerade fertig abgehakten Uebungsblock machen wuerde - steigern, halten,
+// dem bisher Geleisteten eines Uebungsblocks machen wuerde - steigern, halten,
 // senken. Zwilling von useCoachStatuses, nur mit der laufenden Einheit als
 // Vordaten statt der zuletzt gespeicherten.
+//
+// Gerechnet wird ab dem ersten abgehakten Satz und danach nach jedem weiteren
+// neu (#193); solange offene Saetze im Block stehen, ist der Stand vorlaeufig.
+// Die Lesart ist durchgehend "was kaeme heraus, wenn ich jetzt beende" - offene
+// Saetze verfallen beim Beenden ohnehin.
 //
 // Keine neue Rechnung: dieselbe Naht (suggestWithBar), dieselben gecachten
 // Daten-Hooks wie der Live-Aufbau, kein zusaetzlicher Netz-Zugriff, kein
@@ -39,11 +48,11 @@ interface CoachBar {
 }
 
 export interface UseLiveCoachPreview {
-  /** Coach-Status je Uebungsblock, adressiert ueber den Entry-Index (ei).
+  /** Coach-Vorschau je Uebungsblock, adressiert ueber den Entry-Index (ei).
    *  Nach Index und nicht nach Uebungs-ID, weil dieselbe Uebung theoretisch
-   *  zweimal in einer Einheit stehen kann. Unfertige Bloecke und nicht
-   *  progressiv gerechnete Uebungen ("carry") fehlen im Ergebnis. */
-  byEntry: Record<number, CoachStatus>;
+   *  zweimal in einer Einheit stehen kann. Bloecke ohne abgehakten Satz und
+   *  nicht progressiv gerechnete Uebungen ("carry") fehlen im Ergebnis. */
+  byEntry: Record<number, LiveCoachPreview>;
 }
 
 export function useLiveCoachPreview(): UseLiveCoachPreview {
@@ -68,8 +77,8 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
     platesQ.data != null &&
     dumbbellsQ.data != null;
 
-  const byEntry = useMemo<Record<number, CoachStatus>>(() => {
-    const out: Record<number, CoachStatus> = {};
+  const byEntry = useMemo<Record<number, LiveCoachPreview>>(() => {
+    const out: Record<number, LiveCoachPreview> = {};
     if (!ready || !workout) return out;
 
     const bars: CoachBar[] = (barsQ.data ?? []).map((b) => ({
@@ -96,9 +105,9 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
     const exMap = new Map((exercisesQ.data ?? []).map((e) => [e.id, e]));
 
     workout.entries.forEach((entry, ei) => {
-      if (!isBlockComplete(entry)) return;
       const e = exMap.get(entry.exerciseId);
       if (!e) return;
+      // Kein Tor auf den vollstaendigen Block: ein abgehakter Satz genuegt.
       const lastEntry = liveEntryToSetEntry(entry);
       const workWeight = liveWorkWeight(entry);
       if (!lastEntry || workWeight == null) return;
@@ -133,8 +142,12 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
       // Begleit-/Koerpergewichtsuebungen und freies Training rechnen nicht
       // progressiv - dort gibt es nichts zu bewerten, also auch kein Icon.
       if (suggestion.decision === "carry") return;
-      // Vordaten liegen hier immer vor: der Block, den wir bewerten, ist fertig.
-      out[ei] = coachStatusFromSuggestion(suggestion, true);
+      out[ei] = {
+        // Vordaten liegen hier immer vor - mindestens ein Satz ist abgehakt,
+        // sonst waeren wir oben ausgestiegen.
+        status: coachStatusFromSuggestion(suggestion, true),
+        provisional: !isBlockComplete(entry),
+      };
     });
     return out;
   }, [
