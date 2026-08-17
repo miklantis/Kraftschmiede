@@ -7,7 +7,7 @@ import type {
   LiveBuildResult,
 } from "@/lib/liveBuild";
 import { todayISO } from "@/lib/format";
-import { buildLastEntries } from "@/lib/lastEntries";
+import { buildLastEntries, buildPrevEntries } from "@/lib/lastEntries";
 import { derivePhaseContext } from "@/lib/phaseContext";
 import { useExercises } from "./useExercises";
 import { useTemplates } from "./useTemplates";
@@ -89,6 +89,8 @@ export function useLiveBuilder(): UseLiveBuilder {
     const plates = (platesQ.data ?? []).map((p) => p.weight);
     const dumbbells = (dumbbellsQ.data ?? []).map((d) => d.weight);
     const lastEntryByExercise = buildLastEntries(detailedQ.data ?? []);
+    // Die Einheit davor je Uebung – Grundlage der Rueckwaertsregel des Coaches.
+    const prevEntryByExercise = buildPrevEntries(detailedQ.data ?? []);
 
     const body = bodyQ.data;
     const green = recoveryGreen({
@@ -99,6 +101,7 @@ export function useLiveBuilder(): UseLiveBuilder {
     });
 
     const unit = settingsQ.data?.unit ?? "kg";
+    const weightStep = settingsQ.data?.weight_step ?? null;
     const freqTarget = settingsQ.data?.weekly_frequency_target || 3;
 
     // Phasenbezug aus der trainingsgetriebenen Platzierung (lib/phaseContext).
@@ -115,8 +118,10 @@ export function useLiveBuilder(): UseLiveBuilder {
       plates,
       dumbbells,
       lastEntryByExercise,
+      prevEntryByExercise,
       green,
       unit,
+      weightStep,
       ...ph,
     };
   }, [
@@ -148,6 +153,8 @@ export function useLiveBuilder(): UseLiveBuilder {
         freeMode: base.journeyId === null,
         loadFactor: base.loadFactor,
         lastEntryByExercise: base.lastEntryByExercise,
+        prevEntryByExercise: base.prevEntryByExercise,
+        weightStep: base.weightStep,
         bars: base.bars,
         plates: base.plates,
         dumbbells: base.dumbbells,

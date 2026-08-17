@@ -255,6 +255,10 @@ export function lastWorkSetCount(lastEntry: SetEntry | null): number | null {
 export interface SuggestBuildCtx {
   phase: { focus?: string } | null;
   lastEntry: SetEntry | null;
+  // Einheit davor (Rueckwaertsregel bei zweimal verfehltem Ziel).
+  prevEntry?: SetEntry | null;
+  // Schrittweite eines Gewichtssprungs aus den Einstellungen; null = Standard.
+  weightStep?: number | null;
   bar?: Bar;
   plates?: number[];
   // Vorhandene Kurzhantel-Stufen (nur fuer Kurzhantel-Uebungen gesetzt).
@@ -314,6 +318,8 @@ export function suggestForExercise(
     dumbbells: ctx.dumbbells,
     reentry: focus === "reentry",
     ramp: rampLoad(exo, ctx.loadFactor),
+    step: ctx.weightStep,
+    prevEntry: ctx.prevEntry ?? null,
   });
 }
 
@@ -346,6 +352,10 @@ export function pickBarForTarget<T extends { weight: number }>(
 export interface SuggestWithBarInput<B extends { weight: number }> {
   phaseFocus: { focus?: string } | null;
   lastEntry: SetEntry | null;
+  // Einheit davor (Rueckwaertsregel bei zweimal verfehltem Ziel).
+  prevEntry?: SetEntry | null;
+  // Schrittweite eines Gewichtssprungs aus den Einstellungen; null = Standard.
+  weightStep?: number | null;
   bars: B[];
   plates: number[];
   // Vorhandene Kurzhantel-Stufen; nur fuer Kurzhantel-Uebungen genutzt.
@@ -374,6 +384,8 @@ export function suggestWithBar<B extends { weight: number }>(
     const rawSug = suggestForExercise(exo, {
       phase: input.phaseFocus,
       lastEntry: input.lastEntry,
+      prevEntry: input.prevEntry ?? null,
+      weightStep: input.weightStep ?? null,
       bar: { weight: lightest.weight },
       plates: input.plates,
       repTarget: input.repTarget,
@@ -384,6 +396,8 @@ export function suggestWithBar<B extends { weight: number }>(
     const suggestion = suggestForExercise(exo, {
       phase: input.phaseFocus,
       lastEntry: input.lastEntry,
+      prevEntry: input.prevEntry ?? null,
+      weightStep: input.weightStep ?? null,
       bar: { weight: bar.weight },
       plates: input.plates,
       repTarget: input.repTarget,
@@ -398,6 +412,8 @@ export function suggestWithBar<B extends { weight: number }>(
     const suggestion = suggestForExercise(exo, {
       phase: input.phaseFocus,
       lastEntry: input.lastEntry,
+      prevEntry: input.prevEntry ?? null,
+      weightStep: input.weightStep ?? null,
       bar: undefined,
       plates: input.plates,
       dumbbells: input.dumbbells,

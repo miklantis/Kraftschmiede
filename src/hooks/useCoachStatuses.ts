@@ -7,7 +7,7 @@ import {
   type CoachStatus,
 } from "@/lib/coach";
 import { activeRepTarget, phaseEntryOverride } from "@/lib/liveBuild";
-import { buildLastEntries } from "@/lib/lastEntries";
+import { buildLastEntries, buildPrevEntries } from "@/lib/lastEntries";
 import { derivePhaseContext } from "@/lib/phaseContext";
 import { todayISO } from "@/lib/format";
 import { useExercises } from "./useExercises";
@@ -76,6 +76,9 @@ export function useCoachStatuses(): UseCoachStatuses {
     const plates = (platesQ.data ?? []).map((p) => p.weight);
     const dumbbells = (dumbbellsQ.data ?? []).map((d) => d.weight);
     const lastEntryByExercise = buildLastEntries(detailedQ.data ?? []);
+    // Die Einheit davor je Uebung – Grundlage der Rueckwaertsregel des Coaches.
+    const prevEntryByExercise = buildPrevEntries(detailedQ.data ?? []);
+    const weightStep = settingsQ.data?.weight_step ?? null;
     const freqTarget = settingsQ.data?.weekly_frequency_target || 3;
 
     const ph = derivePhaseContext(
@@ -109,6 +112,8 @@ export function useCoachStatuses(): UseCoachStatuses {
       const { suggestion, bar } = suggestWithBar(exo, {
         phaseFocus: ph.phaseFocus,
         lastEntry,
+        prevEntry: prevEntryByExercise[e.id] ?? null,
+        weightStep,
         bars,
         plates,
         dumbbells,

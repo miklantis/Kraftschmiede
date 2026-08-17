@@ -1,6 +1,8 @@
 // Gewichtsvorschlag fuer die naechste Einheit (Doppelprogression).
 // Erst Wiederholungen im Repband steigern, dann das Gewicht; bei Versagen oder
 // zu hoher Anstrengung halten oder senken. Reentry = vorsichtiger Wiedereinstieg.
+// Wird das Wiederholungsziel zweimal in Folge am selben Gewicht verfehlt, geht
+// es einen Schritt zurueck (Rueckwaertsregel, ADR-0015).
 
 import { avg } from "./math";
 import { nearestLoadable, nearestDumbbell } from "./plates";
@@ -34,6 +36,13 @@ export interface SuggestOpts {
   reentry?: boolean;
   // Vorgabe einer Lastfaktor-Journey; ohne sie rechnet der Coach wie gewohnt.
   ramp?: RampLoad | null;
+  // Schrittweite eines Gewichtssprungs aus den Einstellungen (kg). Ohne Angabe
+  // der bisherige Standard 2,5. Gerundet wird danach weiterhin auf eine ladbare
+  // Stufe (Scheiben bzw. Kurzhantel-Inventar).
+  step?: number | null;
+  // Einheit vor `lastEntry` derselben Uebung, fuer die Rueckwaertsregel bei
+  // mehrfach verfehltem Ziel. Ohne sie verhaelt sich der Coach wie bisher.
+  prevEntry?: SetEntry | null;
 }
 
 export type SuggestDecision = "increase" | "hold" | "decrease" | "increase-reps";
@@ -62,6 +71,58 @@ function repTolerance(setCount: number, range: [number, number]): number {
   return Math.max(0, Math.min(byCount, byBand));
 }
 
+// Ziel-Bewertung einer Einheit mit der Toleranz: mindestens ein Arbeitssatz muss
+// sein Ziel voll erfuellt haben, die uebrigen duerfen bis zu `tol`
+// Wiederholungen darunter liegen. Gewicht und Versagen bleiben strikt -
+// toleriert wird ausschliesslich der Wiederholungsabfall. Ohne Arbeitssaetze
+// gilt das Ziel als nicht erfuellt.
+function metAllWithTolerance(
+  ws: EngineSet[],
+  range: [number, number],
+): boolean {
+  if (!ws.length) return false;
+  const tol = repTolerance(ws.length, range);
+  const ok = (s: EngineSet): boolean => {
+    if (s.targetReps == null || s.targetWeight == null) return false;
+    const reps = s.reps || 0;
+    return (
+      reps >= s.targetReps - tol &&
+      s.weight >= s.targetWeight - 1e-9 &&
+      !(s.failed && reps < s.targetReps)
+    );
+  };
+  return ws.some((s) => metTarget(s) === true) && ws.every(ok);
+}
+
+// Schwerster Arbeitssatz einer Einheit; null ohne verwertbaren Satz. Bezug fuer
+// die Frage, ob zwei Einheiten am selben Gewicht gearbeitet haben.
+function topWorkWeight(ws: EngineSet[]): number | null {
+  let top: number | null = null;
+  for (const s of ws) {
+    const w = typeof s.weight === "number" ? s.weight : null;
+    if (w != null && (top == null || w > top)) top = w;
+  }
+  return top;
+}
+
+// Rueckwaertsregel: Hat die Einheit VOR der letzten dasselbe Gewicht bewegt und
+// dort das Ziel ebenfalls verfehlt, ist die Last zu schwer - der Coach senkt,
+// statt das Bandende ein weiteres Mal vorzugeben. Weicht das Gewicht ab (bereits
+// gesenkt, Phase hat die Last verschoben, Kurzhantel-Stufe gewechselt), beginnt
+// die Zaehlung neu: so kann die Regel nicht zweimal hintereinander greifen.
+function missedBefore(
+  prevEntry: SetEntry | null | undefined,
+  range: [number, number],
+  weight: number | null,
+): boolean {
+  if (weight == null) return false;
+  const ws = workSets(prevEntry);
+  if (!ws.length) return false;
+  const top = topWorkWeight(ws);
+  if (top == null || Math.abs(top - weight) > 1e-9) return false;
+  return !metAllWithTolerance(ws, range);
+}
+
 export function suggestWeight(
   ex: SuggestExercise,
   lastEntry: SetEntry | null | undefined,
@@ -74,6 +135,8 @@ export function suggestWeight(
   const tScore = ex.targetScore || 3;
   const W = ex.workWeight || bar.weight;
   const reentry = !!o.reentry;
+  // Schrittweite aus den Einstellungen; unplausible Werte fallen auf 2,5 zurueck.
+  const step = o.step != null && o.step > 0 ? o.step : 2.5;
 
   const ld = (x: number, down?: boolean): number =>
     o.dumbbells && o.dumbbells.length
@@ -135,7 +198,7 @@ export function suggestWeight(
     const techOk = !wsR.some((s) => s.painFlag);
     if (wsR.length && okScore && techOk) {
       return withRamp({
-        weight: ld(W + 2.5, true),
+        weight: ld(W + step, true),
         targetReps: range[0],
         decision: "increase",
         note: "Wiedereinstieg: vorsichtig +Schritt, abgerundet",
@@ -167,22 +230,12 @@ export function suggestWeight(
 
   const allMet = ws.every((s) => metTarget(s) === true);
   const anyFailed = ws.some((s) => s.failed);
-  // Ziel-Bewertung mit Toleranz: mindestens ein Arbeitssatz muss sein Ziel
-  // voll erfuellt haben, die uebrigen duerfen bis zu `tol` Wiederholungen
-  // darunter liegen. Gewicht und Versagen bleiben strikt – toleriert wird
-  // ausschliesslich der Wiederholungsabfall.
+  // Ziel-Bewertung mit Toleranz (metAllWithTolerance): mindestens ein
+  // Arbeitssatz muss sein Ziel voll erfuellt haben, die uebrigen duerfen bis zu
+  // `tol` Wiederholungen darunter liegen. Gewicht und Versagen bleiben strikt –
+  // toleriert wird ausschliesslich der Wiederholungsabfall.
   const tol = repTolerance(ws.length, range);
-  const metWithTol = (s: EngineSet): boolean => {
-    if (s.targetReps == null || s.targetWeight == null) return false;
-    const reps = s.reps || 0;
-    return (
-      reps >= s.targetReps - tol &&
-      s.weight >= s.targetWeight - 1e-9 &&
-      !(s.failed && reps < s.targetReps)
-    );
-  };
-  const allMetTol =
-    ws.some((s) => metTarget(s) === true) && ws.every(metWithTol);
+  const allMetTol = metAllWithTolerance(ws, range);
   const anyReduced = ws.some(
     (s) => s.targetWeight != null && s.weight < s.targetWeight - 1e-9,
   );
@@ -192,12 +245,31 @@ export function suggestWeight(
   const clampReps = (n: number): number =>
     Math.min(range[1], Math.max(range[0], n));
 
+  // Rueckwaertsregel (ADR-0015): das Ziel wurde jetzt UND in der Einheit davor
+  // am selben Gewicht verfehlt -> ein Schritt zurueck, statt das Bandende
+  // nochmal vorzugeben. Der Rueckschritt ist Teil des Plans, kein Rueckfall:
+  // vom leichteren Gewicht aus arbeitet die Doppelprogression sauber wieder
+  // hoch. `reacting` = true, damit eine Lastfaktor-Rampe nur deckelt und den
+  // Vorschlag nicht wieder hochzieht.
+  const repeatedMiss =
+    !allMetTol && missedBefore(o.prevEntry, range, topWorkWeight(ws));
+  const backOff = (): SuggestResult =>
+    withRamp(
+      {
+        weight: ld(W - step, true),
+        targetReps: range[1],
+        decision: "decrease",
+        note: "zweimal am Ziel vorbei – ein Schritt zurueck",
+      },
+      true,
+    );
+
   // ueber Ziel-Score / Versagen / Last-Reduktion -> halten oder senken
   if (anyFailed || anyReduced || avgScore > tScore + 0.5) {
     if (avgScore >= 4.5 || anyReduced) {
       return withRamp(
         {
-          weight: ld(W - 2.5, true),
+          weight: ld(W - step, true),
           targetReps: range[1],
           decision: "decrease",
           note: "Versagen/Reduktion oder zu hart – Gewicht senken",
@@ -207,8 +279,9 @@ export function suggestWeight(
     }
     // Gehalten wird hier, weil es zu hart war. War das Ziel dabei erfuellt,
     // bleiben auch die Wiederholungen stehen (gleiche Regel wie unten im
-    // Auffangzweig); verfehlt heisst weiterhin: das Bandende nochmal
-    // versuchen.
+    // Auffangzweig); verfehlt heisst: das Bandende nochmal versuchen – ausser
+    // es war schon der zweite Fehlversuch am selben Gewicht.
+    if (repeatedMiss) return backOff();
     return withRamp(
       {
         weight: ld(W, false),
@@ -241,7 +314,7 @@ export function suggestWeight(
       // (siehe docs/adr/0015-coach-progressionsregeln.md).
       return withRamp(
         {
-          weight: ld(W + 2.5, false),
+          weight: ld(W + step, false),
           targetReps: range[0],
           decision: "increase",
           note:
@@ -267,7 +340,9 @@ export function suggestWeight(
   // Rest: zu hart trotz erfuelltem Ziel, oder Ziel nicht erfuellt.
   // Erfuellt (aber hart) -> Wiederholungen bleiben stehen, bis es leichter
   // wird. Verfehlt -> das obere Bandende bleibt das Ziel, also nochmal
-  // versuchen.
+  // versuchen; beim zweiten Fehlversuch am selben Gewicht greift stattdessen
+  // die Rueckwaertsregel.
+  if (repeatedMiss) return backOff();
   return withRamp({
     weight: ld(W, false),
     targetReps: allMet ? clampReps(minReps) : range[1],

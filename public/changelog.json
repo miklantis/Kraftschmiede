@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.30.0",
+      "date": "2026-08-17",
+      "changes": [
+        "Der Coach hält dich nicht mehr unbegrenzt an einem zu schweren Gewicht fest. Bisher gab er nach einer verfehlten Einheit immer wieder das obere Ende des Wiederholungsbands vor – solange du nicht abgebrochen oder das Gewicht selbst reduziert hast, konnte das über Wochen so weitergehen.",
+        "Neue Regel: Verfehlst du das Wiederholungsziel zweimal hintereinander am selben Gewicht, geht der Coach einen Schritt zurück. Das ist Absicht und kein Rückfall – vom leichteren Gewicht aus arbeitest du dich sauber wieder hoch. Nach dem Rückschritt beginnt die Zählung neu, es geht also nie zweimal am Stück abwärts.",
+        "Die Schrittweite aus den Einstellungen gilt jetzt auch für den Coach: Steht dort 5 kg, schlägt er 5er-Sprünge vor statt wie bisher immer 2,5 kg – nach oben, nach unten und beim Wiedereinstieg."
+      ]
+    },
+    {
       "version": "1.29.0",
       "date": "2026-08-17",
       "changes": [
