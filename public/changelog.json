@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.28.1",
+      "date": "2026-08-17",
+      "changes": [
+        "Beim Aufklappen einer Einheit im \u00dcbungs-Verlauf bleiben das Gewicht rechts und der Pfeil jetzt oben auf H\u00f6he des Datums stehen, statt in die Mitte der aufgeklappten S\u00e4tze zu rutschen."
+      ]
+    },
+    {
       "version": "1.28.0",
       "date": "2026-08-17",
       "changes": [
