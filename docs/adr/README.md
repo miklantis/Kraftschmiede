@@ -34,3 +34,4 @@ Jedes ADR folgt demselben Aufbau:
 - [ADR-0012 – Update-Übernahme über controllerchange](./0012-update-uebernahme-controllerchange.md)
 - [ADR-0013 – Deploy-Concurrency mit cancel-in-progress](./0013-deploy-concurrency.md)
 - [ADR-0014 – Journey-Abschluss an der Einheit, freies Training ohne Vorgabe](./0014-journey-abschluss-und-freies-training.md)
+- [ADR-0015 – Progressionsregeln des Coaches, einheitlich über alle Phasen](./0015-coach-progressionsregeln.md)
