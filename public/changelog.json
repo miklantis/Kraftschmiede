@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.27.3",
+      "date": "2026-08-17",
+      "changes": [
+        "Der Coach hebt das Gewicht wieder nur dann an, wenn du das obere Ende des Wiederholungsbands erreicht hast und es dabei leichter war als vorgesehen. Warst du genau in der Zielanstrengung, bleiben Gewicht und Wiederholungen stehen – die Steigerung kommt in dieser Woche über die Sätze, die die Phase ohnehin hochfährt. Die Wiederholungs-Steigerung ab Zielanstrengung aus der letzten Version bleibt."
+      ]
+    },
+    {
       "version": "1.27.2",
       "date": "2026-08-17",
       "changes": [
