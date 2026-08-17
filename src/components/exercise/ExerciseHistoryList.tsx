@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { List, ListRow } from "@/components/ui/list";
 import { LoadMore } from "@/components/ui/load-more";
@@ -17,6 +17,11 @@ import type { VerlaufRow } from "@/hooks/useExerciseDetail";
 // Der dezente Nachlade-Pfeil (LoadMore) blendet jeweils eine weitere Seite ein;
 // den Zaehler haelt useMehrLaden (reine Anzeige, die Daten liegen vollstaendig
 // vor). Aufgeklappte Zeilen merkt sich das Set offen ueber ihren Index.
+//
+// Beim Auf- und Zuklappen waechst bzw. schrumpft die Zeile. Damit die Seite
+// dabei nicht unter dem Finger wegspringt, wird die Bildschirmposition der
+// angetippten Zeile gemerkt und direkt nach dem Umbau um die Differenz
+// nachgescrollt – die Zeile bleibt also genau da stehen, wo sie war.
 export function ExerciseHistoryList({
   verlauf,
 }: {
@@ -25,7 +30,14 @@ export function ExerciseHistoryList({
   const liste = useMehrLaden(verlauf);
   const [offen, setOffen] = useState<ReadonlySet<number>>(new Set());
 
+  // Zeilen-Elemente je Index, dazu die vor dem Umschalten gemerkte Position.
+  const zeilen = useRef(new Map<number, HTMLElement | null>());
+  const gemerkt = useRef<{ index: number; top: number } | null>(null);
+
   const umschalten = (i: number): void => {
+    const el = zeilen.current.get(i);
+    gemerkt.current =
+      el != null ? { index: i, top: el.getBoundingClientRect().top } : null;
     setOffen((prev) => {
       const next = new Set(prev);
       if (next.has(i)) next.delete(i);
@@ -33,6 +45,16 @@ export function ExerciseHistoryList({
       return next;
     });
   };
+
+  useLayoutEffect(() => {
+    const merk = gemerkt.current;
+    gemerkt.current = null;
+    if (merk == null) return;
+    const el = zeilen.current.get(merk.index);
+    if (el == null) return;
+    const diff = el.getBoundingClientRect().top - merk.top;
+    if (Math.abs(diff) > 0.5) window.scrollBy(0, diff);
+  }, [offen]);
 
   if (verlauf.length === 0) {
     return (
@@ -60,6 +82,10 @@ export function ExerciseHistoryList({
               }
               onClick={aufklappbar ? () => umschalten(i) : undefined}
               align={istOffen ? "top" : "center"}
+              elementRef={(el) => {
+                if (el == null) zeilen.current.delete(i);
+                else zeilen.current.set(i, el);
+              }}
               trailing={
                 <div className="flex items-center gap-2">
                   {r.right && (
