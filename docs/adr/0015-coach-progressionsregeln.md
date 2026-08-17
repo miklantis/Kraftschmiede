@@ -96,10 +96,9 @@ enge Band von selbst (Lastspezifität des 1RM, Schoenfeld et al. 2017).
   Verlauf liegt im Client bereits vollständig vor (`useSessionsDetailed`), es braucht
   keinen zusätzlichen Zustand in der Datenbank.
 - Die Schrittweite eines Gewichtssprungs kommt aus den Einstellungen (`weight_step`,
-  #185) statt fest 2,5 – hoch, runter und beim Wiedereinstieg gleichermaßen. Gerundet
+  #185) – hoch, runter und beim Wiedereinstieg gleichermaßen. Gerundet
   wird danach weiterhin auf eine ladbare Stufe.
-- Offen und bewusst nicht Teil dieser Entscheidung: ob der Coach-Chip kenntlich macht,
-  wann die Phase eine Entscheidung überstimmt hat.
+
 
 ## Quellen
 
