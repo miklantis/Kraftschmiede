@@ -1,14 +1,17 @@
+import { useState } from "react";
 import { CircleDot } from "lucide-react";
 import { scoreInfo } from "@/engine";
 import { fmtNum } from "@/lib/format";
 import type { LiveEntry } from "@/lib/liveSession";
 import type { ActiveSet } from "@/lib/liveFlow";
 import { isActive } from "@/lib/liveFlow";
+import type { CoachStatus } from "@/lib/coach";
 import type { LiveBarChoice } from "@/hooks/useLiveSession";
 import { PlateChips } from "./PlateChips";
 import { LiveNumberInput } from "./LiveNumberInput";
 import { SetCheck } from "./SetCheck";
 import { NoteBlock } from "@/components/ui/note-block";
+import { CoachStatusDot, coachStateLabel } from "@/components/ui/coach-status-dot";
 
 // Eine Uebungskarte der laufenden Session (Phase 11, Lieferung 3, interaktiv):
 // Kopf mit Name/Tag, Stangenauswahl und Scheiben-Schalter; Tabelle Satz | Wdh |
@@ -52,6 +55,7 @@ export function ExerciseLiveCard({
   onChangeBar,
   onCyclePlate,
   onNote,
+  coach,
   editMode = false,
   hideScore = false,
 }: {
@@ -74,6 +78,11 @@ export function ExerciseLiveCard({
    *  Karte gar keine Notiz - so bleibt der Verlaufs-Bearbeiten-Modus vorerst
    *  unveraendert (Schritt 3 haengt ihn an). */
   onNote?: (note: string) => void;
+  /** Coach-Vorschau fuer diesen Block (#191): was der Coach beim naechsten Mal
+   *  vorschlagen wuerde, sobald alle Arbeitssaetze abgehakt sind. Fehlt sie,
+   *  zeigt die Karte gar kein Coach-Zeichen - so bleiben Verlauf-Bearbeiten und
+   *  1RM-Test unveraendert. */
+  coach?: CoachStatus;
   /** Bearbeiten-Modus (Verlauf): Stange/Scheiben/Haken/Aufwaermsaetze aus,
    *  Werte + RIR + „+/- Satz“ bleiben. Default false = unveraenderter Live-Look. */
   editMode?: boolean;
@@ -84,6 +93,10 @@ export function ExerciseLiveCard({
   const isBar = entry.equipment === "barbell" && entry.barWeight != null;
   const hasPlates = isBar && plates.length > 0;
   const grid = editMode ? ROW_EDIT : hideScore ? ROW_TEST : ROW;
+  // Das Coach-Zeichen zeigt nur die Richtung; das Konkrete steht in der Zeile,
+  // die beim Antippen aufklappt (bewusst kein Popup - im Bodenblatt der
+  // Live-Ansicht ist eine aufklappende Zeile ruhiger und immer sichtbar).
+  const [showCoach, setShowCoach] = useState(false);
 
   // Fusszeile: „+ Satz“ / „– Satz“. Traegt die Karte eine Notiz (onNote gesetzt),
   // sitzt der „+ Notiz“-Knopf in derselben Zeile rechts daneben und das Feld
@@ -139,6 +152,18 @@ export function ExerciseLiveCard({
             <div className="mt-0.5 text-[12px] text-muted-foreground">{entry.tag}</div>
           )}
         </div>
+        {coach && (
+          <button
+            type="button"
+            onClick={() => setShowCoach((v) => !v)}
+            aria-expanded={showCoach}
+            aria-label={"Coach: " + coachStateLabel(coach.state) + " – Vorschlag anzeigen"}
+            title={coachStateLabel(coach.state)}
+            className="flex-none"
+          >
+            <CoachStatusDot state={coach.state} />
+          </button>
+        )}
         {!editMode && isBar && bars.length > 0 && (
           <select
             aria-label="Stange wählen"
@@ -173,6 +198,19 @@ export function ExerciseLiveCard({
           </button>
         )}
       </div>
+
+      {coach && showCoach && (
+        <div className="border-b border-border bg-muted/50 px-4 py-2.5">
+          <div className="text-[13px] font-semibold text-foreground">
+            Beim nächsten Mal: {fmtNum(coach.weight)} {unit} · {coach.targetReps} Wdh.
+          </div>
+          {coach.note && (
+            <div className="mt-0.5 text-[12px] leading-snug text-muted-foreground">
+              {coach.note}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="px-4 pb-4 pt-2">
         <div

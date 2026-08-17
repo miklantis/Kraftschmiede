@@ -1,0 +1,154 @@
+import { useMemo } from "react";
+import {
+  suggestWithBar,
+  coachStatusFromSuggestion,
+  type CoachBuildExercise,
+  type CoachStatus,
+} from "@/lib/coach";
+import { activeRepTarget } from "@/lib/liveBuild";
+import { buildLastEntries } from "@/lib/lastEntries";
+import { derivePhaseContext } from "@/lib/phaseContext";
+import { isBlockComplete, liveEntryToSetEntry, liveWorkWeight } from "@/lib/livePreview";
+import { todayISO } from "@/lib/format";
+import { useLiveSession } from "./useLiveSession";
+import { useExercises } from "./useExercises";
+import { useSessions } from "./useSessions";
+import { useSessionsDetailed } from "./useSessionsDetailed";
+import { useActiveJourney } from "./useJourney";
+import { useSettings } from "./useSettings";
+import { useBars, usePlates, useDumbbells } from "./useInventory";
+
+// Coach-Vorschau waehrend der laufenden Kraft-Einheit (#190): was der Coach aus
+// einem gerade fertig abgehakten Uebungsblock machen wuerde - steigern, halten,
+// senken. Zwilling von useCoachStatuses, nur mit der laufenden Einheit als
+// Vordaten statt der zuletzt gespeicherten.
+//
+// Keine neue Rechnung: dieselbe Naht (suggestWithBar), dieselben gecachten
+// Daten-Hooks wie der Live-Aufbau, kein zusaetzlicher Netz-Zugriff, kein
+// Schreibvorgang.
+//
+// Bewusst NICHT angewandt wird phaseEntryOverride (anders als in
+// useCoachStatuses): ob nach dieser Einheit ein Phasenwechsel ansteht, ist
+// waehrend des Trainings noch nicht entschieden - das Override wuerde ein
+// Gewicht anzeigen, das so nicht zwingend eintritt.
+
+interface CoachBar {
+  id: string;
+  name: string;
+  weight: number;
+}
+
+export interface UseLiveCoachPreview {
+  /** Coach-Status je Uebungsblock, adressiert ueber den Entry-Index (ei).
+   *  Nach Index und nicht nach Uebungs-ID, weil dieselbe Uebung theoretisch
+   *  zweimal in einer Einheit stehen kann. Unfertige Bloecke und nicht
+   *  progressiv gerechnete Uebungen ("carry") fehlen im Ergebnis. */
+  byEntry: Record<number, CoachStatus>;
+}
+
+export function useLiveCoachPreview(): UseLiveCoachPreview {
+  const { session } = useLiveSession();
+  const exercisesQ = useExercises();
+  const sessionsQ = useSessions();
+  const detailedQ = useSessionsDetailed();
+  const journeyQ = useActiveJourney();
+  const settingsQ = useSettings();
+  const barsQ = useBars();
+  const platesQ = usePlates();
+  const dumbbellsQ = useDumbbells();
+
+  const workout = session?.kind === "workout" ? session : null;
+
+  const ready =
+    workout != null &&
+    exercisesQ.data != null &&
+    sessionsQ.data != null &&
+    detailedQ.data != null &&
+    barsQ.data != null &&
+    platesQ.data != null &&
+    dumbbellsQ.data != null;
+
+  const byEntry = useMemo<Record<number, CoachStatus>>(() => {
+    const out: Record<number, CoachStatus> = {};
+    if (!ready || !workout) return out;
+
+    const bars: CoachBar[] = (barsQ.data ?? []).map((b) => ({
+      id: b.id,
+      name: b.name,
+      weight: b.weight,
+    }));
+    const plates = (platesQ.data ?? []).map((p) => p.weight);
+    const dumbbells = (dumbbellsQ.data ?? []).map((d) => d.weight);
+    // Der bisher letzte gespeicherte Eintrag rueckt in die Rolle der Einheit
+    // DAVOR - die laufende Einheit ist ab jetzt die letzte.
+    const prevEntryByExercise = buildLastEntries(detailedQ.data ?? []);
+    const weightStep = settingsQ.data?.weight_step ?? null;
+    const freqTarget = settingsQ.data?.weekly_frequency_target || 3;
+
+    const ph = derivePhaseContext(
+      journeyQ.data ?? null,
+      sessionsQ.data ?? [],
+      freqTarget,
+      todayISO(),
+    );
+    const hasPhase = ph.volumePhase != null;
+    const freeMode = ph.journeyId === null;
+    const exMap = new Map((exercisesQ.data ?? []).map((e) => [e.id, e]));
+
+    workout.entries.forEach((entry, ei) => {
+      if (!isBlockComplete(entry)) return;
+      const e = exMap.get(entry.exerciseId);
+      if (!e) return;
+      const lastEntry = liveEntryToSetEntry(entry);
+      const workWeight = liveWorkWeight(entry);
+      if (!lastEntry || workWeight == null) return;
+
+      const exo: CoachBuildExercise = {
+        key: e.key,
+        profile: e.profile,
+        equipment: e.equipment,
+        repRange:
+          e.rep_range_min != null && e.rep_range_max != null
+            ? [e.rep_range_min, e.rep_range_max]
+            : null,
+        // Das im Block tatsaechlich bewegte Gewicht statt des Katalogstands -
+        // dieselbe Groesse, die beim Beenden in den Katalog geschrieben wird.
+        workWeight,
+        targetScore: e.target_score,
+        barId: e.bar_id,
+        referenceWeight: e.reference_weight,
+      };
+      const { suggestion } = suggestWithBar(exo, {
+        phaseFocus: ph.phaseFocus,
+        lastEntry,
+        prevEntry: prevEntryByExercise[e.id] ?? null,
+        weightStep,
+        bars,
+        plates,
+        dumbbells,
+        repTarget: activeRepTarget(exo, ph.phaseRepTarget, hasPhase),
+        freeMode,
+        loadFactor: ph.loadFactor,
+      });
+      // Begleit-/Koerpergewichtsuebungen und freies Training rechnen nicht
+      // progressiv - dort gibt es nichts zu bewerten, also auch kein Icon.
+      if (suggestion.decision === "carry") return;
+      // Vordaten liegen hier immer vor: der Block, den wir bewerten, ist fertig.
+      out[ei] = coachStatusFromSuggestion(suggestion, true);
+    });
+    return out;
+  }, [
+    ready,
+    workout,
+    exercisesQ.data,
+    sessionsQ.data,
+    detailedQ.data,
+    journeyQ.data,
+    settingsQ.data,
+    barsQ.data,
+    platesQ.data,
+    dumbbellsQ.data,
+  ]);
+
+  return { byEntry };
+}
