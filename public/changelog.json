@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.27.4",
+      "date": "2026-08-17",
+      "changes": [
+        "Der Coach steigert das Gewicht jetzt wieder, sobald du das obere Ende des Wiederholungsbands in allen Sätzen erreichst und dabei höchstens so hart gearbeitet hast wie vorgesehen – so, wie es in der Trainingslehre üblich ist. Die zusätzliche Bremse aus der letzten Version entfällt, sie hielt dich ausgerechnet dann auf, wenn du sauber trainiert hast.",
+        "Damit gilt in jeder Phase dieselbe Regel: Bandende voll und im Ziel heißt Gewicht hoch und Wiederholungen zurück auf den Bandanfang, sonst eine Wiederholung mehr, bei harten Einheiten alles halten, bei verfehltem Ziel nochmal aufs Bandende zielen. Der Unterschied zwischen Aufbau- und Kraftphase kommt weiterhin über Wiederholungsband, Satzzahl und Lastfaktor der Journey."
+      ]
+    },
+    {
       "version": "1.27.3",
       "date": "2026-08-17",
       "changes": [

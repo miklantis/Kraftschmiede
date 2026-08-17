@@ -37,11 +37,11 @@ describe("suggestWeight – Doppelprogression", () => {
     expect(r.targetReps).toBe(10);
   });
 
-  it("Bandende voll, aber nur am Ziel => Gewicht bleibt (Saetze steigern)", () => {
+  it("Bandende voll in Zielanstrengung => Gewicht hoch, Reps zurueck", () => {
     const r = suggestWeight(EX, entry([work({ reps: 12, targetReps: 12, score: 3 })]));
-    expect(r.decision).toBe("hold");
-    expect(r.weight).toBe(60);
-    expect(r.targetReps).toBe(12);
+    expect(r.decision).toBe("increase");
+    expect(r.weight).toBe(62.5);
+    expect(r.targetReps).toBe(8);
   });
 
   it("Score genau am Ziel und erfuellt => eine Wiederholung mehr", () => {
