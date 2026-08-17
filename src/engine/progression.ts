@@ -156,8 +156,10 @@ export function suggestWeight(
     (s) => s.targetWeight != null && s.weight < s.targetWeight - 1e-9,
   );
   const avgScore = avg(ws.map((s) => s.score || tScore));
-  const maxReps = Math.max(...ws.map((s) => s.reps || 0));
   const minReps = Math.min(...ws.map((s) => s.reps || 0));
+  // Wiederholungsziele bleiben immer innerhalb des gueltigen Bandes.
+  const clampReps = (n: number): number =>
+    Math.min(range[1], Math.max(range[0], n));
 
   // ueber Ziel-Score / Versagen / Last-Reduktion -> halten oder senken
   if (anyFailed || anyReduced || avgScore > tScore + 0.5) {
@@ -172,19 +174,30 @@ export function suggestWeight(
         true,
       );
     }
+    // Gehalten wird hier, weil es zu hart war. War das Ziel dabei erfuellt,
+    // bleiben auch die Wiederholungen stehen (gleiche Regel wie unten im
+    // Auffangzweig); verfehlt heisst weiterhin: das Bandende nochmal
+    // versuchen.
     return withRamp(
       {
         weight: ld(W, false),
-        targetReps: range[1],
+        targetReps: allMet ? clampReps(minReps) : range[1],
         decision: "hold",
-        note: "hart/verfehlt – Gewicht halten",
+        note: allMet
+          ? "hart – Gewicht und Wiederholungen halten"
+          : "hart/verfehlt – Gewicht halten",
       },
       true,
     );
   }
 
-  // alles erreicht und leichter als Ziel -> doppelte Progression
-  if (allMet && avgScore < tScore) {
+  // Ziel erfuellt und hoechstens so anstrengend wie vorgesehen -> doppelte
+  // Progression. Die Zielanstrengung selbst (Score = Zielscore) zaehlt als
+  // erfuellt, nicht als Grenzfall: genau so soll trainiert werden, also folgt
+  // der naechste Schritt. Frueher fiel dieser Fall in den Auffangzweig unten
+  // und bekam dessen Wiederholungsziel (oberes Bandende) - der saubere Satz
+  // sprang damit weiter als der zu leichte.
+  if (allMet && avgScore <= tScore) {
     if (minReps >= range[1]) {
       // oberes Repband erreicht -> Gewicht hoch, Reps zurueck auf Minimum
       return withRamp(
@@ -198,20 +211,27 @@ export function suggestWeight(
         range[1],
       );
     }
-    // sonst zuerst Wiederholungen steigern
+    // sonst zuerst Wiederholungen steigern, ausgehend vom schwaechsten Satz:
+    // ein starker erster Satz soll das Ziel nicht hochziehen, wenn die
+    // spaeteren Saetze schon abgefallen sind.
     return withRamp({
       weight: ld(W, false),
-      targetReps: Math.min(range[1], maxReps + 1),
+      targetReps: clampReps(minReps + 1),
       decision: "increase-reps",
       note: "leichter als Ziel – Wiederholungen steigern (Gewicht gleich)",
     });
   }
 
-  // im Ziel, aber Reps nicht voll oder metTarget false -> halten
+  // Rest: zu hart trotz erfuelltem Ziel, oder Ziel nicht erfuellt.
+  // Erfuellt (aber hart) -> Wiederholungen bleiben stehen, bis es leichter
+  // wird. Verfehlt -> das obere Bandende bleibt das Ziel, also nochmal
+  // versuchen.
   return withRamp({
     weight: ld(W, false),
-    targetReps: range[1],
+    targetReps: allMet ? clampReps(minReps) : range[1],
     decision: "hold",
-    note: "im Ziel – Gewicht halten, Repband ausreizen",
+    note: allMet
+      ? "im Ziel, aber hart – Gewicht und Wiederholungen halten"
+      : "im Ziel – Gewicht halten, Repband ausreizen",
   });
 }
