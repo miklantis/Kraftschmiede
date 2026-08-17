@@ -41,6 +41,7 @@ export function ListRow({
   onClick,
   disabled = false,
   ariaLabel,
+  align = "center",
 }: {
   title: ReactNode;
   subtitle?: ReactNode;
@@ -56,13 +57,26 @@ export function ListRow({
   onClick?: () => void;
   disabled?: boolean;
   ariaLabel?: string;
+  /** Vertikale Ausrichtung von Symbol und Anhaengsel: "center" (Standard) mittig
+   *  zur ganzen Zeile, "top" auf Hoehe der Titelzeile – noetig, sobald ein hoher
+   *  footer die Zeile waechst (z. B. die aufgeklappten Saetze im Verlauf). */
+  align?: "center" | "top";
 }): React.ReactElement {
   const clickable = typeof onClick === "function" && !disabled;
+  // Hoehe der Titelzeile (17px bzw. ab 960px 15px mal Standard-Zeilenhoehe).
+  // Symbol und Anhaengsel bekommen sie bei align="top" als Mindesthoehe, damit
+  // sie mittig zur Ueberschrift sitzen statt an deren Oberkante zu kleben.
+  const titleLineHeight = "min-h-[26px] min-[960px]:min-h-[23px]";
 
   const inner = (
     <>
       {leading != null && (
-        <span className="flex-none text-muted-foreground [&>svg]:size-5">
+        <span
+          className={cn(
+            "flex-none text-muted-foreground [&>svg]:size-5",
+            align === "top" && "flex items-center " + titleLineHeight,
+          )}
+        >
           {leading}
         </span>
       )}
@@ -77,17 +91,33 @@ export function ListRow({
         )}
         {footer != null && <div className="mt-1.5 w-full">{footer}</div>}
       </div>
-      {trailing != null && <div className="flex-none">{trailing}</div>}
+      {trailing != null && (
+        <div
+          className={cn(
+            "flex-none",
+            align === "top" && "flex items-center " + titleLineHeight,
+          )}
+        >
+          {trailing}
+        </div>
+      )}
       {chevron && (
-        <ChevronRight className="size-[18px] flex-none text-foreground-subtle" />
+        <ChevronRight
+          className={cn(
+            "size-[18px] flex-none text-foreground-subtle",
+            align === "top" && "mt-1 self-start",
+          )}
+        />
       )}
     </>
   );
 
   // Trennlinie: jede Zeile ausser der ersten; in einer bordered-Liste auch die
   // erste. Hover-Tonung nur bei klickbaren Zeilen.
-  const base =
-    "flex w-full items-center gap-3 px-4 py-3.5 text-left text-foreground border-t border-muted first:border-t-0 group-data-[bordered]/list:first:border-t min-[960px]:px-5 min-[960px]:py-4";
+  const base = cn(
+    "flex w-full gap-3 px-4 py-3.5 text-left text-foreground border-t border-muted first:border-t-0 group-data-[bordered]/list:first:border-t min-[960px]:px-5 min-[960px]:py-4",
+    align === "top" ? "items-start" : "items-center",
+  );
 
   if (clickable) {
     return (

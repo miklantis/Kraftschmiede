@@ -59,6 +59,7 @@ export function ExerciseHistoryList({
                   : undefined
               }
               onClick={aufklappbar ? () => umschalten(i) : undefined}
+              align={istOffen ? "top" : "center"}
               trailing={
                 <div className="flex items-center gap-2">
                   {r.right && (
