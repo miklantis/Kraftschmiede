@@ -34,6 +34,8 @@ Die Regeln in `suggestWeight`, in dieser Reihenfolge:
    „Halten" heißt halten, nicht „Repband ausreizen".
 5. **Ziel verfehlt** → das obere Bandende bleibt das Wiederholungsziel, also nochmal
    versuchen.
+6. **Ziel zweimal in Folge am selben Gewicht verfehlt** → Gewicht einen Schritt zurück,
+   Wiederholungsziel bleibt das obere Bandende (Rückwärtsregel, siehe unten).
 
 Dazu zwei Prinzipien: **Die Zielanstrengung zählt als erfüllt, nicht als Grenzfall** –
 Regel 2 und 3 greifen bei `avgScore <= tScore`, ohne Zusatzbedingung „leichter als
@@ -49,6 +51,19 @@ erreicht ist –, sonst bliebe sie wirkungslos. Toleriert werden ausschließlich
 Wiederholungen: Versagen, reduzierte Last und zu hohe Anstrengung bleiben harte
 Ausschlüsse, und mindestens ein Arbeitssatz muss sein Ziel bzw. das Bandende voll erreicht
 haben.
+
+**Rückwärtsregel bei mehrfach verfehltem Ziel (#175).** Regel 5 allein hielt das obere
+Bandende beliebig oft als Ziel fest: Wer knapp verfehlt, ohne zu versagen, die Last zu
+reduzieren oder über Ziel + 0,5 zu landen, blieb unbegrenzt am selben Gewicht hängen.
+Wird das Ziel jetzt **und** in der Einheit davor verfehlt, geht das Gewicht einen Schritt
+zurück. Maßgeblich ist dieselbe Ziel-Bewertung wie im Progressionszweig, samt Toleranz für
+den Wiederholungsabfall – ein Satz, der nur wegen der Toleranz durchgeht, zählt nicht als
+verfehlt. Gezählt wird nur, solange beide Einheiten am selben Gewicht gearbeitet haben:
+sobald gesenkt wurde, die Phase die Last verschoben hat oder eine andere Kurzhantel-Stufe
+im Spiel war, beginnt die Zählung neu. Damit kann die Regel nicht zweimal hintereinander
+greifen und der Coach fällt nicht treppenweise ab. Zwei Einheiten statt drei, weil die
+erste verfehlte Einheit bereits einen vollen Wiederholungsversuch am selben Gewicht nach
+sich zieht – der Rückschritt kommt also frühestens im dritten Anlauf.
 
 ## Begründung
 
@@ -73,9 +88,16 @@ enge Band von selbst (Lastspezifität des 1RM, Schoenfeld et al. 2017).
 - Bekannter Restfall: am Bandende, in Zielanstrengung, Lastfaktor deckelt → das Gewicht
   bewegt sich nicht. Gewollt, dort steuert die Rampe.
 - Die Toleranz greift nur im Progressionszweig. Die Haltezweige (härter als vorgesehen,
-  Ziel verfehlt) rechnen weiter ohne sie: dort ist Halten die richtige Antwort, und wie
-  der Coach auf mehrfach verfehltes Ziel reagiert, wird getrennt entschieden (#175).
-- Regel 5 kennt weiterhin keine Rückwärtsregel bei mehrfach verfehltem Ziel (#175).
+  Ziel verfehlt) rechnen weiter ohne sie: dort ist Halten die richtige Antwort. Für die
+  Frage, ob eine frühere Einheit als verfehlt zählt, gilt dagegen die tolerante
+  Bewertung – sonst würde eine Einheit, die der Coach damals als erfüllt behandelt hat,
+  rückwirkend gegen den Nutzer zählen.
+- `suggestWeight` bekommt zusätzlich die Einheit vor der letzten (`prevEntry`). Der
+  Verlauf liegt im Client bereits vollständig vor (`useSessionsDetailed`), es braucht
+  keinen zusätzlichen Zustand in der Datenbank.
+- Die Schrittweite eines Gewichtssprungs kommt aus den Einstellungen (`weight_step`,
+  #185) statt fest 2,5 – hoch, runter und beim Wiedereinstieg gleichermaßen. Gerundet
+  wird danach weiterhin auf eine ladbare Stufe.
 - Offen und bewusst nicht Teil dieser Entscheidung: ob der Coach-Chip kenntlich macht,
   wann die Phase eine Entscheidung überstimmt hat.
 

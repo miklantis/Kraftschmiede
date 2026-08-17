@@ -207,6 +207,94 @@ describe("suggestWeight – Doppelprogression", () => {
   });
 });
 
+describe("suggestWeight – Rueckwaertsregel bei mehrfach verfehltem Ziel", () => {
+  // Eine Einheit, in der das Wiederholungsziel knapp verfehlt wurde, ohne
+  // Versagen, ohne Last-Reduktion und in Zielanstrengung.
+  const verfehlt = (w = 60): SetEntry =>
+    entry([
+      work({ weight: w, reps: 7, targetReps: 10, targetWeight: w, score: 3 }),
+      work({ weight: w, reps: 7, targetReps: 10, targetWeight: w, score: 3 }),
+    ]);
+  const erfuellt = (w = 60): SetEntry =>
+    entry([
+      work({ weight: w, reps: 10, targetReps: 10, targetWeight: w, score: 3 }),
+      work({ weight: w, reps: 10, targetReps: 10, targetWeight: w, score: 3 }),
+    ]);
+
+  it("einmal verfehlt => Gewicht halten, Bandende nochmal versuchen", () => {
+    const r = suggestWeight(EX, verfehlt(), { prevEntry: erfuellt() });
+    expect(r.decision).toBe("hold");
+    expect(r.weight).toBe(60);
+    expect(r.targetReps).toBe(12);
+  });
+
+  it("zweimal in Folge am selben Gewicht verfehlt => einen Schritt zurueck", () => {
+    const r = suggestWeight(EX, verfehlt(), { prevEntry: verfehlt() });
+    expect(r.decision).toBe("decrease");
+    expect(r.weight).toBe(57.5);
+    expect(r.targetReps).toBe(12);
+  });
+
+  it("dreimal verfehlt, dazwischen schon gesenkt => nur ein Schritt auf einmal", () => {
+    // Nach dem Rueckschritt liegt die letzte Einheit auf 57,5: das Gewicht der
+    // Einheit davor (60) passt nicht mehr, die Zaehlung beginnt neu.
+    const ex = { ...EX, workWeight: 57.5 };
+    const r = suggestWeight(ex, verfehlt(57.5), { prevEntry: verfehlt(60) });
+    expect(r.decision).toBe("hold");
+    expect(r.weight).toBe(57.5);
+  });
+
+  it("davor erfuellt, dazwischen kein Eintrag => keine Senkung ohne Vorgeschichte", () => {
+    const r = suggestWeight(EX, verfehlt(), { prevEntry: null });
+    expect(r.decision).toBe("hold");
+    expect(r.weight).toBe(60);
+  });
+
+  it("zweimal verfehlt und dabei hart => senken statt halten", () => {
+    const hart = entry([
+      work({ reps: 7, targetReps: 10, score: 4 }),
+      work({ reps: 7, targetReps: 10, score: 4 }),
+    ]);
+    const r = suggestWeight(EX, hart, { prevEntry: verfehlt() });
+    expect(r.decision).toBe("decrease");
+    expect(r.weight).toBe(57.5);
+  });
+
+  it("davor nur wegen der Toleranz knapp drunter => kein Rueckschritt", () => {
+    // Drei Saetze: einer voll am Ziel, die spaeteren eine Wiederholung darunter.
+    // Das gilt mit der Toleranz als erfuellt und zaehlt nicht als verfehlt.
+    const toleriert = entry([
+      work({ reps: 10, targetReps: 10 }),
+      work({ reps: 9, targetReps: 10 }),
+      work({ reps: 9, targetReps: 10 }),
+    ]);
+    const r = suggestWeight(EX, verfehlt(), { prevEntry: toleriert });
+    expect(r.decision).toBe("hold");
+    expect(r.weight).toBe(60);
+  });
+});
+
+describe("suggestWeight – Schrittweite aus den Einstellungen", () => {
+  it("Schrittweite 5 => Gewicht steigt um 5", () => {
+    const r = suggestWeight(EX, entry([work({ reps: 12, score: 2 })]), { step: 5 });
+    expect(r.decision).toBe("increase");
+    expect(r.weight).toBe(65);
+  });
+
+  it("Schrittweite 5 => Gewicht faellt um 5", () => {
+    const r = suggestWeight(EX, entry([work({ reps: 5, failed: true, score: 5 })]), {
+      step: 5,
+    });
+    expect(r.decision).toBe("decrease");
+    expect(r.weight).toBe(55);
+  });
+
+  it("ohne Einstellung bleibt es bei 2,5", () => {
+    const r = suggestWeight(EX, entry([work({ reps: 12, score: 2 })]));
+    expect(r.weight).toBe(62.5);
+  });
+});
+
 describe("suggestWeight – Kurzhantel-Stufen", () => {
   const DB = [8, 10, 12, 14, 16, 18, 20];
   const dbEx = {

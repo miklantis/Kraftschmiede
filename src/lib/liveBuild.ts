@@ -56,6 +56,12 @@ export interface LiveBuildInput {
   loadFactor: number | null;
   // Letzter Krafteintrag je Uebung (Saetze) als Vordaten fuer den Vorschlag.
   lastEntryByExercise: Record<string, SetEntry | null>;
+  // Der Eintrag davor je Uebung – nur fuer die Rueckwaertsregel des Coaches
+  // (zweimal in Folge am selben Gewicht das Ziel verfehlt). Fehlt er, verhaelt
+  // sich der Coach wie bisher.
+  prevEntryByExercise?: Record<string, SetEntry | null>;
+  // Schrittweite eines Gewichtssprungs aus den Einstellungen; null = Standard.
+  weightStep?: number | null;
   bars: LiveBuildBar[];
   plates: number[];
   dumbbells: number[];
@@ -219,6 +225,8 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
     const { suggestion: sug, bar } = suggestWithBar(exo, {
       phaseFocus: input.phaseFocus,
       lastEntry,
+      prevEntry: input.prevEntryByExercise?.[id] ?? null,
+      weightStep: input.weightStep ?? null,
       bars: input.bars,
       plates: input.plates,
       dumbbells: input.dumbbells,

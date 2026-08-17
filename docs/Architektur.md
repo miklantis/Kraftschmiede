@@ -205,6 +205,14 @@ betroffene Tabelle beim Wiederherstellen leer.
   Übungs-Statusanzeige und Coach-Export – der Export weist beide Bänder getrennt
   aus (`repBand` = Katalog, `activeRepBand` = was gerade gilt), damit von außen nicht das
   falsche für maßgeblich gehalten wird.
+- **Der Coach senkt bei zweimal verfehltem Ziel.** Wird das Wiederholungsziel in zwei
+  aufeinanderfolgenden Einheiten am selben Gewicht verfehlt, geht die Last einen Schritt
+  zurück statt das obere Bandende erneut vorzugeben (Regel 6 in
+  `docs/adr/0015-coach-progressionsregeln.md`). Dafür bekommt `suggestWeight` neben dem
+  letzten auch den vorletzten Eintrag der Übung (`buildPrevEntries` in
+  `lib/lastEntries.ts`); weicht das Gewicht der beiden Einheiten ab, beginnt die Zählung
+  neu. Die Schrittweite jedes Gewichtssprungs kommt aus den Einstellungen
+  (`weight_step`, Standard 2,5), gerundet wird danach auf eine ladbare Stufe.
 - **Lastfaktor schlägt Doppelprogression.** Arbeitet die laufende Journey mit
   Lastfaktoren (irgendeine Phase ≠ 1), gibt sie das Arbeitsgewicht vor:
   `reference_weight × load_factor`, abgerundet auf ladbare Scheiben bzw.

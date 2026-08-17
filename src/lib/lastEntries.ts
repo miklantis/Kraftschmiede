@@ -21,17 +21,47 @@ export function toEngineSet(s: HistorySet): EngineSet {
   };
 }
 
+// Die juengsten `count` Krafteintraege je Uebung, neueste zuerst. Neueste
+// Einheit zuerst durchgehen und je Uebung sammeln, bis die Zahl erreicht ist.
+export function buildRecentEntries(
+  detailed: HistorySessionInput[],
+  count: number,
+): Record<string, SetEntry[]> {
+  const map: Record<string, SetEntry[]> = {};
+  const desc = detailed.slice().reverse();
+  for (const sess of desc) {
+    for (const ex of sess.exercises) {
+      if (!ex.exerciseId) continue;
+      const list = map[ex.exerciseId] ?? (map[ex.exerciseId] = []);
+      if (list.length >= count) continue;
+      list.push({ sets: ex.sets.map(toEngineSet) });
+    }
+  }
+  return map;
+}
+
 // Neueste Einheit zuerst durchgehen, ersten Treffer je Uebung behalten.
 export function buildLastEntries(
   detailed: HistorySessionInput[],
 ): Record<string, SetEntry> {
   const map: Record<string, SetEntry> = {};
-  const desc = detailed.slice().reverse();
-  for (const sess of desc) {
-    for (const ex of sess.exercises) {
-      if (!ex.exerciseId || map[ex.exerciseId]) continue;
-      map[ex.exerciseId] = { sets: ex.sets.map(toEngineSet) };
-    }
+  for (const [id, list] of Object.entries(buildRecentEntries(detailed, 1))) {
+    const first = list[0];
+    if (first) map[id] = first;
+  }
+  return map;
+}
+
+// Vorletzter Krafteintrag je Uebung – die Einheit VOR der letzten. Grundlage
+// der Rueckwaertsregel des Coaches (#175): zweimal in Folge am selben Gewicht
+// das Ziel verfehlt. Uebungen mit nur einer Einheit fehlen im Ergebnis.
+export function buildPrevEntries(
+  detailed: HistorySessionInput[],
+): Record<string, SetEntry> {
+  const map: Record<string, SetEntry> = {};
+  for (const [id, list] of Object.entries(buildRecentEntries(detailed, 2))) {
+    const second = list[1];
+    if (second) map[id] = second;
   }
   return map;
 }
