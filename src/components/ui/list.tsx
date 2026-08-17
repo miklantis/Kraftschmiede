@@ -42,6 +42,7 @@ export function ListRow({
   disabled = false,
   ariaLabel,
   align = "center",
+  elementRef,
 }: {
   title: ReactNode;
   subtitle?: ReactNode;
@@ -61,6 +62,9 @@ export function ListRow({
    *  zur ganzen Zeile, "top" auf Hoehe der Titelzeile – noetig, sobald ein hoher
    *  footer die Zeile waechst (z. B. die aufgeklappten Saetze im Verlauf). */
   align?: "center" | "top";
+  /** Zugriff auf das Zeilen-Element (Button oder Div), z. B. um seine Position
+   *  auf dem Bildschirm zu messen. Callback-Ref, damit beide Faelle passen. */
+  elementRef?: (el: HTMLElement | null) => void;
 }): React.ReactElement {
   const clickable = typeof onClick === "function" && !disabled;
   // Hoehe der Titelzeile (17px bzw. ab 960px 15px mal Standard-Zeilenhoehe).
@@ -122,6 +126,7 @@ export function ListRow({
   if (clickable) {
     return (
       <button
+        ref={elementRef}
         type="button"
         onClick={onClick}
         aria-label={ariaLabel}
@@ -134,6 +139,7 @@ export function ListRow({
 
   return (
     <div
+      ref={elementRef}
       aria-label={ariaLabel}
       className={cn(base, disabled && "opacity-50")}
     >

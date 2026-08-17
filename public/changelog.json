@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.28.2",
+      "date": "2026-08-17",
+      "changes": [
+        "Beim Auf- und Zuklappen einer Einheit im \u00dcbungs-Verlauf springt die Seite nicht mehr: die angetippte Zeile bleibt genau an ihrer Stelle auf dem Bildschirm stehen."
+      ]
+    },
+    {
       "version": "1.28.1",
       "date": "2026-08-17",
       "changes": [
