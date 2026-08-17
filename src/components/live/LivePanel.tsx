@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import { useLiveSession, type UseLiveSession } from "@/hooks/useLiveSession";
+import { useLiveCoachPreview } from "@/hooks/useLiveCoachPreview";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { usePlates, useBars } from "@/hooks/useInventory";
 import { useSettings } from "@/hooks/useSettings";
@@ -47,6 +48,9 @@ function PanelContent({
   unit: string;
 }): React.ReactElement {
   const active = computeActive(session.entries, session.focusEi);
+  // Coach-Vorschau je fertigem Uebungsblock (#191). Nur hier, nicht im
+  // 1RM-Test: dort gibt es keine Progression zu bewerten.
+  const { byEntry: coachPreview } = useLiveCoachPreview();
   return (
     <div className="flex flex-col gap-3">
       {session.loadNote !== null && <LoadNoteBanner text={session.loadNote} />}
@@ -77,6 +81,7 @@ function PanelContent({
           onChangeBar={(bar) => live.changeBar(i, bar)}
           onCyclePlate={() => live.cyclePlateMode(i)}
           onNote={(note) => live.setEntryNote(i, note)}
+          coach={coachPreview[i]}
         />
       ))}
       {/* Notiz zum ganzen Workout: bewusst ohne Karte direkt auf dem
