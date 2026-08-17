@@ -5,7 +5,7 @@
 import { avg } from "./math";
 import { nearestLoadable, nearestDumbbell } from "./plates";
 import { metTarget, workSets } from "./target";
-import type { Bar, SetEntry } from "./types";
+import type { Bar, EngineSet, SetEntry } from "./types";
 
 export interface SuggestExercise {
   workWeight?: number;
@@ -46,6 +46,21 @@ export interface SuggestResult {
 }
 
 const DEFAULT_PLATES = [1.25, 2.5, 5, 10, 15, 20, 25];
+
+// Toleranz fuer den normalen Wiederholungsabfall ueber die Arbeitssaetze:
+// wie viele Wiederholungen ein spaeter Satz unter dem Ziel bzw. dem Bandende
+// liegen darf, ohne dass die Steigerung blockiert wird. Der Abfall ist
+// Ermuedung und kein Zeichen zu hoher Last (siehe ADR-0015 und #174) – bei
+// kurzer Pause faellt schon der zweite Satz ab, bei langer der dritte. Ohne
+// Toleranz erreicht in einer Hypertrophie-Phase mit fuenf bis sechs Saetzen
+// der letzte Satz das Bandende praktisch nie und das Gewicht friert ein.
+// Der Deckel auf die halbe Bandbreite haelt enge Kraftbaender streng:
+// Band 8-12 erlaubt hoechstens 2, Band 4-6 hoechstens 1.
+function repTolerance(setCount: number, range: [number, number]): number {
+  const byCount = setCount >= 5 ? 2 : setCount >= 3 ? 1 : 0;
+  const byBand = Math.floor((range[1] - range[0]) / 2);
+  return Math.max(0, Math.min(byCount, byBand));
+}
 
 export function suggestWeight(
   ex: SuggestExercise,
@@ -152,6 +167,22 @@ export function suggestWeight(
 
   const allMet = ws.every((s) => metTarget(s) === true);
   const anyFailed = ws.some((s) => s.failed);
+  // Ziel-Bewertung mit Toleranz: mindestens ein Arbeitssatz muss sein Ziel
+  // voll erfuellt haben, die uebrigen duerfen bis zu `tol` Wiederholungen
+  // darunter liegen. Gewicht und Versagen bleiben strikt – toleriert wird
+  // ausschliesslich der Wiederholungsabfall.
+  const tol = repTolerance(ws.length, range);
+  const metWithTol = (s: EngineSet): boolean => {
+    if (s.targetReps == null || s.targetWeight == null) return false;
+    const reps = s.reps || 0;
+    return (
+      reps >= s.targetReps - tol &&
+      s.weight >= s.targetWeight - 1e-9 &&
+      !(s.failed && reps < s.targetReps)
+    );
+  };
+  const allMetTol =
+    ws.some((s) => metTarget(s) === true) && ws.every(metWithTol);
   const anyReduced = ws.some(
     (s) => s.targetWeight != null && s.weight < s.targetWeight - 1e-9,
   );
@@ -197,8 +228,13 @@ export function suggestWeight(
   // der naechste Schritt. Frueher fiel dieser Fall in den Auffangzweig unten
   // und bekam dessen Wiederholungsziel (oberes Bandende) - der saubere Satz
   // sprang damit weiter als der zu leichte.
-  if (allMet && avgScore <= tScore) {
-    if (minReps >= range[1]) {
+  if (allMetTol && avgScore <= tScore) {
+    // Bandende gilt als erreicht, wenn mindestens ein Arbeitssatz oben war und
+    // kein Satz mehr als `tol` darunter liegt. Die Bedingung "mindestens einer
+    // oben" verhindert, dass eine Serie, die das Bandende nie beruehrt hat,
+    // ueber die Toleranz zur Gewichtssteigerung wird.
+    const topReached = ws.some((s) => (s.reps || 0) >= range[1]);
+    if (topReached && minReps >= range[1] - tol) {
       // oberes Repband erreicht -> Gewicht hoch, Reps zurueck auf Minimum.
       // Die Zielanstrengung reicht dafuer aus; die Trainingslehre verlangt an
       // dieser Stelle keine Zusatzbedingung "war leichter als vorgesehen"
@@ -208,7 +244,10 @@ export function suggestWeight(
           weight: ld(W + 2.5, false),
           targetReps: range[0],
           decision: "increase",
-          note: "Repband oben erreicht – Gewicht +Schritt, Reps zuruecksetzen",
+          note:
+            minReps >= range[1]
+              ? "Repband oben erreicht – Gewicht +Schritt, Reps zuruecksetzen"
+              : "Repband oben erreicht, spaete Saetze abgefallen – Gewicht +Schritt",
         },
         false,
         range[1],

@@ -25,8 +25,9 @@ Die Regeln in `suggestWeight`, in dieser Reihenfolge:
 
 1. **Versagen, reduzierte Last oder deutlich zu hart** (Score über Ziel + 0,5) → Gewicht
    senken oder halten.
-2. **Oberes Bandende in allen Arbeitssätzen erreicht, Anstrengung höchstens im Ziel** →
-   Gewicht +Schritt, Wiederholungen zurück auf den Bandanfang.
+2. **Oberes Bandende erreicht, Anstrengung höchstens im Ziel** → Gewicht +Schritt,
+   Wiederholungen zurück auf den Bandanfang. Erreicht heißt: mindestens ein Arbeitssatz
+   war oben, und kein Satz liegt mehr als die Toleranz darunter (siehe unten).
 3. **Bandende noch nicht erreicht, Anstrengung höchstens im Ziel** → eine Wiederholung
    mehr.
 4. **Ziel erfüllt, aber härter als vorgesehen** → Gewicht und Wiederholungen halten.
@@ -38,6 +39,16 @@ Dazu zwei Prinzipien: **Die Zielanstrengung zählt als erfüllt, nicht als Grenz
 Regel 2 und 3 greifen bei `avgScore <= tScore`, ohne Zusatzbedingung „leichter als
 vorgesehen". Und **maßgeblich ist der schwächste Arbeitssatz**, sonst zieht ein starker
 erster Satz das Ziel hoch.
+
+**Toleranz für den Wiederholungsabfall über die Sätze.** Der schwächste Satz bleibt
+maßgeblich, darf aber unter dem Ziel liegen: `T = 0` bei ein bis zwei Arbeitssätzen,
+`T = 1` bei drei bis vier, `T = 2` ab fünf, zusätzlich gedeckelt auf die halbe Bandbreite
+(Band 8-12 höchstens 2, Band 4-6 höchstens 1). Die Toleranz gilt an beiden Stellen, an
+denen der Coach Wiederholungen prüft – ob das Ziel als erfüllt gilt und ob das Bandende
+erreicht ist –, sonst bliebe sie wirkungslos. Toleriert werden ausschließlich
+Wiederholungen: Versagen, reduzierte Last und zu hohe Anstrengung bleiben harte
+Ausschlüsse, und mindestens ein Arbeitssatz muss sein Ziel bzw. das Bandende voll erreicht
+haben.
 
 ## Begründung
 
@@ -61,10 +72,10 @@ enge Band von selbst (Lastspezifität des 1RM, Schoenfeld et al. 2017).
   einen Vorschlag überstimmt.
 - Bekannter Restfall: am Bandende, in Zielanstrengung, Lastfaktor deckelt → das Gewicht
   bewegt sich nicht. Gewollt, dort steuert die Rampe.
-- Zwei Regeln sind nach Prüfung gegen die Fachliteratur zu grob und werden getrennt
-  entschieden: „alle Arbeitssätze" ignoriert den normalen Wiederholungsabfall über die
-  Sätze (#174), und Regel 5 kennt keine Rückwärtsregel bei mehrfach verfehltem Ziel
-  (#175).
+- Die Toleranz greift nur im Progressionszweig. Die Haltezweige (härter als vorgesehen,
+  Ziel verfehlt) rechnen weiter ohne sie: dort ist Halten die richtige Antwort, und wie
+  der Coach auf mehrfach verfehltes Ziel reagiert, wird getrennt entschieden (#175).
+- Regel 5 kennt weiterhin keine Rückwärtsregel bei mehrfach verfehltem Ziel (#175).
 - Offen und bewusst nicht Teil dieser Entscheidung: ob der Coach-Chip kenntlich macht,
   wann die Phase eine Entscheidung überstimmt hat.
 
@@ -87,4 +98,10 @@ enge Band von selbst (Lastspezifität des 1RM, Schoenfeld et al. 2017).
 - *Autoregulated resistance training for maximal strength enhancement.* J Exerc Sci Fit
   (2025). [PubMed](https://pubmed.ncbi.nlm.nih.gov/40791980/)
 
-Die Quellen zum Satz-für-Satz-Abfall und zur RIR-Genauigkeit stehen in #174.
+Zur Toleranz für den Wiederholungsabfall:
+
+- *Relationship between perceptual and mechanical markers of fatigue during bench press
+  and bench pull exercises: impact of inter-set rest period length* (2024).
+  [PMC](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10799610/)
+- Refalo M. C. et al. (2023): *Influence of Resistance Training Proximity-to-Failure on
+  Neuromuscular Fatigue.* [PMC](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9908800/)
