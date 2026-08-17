@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.27.2",
+      "date": "2026-08-17",
+      "changes": [
+        "Der Coach schlägt jetzt einen sauberen Einzelschritt vor, wenn du eine Übung genau in der Zielanstrengung geschafft hast: eine Wiederholung mehr statt eines Sprungs ans obere Ende des Wiederholungsbands. Besonders spürbar in der Maximalkraft-Phase mit engem Band (etwa 4-6), wo aus 4 Wiederholungen bisher direkt 6 wurden.",
+        "„Halten“ hält jetzt auch wirklich die Wiederholungen: War die Einheit hart, aber im Ziel, bleibt beim nächsten Mal alles gleich. Nur wenn du dein Ziel verfehlt hast, bleibt das obere Ende des Wiederholungsbands stehen.",
+        "Wenn die Sätze unterschiedlich ausfallen, richtet sich der Vorschlag nach dem schwächsten Satz statt nach dem besten."
+      ]
+    },
+    {
       "version": "1.27.1",
       "date": "2026-08-16",
       "changes": [

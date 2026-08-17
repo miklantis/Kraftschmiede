@@ -37,10 +37,55 @@ describe("suggestWeight – Doppelprogression", () => {
     expect(r.targetReps).toBe(10);
   });
 
-  it("im Ziel (Score am Ziel) => Gewicht halten", () => {
-    const r = suggestWeight(EX, entry([work({ reps: 10, score: 3 })]));
+  it("Score genau am Ziel und erfuellt => eine Wiederholung mehr", () => {
+    const r = suggestWeight(EX, entry([work({ reps: 10, targetReps: 10, score: 3 })]));
+    expect(r.decision).toBe("increase-reps");
+    expect(r.weight).toBe(60);
+    expect(r.targetReps).toBe(11);
+  });
+
+  it("Score am Ziel im schmalen Repband => Einzelschritt statt Sprung ans Bandende", () => {
+    // Maximalkraft-Fall: Band 4-6, vier Saetze mit 4 Wiederholungen im Ziel.
+    const kraft = { workWeight: 50, repRange: [4, 6] as [number, number], targetScore: 3 };
+    const satz = (): EngineSet => ({
+      type: "work",
+      weight: 50,
+      reps: 4,
+      done: true,
+      targetReps: 4,
+      targetWeight: 50,
+      score: 3,
+    });
+    const r = suggestWeight(kraft, entry([satz(), satz(), satz(), satz()]));
+    expect(r.decision).toBe("increase-reps");
+    expect(r.weight).toBe(50);
+    expect(r.targetReps).toBe(5);
+  });
+
+  it("Steigerung richtet sich nach dem schwaechsten Satz", () => {
+    const r = suggestWeight(
+      EX,
+      entry([
+        work({ reps: 10, targetReps: 9, score: 2 }),
+        work({ reps: 9, targetReps: 9, score: 2 }),
+      ]),
+    );
+    expect(r.decision).toBe("increase-reps");
+    expect(r.targetReps).toBe(10);
+  });
+
+  it("erfuellt, aber hart => Wiederholungen bleiben stehen", () => {
+    const r = suggestWeight(EX, entry([work({ reps: 9, targetReps: 9, score: 4 })]));
     expect(r.decision).toBe("hold");
     expect(r.weight).toBe(60);
+    expect(r.targetReps).toBe(9);
+  });
+
+  it("Ziel verfehlt => oberes Bandende bleibt das Ziel", () => {
+    const r = suggestWeight(EX, entry([work({ reps: 7, targetReps: 10, score: 3 })]));
+    expect(r.decision).toBe("hold");
+    expect(r.weight).toBe(60);
+    expect(r.targetReps).toBe(12);
   });
 
   it("Versagen => Gewicht senken", () => {
