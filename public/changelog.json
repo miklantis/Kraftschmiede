@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.28.0",
+      "date": "2026-08-17",
+      "changes": [
+        "Der Verlauf auf der \u00dcbungs-Detailseite l\u00e4sst sich jetzt aufklappen: Ein Tipp auf eine Einheit zeigt jeden einzelnen Satz mit Gewicht und Wiederholungen \u2013 und rechts daneben den Score als Zahl im runden Feld, genau wie die Score-Skala in den Einstellungen. So siehst du auf einen Blick, wie hart die Einheit war und an welchem Satz es kippte."
+      ]
+    },
+    {
       "version": "1.27.4",
       "date": "2026-08-17",
       "changes": [

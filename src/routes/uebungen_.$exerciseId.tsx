@@ -5,19 +5,17 @@ import { PageHeader } from "@/components/ui/page-header";
 import { BackLink } from "@/components/ui/back-link";
 import { Prose } from "@/components/ui/prose";
 import { Section } from "@/components/ui/section";
-import { List, ListRow } from "@/components/ui/list";
 import { CoachStatusPill } from "@/components/ui/coach-status-pill";
 import { MuscleMap } from "@/components/ui/muscle-map";
 import { PageReveal } from "@/components/ui/page-reveal";
-import { LoadMore } from "@/components/ui/load-more";
 import { ExerciseChartCard } from "@/components/exercise/ExerciseChartCard";
+import { ExerciseHistoryList } from "@/components/exercise/ExerciseHistoryList";
 import { ExerciseEditModal } from "@/components/exercise/ExerciseEditModal";
 import { MilestonesSection } from "@/components/exercise/MilestonesSection";
 import { RmSection } from "@/components/exercise/RmSection";
 import { useExerciseDetail } from "@/hooks/useExerciseDetail";
-import { useMehrLaden } from "@/hooks/useMehrLaden";
 import { profileLabel, equipmentLabel, tierLabel } from "@/lib/labels";
-import { longDateShort, fmtWeight } from "@/lib/format";
+import { fmtWeight } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 // Uebungs-Detail. Eigenstaendige Vollseite (entschachtelt mit _), ersetzt die
@@ -27,10 +25,9 @@ import { cn } from "@/lib/utils";
 // 960px vertikal zentriert. Oeffnet das Popup.
 // Der Anheften-Umschalter sitzt im Kopf der Chartkarte.
 //
-// Die Verlaufsliste zeigt zunaechst die juengsten Eintraege; der dezente
-// Nachlade-Pfeil (LoadMore) blendet jeweils eine weitere Seite ein. Den Zaehler
-// haelt der gemeinsame Hook useMehrLaden (reine Anzeige, die Daten liegen schon
-// vollstaendig vor).
+// Die Verlaufsliste steckt in ExerciseHistoryList: juengste Einheiten zuerst,
+// Nachladen ueber den dezenten Pfeil, und je Einheit lassen sich die einzelnen
+// Saetze samt Score aufklappen.
 
 export const Route = createFileRoute("/uebungen_/$exerciseId")({
   component: ExerciseDetailPage,
@@ -54,7 +51,6 @@ function ExerciseDetailPage(): React.ReactElement {
     muscleValues,
     coach,
   } = useExerciseDetail(exerciseId);
-  const verlaufListe = useMehrLaden(verlauf);
 
   if (isLoading) {
     return (
@@ -208,33 +204,7 @@ function ExerciseDetailPage(): React.ReactElement {
             eyebrow="Verlauf"
             className="order-6 min-w-0 min-[960px]:order-none"
           >
-            {verlauf.length === 0 ? (
-              <p className="text-[15px] text-muted-foreground">
-                Noch keine absolvierte Session mit dieser Übung.
-              </p>
-            ) : (
-              <>
-                <List bordered>
-                  {verlaufListe.sichtbar.map((r, i) => (
-                    <ListRow
-                      key={i}
-                      title={longDateShort(r.date)}
-                      subtitle={r.line || undefined}
-                      trailing={
-                        r.right ? (
-                          <span className="font-mono text-[14px] text-muted-foreground tabular-nums">
-                            {r.right}
-                          </span>
-                        ) : undefined
-                      }
-                    />
-                  ))}
-                </List>
-                {verlaufListe.hatMehr && (
-                  <LoadMore onClick={verlaufListe.mehrLaden} className="mt-1" />
-                )}
-              </>
-            )}
+            <ExerciseHistoryList verlauf={verlauf} />
           </Section>
         </div>
 

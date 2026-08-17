@@ -22,10 +22,16 @@ import { fmtNum, fmtWeight } from "@/lib/format";
 import type { ExerciseRow } from "@/schemas";
 import type { StatCell } from "@/components/ui/stat-row";
 
+export interface VerlaufSatz {
+  line: string; // Leistung des Satzes, z. B. "80 kg × 5" oder "45 s"
+  score: number | null; // Score 1..5 des Satzes (Skill-Saetze haben keinen)
+}
+
 export interface VerlaufRow {
   date: string;
   line: string; // bester Satz dieser Einheit, z. B. "80 kg × 5"
   right: string; // 1RM bzw. Ø-Score dieser Einheit
+  saetze: VerlaufSatz[]; // alle Arbeitssaetze der Einheit (zum Aufklappen)
 }
 
 export interface ExerciseDetailView {
@@ -77,6 +83,31 @@ function skillLine(e: ExHistoryEntry): string {
 function skillTargetLabel(e: ExHistoryEntry): string {
   if (e.target == null) return "";
   return "Ziel " + e.target + " " + skillUnit(e);
+}
+
+// Einzelne Saetze einer Einheit fuer die aufklappbare Verlaufszeile: links die
+// Leistung des Satzes, dazu sein Score (Skill-Saetze fuehren keinen Score).
+function satzZeilen(e: ExHistoryEntry, unit: string): VerlaufSatz[] {
+  if (e.skill) {
+    const u = skillUnit(e);
+    return e.sets.map((s) => ({
+      line:
+        (e.metric === "duration" ? (s.durationSec ?? 0) : (s.reps ?? 0)) +
+        " " +
+        u,
+      score: null,
+    }));
+  }
+  return e.sets.map((s) => {
+    const reps = s.reps ?? 0;
+    const line =
+      s.weight != null
+        ? fmtNum(s.weight) + " " + unit + " × " + reps
+        : s.durationSec != null
+          ? s.durationSec + " s"
+          : reps + " Wdh";
+    return { line, score: s.score };
+  });
 }
 
 export function useExerciseDetail(exerciseId: string): ExerciseDetailView {
@@ -181,10 +212,12 @@ export function useExerciseDetail(exerciseId: string): ExerciseDetailView {
             date: e.date,
             line: skillLine(e),
             right: skillTargetLabel(e),
+            saetze: satzZeilen(e, unit),
           }
         : {
             date: e.date,
             line: bestSetLine(e, unit),
+            saetze: satzZeilen(e, unit),
             right:
               e.est1RM != null
                 ? fmtWeight(e.est1RM, unit)
