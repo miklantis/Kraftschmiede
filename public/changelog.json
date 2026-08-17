@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.30.1",
+      "date": "2026-08-17",
+      "changes": [
+        "Im Verlauf einer Übung steht rechts an den Einträgen kein geschätztes 1RM mehr. Der Wert lebt weiter im eigenen 1RM-Block der Seite; in der Liste bleibt rechts nur der Ø-Score der Einheit."
+      ]
+    },
+    {
       "version": "1.30.0",
       "date": "2026-08-17",
       "changes": [

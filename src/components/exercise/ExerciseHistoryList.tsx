@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import type { VerlaufRow } from "@/hooks/useExerciseDetail";
 
 // Trainingsverlauf einer Uebung: je Einheit eine Zeile mit Datum, bestem Satz
-// und 1RM bzw. Ø-Score. Ein Tipp klappt die einzelnen Arbeitssaetze auf – dort
+// und Ø-Score. Ein Tipp klappt die einzelnen Arbeitssaetze auf – dort
 // steht je Satz die Leistung und rechts der Score als runde Zahl (gleiche Optik
 // wie die Score-Skala in den Einstellungen). So laesst sich nachvollziehen, wie
 // hart die Einheit war und an welchem Satz es kippte.

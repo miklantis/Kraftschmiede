@@ -18,7 +18,7 @@ import {
   type ExMetricOption,
   type SkillExResolve,
 } from "@/lib/exerciseHistory";
-import { fmtNum, fmtWeight } from "@/lib/format";
+import { fmtNum } from "@/lib/format";
 import type { ExerciseRow } from "@/schemas";
 import type { StatCell } from "@/components/ui/stat-row";
 
@@ -30,7 +30,7 @@ export interface VerlaufSatz {
 export interface VerlaufRow {
   date: string;
   line: string; // bester Satz dieser Einheit, z. B. "80 kg × 5"
-  right: string; // 1RM bzw. Ø-Score dieser Einheit
+  right: string; // Ø-Score der Einheit bzw. Ziel-Label bei Skills
   saetze: VerlaufSatz[]; // alle Arbeitssaetze der Einheit (zum Aufklappen)
 }
 
@@ -218,12 +218,12 @@ export function useExerciseDetail(exerciseId: string): ExerciseDetailView {
             date: e.date,
             line: bestSetLine(e, unit),
             saetze: satzZeilen(e, unit),
+            // Kein 1RM in der Verlaufszeile: das lebt allein im 1RM-Block
+            // (RmSection). Rechts steht nur noch der Ø-Score der Einheit.
             right:
-              e.est1RM != null
-                ? fmtWeight(e.est1RM, unit)
-                : e.score != null
-                  ? "Ø " + (Math.round(e.score * 10) / 10).toString()
-                  : "",
+              e.score != null
+                ? "Ø " + (Math.round(e.score * 10) / 10).toString()
+                : "",
           },
     );
 
