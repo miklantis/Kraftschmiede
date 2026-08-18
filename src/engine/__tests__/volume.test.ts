@@ -27,6 +27,28 @@ describe("volumeForWeek – Rampe & Deload (Paritaet zu V1)", () => {
     expect(volumeForWeek(B, 3, false)).toBe(2);
   });
 
+  // Phase K: Kraftphase mit fester Satzzahl 4, Deload in Woche 4.
+  const K: VolumePhase = { setsStart: 4, setsEnd: 4, weeks: 5, deloadWeek: 4 };
+  it("K W1 und W3 konstant = 4", () => {
+    expect(volumeForWeek(K, 0, true)).toBe(4);
+    expect(volumeForWeek(K, 2, true)).toBe(4);
+  });
+  it("K W4 Deload senkt um einen Satz = 3", () => {
+    expect(volumeForWeek(K, 3, true)).toBe(3);
+  });
+  it("K W5 wieder auf fester Satzzahl = 4", () => {
+    expect(volumeForWeek(K, 4, true)).toBe(4);
+  });
+  it("K mit roten Markern bleibt bei der festen Satzzahl = 4", () => {
+    expect(volumeForWeek(K, 4, false)).toBe(4);
+  });
+
+  // Phase D: eigene Deload-Phase mit konstant 2 Saetzen - bleibt bei 2.
+  const D: VolumePhase = { setsStart: 2, setsEnd: 2, weeks: 1, deloadWeek: 1 };
+  it("D bleibt bei 2 Saetzen", () => {
+    expect(volumeForWeek(D, 0, true)).toBe(2);
+  });
+
   // Phase ohne Deload: keine Senkung, Rampe steigt.
   const C: VolumePhase = { setsStart: 2, setsEnd: 4, weeks: 4, deloadWeek: null };
   it("C W1 Start = 2", () => {

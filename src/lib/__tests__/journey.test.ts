@@ -90,6 +90,7 @@ describe("buildPhaseViews", () => {
       { phaseIndex: 0, weekInPhase: 1, done: false },
     );
     expect(views[0].detail[0].v).toBe("? Wdh");
+    expect(views[0].detail[1].k).toBe("S\u00e4tze / Woche");
     expect(views[0].detail[1].v).toBe("3 S\u00e4tze");
     expect(views[0].detail[2].v).toBe("keiner");
   });

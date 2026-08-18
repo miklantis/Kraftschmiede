@@ -92,7 +92,14 @@ export function buildPhaseViews(
           k: "Wiederholungsband",
           v: `${repBand(p.repTargetMin, p.repTargetMax)} Wdh`,
         },
-        { k: "Satz-Rampe / Woche", v: setsRamp(p.setsStart, p.setsEnd) },
+        {
+          // Kraftphasen fahren eine feste Satzzahl - dort waere "Rampe" falsch.
+          k:
+            p.setsStart === p.setsEnd
+              ? "Sätze / Woche"
+              : "Satz-Rampe / Woche",
+          v: setsRamp(p.setsStart, p.setsEnd),
+        },
         { k: "Deload", v: p.deloadWeek ? `Woche ${p.deloadWeek}` : "keiner" },
         ...(withLoad
           ? [{ k: "Vorgegebene Last", v: loadPercent(p.loadFactor) }]

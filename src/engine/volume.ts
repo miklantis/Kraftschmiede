@@ -22,7 +22,12 @@ export function volumeForWeek(
   const weeks = Math.max(1, phase.weeks || 4);
   if (phase.deloadWeek && weekIndex === phase.deloadWeek - 1) {
     const prev = rampSets(s0, s1, Math.max(0, weekIndex - 1), weeks);
-    return Math.max(s0, Math.round(prev * 0.75)); // -25 %
+    // Untergrenze ist normalerweise der Startwert der Rampe. Faehrt eine Phase
+    // eine konstante Satzzahl (Kraftphasen: durchgehend 4), waere der Startwert
+    // zugleich der Endwert - der Deload wuerde dann gar nicht greifen. Deshalb
+    // liegt die Grenze dort einen Satz tiefer.
+    const floor = s0 === s1 ? Math.max(1, s0 - 1) : s0;
+    return Math.max(floor, Math.round(prev * 0.75)); // -25 %
   }
   let base = rampSets(s0, s1, weekIndex, weeks);
   if (!recoveryGreen) base = Math.max(s0, base - 1); // bei roten Markern nicht weiter rampen

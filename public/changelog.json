@@ -1,6 +1,16 @@
 {
   "versions": [
     {
+      "version": "1.36.1",
+      "date": "2026-08-18",
+      "changes": [
+        "Kraftphasen fahren jetzt eine feste Satzzahl: durchgehend 4 Sätze pro Übung, statt von 3 auf 5 hochzulaufen. In einer Kraftphase soll das Gewicht steigen, nicht das Volumen.",
+        "In der Entlastungswoche einer Kraftphase fällt weiterhin ein Satz weg, dort sind es also 3.",
+        "Das gilt für alle Journey-Vorlagen mit Kraftphasen und auch für deine laufende Journey – die Phasenlängen und Entlastungswochen bleiben unverändert. Hypertrophie-, Kraftausdauer- und Testphasen behalten ihren bisherigen Verlauf.",
+        "In der Phasenübersicht heißt die Zeile bei fester Satzzahl passend \"Sätze / Woche\" statt \"Satz-Rampe / Woche\"."
+      ]
+    },
+    {
       "version": "1.36.0",
       "date": "2026-08-18",
       "changes": [
