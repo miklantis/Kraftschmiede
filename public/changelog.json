@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.34.2",
+      "date": "2026-08-18",
+      "changes": [
+        "Nur Dokumentation: Die Entscheidung hinter der neuen Lastrampe ist jetzt festgehalten, damit spaeter nachvollziehbar bleibt, warum die Kraftphasen so rechnen wie sie rechnen. An der App aendert sich nichts."
+      ]
+    },
+    {
       "version": "1.34.1",
       "date": "2026-08-18",
       "changes": [
