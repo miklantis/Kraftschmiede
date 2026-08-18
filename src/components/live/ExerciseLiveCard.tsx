@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CircleDot } from "lucide-react";
 import { scoreInfo } from "@/engine";
 import { fmtNum } from "@/lib/format";
+import { intensityMissingRmNote } from "@/lib/loadFactor";
 import type { LiveEntry } from "@/lib/liveSession";
 import type { ActiveSet } from "@/lib/liveFlow";
 import { isActive } from "@/lib/liveFlow";
@@ -147,6 +148,11 @@ export function ExerciseLiveCard({
             <span className="mt-1 inline-flex items-center rounded-full bg-primary/12 px-2 py-0.5 text-[11px] font-semibold text-primary">
               Einstieg
             </span>
+          )}
+          {entry.noRmForLoad && (
+            <div className="mt-1 text-[12px] leading-snug text-muted-foreground">
+              {intensityMissingRmNote()}
+            </div>
           )}
           {entry.tag && (
             <div className="mt-0.5 text-[12px] text-muted-foreground">{entry.tag}</div>

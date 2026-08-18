@@ -84,6 +84,8 @@ export function useJourneyView(): {
       repTargetMin: p.rep_target_min,
       repTargetMax: p.rep_target_max,
       loadFactor: p.load_factor ?? 1,
+      intensityStart: p.intensity_start,
+      intensityEnd: p.intensity_end,
     }));
 
     const phases = buildPhaseViews(phaseInputs, placement);

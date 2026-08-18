@@ -164,6 +164,9 @@ export interface PhaseEntryResult {
   targetReps: number;
   /** true = der Einstieg hat gegriffen (Kartenhinweis in der Einheit). */
   phaseEntry: boolean;
+  /** true = die Phase plant die Last, diese Uebung bleibt aber beim Coach,
+   *  weil ihr ein getestetes 1RM fehlt. */
+  noRmForLoad?: boolean;
   /** Anker der lastgesteuerten Phase fuer diese Uebung; null, wenn die Phase
    *  die Last nicht plant oder kein brauchbares 1RM vorliegt. */
   anchor?: number | null;
@@ -251,7 +254,12 @@ function anchorEntry(
     !(input.rm > 0) ||
     (!input.bar && !hatStufen)
   ) {
-    return { ...unchanged, anchor: null };
+    // Ohne 1RM steuert der Coach diese Uebung weiter. Das gehoert auf die
+    // Karte, sonst wirkt es wie ein Fehler, dass eine einzelne Uebung der
+    // Vorgabe der Phase nicht folgt.
+    const fehltRm =
+      input.exo.profile === "strength" && (input.rm == null || !(input.rm > 0));
+    return { ...unchanged, anchor: null, noRmForLoad: fehltRm };
   }
 
   const anchor = anchorForIntensity(input.rm, input.intensityStart, {
@@ -385,6 +393,7 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
       equipment: exo.equipment,
       tag: tagFor(exo, input.unit),
       phaseEntry,
+      noRmForLoad: entry.noRmForLoad === true,
       barId: bar?.id ?? null,
       barName: bar?.name ?? null,
       barWeight: bar?.weight ?? null,

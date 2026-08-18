@@ -13,6 +13,13 @@ import { anchorForIntensity } from "@/engine";
 import { loadShareForWeek } from "@/engine/intensity";
 import type { EngineSet, SetEntry } from "@/engine/types";
 import { rampLoad } from "../coach";
+import { buildPhaseViews } from "../journey";
+import { buildPeriodization } from "../periodization";
+import {
+  intensityNote,
+  intensityPercent,
+  intensityRange,
+} from "../loadFactor";
 import { katalogPatch } from "../katalogPatch";
 import { derivePhaseContext } from "../phaseContext";
 import type { PhaseContextJourney } from "../phaseContext";
@@ -332,5 +339,115 @@ describe("Rollenverteilung unter der Lastrampe", () => {
     const satz = res.entries[0]!.sets[0]!;
     expect(satz.weight).toBe(95);
     expect(satz.targetReps).toBeGreaterThan(4);
+  });
+});
+
+// --- Anzeige ---
+
+describe("Anzeige der Lastrampe", () => {
+  it("formatiert die Rampe als Spanne, bei gleichem Wert als eine Zahl", () => {
+    expect(intensityRange(77.5, 82.5)).toBe("77,5 % → 82,5 %");
+    expect(intensityRange(90, 90)).toBe("90 %");
+    expect(intensityRange(null, 82.5)).toBeNull();
+    expect(intensityRange(77.5, null)).toBeNull();
+  });
+
+  it("rundet krumme Wochenwerte auf eine halbe Stufe", () => {
+    // Woche 2 einer Fuenf-Wochen-Phase landet auf 79,1666...
+    expect(intensityPercent(79.16666)).toBe("79 %");
+    expect(intensityPercent(80.25)).toBe("80,5 %");
+  });
+
+  it("erklaert die Wochenlast und benennt die Entlastungswoche eigens", () => {
+    const normal = intensityNote(80, false);
+    expect(normal).toContain("80 %");
+    expect(normal).toContain("Wiederholungen steuert der Coach");
+    const deload = intensityNote(70, true);
+    expect(deload).toContain("Entlastungswoche");
+    expect(deload).toContain("gewollt");
+    expect(intensityNote(null, false)).toBeNull();
+  });
+
+  it("gibt der laufenden Phase den Wochenhinweis und jeder Phase die Spanne", () => {
+    const phasen = [
+      {
+        name: "Maximalkraft",
+        focus: "strength" as const,
+        weeks: 4,
+        setsStart: 4,
+        setsEnd: 4,
+        deloadWeek: 4,
+        repTargetMin: 4,
+        repTargetMax: 6,
+        loadFactor: 1,
+        intensityStart: 77.5,
+        intensityEnd: 82.5,
+      },
+    ];
+    const views = buildPhaseViews(phasen, {
+      phaseIndex: 0,
+      weekInPhase: 2,
+      done: false,
+    });
+    const v = views[0]!;
+    expect(v.detail.some((d) => d.k === "Geplante Last / Woche")).toBe(true);
+    expect(v.detail.find((d) => d.k === "Geplante Last / Woche")!.v).toBe(
+      "77,5 % → 82,5 %",
+    );
+    // Woche 2 der Rampe: 80 Prozent.
+    expect(v.loadNote).toContain("80 %");
+  });
+
+  it("laesst Phasen ohne Lastrampe unveraendert", () => {
+    const phasen = [
+      {
+        name: "Hypertrophie",
+        focus: "hypertrophy" as const,
+        weeks: 4,
+        setsStart: 3,
+        setsEnd: 5,
+        deloadWeek: 4,
+        repTargetMin: 8,
+        repTargetMax: 12,
+        loadFactor: 1,
+        intensityStart: null,
+        intensityEnd: null,
+      },
+    ];
+    const v = buildPhaseViews(phasen, {
+      phaseIndex: 0,
+      weekInPhase: 1,
+      done: false,
+    })[0]!;
+    expect(v.detail.some((d) => d.k.includes("Last"))).toBe(false);
+    expect(v.loadNote).toBeNull();
+  });
+
+  it("zeichnet die Intensitaetslinie innerhalb der Phase wellenfoermig", () => {
+    const daten = buildPeriodization(
+      [
+        {
+          name: "Maximalkraft",
+          focus: "strength",
+          weeks: 4,
+          setsStart: 4,
+          setsEnd: 4,
+          deloadWeek: 4,
+          repTargetMin: 4,
+          repTargetMax: 6,
+          loadFactor: 1,
+          intensityStart: 77.5,
+          intensityEnd: 82.5,
+        },
+      ],
+      1,
+    );
+    const linie = daten.weeks.map((w) => w.intens);
+    // Frueher war die Linie ueber die ganze Phase flach; jetzt steigt sie und
+    // faellt in der Entlastungswoche deutlich ab.
+    expect(linie[1]!).toBeGreaterThan(linie[0]!);
+    expect(linie[2]!).toBeGreaterThan(linie[1]!);
+    expect(linie[3]!).toBeLessThan(linie[0]!);
+    expect(daten.bands[0]!.loadLabel).toBe("77,5 % → 82,5 %");
   });
 });
