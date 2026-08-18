@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { PeriodizationChart } from "@/components/journey/PeriodizationChart";
+import { PhaseList } from "@/components/journey/PhaseList";
 import type { PeriodizationData } from "@/lib/periodization";
+import type { PhaseView } from "@/lib/journey";
 
 // Anzeige-Modell einer Vorlagenkarte (reine Strings/Flags). Die Phasen werden
 // nicht mehr als Chips, sondern als Kurve gezeigt (periodization als eigene Prop).
@@ -15,19 +18,25 @@ export interface TemplateCardModel {
 
 // Eine Vorlage im Waehler: Name, Dauer, Kurzbeschreibung, "Fuer wen",
 // Zusammenfassung, die komplette Journey als Periodisierungskurve (Phasen als
-// Baender, ohne "jetzt"-Marker) und Startknopf. Die aktive Vorlage zeigt einen
+// Baender, ohne "jetzt"-Marker), einen aufklappbaren Phasen-Ablauf wie auf der
+// Journey-Seite und den Startknopf. Die aktive Vorlage zeigt einen
 // ruhenden Status statt eines Knopfs. Optik aus V1 (jr-tpl).
 export function TemplateCard({
   model,
   periodization,
+  phases,
   busy,
   onStart,
 }: {
   model: TemplateCardModel;
   periodization: PeriodizationData;
+  phases: PhaseView[];
   busy: boolean;
   onStart: () => void;
 }): React.ReactElement {
+  // Zugeklappt, damit die Liste scanbar bleibt; der Ablauf wird je Vorlage
+  // gezielt geoeffnet.
+  const [open, setOpen] = useState(false);
   return (
     <div className="flex flex-col rounded-[18px] bg-card p-4 shadow-card min-[960px]:p-[22px]">
       <div className="mb-2 flex items-start justify-between gap-3">
@@ -57,6 +66,23 @@ export function TemplateCard({
       {periodization.weeks.length > 0 && (
         <div className="mb-3.5 min-[960px]:mb-[18px]">
           <PeriodizationChart data={periodization} showNow={false} />
+        </div>
+      )}
+      {phases.length > 0 && (
+        <div className="mb-3.5 min-[960px]:mb-[18px]">
+          <button
+            type="button"
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+            className="w-full rounded-control border border-border py-2.5 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {open ? "Phasen ausblenden" : "Phasen ansehen"}
+          </button>
+          {open && (
+            <div className="mt-3">
+              <PhaseList phases={phases} variant="preview" />
+            </div>
+          )}
         </div>
       )}
       <button

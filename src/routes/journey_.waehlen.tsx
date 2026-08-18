@@ -17,7 +17,12 @@ import { useActiveJourney } from "@/hooks/useJourney";
 import { useJourneyActions } from "@/hooks/useJourneyActions";
 import { useTemplates } from "@/hooks/useTemplates";
 import { useExercises } from "@/hooks/useExercises";
-import { totalWeeks, type JourneyPhaseInput } from "@/lib/journey";
+import {
+  buildTemplatePhaseViews,
+  totalWeeks,
+  type JourneyPhaseInput,
+  type PhaseView,
+} from "@/lib/journey";
 import { buildPeriodization, type PeriodizationData } from "@/lib/periodization";
 import {
   filterCopyableAssignments,
@@ -143,6 +148,7 @@ function JourneyPickerPage(): React.ReactElement {
     template: JourneyTemplateWithPhases;
     card: TemplateCardModel;
     periodization: PeriodizationData;
+    phases: PhaseView[];
   }> = templates.map((t) => {
     const phaseInputs: JourneyPhaseInput[] = t.phases.map((p) => ({
       name: p.name,
@@ -160,6 +166,8 @@ function JourneyPickerPage(): React.ReactElement {
     return {
       template: t,
       periodization,
+      // Phasen-Ablauf der Vorlage, damit sichtbar ist, wie die Journey gebaut ist.
+      phases: buildTemplatePhaseViews(phaseInputs),
       card: {
         id: t.id,
         name: t.name,
@@ -204,11 +212,12 @@ function JourneyPickerPage(): React.ReactElement {
 
       <PageReveal>
         <div data-reveal-flatten className="grid grid-cols-1 gap-[18px]">
-          {models.map(({ template, card, periodization }) => (
+          {models.map(({ template, card, periodization, phases }) => (
             <TemplateCard
               key={card.id}
               model={card}
               periodization={periodization}
+              phases={phases}
               busy={actions.isCreating}
               onStart={() => start(template)}
             />

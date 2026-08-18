@@ -24,7 +24,9 @@ export interface PhasePlacementInfo {
   done: boolean;
 }
 
-export type PhaseState = "past" | "current" | "future";
+// "preview" ist der Zustand ohne laufende Journey (Vorlagenliste): weder
+// vergangen noch aktuell noch kuenftig, nur neutral dargestellt.
+export type PhaseState = "past" | "current" | "future" | "preview";
 
 export interface PhaseDetail {
   k: string;
@@ -54,6 +56,26 @@ function repBand(min: number | null, max: number | null): string {
 function setsRamp(start: number, end: number): string {
   const body = end !== start ? `${start} \u2192 ${end}` : `${start}`;
   return `${body} S\u00e4tze`;
+}
+
+// Detailzeilen einer Phase. Gleich fuer laufende Journeys und Vorlagen-Vorschau,
+// damit beide Ansichten nicht auseinanderlaufen.
+function phaseDetail(p: JourneyPhaseInput, withLoad: boolean): PhaseDetail[] {
+  return [
+    {
+      k: "Wiederholungsband",
+      v: `${repBand(p.repTargetMin, p.repTargetMax)} Wdh`,
+    },
+    {
+      // Kraftphasen fahren eine feste Satzzahl - dort waere "Rampe" falsch.
+      k: p.setsStart === p.setsEnd ? "Sätze / Woche" : "Satz-Rampe / Woche",
+      v: setsRamp(p.setsStart, p.setsEnd),
+    },
+    { k: "Deload", v: p.deloadWeek ? `Woche ${p.deloadWeek}` : "keiner" },
+    ...(withLoad
+      ? [{ k: "Vorgegebene Last", v: loadPercent(p.loadFactor) }]
+      : []),
+  ];
 }
 
 // Reine Aufbereitung der Phasen einer aktiven Journey in Anzeige-Modelle.
@@ -87,30 +109,32 @@ export function buildPhaseViews(
       isCurrent,
       mark: state === "past" ? "\u2713" : "",
       meta,
-      detail: [
-        {
-          k: "Wiederholungsband",
-          v: `${repBand(p.repTargetMin, p.repTargetMax)} Wdh`,
-        },
-        {
-          // Kraftphasen fahren eine feste Satzzahl - dort waere "Rampe" falsch.
-          k:
-            p.setsStart === p.setsEnd
-              ? "Sätze / Woche"
-              : "Satz-Rampe / Woche",
-          v: setsRamp(p.setsStart, p.setsEnd),
-        },
-        { k: "Deload", v: p.deloadWeek ? `Woche ${p.deloadWeek}` : "keiner" },
-        ...(withLoad
-          ? [{ k: "Vorgegebene Last", v: loadPercent(p.loadFactor) }]
-          : []),
-      ],
+      detail: phaseDetail(p, withLoad),
       loadNote:
         withLoad && isCurrent
           ? loadFactorNote(p.loadFactor, i === phases.length - 1)
           : null,
     };
   });
+}
+
+// Aufbereitung der Phasen einer Vorlage (Vorlagenliste): es laeuft keine Journey,
+// also ist keine Phase aktuell oder vergangen. Alle Phasen sind neutral, zeigen
+// ihre Dauer und dieselben Detailzeilen wie auf der Journey-Seite.
+export function buildTemplatePhaseViews(
+  phases: JourneyPhaseInput[],
+): PhaseView[] {
+  const withLoad = usesLoadFactor(phases.map((p) => p.loadFactor));
+  return phases.map((p) => ({
+    name: p.name,
+    focus: focusLabel(p.focus) || p.name,
+    state: "preview" as const,
+    isCurrent: false,
+    mark: "",
+    meta: `${p.weeks} ${p.weeks === 1 ? "Woche" : "Wochen"}`,
+    detail: phaseDetail(p, withLoad),
+    loadNote: null,
+  }));
 }
 
 // Gesamtwochen einer Phasenliste (fuer die Dauer-Angabe im Vorlagen-Waehler).

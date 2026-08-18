@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildPhaseViews,
+  buildTemplatePhaseViews,
   totalWeeks,
   type JourneyPhaseInput,
   type PhasePlacementInfo,
@@ -139,6 +140,50 @@ describe("buildPhaseViews \u2013 Lastfaktor", () => {
     });
     expect(views[0].detail).toHaveLength(3);
     expect(views[0].loadNote).toBeNull();
+  });
+});
+
+describe("buildTemplatePhaseViews", () => {
+  it("stellt alle Phasen neutral dar, ohne aktuelle oder vergangene", () => {
+    const views = buildTemplatePhaseViews(threePhases);
+    expect(views.map((v) => v.state)).toEqual([
+      "preview",
+      "preview",
+      "preview",
+    ]);
+    expect(views.every((v) => !v.isCurrent)).toBe(true);
+    expect(views.every((v) => v.mark === "")).toBe(true);
+    expect(views.every((v) => v.loadNote === null)).toBe(true);
+  });
+
+  it("zeigt je Phase die Dauer als Meta-Zeile", () => {
+    const views = buildTemplatePhaseViews([
+      phase({ weeks: 1 }),
+      phase({ weeks: 4 }),
+    ]);
+    expect(views[0].meta).toBe("1 Woche");
+    expect(views[1].meta).toBe("4 Wochen");
+  });
+
+  it("liefert dieselben Detailzeilen wie die Journey-Ansicht", () => {
+    const views = buildTemplatePhaseViews([phase()]);
+    expect(views[0].detail).toEqual(
+      buildPhaseViews([phase()], {
+        phaseIndex: 0,
+        weekInPhase: 1,
+        done: false,
+      })[0].detail,
+    );
+  });
+
+  it("ergaenzt die Lastzeile, wenn die Vorlage die Last vorgibt", () => {
+    const views = buildTemplatePhaseViews([
+      phase({ loadFactor: 0.65 }),
+      phase({ loadFactor: 1 }),
+    ]);
+    expect(views[0].detail).toHaveLength(4);
+    expect(views[0].detail[3]).toEqual({ k: "Vorgegebene Last", v: "65 %" });
+    expect(views[1].detail).toHaveLength(4);
   });
 });
 
