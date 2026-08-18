@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.31.2",
+      "date": "2026-08-18",
+      "changes": [
+        "In der Workouts-Liste steht jetzt neben jedem Namen in Klammern, wie oft du das Workout schon trainiert hast – gezählt werden abgeschlossene Einheiten, egal ob das Workout aktiv oder archiviert ist."
+      ]
+    },
+    {
       "version": "1.31.1",
       "date": "2026-08-17",
       "changes": [

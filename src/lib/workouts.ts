@@ -31,9 +31,12 @@ export interface WorkoutRowModel {
   summary: string;
   /** Abgeleitet: mind. eine Uebung mit Profil "strength". */
   journeyCapable: boolean;
+  /** Anzahl abgeschlossener Einheiten (sessions mit status "done") zu diesem Workout. */
+  timesTrained: number;
 }
 
 type Lookup = Record<string, WorkoutExerciseInfo | undefined>;
+type TrainedCount = Record<string, number | undefined>;
 
 function sortedEntries(w: WorkoutInput): WorkoutExerciseEntry[] {
   return w.exercises.slice().sort((a, b) => a.position - b.position);
@@ -55,13 +58,32 @@ export function workoutSummary(w: WorkoutInput, lookup: Lookup): string {
     .join(" · ");
 }
 
-// Ein Workout in ein Zeilenmodell abbilden (Kurzform + Journey-Faehigkeit).
-function toRowModel(w: WorkoutInput, lookup: Lookup): WorkoutRowModel {
+// Aus den abgeschlossenen Einheiten (status "done") die Trefferzahl je
+// Workout-Id ermitteln.
+export function countTimesTrained(
+  doneTemplateIds: (string | null)[],
+): TrainedCount {
+  const counts: TrainedCount = {};
+  for (const id of doneTemplateIds) {
+    if (id === null) continue;
+    counts[id] = (counts[id] ?? 0) + 1;
+  }
+  return counts;
+}
+
+// Ein Workout in ein Zeilenmodell abbilden (Kurzform + Journey-Faehigkeit +
+// Trainingshaeufigkeit).
+function toRowModel(
+  w: WorkoutInput,
+  lookup: Lookup,
+  trainedCounts: TrainedCount,
+): WorkoutRowModel {
   return {
     id: w.id,
     name: w.name,
     summary: workoutSummary(w, lookup),
     journeyCapable: isJourneyCapable(w, lookup),
+    timesTrained: trainedCounts[w.id] ?? 0,
   };
 }
 
@@ -69,16 +91,22 @@ function toRowModel(w: WorkoutInput, lookup: Lookup): WorkoutRowModel {
 export function buildWorkoutList(
   workouts: WorkoutInput[],
   lookup: Lookup,
+  trainedCounts: TrainedCount = {},
 ): WorkoutRowModel[] {
-  return workouts.filter((w) => w.active).map((w) => toRowModel(w, lookup));
+  return workouts
+    .filter((w) => w.active)
+    .map((w) => toRowModel(w, lookup, trainedCounts));
 }
 
 // Liste der archivierten Workouts (fuer den ausklappbaren Archiv-Abschnitt).
 export function buildArchivedList(
   workouts: WorkoutInput[],
   lookup: Lookup,
+  trainedCounts: TrainedCount = {},
 ): WorkoutRowModel[] {
-  return workouts.filter((w) => !w.active).map((w) => toRowModel(w, lookup));
+  return workouts
+    .filter((w) => !w.active)
+    .map((w) => toRowModel(w, lookup, trainedCounts));
 }
 
 // Ein zuweisbares Workout auf der Journey-Seite: aktiv und journey-faehig, mit

@@ -60,7 +60,14 @@ function WorkoutsPage(): React.ReactElement {
               {workouts.map((w) => (
                 <ListRow
                   key={w.id}
-                  title={w.name}
+                  title={
+                    <>
+                      {w.name}{" "}
+                      <span className="font-normal text-muted-foreground">
+                        ({w.timesTrained})
+                      </span>
+                    </>
+                  }
                   subtitle={w.summary || "Keine Übungen"}
                   leading={<WorkoutIcon />}
                   trailing={
