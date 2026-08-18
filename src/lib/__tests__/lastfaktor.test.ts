@@ -240,6 +240,7 @@ const squat: LiveBuildExercise = {
   targetScore: 3,
   barId: "bar1",
   referenceWeight: REF,
+  referencePhaseId: null,
   rm: 120,
   muscleGroups: ["Beine"],
 };
@@ -255,6 +256,9 @@ function input(overrides: Partial<LiveBuildInput> = {}): LiveBuildInput {
     recoveryGreen: true,
     freeMode: false,
     loadFactor: 0.65,
+    loadShare: null,
+    intensityStart: null,
+    phaseId: null,
     lastEntryByExercise: {},
     bars: [{ id: "bar1", name: "Langhantel", weight: 20 }],
     plates: PLATES,

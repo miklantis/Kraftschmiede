@@ -5,7 +5,12 @@
 // hier nur das Zusammensetzen. Die Zustandsbeschaffung (letzter Eintrag, Phase,
 // Stangen/Scheiben) macht der Daten-Hook useLiveBuilder.
 
-import { workWeightForPhase } from "@/engine";
+import {
+  anchorForIntensity,
+  nearestDumbbell,
+  nearestLoadable,
+  workWeightForPhase,
+} from "@/engine";
 import type { SetEntry, VolumePhase } from "@/engine/types";
 import {
   suggestWithBar,
@@ -54,6 +59,14 @@ export interface LiveBuildInput {
   freeMode: boolean;
   // Lastfaktor der aktiven Phase; null ausserhalb einer Lastfaktor-Journey.
   loadFactor: number | null;
+  // Lastrampe der aktiven Phase: Anteil der Wochenlast am Anker und die
+  // Start-Intensitaet, aus der der Anker entsteht. Beides null, wenn die Phase
+  // die Last nicht plant.
+  loadShare: number | null;
+  intensityStart: number | null;
+  // Id der laufenden Phase; null ohne aktive Journey. Nur fuer die Pruefung,
+  // ob der gespeicherte Anker zu dieser Phase gehoert.
+  phaseId: string | null;
   // Letzter Krafteintrag je Uebung (Saetze) als Vordaten fuer den Vorschlag.
   lastEntryByExercise: Record<string, SetEntry | null>;
   // Der Eintrag davor je Uebung – nur fuer die Rueckwaertsregel des Coaches
@@ -71,6 +84,10 @@ export interface LiveBuildInput {
 export interface LiveBuildResult {
   generalWarmup: { sets: LiveGeneralWarmupSet[] };
   entries: LiveEntry[];
+  // Anker der lastgesteuerten Phase je Uebung, so wie er fuer diese Einheit
+  // gilt. Leer, wenn die Phase die Last nicht plant. Wird beim Beenden in den
+  // Katalog geschrieben, damit die Rampe der Folgewochen darauf aufsetzt.
+  anchorByExercise: Record<string, number>;
 }
 
 // Ziel-Repband, das gerade gilt: das Band der Phase ueberstimmt das
@@ -129,7 +146,15 @@ export interface PhaseEntryInput {
   bar: { weight: number } | null;
   lastEntry: SetEntry | null;
   plates: number[];
+  /** Vorhandene Kurzhantel-Stufen (nur fuer Kurzhantel-Uebungen gesetzt). */
+  dumbbells?: number[];
   loadFactor: number | null;
+  /** Lastrampe der Phase: Wochenanteil, Start-Intensitaet und die Phase, zu der
+   *  beides gehoert. Alle drei null/undefined, wenn die Phase die Last nicht
+   *  plant. */
+  loadShare?: number | null;
+  intensityStart?: number | null;
+  phaseId?: string | null;
   /** Vorschlag des Coaches (suggestWithBar), der ueberschrieben werden kann. */
   suggestion: { weight: number; targetReps: number };
 }
@@ -139,6 +164,9 @@ export interface PhaseEntryResult {
   targetReps: number;
   /** true = der Einstieg hat gegriffen (Kartenhinweis in der Einheit). */
   phaseEntry: boolean;
+  /** Anker der lastgesteuerten Phase fuer diese Uebung; null, wenn die Phase
+   *  die Last nicht plant oder kein brauchbares 1RM vorliegt. */
+  anchor?: number | null;
 }
 
 // Phasenwechsel-Einstieg: springt die Zielzone der neuen Phase deutlich (echt
@@ -160,7 +188,23 @@ export function phaseEntryOverride(input: PhaseEntryInput): PhaseEntryResult {
     phaseEntry: false,
   };
 
-  const ramp = rampLoad(input.exo, input.loadFactor);
+  const ramp = rampLoad(input.exo, {
+    loadFactor: input.loadFactor,
+    loadShare: input.loadShare,
+    phaseId: input.phaseId,
+  });
+
+  // Lastgesteuerte Phase: steht der Anker schon, hat die Rampe den Vorschlag
+  // bereits bestimmt - dann nur den Anker durchreichen. Steht er noch nicht,
+  // ist dies der erste Einsatz der Uebung in dieser Phase: der Anker entsteht
+  // aus dem 1RM und der Start-Intensitaet, und die Einheit steigt darauf ein.
+  if (input.loadShare != null && input.loadShare > 0) {
+    if (ramp) {
+      return { ...unchanged, anchor: input.exo.referenceWeight };
+    }
+    return anchorEntry(input, unchanged);
+  }
+
   if (
     ramp ||
     input.exo.profile !== "strength" ||
@@ -191,6 +235,52 @@ export function phaseEntryOverride(input: PhaseEntryInput): PhaseEntryResult {
   };
 }
 
+// Einstieg in eine Phase, die ihre Last plant: den Anker aus 1RM und
+// Start-Intensitaet setzen und die Einheit direkt darauf beginnen. Ohne
+// brauchbares 1RM (oder ausserhalb der Langhantel-/Kurzhantel-Rechnung) bleibt
+// der Anker leer und der Coach steuert diese Uebung wie gewohnt weiter.
+function anchorEntry(
+  input: PhaseEntryInput,
+  unchanged: PhaseEntryResult,
+): PhaseEntryResult {
+  const dumbbells = input.dumbbells ?? [];
+  const hatStufen = dumbbells.length > 0;
+  if (
+    input.exo.profile !== "strength" ||
+    input.rm == null ||
+    !(input.rm > 0) ||
+    (!input.bar && !hatStufen)
+  ) {
+    return { ...unchanged, anchor: null };
+  }
+
+  const anchor = anchorForIntensity(input.rm, input.intensityStart, {
+    bar: input.bar ? { weight: input.bar.weight } : undefined,
+    plates: input.plates,
+    dumbbells: hatStufen ? dumbbells : undefined,
+    currentWeight: topWorkWeight(input.lastEntry) ?? undefined,
+  });
+  if (anchor == null || !(anchor > 0)) {
+    return { ...unchanged, anchor: null };
+  }
+
+  // In der ersten Aufbauwoche ist der Anteil 1, spaeter (Wiedereinstieg in eine
+  // laufende Phase) traegt er die Rampe mit.
+  const share = input.loadShare ?? 1;
+  const roh = anchor * share;
+  const weight = hatStufen
+    ? nearestDumbbell(roh, dumbbells, true)
+    : nearestLoadable(roh, (input.bar as { weight: number }).weight, input.plates, true);
+
+  return {
+    weight,
+    // konservativ am leichteren (oberen) Bandende einsteigen
+    targetReps: input.repTarget ? input.repTarget[1] : input.suggestion.targetReps,
+    phaseEntry: true,
+    anchor,
+  };
+}
+
 // Kartenkopf-Tag: getestetes 1RM, sonst die Muskelgruppen.
 function tagFor(exo: LiveBuildExercise, unit: string): string {
   if (exo.rm != null) return "1RM " + fmtNum(exo.rm) + " " + unit;
@@ -207,6 +297,7 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
   );
 
   const entries: LiveEntry[] = [];
+  const anchorByExercise: Record<string, number> = {};
   input.exerciseIds.forEach((id, idx) => {
     const exo = input.exercisesById[id];
     if (!exo) return;
@@ -233,9 +324,12 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
       repTarget,
       freeMode: input.freeMode,
       loadFactor: input.loadFactor,
+      loadShare: input.loadShare,
+      phaseId: input.phaseId,
     });
 
-    // Phasenwechsel-Einstieg (Regel s. phaseEntryOverride).
+    // Phasenwechsel-Einstieg (Regel s. phaseEntryOverride). Plant die Phase
+    // ihre Last, setzt derselbe Schritt beim ersten Einsatz den Anker.
     const entry = phaseEntryOverride({
       exo,
       rm: exo.rm,
@@ -243,9 +337,16 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
       bar: bar ? { weight: bar.weight } : null,
       lastEntry,
       plates: input.plates,
+      dumbbells: exo.equipment === "dumbbell" ? input.dumbbells : undefined,
       loadFactor: input.loadFactor,
+      loadShare: input.loadShare,
+      intensityStart: input.intensityStart,
+      phaseId: input.phaseId,
       suggestion: sug,
     });
+    if (entry.anchor != null && entry.anchor > 0) {
+      anchorByExercise[id] = entry.anchor;
+    }
     const wWeight = entry.weight;
     const wReps = entry.targetReps;
     const phaseEntry = entry.phaseEntry;
@@ -297,5 +398,6 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
     // Ein Cardio-Satz (7 min) vorbelegt; Art standardmaessig Vario.
     generalWarmup: { sets: [{ minutes: 7, mode: "vario", done: false }] },
     entries,
+    anchorByExercise,
   };
 }

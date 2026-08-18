@@ -18,6 +18,7 @@ const squat: LiveBuildExercise = {
   targetScore: 3,
   barId: "bar1",
   referenceWeight: null,
+  referencePhaseId: null,
   rm: 120,
   muscleGroups: ["Beine"],
 };
@@ -32,6 +33,7 @@ const plank: LiveBuildExercise = {
   targetScore: 3,
   barId: null,
   referenceWeight: null,
+  referencePhaseId: null,
   rm: null,
   muscleGroups: ["Core"],
 };
@@ -49,6 +51,9 @@ function input(overrides: Partial<LiveBuildInput> = {}): LiveBuildInput {
     recoveryGreen: true,
     freeMode: false,
     loadFactor: null,
+    loadShare: null,
+    intensityStart: null,
+    phaseId: null,
     lastEntryByExercise: {},
     bars: [{ id: "bar1", name: "Olympia", weight: 20 }],
     plates: PLATES,
@@ -114,6 +119,7 @@ describe("buildLiveEntries", () => {
       targetScore: 3,
       barId: null,
       referenceWeight: null,
+      referencePhaseId: null,
       rm: null,
       muscleGroups: ["Arme"],
     };

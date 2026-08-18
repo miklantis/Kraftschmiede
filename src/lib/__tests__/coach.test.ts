@@ -115,6 +115,7 @@ const STRENGTH: CoachBuildExercise = {
   targetScore: 3,
   barId: "bar1",
   referenceWeight: null,
+  referencePhaseId: null,
 };
 const CORE: CoachBuildExercise = {
   key: "plank",
@@ -125,6 +126,7 @@ const CORE: CoachBuildExercise = {
   targetScore: 3,
   barId: null,
   referenceWeight: null,
+  referencePhaseId: null,
 };
 
 describe("coreCarry", () => {

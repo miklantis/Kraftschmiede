@@ -35,6 +35,7 @@ describe("buildWorkoutSession", () => {
     journeyId: "j1",
     phaseId: "p1",
     loadNote: "Woche 2: 80 %",
+    loadPlan: null,
     entries: [entry()],
     generalWarmup: { sets: [{ minutes: 10, mode: "bike", done: false }] },
   };

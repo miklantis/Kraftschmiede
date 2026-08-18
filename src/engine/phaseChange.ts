@@ -2,7 +2,7 @@
 // statt es nur Session fuer Session nachlaufen zu lassen. Reine Rechnung – kennt
 // weder DB noch Phase, bekommt nur ein geschaetztes 1RM und die Zielzone.
 
-import { nearestLoadable } from "./plates";
+import { nearestDumbbell, nearestLoadable } from "./plates";
 import type { Bar } from "./types";
 
 // Invertierte Epley-Naeherung: Last fuer 'reps' saubere Wiederholungen bei
@@ -76,4 +76,54 @@ export function workWeightForPhase(
     decision: "lower",
     note: "Phasenwechsel: zu schwere Last auf leichtere Zone gesenkt",
   };
+}
+
+// ---- Anker einer lastgesteuerten Phase ---------------------------------------
+
+export interface AnchorOpts {
+  bar?: Bar;
+  plates?: number[];
+  /** Vorhandene Kurzhantel-Stufen (nur fuer Kurzhantel-Uebungen gesetzt). */
+  dumbbells?: number[];
+  /** Bisher getragenes Arbeitsgewicht; Bezug fuer die Aufwaerts-Deckelung. */
+  currentWeight?: number;
+  maxUpPct?: number;
+}
+
+// Anker einer Phase, die ihre Last selbst plant: das Arbeitsgewicht bei der
+// Start-Intensitaet der Phase (Prozent des 1RM). Alle weiteren Wochen der Phase
+// ergeben sich daraus als Vielfaches (loadShareForWeek in engine/intensity.ts).
+//
+// Anders als workWeightForPhase kommt das Ziel hier nicht aus dem Repband,
+// sondern direkt aus der Prozentangabe der Phase - genau die Zahl, die im
+// Trainingsplan steht. Gemeinsam bleibt die Haltung: nach oben vorsichtig und
+// gedeckelt, nach unten direkt, immer abgerundet.
+//
+// null, wenn kein brauchbares 1RM vorliegt: dann plant die Phase die Last fuer
+// diese Uebung nicht und der Coach steuert wie gewohnt.
+export function anchorForIntensity(
+  est1RM: number | null | undefined,
+  intensityStart: number | null | undefined,
+  opts?: AnchorOpts,
+): number | null {
+  if (!(est1RM != null && est1RM > 0)) return null;
+  if (!(intensityStart != null && intensityStart > 0)) return null;
+
+  const o = opts ?? {};
+  const bar = o.bar ?? { weight: 20 };
+  const plates = o.plates ?? DEFAULT_PLATES;
+  const maxUp = o.maxUpPct == null ? 0.12 : o.maxUpPct;
+  const ld = (x: number): number =>
+    o.dumbbells && o.dumbbells.length
+      ? nearestDumbbell(x, o.dumbbells, true)
+      : nearestLoadable(x, bar.weight, plates, true);
+
+  const ziel = ld((est1RM * intensityStart) / 100);
+  const cur = o.currentWeight;
+  if (cur == null || !(cur > 0) || ziel <= cur) return ziel;
+
+  // Nach oben nur gepuffert: ein Sprung in die neue Phase soll nicht auf einen
+  // Schlag mehr als maxUp zulegen.
+  const deckel = ld(cur * (1 + maxUp));
+  return ziel > deckel ? deckel : ziel;
 }

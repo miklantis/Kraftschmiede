@@ -126,6 +126,16 @@ interface LiveSessionBase {
   startedAt: number;
 }
 
+/** Lastplan einer Einheit in einer Phase, die ihre Last selbst plant. */
+export interface WorkoutLoadPlan {
+  /** Phase, zu der die Anker gehoeren. */
+  phaseId: string;
+  /** Anteil der Wochenlast am Anker (loadShareForWeek). */
+  loadShare: number;
+  /** Anker je Uebungs-Id. */
+  anchorByExercise: Record<string, number>;
+}
+
 export interface WorkoutSession extends LiveSessionBase {
   kind: "workout";
   /** Vorlage, aus der die Einheit aufgebaut wurde. */
@@ -138,6 +148,11 @@ export interface WorkoutSession extends LiveSessionBase {
   /** Hinweis zur vorgegebenen Last der Phase (Lastfaktor-Journey), sonst null.
    *  Beim Start eingefroren, damit Start-Popup und Panel dasselbe zeigen. */
   loadNote: string | null;
+  /** Lastplan der Phase, beim Start eingefroren: Anker je Uebung und der
+   *  Wochenanteil, mit dem die Einheit gerechnet wurde. Beim Beenden wird der
+   *  Anker in den Katalog geschrieben - nach unten nachgezogen, wenn der Coach
+   *  gesenkt hat. null, wenn die Phase die Last nicht plant. */
+  loadPlan: WorkoutLoadPlan | null;
   /** Allgemeines Aufwaermen (Cardio) vor den Uebungen. */
   generalWarmup: { sets: LiveGeneralWarmupSet[] };
   /** Die vom Coach aufgebauten Uebungen mit ihren Saetzen (Lieferung 2). */
@@ -279,6 +294,8 @@ export function parseLive(raw: string | null): PersistedLive {
           journeyId: typeof sr.journeyId === "string" ? sr.journeyId : null,
           phaseId: typeof sr.phaseId === "string" ? sr.phaseId : null,
           loadNote: typeof sr.loadNote === "string" ? sr.loadNote : null,
+          // Einheiten aus der Zeit vor der Lastrampe haben das Feld nicht.
+          loadPlan: parseLoadPlan(sr.loadPlan),
           title: sr.title,
           startedAt: sr.startedAt,
           generalWarmup: parseGeneralWarmup(sr.generalWarmup),
@@ -310,6 +327,23 @@ function str(v: unknown, fallback = ""): string {
  *  (fehlend, alte Einheit vor Vorhaben #100, Unsinn) wird zu null und damit zum
  *  rein linearen Verhalten. Ob der Index noch in die Uebungsliste passt, prueft
  *  `computeActive` selbst - die Liste kann sich unabhaengig aendern. */
+// Lastplan aus dem Speicher. Einheiten aus der Zeit vor der Lastrampe haben das
+// Feld nicht; unvollstaendige Plaene werden verworfen, damit beim Beenden kein
+// halber Anker geschrieben wird.
+function parseLoadPlan(v: unknown): WorkoutLoadPlan | null {
+  if (!v || typeof v !== "object") return null;
+  const o = v as Record<string, unknown>;
+  if (typeof o.phaseId !== "string") return null;
+  if (typeof o.loadShare !== "number" || !(o.loadShare > 0)) return null;
+  const raw = o.anchorByExercise;
+  if (!raw || typeof raw !== "object") return null;
+  const anchorByExercise: Record<string, number> = {};
+  for (const [k, val] of Object.entries(raw as Record<string, unknown>)) {
+    if (typeof val === "number" && val > 0) anchorByExercise[k] = val;
+  }
+  return { phaseId: o.phaseId, loadShare: o.loadShare, anchorByExercise };
+}
+
 function parseFocus(v: unknown): number | null {
   return typeof v === "number" && Number.isInteger(v) && v >= 0 ? v : null;
 }
