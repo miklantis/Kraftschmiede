@@ -113,7 +113,6 @@ function previewState(e: LiveEntry, prevEntry: SetEntry | null = null): CoachSta
     targetScore: 3,
     barId: "bar1",
     referenceWeight: null,
-    referencePhaseId: null,
   };
   const { suggestion } = suggestWithBar(exo, {
     phaseFocus: null,
@@ -206,7 +205,6 @@ describe("Vorschau auf die Coach-Entscheidung", () => {
       targetScore: 3,
       barId: null,
       referenceWeight: null,
-      referencePhaseId: null,
     };
     const { suggestion } = suggestWithBar(exo, {
       phaseFocus: null,

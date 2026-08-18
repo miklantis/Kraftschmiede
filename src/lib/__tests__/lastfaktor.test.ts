@@ -41,7 +41,7 @@ function withFactor(
   return suggestWeight({ ...EX, workWeight }, last, {
     bar: BAR,
     plates: PLATES,
-    ramp: { weight: REF * factor, mode: factor < 1 ? "cap" : "floor" },
+    ramp: { weight: REF * factor, cap: factor < 1 },
   });
 }
 
@@ -99,7 +99,7 @@ describe("Lastfaktor-Rampe in der Gewichtssteuerung", () => {
   });
 
   it("Wiedereinstiegsphase: uebernimmt die Phasenlast, haelt aber nach Schmerz", () => {
-    const ramp = { weight: REF * 0.8, mode: "cap" as const };
+    const ramp = { weight: REF * 0.8, cap: true };
     const ok = suggestWeight({ ...EX, workWeight: 37.5 }, easy(37.5), {
       bar: BAR,
       plates: PLATES,
@@ -143,8 +143,6 @@ function phase(name: string, loadFactor: number, position: number): PhaseRow {
     rep_target_min: 8,
     rep_target_max: 12,
     load_factor: loadFactor,
-    intensity_start: null,
-    intensity_end: null,
     position,
   };
 }
@@ -240,7 +238,6 @@ const squat: LiveBuildExercise = {
   targetScore: 3,
   barId: "bar1",
   referenceWeight: REF,
-  referencePhaseId: null,
   rm: 120,
   muscleGroups: ["Beine"],
 };
@@ -256,9 +253,6 @@ function input(overrides: Partial<LiveBuildInput> = {}): LiveBuildInput {
     recoveryGreen: true,
     freeMode: false,
     loadFactor: 0.65,
-    loadShare: null,
-    intensityStart: null,
-    phaseId: null,
     lastEntryByExercise: {},
     bars: [{ id: "bar1", name: "Langhantel", weight: 20 }],
     plates: PLATES,

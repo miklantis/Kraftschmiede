@@ -40,9 +40,6 @@ export interface ExercisePatch {
   rm?: number;
   rm_as_of?: string;
   rm_stale?: boolean;
-  /** Anker einer lastgesteuerten Phase samt der Phase, zu der er gehoert. */
-  reference_weight?: number;
-  reference_phase_id?: string | null;
 }
 
 /** Default-mutationFn + Auffrischung registrieren. Greift auch fuer nach einem

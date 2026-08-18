@@ -2,9 +2,6 @@
 
 **Status:** akzeptiert
 **Datum:** 2026-08-17
-**Nachgezogen:** 2026-08-18 – vier Stellen, die die Lastrampe aus ADR-0016 noch nicht
-kannten. Die Entscheidung selbst ist unverändert: es gibt weiterhin eine Progressionsregel
-für alle Phasen, und die sechs Regeln unten sind nie angefasst worden.
 
 ## Kontext
 
@@ -19,15 +16,10 @@ Kraftphasen unterschiedliche Progressionsregeln brauchen.
 ## Entscheidung
 
 **Eine Progressionsregel für alle Phasen.** Der Unterschied steckt nicht in der Regel,
-sondern in den Rahmenwerten der Journey: Wiederholungsband, Satzrampe, Lastfaktor und –
-seit ADR-0016 – die Lastrampe der Phase. Ein enges Band (4-6, Maximalkraft) lässt die Last
-häufig wandern, ein breites (8-12, Hypertrophie) seltener und gibt der Satzrampe Raum –
-ohne dass der Coach den Phasen-Fokus kennen muss.
-
-Genau diese Liste war der Anlass für ADR-0016: Zwei der drei ursprünglichen Rahmenwerte
-lieferten den Phasenunterschied nicht (die Satzrampe steht in Kraftphasen bewusst still,
-der Lastfaktor gehört allein „Wiederaufbau nach Fasten"). Die Lastrampe schließt diese
-Lücke – als vierter Rahmenwert, nicht als zweiter Algorithmus.
+sondern in den Rahmenwerten der Journey: Wiederholungsband, Satzrampe, Lastfaktor. Ein
+enges Band (4-6, Maximalkraft) lässt die Last häufig wandern, ein breites (8-12,
+Hypertrophie) seltener und gibt der Satzrampe Raum – ohne dass der Coach den Phasen-Fokus
+kennen muss.
 
 Die Regeln in `suggestWeight`, in dieser Reihenfolge:
 
@@ -89,22 +81,12 @@ enge Band von selbst (Lastspezifität des 1RM, Schoenfeld et al. 2017).
 ## Konsequenzen
 
 - Der Coach braucht den Phasen-Fokus (`reentry`, `hypertrophy`, `strength`, `test`) nicht
-  zu kennen. `suggestWeight` bekommt weiterhin nur Wiederholungsband, Reentry-Flag und die
-  Vorgabe der Journey. Letztere ist seit ADR-0016 kein blosser Faktor mehr, sondern ein
-  Gewicht mit Richtung (`RampLoad`: deckeln oder tragen) – *warum* sie so wirkt, entscheidet
-  `rampLoad` in `lib/coach.ts`; die Engine sieht nur die Richtung, nie die Phase.
-- Innerhalb der Engine bleibt `withRamp` die einzige Stelle, an der eine Phase einen
-  Vorschlag überstimmt. Ausserhalb tut das seit dem 12.08. zusätzlich `phaseEntryOverride`
-  in `lib/liveBuild.ts` – erst für den 1RM-Einstieg beim Phasenwechsel, seit ADR-0016 auch
-  zum Setzen des Ankers. Dieser Punkt war schon bei Abfassung ungenau formuliert; er meinte
-  die Engine, nicht den gesamten Aufbau.
-- Bekannter Restfall, **nur noch für den Lastfaktor**: am Bandende, in Zielanstrengung,
-  Lastfaktor deckelt → das Gewicht bewegt sich nicht. Bei „Wiederaufbau nach Fasten" ist das
-  gewollt, dort steuert die Rampe. Für die Lastrampe der Kraftphasen galt dasselbe zunächst
-  auch – bis sich zeigte, dass sie damit den Coach bei erreichtem Ziel ausbremst, obwohl sie
-  bei alltäglichen Lasten viel langsamer steigt als er. Seit dem Nachtrag zu ADR-0016 trägt
-  sie in den Aufbauwochen nur als Untergrenze; gedeckelt wird dort ausschliesslich in der
-  Entlastungswoche.
+  zu kennen. `suggestWeight` bekommt weiterhin nur Wiederholungsband, Lastfaktor und das
+  Reentry-Flag.
+- Der Lastfaktor der Journey (`withRamp`) bleibt die einzige Stelle, an der eine Phase
+  einen Vorschlag überstimmt.
+- Bekannter Restfall: am Bandende, in Zielanstrengung, Lastfaktor deckelt → das Gewicht
+  bewegt sich nicht. Gewollt, dort steuert die Rampe.
 - Die Toleranz greift nur im Progressionszweig. Die Haltezweige (härter als vorgesehen,
   Ziel verfehlt) rechnen weiter ohne sie: dort ist Halten die richtige Antwort. Für die
   Frage, ob eine frühere Einheit als verfehlt zählt, gilt dagegen die tolerante

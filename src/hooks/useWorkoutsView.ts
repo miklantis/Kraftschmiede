@@ -1,10 +1,8 @@
 import { useTemplates } from "./useTemplates";
 import { useExercises } from "./useExercises";
-import { useSessions } from "./useSessions";
 import {
   buildArchivedList,
   buildWorkoutList,
-  countTimesTrained,
   type WorkoutExerciseInfo,
   type WorkoutInput,
   type WorkoutRowModel,
@@ -26,30 +24,22 @@ export interface WorkoutsView {
 export function useWorkoutsView(): WorkoutsView {
   const templatesQ = useTemplates();
   const exercisesQ = useExercises();
-  const sessionsQ = useSessions();
 
-  const isLoading =
-    templatesQ.isLoading || exercisesQ.isLoading || sessionsQ.isLoading;
-  const isError = templatesQ.isError || exercisesQ.isError || sessionsQ.isError;
-  const error = templatesQ.error ?? exercisesQ.error ?? sessionsQ.error;
+  const isLoading = templatesQ.isLoading || exercisesQ.isLoading;
+  const isError = templatesQ.isError || exercisesQ.isError;
+  const error = templatesQ.error ?? exercisesQ.error;
 
   const lookup: Record<string, WorkoutExerciseInfo | undefined> = {};
   for (const e of exercisesQ.data ?? []) {
     lookup[e.id] = { name: e.name, profile: e.profile };
   }
 
-  const trainedCounts = countTimesTrained(
-    (sessionsQ.data ?? [])
-      .filter((s) => s.status === "done")
-      .map((s) => s.template_id),
-  );
-
-  const ready = templatesQ.data && exercisesQ.data && sessionsQ.data;
+  const ready = templatesQ.data && exercisesQ.data;
   const workouts = ready
-    ? buildWorkoutList(templatesQ.data as WorkoutInput[], lookup, trainedCounts)
+    ? buildWorkoutList(templatesQ.data as WorkoutInput[], lookup)
     : [];
   const archived = ready
-    ? buildArchivedList(templatesQ.data as WorkoutInput[], lookup, trainedCounts)
+    ? buildArchivedList(templatesQ.data as WorkoutInput[], lookup)
     : [];
 
   return { isLoading, isError, error, workouts, archived };

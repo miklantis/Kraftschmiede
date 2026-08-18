@@ -24,8 +24,6 @@ function phase(overrides: Partial<PhaseRow> = {}): PhaseRow {
     rep_target_min: 8,
     rep_target_max: 12,
     load_factor: 1,
-    intensity_start: null,
-    intensity_end: null,
     position: 0,
     ...overrides,
   };
@@ -109,10 +107,6 @@ describe("derivePhaseContext", () => {
       phaseId: null,
       loadFactor: null,
       loadNote: null,
-      loadShare: null,
-      intensityPct: null,
-      intensityStart: null,
-    isDeloadWeek: false,
       placement: null,
       phase: null,
     });

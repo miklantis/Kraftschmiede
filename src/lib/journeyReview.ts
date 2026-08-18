@@ -7,7 +7,7 @@
 // Restgruppe, damit nichts unsichtbar wird.
 
 import { longDateShort } from "./format";
-import { intensityRange, loadPercent, usesLoadFactor } from "./loadFactor";
+import { loadPercent, usesLoadFactor } from "./loadFactor";
 
 export interface ReviewSessionInput {
   id: string;
@@ -26,9 +26,6 @@ export interface ReviewPhaseInput {
   weeks: number;
   /** Vorgegebene Last der Phase (1 = keine Vorgabe). */
   loadFactor: number;
-  /** Geplante Last der Phase in Prozent des 1RM; null ohne Lastrampe. */
-  intensityStart?: number | null;
-  intensityEnd?: number | null;
 }
 
 export interface ReviewLookups {
@@ -100,11 +97,6 @@ export function buildJourneyReview(
         p.weeks === 1 ? "1 Woche" : p.weeks + " Wochen",
         unitsLabel(list.length),
         ...(withLoad ? [loadPercent(p.loadFactor) + " Last"] : []),
-        // Lastrampe der Phase - sonst ist spaeter nicht mehr erkennbar, warum
-        // die Kraftwochen schwerer wurden.
-        ...(!withLoad && intensityRange(p.intensityStart, p.intensityEnd)
-          ? [intensityRange(p.intensityStart, p.intensityEnd) + " Last"]
-          : []),
       ].join(" · "),
       sessions: list,
     };

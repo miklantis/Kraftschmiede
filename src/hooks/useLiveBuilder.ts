@@ -6,7 +6,6 @@ import type {
   LiveBuildBar,
   LiveBuildResult,
 } from "@/lib/liveBuild";
-import type { WorkoutLoadPlan } from "@/lib/liveSession";
 import { todayISO } from "@/lib/format";
 import { buildLastEntries, buildPrevEntries } from "@/lib/lastEntries";
 import { derivePhaseContext } from "@/lib/phaseContext";
@@ -26,17 +25,11 @@ import { useLatestBody } from "./useBody";
 // Letzter Eintrag je Uebung (lib/lastEntries) und Phasen-Kontext (lib/phaseContext)
 // sind herausgezogen, damit die Uebungs-Statusanzeige dieselbe Quelle nutzt.
 
-/** Ergebnis des Aufbaus samt dem Lastplan, den die Einheit einfriert. */
-export interface BuiltWorkout extends LiveBuildResult {
-  /** Anker und Wochenanteil der lastgesteuerten Phase; null ohne Lastrampe. */
-  loadPlan: WorkoutLoadPlan | null;
-}
-
 export interface UseLiveBuilder {
   /** Alle noetigen Daten geladen. */
   ready: boolean;
   /** Baut die Einheit aus der Vorlage; null, wenn die Vorlage fehlt. */
-  buildWorkout: (templateId: string) => BuiltWorkout | null;
+  buildWorkout: (templateId: string) => LiveBuildResult | null;
   /** Aktive Journey und aktuelle Phase (zum Einfrieren auf die Einheit). */
   journeyId: string | null;
   phaseId: string | null;
@@ -83,7 +76,6 @@ export function useLiveBuilder(): UseLiveBuilder {
         targetScore: e.target_score,
         barId: e.bar_id,
         referenceWeight: e.reference_weight,
-        referencePhaseId: e.reference_phase_id,
         rm: e.rm,
         muscleGroups: e.muscle_groups,
       };
@@ -147,10 +139,10 @@ export function useLiveBuilder(): UseLiveBuilder {
   const templates = templatesQ.data;
 
   const buildWorkout = useCallback(
-    (templateId: string): BuiltWorkout | null => {
+    (templateId: string): LiveBuildResult | null => {
       const tpl = (templates ?? []).find((t) => t.id === templateId);
       if (!tpl) return null;
-      const built = buildLiveEntries({
+      return buildLiveEntries({
         exerciseIds: tpl.exerciseIds,
         exercisesById: base.exercisesById,
         phaseFocus: base.phaseFocus,
@@ -160,10 +152,6 @@ export function useLiveBuilder(): UseLiveBuilder {
         recoveryGreen: base.green,
         freeMode: base.journeyId === null,
         loadFactor: base.loadFactor,
-        loadShare: base.loadShare,
-        intensityStart: base.intensityStart,
-        phaseId: base.phaseId,
-        isDeloadWeek: base.isDeloadWeek,
         lastEntryByExercise: base.lastEntryByExercise,
         prevEntryByExercise: base.prevEntryByExercise,
         weightStep: base.weightStep,
@@ -172,20 +160,6 @@ export function useLiveBuilder(): UseLiveBuilder {
         dumbbells: base.dumbbells,
         unit: base.unit,
       });
-      // Lastplan nur, wenn die Phase die Last plant und mindestens eine Uebung
-      // einen Anker bekommen hat (ohne 1RM bleibt sie beim Coach).
-      const loadPlan: WorkoutLoadPlan | null =
-        base.loadShare != null &&
-        base.loadShare > 0 &&
-        base.phaseId != null &&
-        Object.keys(built.anchorByExercise).length > 0
-          ? {
-              phaseId: base.phaseId,
-              loadShare: base.loadShare,
-              anchorByExercise: built.anchorByExercise,
-            }
-          : null;
-      return { ...built, loadPlan };
     },
     [templates, base],
   );

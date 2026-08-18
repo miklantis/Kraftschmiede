@@ -29,18 +29,6 @@ export interface KatalogPatchInput {
   est1RM: number | null;
   /** Datum der Einheit (ISO) – wird als rm_as_of gesetzt. */
   date: string;
-  /** Lastplan der Phase fuer diese Uebung; fehlt er, bleibt der Anker unberuehrt. */
-  anchor?: AnchorInput | null;
-}
-
-/** Anker einer lastgesteuerten Phase, so wie er in diese Einheit einging. */
-export interface AnchorInput {
-  /** Phase, zu der der Anker gehoert. */
-  phaseId: string;
-  /** Anteil der Wochenlast am Anker (loadShareForWeek). */
-  loadShare: number;
-  /** Anker, mit dem die Einheit gerechnet wurde. */
-  weight: number;
 }
 
 export function katalogPatch(input: KatalogPatchInput): ExercisePatch {
@@ -60,28 +48,5 @@ export function katalogPatch(input: KatalogPatchInput): ExercisePatch {
     patch.rm_as_of = input.date;
     patch.rm_stale = false;
   }
-  const anker = ankerNachEinheit(input);
-  if (anker != null) {
-    patch.reference_weight = anker;
-    patch.reference_phase_id = input.anchor?.phaseId ?? null;
-  }
   return patch;
-}
-
-// Anker der Phase nach dieser Einheit: er folgt dem tatsaechlich gestemmten
-// Arbeitsgewicht, in beide Richtungen.
-//
-// Nach unten, weil die Rampe der Restwochen sonst naechste Woche wieder gegen
-// dieselbe zu schwere Wand laeuft. Nach oben, weil die Lastrampe in den
-// Aufbauwochen nur noch Untergrenze ist (ADR-0016): geht der Coach darueber
-// hinaus, muss der Anker mitwachsen - sonst rechnet die Entlastungswoche von
-// einem veralteten Bezugspunkt und faellt viel zu hart aus (Stand 55 kg, Anker
-// noch 47,5 ergaebe eine Entlastung auf 42,5 statt auf rund 48).
-//
-// null = nichts schreiben (keine lastgesteuerte Phase oder keine Arbeitssaetze).
-function ankerNachEinheit(input: KatalogPatchInput): number | null {
-  const a = input.anchor;
-  if (!a || !(a.loadShare > 0) || !(a.weight > 0)) return null;
-  if (!(input.workWeight > 0)) return a.weight;
-  return input.workWeight / a.loadShare;
 }

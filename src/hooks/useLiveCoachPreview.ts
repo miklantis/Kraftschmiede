@@ -126,7 +126,6 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
         targetScore: e.target_score,
         barId: e.bar_id,
         referenceWeight: e.reference_weight,
-        referencePhaseId: e.reference_phase_id,
       };
       const { suggestion } = suggestWithBar(exo, {
         phaseFocus: ph.phaseFocus,
@@ -139,9 +138,6 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
         repTarget: activeRepTarget(exo, ph.phaseRepTarget, hasPhase),
         freeMode,
         loadFactor: ph.loadFactor,
-        loadShare: ph.loadShare,
-        phaseId: ph.phaseId,
-        isDeloadWeek: ph.isDeloadWeek,
       });
       // Begleit-/Koerpergewichtsuebungen und freies Training rechnen nicht
       // progressiv - dort gibt es nichts zu bewerten, also auch kein Icon.
