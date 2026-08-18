@@ -1,6 +1,18 @@
 {
   "versions": [
     {
+      "version": "1.32.0",
+      "date": "2026-08-18",
+      "changes": [
+        "Die Entlastungswoche entlastet jetzt wirklich: Statt drei Vierteln bleibt die Hälfte des Volumens der Vorwoche stehen, und sie wirkt auch in Phasen mit gleichbleibender Satzzahl – bisher lief sie dort ins Leere.",
+        "Die Journey-Vorlagen halten jetzt, was ihre Phasennamen versprechen. In Kraft-, Power- und Testphasen bleibt die Satzzahl über die ganze Phase gleich, dort arbeitet nur noch das Gewicht. Hypertrophiephasen steigern weiterhin das Volumen, aber flacher und ohne Sprünge.",
+        "Kein Block läuft mehr fünf oder sechs Wochen am Stück durch: Nach höchstens vier Aufbauwochen kommt eine Entlastungswoche.",
+        "Vor einer Testwoche sinkt das Volumen jetzt, statt zu steigen – du misst also ausgeruht statt müde.",
+        "Dadurch ändern sich einzelne Laufzeiten: \"Wiedereinstieg & Aufbau\" dauert 11 statt 13 Wochen, \"Kraftausdauer / Kondition\" 7 statt 6, und die \"6-Monats-Periodisierung\" bekommt einen zusätzlichen Kraftblock, bleibt aber bei 24 Wochen.",
+        "Deine laufende Journey wurde mitgezogen: Die Wochenaufteilung bleibt wie geplant, damit sich nichts unter dir verschiebt, die Satzzahlen folgen ab sofort den neuen Regeln."
+      ]
+    },
+    {
       "version": "1.31.2",
       "date": "2026-08-18",
       "changes": [
@@ -54,21 +66,21 @@
       "version": "1.28.2",
       "date": "2026-08-17",
       "changes": [
-        "Beim Auf- und Zuklappen einer Einheit im \u00dcbungs-Verlauf springt die Seite nicht mehr: die angetippte Zeile bleibt genau an ihrer Stelle auf dem Bildschirm stehen."
+        "Beim Auf- und Zuklappen einer Einheit im Übungs-Verlauf springt die Seite nicht mehr: die angetippte Zeile bleibt genau an ihrer Stelle auf dem Bildschirm stehen."
       ]
     },
     {
       "version": "1.28.1",
       "date": "2026-08-17",
       "changes": [
-        "Beim Aufklappen einer Einheit im \u00dcbungs-Verlauf bleiben das Gewicht rechts und der Pfeil jetzt oben auf H\u00f6he des Datums stehen, statt in die Mitte der aufgeklappten S\u00e4tze zu rutschen."
+        "Beim Aufklappen einer Einheit im Übungs-Verlauf bleiben das Gewicht rechts und der Pfeil jetzt oben auf Höhe des Datums stehen, statt in die Mitte der aufgeklappten Sätze zu rutschen."
       ]
     },
     {
       "version": "1.28.0",
       "date": "2026-08-17",
       "changes": [
-        "Der Verlauf auf der \u00dcbungs-Detailseite l\u00e4sst sich jetzt aufklappen: Ein Tipp auf eine Einheit zeigt jeden einzelnen Satz mit Gewicht und Wiederholungen \u2013 und rechts daneben den Score als Zahl im runden Feld, genau wie die Score-Skala in den Einstellungen. So siehst du auf einen Blick, wie hart die Einheit war und an welchem Satz es kippte."
+        "Der Verlauf auf der Übungs-Detailseite lässt sich jetzt aufklappen: Ein Tipp auf eine Einheit zeigt jeden einzelnen Satz mit Gewicht und Wiederholungen – und rechts daneben den Score als Zahl im runden Feld, genau wie die Score-Skala in den Einstellungen. So siehst du auf einen Blick, wie hart die Einheit war und an welchem Satz es kippte."
       ]
     },
     {

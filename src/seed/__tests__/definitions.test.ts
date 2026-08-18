@@ -31,6 +31,60 @@ describe("Journey-Vorlagen im Seed", () => {
   });
 });
 
+describe("Periodisierung der Vorlagen", () => {
+  // Rule 1: In Kraftphasen arbeitet nur noch das Gewicht, nicht die Satzzahl.
+  it("faehrt Kraft- und Power-Phasen mit konstanter Satzzahl", () => {
+    for (const t of journeyTemplateSeeds) {
+      for (const p of t.phases) {
+        if (p.focus === "strength" || p.focus === "power") {
+          expect(`${t.key}/${p.name}: ${p.setsStart}-${p.setsEnd}`).toBe(
+            `${t.key}/${p.name}: ${p.setsStart}-${p.setsStart}`,
+          );
+        }
+      }
+    }
+  });
+
+  // Rule 2: Vor einem Test soll das Volumen sinken, nicht steigen.
+  it("laesst das Volumen in Testphasen nicht ansteigen", () => {
+    for (const t of journeyTemplateSeeds) {
+      for (const p of t.phases) {
+        if (p.focus === "test") {
+          expect(p.setsEnd).toBeLessThanOrEqual(p.setsStart);
+        }
+      }
+    }
+  });
+
+  // Rule 3: Hypertrophie darf rampen, aber ohne Spruenge.
+  it("haelt die Satz-Rampe der Hypertrophiephasen flach", () => {
+    for (const t of journeyTemplateSeeds) {
+      for (const p of t.phases) {
+        if (p.focus === "hypertrophy") {
+          expect(p.setsEnd - p.setsStart).toBeLessThanOrEqual(2);
+        }
+      }
+    }
+  });
+
+  // Rule 4: klassischer 3:1-Zuschnitt - hoechstens vier Aufbauwochen am Stueck.
+  it("laesst keinen Block laenger als vier Wochen ohne Entlastung laufen", () => {
+    const belastend = ["hypertrophy", "strength", "power", "endurance"];
+    for (const t of journeyTemplateSeeds) {
+      let amStueck = 0;
+      let laengste = 0;
+      for (const p of t.phases) {
+        for (let w = 1; w <= p.weeks; w++) {
+          const entlastung = p.deloadWeek === w || !belastend.includes(p.focus);
+          amStueck = entlastung ? 0 : amStueck + 1;
+          laengste = Math.max(laengste, amStueck);
+        }
+      }
+      expect(`${t.key}: ${laengste}`).toBe(`${t.key}: ${Math.min(laengste, 4)}`);
+    }
+  });
+});
+
 describe('Vorlage "Wiederaufbau nach Fasten"', () => {
   const vorlage = journeyTemplateSeeds.find((t) => t.key === "refeed_rebuild");
 
