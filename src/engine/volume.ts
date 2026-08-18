@@ -1,6 +1,17 @@
 // Volumensteuerung und Deload. Die Satzzahl rampt ueber die Phasenwochen hoch;
 // in der Deload-Woche sinkt sie, bei roten Erholungsmarkern bleibt sie konservativ.
 
+// Anteil der Vorwoche, der in der Entlastungswoche uebrig bleibt. 50 % liegt in
+// der Mitte des ueblichen Korridors (40-60 %) und macht die Woche spuerbar
+// leichter, ohne den Reiz ganz wegzunehmen. Vorher waren es 75 % mit Untergrenze
+// setsStart - das war bei hohem setsStart kaum eine Entlastung und bei
+// konstanter Satzzahl (setsStart == setsEnd) voellig wirkungslos.
+const DELOAD_ANTEIL = 0.5;
+
+// Untergrenze der Entlastungswoche: mindestens ein Arbeitssatz, damit die
+// Uebung im Plan bleibt und nicht ganz verschwindet.
+const DELOAD_MIN_SAETZE = 1;
+
 import type { DeloadMarkers, VolumePhase } from "./types";
 
 // Lineare Satz-Rampe von setsStart bis setsEnd ueber die Phasenwochen.
@@ -22,7 +33,7 @@ export function volumeForWeek(
   const weeks = Math.max(1, phase.weeks || 4);
   if (phase.deloadWeek && weekIndex === phase.deloadWeek - 1) {
     const prev = rampSets(s0, s1, Math.max(0, weekIndex - 1), weeks);
-    return Math.max(s0, Math.round(prev * 0.75)); // -25 %
+    return Math.max(DELOAD_MIN_SAETZE, Math.round(prev * DELOAD_ANTEIL));
   }
   let base = rampSets(s0, s1, weekIndex, weeks);
   if (!recoveryGreen) base = Math.max(s0, base - 1); // bei roten Markern nicht weiter rampen

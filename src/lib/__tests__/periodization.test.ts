@@ -48,8 +48,8 @@ describe("buildPeriodization", () => {
 
   it("rampt das Volumen und bricht in der Deload-Woche ein", () => {
     const d = buildPeriodization(phases, 1);
-    // Phase 1: 2 -> 3 -> 4, Deload (Woche 4) auf 3 (-25 % von 4); Phase 2: 3 -> 4 -> 4
-    expect(d.weeks.map((w) => w.vol)).toEqual([2, 3, 4, 3, 3, 4, 4]);
+    // Phase 1: 2 -> 3 -> 4, Deload (Woche 4) auf 2 (-50 % von 4); Phase 2: 3 -> 4 -> 4
+    expect(d.weeks.map((w) => w.vol)).toEqual([2, 3, 4, 2, 3, 4, 4]);
     expect(d.vMin).toBe(2);
     expect(d.vMax).toBe(4);
   });
