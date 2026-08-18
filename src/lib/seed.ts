@@ -129,6 +129,8 @@ async function seedJourneyTemplates(userId: string): Promise<void> {
         rep_target_min: p.repTargetMin,
         rep_target_max: p.repTargetMax,
         load_factor: p.loadFactor,
+        intensity_start: p.intensityStart,
+        intensity_end: p.intensityEnd,
         position: i,
       });
     });

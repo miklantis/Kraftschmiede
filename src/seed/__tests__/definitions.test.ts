@@ -122,3 +122,90 @@ describe('Vorlage "Wiederaufbau nach Fasten"', () => {
     expect(vorlage.summary.length).toBeGreaterThan(200);
   });
 });
+
+// Lastrampe der Phasen (Issue #200): Kraft-, Power- und Testphasen geben die
+// Last ueber die Wochen vor, Hypertrophie und Kraftausdauer bleiben beim Coach.
+describe("journeyTemplateSeeds – Lastrampe", () => {
+  const LASTGESTEUERT = ["strength", "power", "test"];
+
+  it("plant die Last nur in Kraft-, Power- und Testphasen", () => {
+    for (const t of journeyTemplateSeeds) {
+      // "Wiederaufbau nach Fasten" arbeitet mit dem Lastfaktor und bleibt aussen
+      // vor - beide Mechanismen duerfen nie an derselben Phase haengen.
+      if (t.key === "refeed_rebuild") continue;
+      for (const p of t.phases) {
+        const plant = p.intensityStart != null && p.intensityEnd != null;
+        if (!LASTGESTEUERT.includes(p.focus)) {
+          expect(
+            plant,
+            `${t.key}/${p.name} (${p.focus}) darf keine Lastrampe tragen`,
+          ).toBe(false);
+        }
+      }
+    }
+  });
+
+  it("laesst Lastfaktor und Lastrampe nie an derselben Phase haengen", () => {
+    for (const t of journeyTemplateSeeds) {
+      for (const p of t.phases) {
+        const plant = p.intensityStart != null && p.intensityEnd != null;
+        if (plant) {
+          expect(p.loadFactor, `${t.key}/${p.name}`).toBe(1);
+        }
+      }
+    }
+  });
+
+  it("laesst die Vorlage 'Wiederaufbau nach Fasten' unberuehrt", () => {
+    const refeed = journeyTemplateSeeds.find((t) => t.key === "refeed_rebuild");
+    expect(refeed).toBeDefined();
+    if (refeed === undefined) return;
+    for (const p of refeed.phases) {
+      expect(p.intensityStart).toBeNull();
+      expect(p.intensityEnd).toBeNull();
+    }
+  });
+
+  it("steigert die Last ueber die Phase und bleibt im plausiblen Korridor", () => {
+    for (const t of journeyTemplateSeeds) {
+      for (const p of t.phases) {
+        if (p.intensityStart == null || p.intensityEnd == null) continue;
+        expect(p.intensityEnd, `${t.key}/${p.name}`).toBeGreaterThanOrEqual(
+          p.intensityStart,
+        );
+        // Unter 70 Prozent ist es keine Kraftphase mehr, ueber 95 Prozent
+        // laesst sich kein Satz mit mehreren Wiederholungen mehr sauber fahren.
+        expect(p.intensityStart, `${t.key}/${p.name}`).toBeGreaterThanOrEqual(70);
+        expect(p.intensityEnd, `${t.key}/${p.name}`).toBeLessThanOrEqual(95);
+      }
+    }
+  });
+
+  it("faehrt engere Wiederholungsbaender schwerer", () => {
+    // Je enger und niedriger das Band, desto hoeher die geplante Last - sonst
+    // passen Band und Prozentangabe nicht zusammen.
+    for (const t of journeyTemplateSeeds) {
+      for (const p of t.phases) {
+        if (p.intensityStart == null) continue;
+        if (p.repTargetMax <= 4) {
+          expect(p.intensityStart, `${t.key}/${p.name}`).toBeGreaterThanOrEqual(85);
+        } else if (p.repTargetMax <= 5) {
+          expect(p.intensityStart, `${t.key}/${p.name}`).toBeGreaterThanOrEqual(80);
+        }
+      }
+    }
+  });
+
+  it("gibt jeder Kraft- und Testphase ausserhalb des Lastfaktors eine Rampe", () => {
+    for (const t of journeyTemplateSeeds) {
+      if (t.key === "refeed_rebuild") continue;
+      for (const p of t.phases) {
+        if (!LASTGESTEUERT.includes(p.focus)) continue;
+        expect(
+          p.intensityStart,
+          `${t.key}/${p.name} braucht eine Lastrampe`,
+        ).not.toBeNull();
+      }
+    }
+  });
+});

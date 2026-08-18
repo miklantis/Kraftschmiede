@@ -144,7 +144,7 @@ export const supabaseJourneyStore: JourneyStore = {
     must(
       await supabase
         .from("exercises")
-        .update({ reference_weight: null })
+        .update({ reference_weight: null, reference_phase_id: null })
         .eq("user_id", userId)
         .not("reference_weight", "is", null),
     );
