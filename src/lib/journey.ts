@@ -129,7 +129,7 @@ export function buildPhaseViews(
         ...(withLoad
           ? [{ k: "Vorgegebene Last", v: loadPercent(p.loadFactor) }]
           : []),
-        ...(rampe ? [{ k: "Geplante Last / Woche", v: rampe }] : []),
+        ...(rampe ? [{ k: "Mindestlast / Woche", v: rampe }] : []),
       ],
       loadNote: !isCurrent
         ? null

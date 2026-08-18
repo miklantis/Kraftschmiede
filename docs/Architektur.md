@@ -261,7 +261,9 @@ betroffene Tabelle beim Wiederherstellen leer.
   werden von Phasenliste, Periodisierungskurve (Lastfaktor steckt in der
   Intensitätslinie), Trainingsbildschirm (`phaseContext.loadNote`, eingefroren auf die
   laufende Einheit), Rückschau und Coach-Export genutzt. Dieselbe Stelle trägt die Texte
-  der Lastrampe (`intensityRange`, `intensityNote`, `intensityMissingRmNote`); die
+  der Lastrampe (`intensityRange`, `intensityNote`, `intensityMissingRmNote`) – in den
+  Aufbauwochen benennen sie eine **Mindestlast**, nur die Entlastungswoche spricht von einer
+  Vorgabe, weil die Rampe dort tatsächlich deckelt; die
   Intensitätslinie der Kurve rechnet dadurch wochengenau statt pro Phase flach. Journeys
   ohne Lastvorgabe sehen unverändert aus – keine zusätzliche Zeile, kein Hinweis.
 - **Datenzugriff gekapselt** in Query-/Mutation-Hooks je Entität (z. B.
