@@ -109,6 +109,9 @@ describe("derivePhaseContext", () => {
       phaseId: null,
       loadFactor: null,
       loadNote: null,
+      loadShare: null,
+      intensityPct: null,
+      intensityStart: null,
       placement: null,
       phase: null,
     });

@@ -171,6 +171,10 @@ export interface CoachBuildExercise {
   // Eingefrorenes Arbeitsgewicht vom Start einer Lastfaktor-Journey (null,
   // solange keine solche laeuft). Bezugspunkt der Rampe.
   referenceWeight: number | null;
+  // Phase, zu der das Referenzgewicht gehoert. Nur wenn sie zur laufenden Phase
+  // passt, ist der Anker der Lastrampe gueltig; sonst muss er erst gesetzt
+  // werden. Ohne Lastrampe ohne Bedeutung.
+  referencePhaseId: string | null;
 }
 
 // Coach-Entscheidung mit dem zusaetzlichen "carry" (bewusst keine Wertung) fuer
@@ -270,17 +274,60 @@ export interface SuggestBuildCtx {
   // Lastfaktor der aktiven Phase; null, wenn die laufende Journey ohne
   // Lastfaktor arbeitet (Normalfall).
   loadFactor?: number | null;
+  // Anteil der Wochenlast am Anker der Phase (Lastrampe); null, wenn die
+  // laufende Phase die Last nicht plant.
+  loadShare?: number | null;
+  // Id der laufenden Phase - nur damit laesst sich pruefen, ob der gespeicherte
+  // Anker zu dieser Phase gehoert.
+  phaseId?: string | null;
 }
 
-// Vorgabe der Journey fuer diese Uebung: Referenzgewicht x Lastfaktor. null,
-// solange keine Lastfaktor-Journey laeuft oder kein Referenzgewicht eingefroren
-// ist – dann rechnet der Coach wie gewohnt aus der letzten Leistung.
+/** Was die Journey dieser Uebung an Last vorgibt. Zwei Wege, die nie
+ *  gleichzeitig an derselben Phase haengen:
+ *  - `loadFactor`: ein Faktor je Phase (Vorlage "Wiederaufbau nach Fasten").
+ *  - `loadShare` + `phaseId`: die Wochenrampe einer lastgesteuerten Phase. */
+export interface RampInput {
+  loadFactor?: number | null;
+  loadShare?: number | null;
+  phaseId?: string | null;
+}
+
+// Vorgabe der Journey fuer diese Uebung. Zwei Quellen, in dieser Reihenfolge:
+//
+// 1. Lastrampe der Phase: Anker x Wochenanteil. Der Anker steckt im
+//    Referenzgewicht und gilt nur, wenn er zur laufenden Phase gehoert – beim
+//    ersten Einsatz der Uebung in einer neuen Phase gibt es ihn noch nicht,
+//    dann setzt ihn der Phaseneinstieg (phaseEntryOverride in liveBuild).
+// 2. Lastfaktor der Phase: Referenzgewicht x Faktor.
+//
+// null, solange keine der beiden greift – dann rechnet der Coach wie gewohnt
+// aus der letzten Leistung.
 export function rampLoad(
   exo: CoachBuildExercise,
-  loadFactor: number | null | undefined,
+  input: RampInput | number | null | undefined,
 ): RampLoad | null {
-  if (loadFactor == null || !(loadFactor > 0)) return null;
+  const o: RampInput =
+    input == null || typeof input === "number" ? { loadFactor: input } : input;
   const ref = exo.referenceWeight;
+
+  if (o.loadShare != null && o.loadShare > 0) {
+    // Der Anker muss zur laufenden Phase gehoeren; ein Anker aus der Vorphase
+    // wuerde die Rampe auf dem alten Niveau festnageln.
+    if (
+      ref != null &&
+      ref > 0 &&
+      o.phaseId != null &&
+      exo.referencePhaseId === o.phaseId
+    ) {
+      // Die geplante Last ist Ziel und Obergrenze: der Coach steuert nur noch
+      // die Wiederholungen und reagiert nach unten.
+      return { weight: ref * o.loadShare, cap: true };
+    }
+    return null;
+  }
+
+  const loadFactor = o.loadFactor;
+  if (loadFactor == null || !(loadFactor > 0)) return null;
   if (ref == null || !(ref > 0)) return null;
   // Gedeckelt wird nur unterhalb der vollen Last; was als "voll" gilt, sagt
   // isNeutralLoad (dort liegt die Toleranz).
@@ -317,7 +364,11 @@ export function suggestForExercise(
     plates: ctx.plates,
     dumbbells: ctx.dumbbells,
     reentry: focus === "reentry",
-    ramp: rampLoad(exo, ctx.loadFactor),
+    ramp: rampLoad(exo, {
+      loadFactor: ctx.loadFactor,
+      loadShare: ctx.loadShare,
+      phaseId: ctx.phaseId,
+    }),
     step: ctx.weightStep,
     prevEntry: ctx.prevEntry ?? null,
   });
@@ -365,6 +416,10 @@ export interface SuggestWithBarInput<B extends { weight: number }> {
   freeMode?: boolean;
   // Lastfaktor der aktiven Phase; null ausserhalb einer Lastfaktor-Journey.
   loadFactor?: number | null;
+  // Lastrampe der aktiven Phase (Wochenanteil und Phase dazu); null, wenn die
+  // Phase die Last nicht plant.
+  loadShare?: number | null;
+  phaseId?: string | null;
 }
 
 export interface SuggestWithBarResult<B> {
@@ -391,6 +446,8 @@ export function suggestWithBar<B extends { weight: number }>(
       repTarget: input.repTarget,
       freeMode: input.freeMode,
       loadFactor: input.loadFactor,
+      loadShare: input.loadShare,
+      phaseId: input.phaseId,
     });
     const bar = pickBarForTarget(rawSug.weight, input.bars);
     const suggestion = suggestForExercise(exo, {
@@ -403,6 +460,8 @@ export function suggestWithBar<B extends { weight: number }>(
       repTarget: input.repTarget,
       freeMode: input.freeMode,
       loadFactor: input.loadFactor,
+      loadShare: input.loadShare,
+      phaseId: input.phaseId,
     });
     return { suggestion, bar };
   }
@@ -420,6 +479,8 @@ export function suggestWithBar<B extends { weight: number }>(
       repTarget: input.repTarget,
       freeMode: input.freeMode,
       loadFactor: input.loadFactor,
+      loadShare: input.loadShare,
+      phaseId: input.phaseId,
     });
     return { suggestion, bar: null };
   }
@@ -431,6 +492,8 @@ export function suggestWithBar<B extends { weight: number }>(
     repTarget: input.repTarget,
     freeMode: input.freeMode,
     loadFactor: input.loadFactor,
+    loadShare: input.loadShare,
+    phaseId: input.phaseId,
   });
   return { suggestion, bar: null };
 }

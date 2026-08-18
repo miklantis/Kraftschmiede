@@ -101,6 +101,11 @@ export function useFinishSession(): UseFinishSession {
       const byId = new Map((exercisesQ.data ?? []).map((e) => [e.id, e]));
       const exercisePatches: ExercisePatch[] = rows.exerciseUpdates.map((u) => {
         const exo = byId.get(u.exerciseId);
+        // Anker der lastgesteuerten Phase, so wie er in diese Einheit einging.
+        // Der Plan wurde beim Start eingefroren; ohne ihn bleibt der Anker
+        // unberuehrt.
+        const plan = session.loadPlan;
+        const ankerGewicht = plan?.anchorByExercise[u.exerciseId];
         return katalogPatch({
           exerciseId: u.exerciseId,
           workWeight: u.workWeight,
@@ -109,6 +114,14 @@ export function useFinishSession(): UseFinishSession {
           record1RM: u.record1RM,
           est1RM: u.est1RM,
           date,
+          anchor:
+            plan && ankerGewicht != null
+              ? {
+                  phaseId: plan.phaseId,
+                  loadShare: plan.loadShare,
+                  weight: ankerGewicht,
+                }
+              : null,
         });
       });
 

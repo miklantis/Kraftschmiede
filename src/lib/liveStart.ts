@@ -23,6 +23,8 @@ export interface StartWorkoutInput {
   phaseId: string | null;
   /** Hinweis zur vorgegebenen Last der Phase; null ohne Lastfaktor-Journey. */
   loadNote: string | null;
+  /** Lastplan der Phase (Anker je Uebung + Wochenanteil); null ohne Lastrampe. */
+  loadPlan: WorkoutSession["loadPlan"];
   entries: WorkoutSession["entries"];
   generalWarmup: WorkoutSession["generalWarmup"];
 }
@@ -59,6 +61,7 @@ export function buildWorkoutSession(
     journeyId: input.journeyId,
     phaseId: input.phaseId,
     loadNote: input.loadNote,
+    loadPlan: input.loadPlan,
     title: input.title,
     startedAt: now,
     generalWarmup: input.generalWarmup,

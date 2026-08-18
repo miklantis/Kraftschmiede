@@ -1,6 +1,16 @@
 {
   "versions": [
     {
+      "version": "1.33.0",
+      "date": "2026-08-18",
+      "changes": [
+        "Zweites Steuerrad fuer deine Trainingsphasen: Eine Kraft-, Power- oder Testphase kann jetzt die Last selbst vorgeben, statt sie allein dem Coach zu ueberlassen. Sie legt beim Start ihren Bezugspunkt aus deinem Maximum fest, steigert das Gewicht Woche fuer Woche und nimmt es in der Entlastungswoche deutlich zurueck.",
+        "Der Coach bleibt zustaendig fuer die Wiederholungen und reagiert weiterhin nach unten, wenn eine Einheit zu schwer war. Passiert das, wandert der Bezugspunkt mit nach unten - die naechste Woche setzt dann auf dem Niveau auf, das du tatsaechlich geschafft hast, statt wieder gegen dieselbe Wand zu laufen.",
+        "Fehlt fuer eine Uebung ein Maximum, steuert der Coach sie unveraendert weiter.",
+        "Sichtbar wird das, sobald die Vorlagen die neuen Werte fuehren; bis dahin aendert sich an deinem Training nichts."
+      ]
+    },
+    {
       "version": "1.32.1",
       "date": "2026-08-18",
       "changes": [
