@@ -143,6 +143,8 @@ function phase(name: string, loadFactor: number, position: number): PhaseRow {
     rep_target_min: 8,
     rep_target_max: 12,
     load_factor: loadFactor,
+    intensity_start: null,
+    intensity_end: null,
     position,
   };
 }
