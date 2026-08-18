@@ -1,6 +1,16 @@
 {
   "versions": [
     {
+      "version": "1.35.0",
+      "date": "2026-08-18",
+      "changes": [
+        "Die geplante Last einer Kraftphase bremst dich nicht mehr aus. Bisher war sie eine Obergrenze: Auch wenn du dein Wiederholungsziel jede Woche erreicht hast, blieb das Gewicht stehen, weil der Plan noch nicht so weit war. Ab sofort ist sie eine Untergrenze – die Phase sorgt dafuer, dass du mindestens so schwer trainierst wie geplant, und wenn du mehr schaffst, steigert der Coach ganz normal weiter.",
+        "Der Grund: Die Lehrbuch-Rampe steigt rund ein Kilo pro Woche, dein Coach will nach einer sauberen Einheit zweieinhalb. Sie ist erst bei sehr hohen Gewichten schneller als dein Fortschritt – bis dahin haette sie dich nur zurueckgehalten. Jetzt fuehrt automatisch derjenige, der schneller ist.",
+        "Die Entlastungswoche deckelt weiterhin. Dort ist das leichtere Gewicht der ganze Sinn, und daran aendert sich nichts.",
+        "\"Wiederaufbau nach Fasten\" bleibt unveraendert: Nach einer Pause soll die Vorgabe gerade nicht ueberschritten werden, dort bleibt sie eine echte Obergrenze."
+      ]
+    },
+    {
       "version": "1.34.2",
       "date": "2026-08-18",
       "changes": [

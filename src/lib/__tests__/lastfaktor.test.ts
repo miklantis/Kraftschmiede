@@ -41,7 +41,7 @@ function withFactor(
   return suggestWeight({ ...EX, workWeight }, last, {
     bar: BAR,
     plates: PLATES,
-    ramp: { weight: REF * factor, cap: factor < 1 },
+    ramp: { weight: REF * factor, mode: factor < 1 ? "cap" : "floor" },
   });
 }
 
@@ -99,7 +99,7 @@ describe("Lastfaktor-Rampe in der Gewichtssteuerung", () => {
   });
 
   it("Wiedereinstiegsphase: uebernimmt die Phasenlast, haelt aber nach Schmerz", () => {
-    const ramp = { weight: REF * 0.8, cap: true };
+    const ramp = { weight: REF * 0.8, mode: "cap" as const };
     const ok = suggestWeight({ ...EX, workWeight: 37.5 }, easy(37.5), {
       bar: BAR,
       plates: PLATES,

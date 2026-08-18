@@ -141,6 +141,7 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
         loadFactor: ph.loadFactor,
         loadShare: ph.loadShare,
         phaseId: ph.phaseId,
+        isDeloadWeek: ph.isDeloadWeek,
       });
       // Begleit-/Koerpergewichtsuebungen und freies Training rechnen nicht
       // progressiv - dort gibt es nichts zu bewerten, also auch kein Icon.

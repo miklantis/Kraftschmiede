@@ -66,6 +66,9 @@ export interface PhaseContext {
   // Start-Intensitaet der laufenden Phase in Prozent des 1RM; null ohne
   // Lastplanung. Bezugspunkt fuer den Anker beim Eintritt in die Phase.
   intensityStart: number | null;
+  // Laeuft gerade die Entlastungswoche der Phase? Nur dann deckelt die
+  // Lastrampe; in den Aufbauwochen ist sie bloss Untergrenze.
+  isDeloadWeek: boolean;
   // Die Platzierung selbst (Phasen-Index, Woche in der Phase ab 1, globale
   // Woche, durchlaufen ja/nein); null ohne aktive Journey.
   placement: Placement | null;
@@ -91,6 +94,7 @@ export function derivePhaseContext(
   let loadShare: number | null = null;
   let intensityPct: number | null = null;
   let intensityStart: number | null = null;
+  let isDeloadWeek = false;
   let placement: Placement | null = null;
   let phase: PhaseRow | null = null;
 
@@ -140,10 +144,9 @@ export function derivePhaseContext(
         loadShare = loadShareForWeek(intensityPhase, weekInPhase);
         intensityPct = intensityForWeek(intensityPhase, weekInPhase);
         intensityStart = phase.intensity_start;
-        loadNote = intensityNote(
-          intensityPct,
-          phase.deload_week != null && weekInPhase === phase.deload_week - 1,
-        );
+        isDeloadWeek =
+          phase.deload_week != null && weekInPhase === phase.deload_week - 1;
+        loadNote = intensityNote(intensityPct, isDeloadWeek);
       }
     }
   }
@@ -160,6 +163,7 @@ export function derivePhaseContext(
     loadShare,
     intensityPct,
     intensityStart,
+    isDeloadWeek,
     placement,
     phase,
   };

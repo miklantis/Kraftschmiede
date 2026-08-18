@@ -227,7 +227,7 @@ betroffene Tabelle beim Wiederherstellen leer.
   (`rampLoad` in `coach.ts`, angewandt in `progression.ts`); der 1RM-Einstieg beim
   Phasenwechsel ruht solange. Ohne Lastfaktor-Journey ändert sich nichts – auch dann
   nicht, wenn an den Übungen noch ein altes Referenzgewicht hängt.
-- **Die Phase gibt die Last vor, der Coach die Wiederholungen.** Trägt eine Phase
+- **Die Phase gibt ein Mindestgewicht vor, der Coach darf darüber.** Trägt eine Phase
   Prozentwerte (`intensity_start`/`intensity_end`), plant sie ihre Last selbst: die
   Wochenrampe entsteht an einer Stelle (`intensityForWeek` in `engine/intensity.ts`,
   abgeleitet in `derivePhaseContext`, angewandt über `rampLoad` und `withRamp`). Sie
@@ -236,16 +236,23 @@ betroffene Tabelle beim Wiederherstellen leer.
   liegt bei 85 % der Vorwoche (bei der Satzzahl sind es 50 %, bei der Last wäre das
   absurd). Bezugspunkt ist ein Anker je Übung: gesetzt beim ersten Einsatz in der Phase
   aus 1RM und Start-Intensität (`anchorForIntensity`, verdrahtet in
-  `phaseEntryOverride`), abgelegt in `reference_weight` samt `reference_phase_id`. Senkt
-  der Coach, wandert der Anker proportional mit nach unten, aber nie nach oben
-  (`katalogPatch`) – sonst liefe man in der Folgewoche gegen dieselbe zu schwere Wand,
-  und nach oben wäre es wieder eine Doppelprogression. Nur `strength`, `power` und
-  `test`; ohne getestetes 1RM bleibt die Übung beim Coach und sagt das auf ihrer Karte.
-  Begründung in `docs/adr/0016-lastrampe-der-phase.md`.
+  `phaseEntryOverride`), abgelegt in `reference_weight` samt `reference_phase_id`. In den
+  Aufbauwochen wirkt die Rampe nur als **Untergrenze** (`mode: "floor"`): sie hebt einen zu
+  niedrigen Vorschlag an, hält einen höheren aber nicht zurück. Nur in der Entlastungswoche
+  deckelt sie (`mode: "cap"`), sonst wäre sie keine Entlastung. Grund: bei alltäglichen
+  Lasten ist die Rampe deutlich langsamer als der tatsächliche Fortschritt (rund +1 kg pro
+  Woche gegen +2,5 kg des Coaches, gleichauf erst ab etwa 116 kg) und unterhalb von 38,8 kg
+  bewegt sie nicht einmal eine Scheibenstufe – als Deckel hätte sie den Coach bei erreichtem
+  Ziel ausgebremst. Der Anker folgt deshalb dem tatsächlich gestemmten Gewicht in beide
+  Richtungen (`katalogPatch`), damit die Entlastungswoche relativ zum echten Stand rechnet.
+  Nur `strength`, `power` und `test`; ohne getestetes 1RM bleibt die Übung beim Coach und
+  sagt das auf ihrer Karte. Begründung in `docs/adr/0016-lastrampe-der-phase.md`.
 - **Lastfaktor und Lastrampe hängen nie an derselben Phase.** Zwei Wege, dieselbe Naht:
   `rampLoad` in `coach.ts` nimmt entweder den Faktor je Phase (nur „Wiederaufbau nach
-  Fasten") oder den Wochenanteil der Rampe und liefert beides als gedeckelte Vorgabe an
-  `withRamp`. Ein Seed-Regeltest hält fest, dass keine Phase beides trägt.
+  Fasten") oder den Wochenanteil der Rampe und liefert beides als `RampLoad` an `withRamp` –
+  mit dem Unterschied, in welche Richtung die Vorgabe wirkt. Der Lastfaktor deckelt (dort ist
+  das Nicht-Überziehen der Sinn), die Lastrampe trägt. Ein Seed-Regeltest hält fest, dass
+  keine Phase beides trägt, `lastfaktor.test.ts` sichert den Deckel des Lastfaktors ab.
 - **Lastfaktor ist überall sichtbar, aber nur wenn er wirkt.** Ob ein Faktor überhaupt
   wirkt, entscheidet ein Prüfwort an einer Stelle (`isNeutralLoad` in
   `lib/loadFactor.ts`, samt Rundungstoleranz) – genutzt von Journey-Start,

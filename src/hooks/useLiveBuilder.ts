@@ -163,6 +163,7 @@ export function useLiveBuilder(): UseLiveBuilder {
         loadShare: base.loadShare,
         intensityStart: base.intensityStart,
         phaseId: base.phaseId,
+        isDeloadWeek: base.isDeloadWeek,
         lastEntryByExercise: base.lastEntryByExercise,
         prevEntryByExercise: base.prevEntryByExercise,
         weightStep: base.weightStep,

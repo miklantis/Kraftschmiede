@@ -112,6 +112,7 @@ describe("derivePhaseContext", () => {
       loadShare: null,
       intensityPct: null,
       intensityStart: null,
+    isDeloadWeek: false,
       placement: null,
       phase: null,
     });
