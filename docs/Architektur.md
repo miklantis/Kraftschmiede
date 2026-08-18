@@ -72,10 +72,8 @@ Recovery-Fenster, Timer).
 - **exercises** – key, name, profile (strength/core/bodyweight), tier (main/accessory),
   equipment, bar_id (FK), description, metric (reps/duration bei Körpergewicht),
   muscle_groups (grobe Tags als text[]), rep_range_min/max, target_score, work_weight,
-  reference_weight (nullable, Bezugspunkt einer Journey, die die Last vorgibt –
-  eingefroren zum Start einer Lastfaktor-Journey bzw. gesetzt beim Eintritt in eine
-  Phase mit Lastrampe), reference_phase_id (nullable, zu welcher Phase dieser
-  Bezugspunkt gehört), recovery_hours, rm/rm_as_of/rm_stale (zwischengespeichertes 1RM
+  reference_weight (nullable, eingefrorenes Arbeitsgewicht zum Start einer
+  Lastfaktor-Journey), recovery_hours, rm/rm_as_of/rm_stale (zwischengespeichertes 1RM
   für den Coach), position
 - **exercise_muscles** – feine Regionen-Map: exercise_id (FK), region_id (Code-/SVG-Region),
   kategorie (primär/sekundär/stabilisierend)
@@ -85,9 +83,7 @@ Recovery-Fenster, Timer).
 - **journey_templates** – key, name, tagline, for_whom, summary, position
 - **journey_template_phases** – journey_template_id (FK), name, focus, weeks,
   sets_start, sets_end, deload_week (nullable), rep_target_min/max, load_factor
-  (Anteil des Referenzgewichts, Default 1.0 = gewohntes Verhalten),
-  intensity_start/intensity_end (nullable, geplante Last der Phase in Prozent des 1RM;
-  null = die Phase plant die Last nicht), position
+  (Anteil des Referenzgewichts, Default 1.0 = gewohntes Verhalten), position
 - **skills** – key, name, category, image, position
 - **skill_phases** – skill_id (FK), label, description, consecutive_sessions
   (aufeinanderfolgende Erfolge bis Aufstieg), position
@@ -107,8 +103,7 @@ Begründung in ADR-0003.
   `user_id where active` -> genau eine aktive Journey pro Nutzer (ADR-0004)
 - **phases** – journey_id (FK), name, focus, weeks, sets_start, sets_end, deload_week
   (nullable), rep_target_min/max, load_factor (Anteil des Referenzgewichts,
-  Default 1.0), intensity_start/intensity_end (nullable, geplante Last in Prozent des
-  1RM), position
+  Default 1.0), position
 - **journey_workouts** – ordnet Workouts der Journey zu: journey_id (FK), template_id (FK),
   `unique(user_id, journey_id, template_id)`. Reine Ja/Nein-Menge, bewusst ohne position
   (die Empfehlungsreihenfolge bestimmt der Coach); ON DELETE CASCADE über beide FKs
@@ -227,32 +222,6 @@ betroffene Tabelle beim Wiederherstellen leer.
   (`rampLoad` in `coach.ts`, angewandt in `progression.ts`); der 1RM-Einstieg beim
   Phasenwechsel ruht solange. Ohne Lastfaktor-Journey ändert sich nichts – auch dann
   nicht, wenn an den Übungen noch ein altes Referenzgewicht hängt.
-- **Die Phase gibt ein Mindestgewicht vor, der Coach darf darüber.** Trägt eine Phase
-  Prozentwerte (`intensity_start`/`intensity_end`), plant sie ihre Last selbst: die
-  Wochenrampe entsteht an einer Stelle (`intensityForWeek` in `engine/intensity.ts`,
-  abgeleitet in `derivePhaseContext`, angewandt über `rampLoad` und `withRamp`). Sie
-  interpoliert bewusst über die Aufbauwochen statt über alle – sonst wäre der Endwert in
-  einer Phase, die mit der Entlastungswoche endet, nie erreicht; die Entlastungswoche
-  liegt bei 85 % der Vorwoche (bei der Satzzahl sind es 50 %, bei der Last wäre das
-  absurd). Bezugspunkt ist ein Anker je Übung: gesetzt beim ersten Einsatz in der Phase
-  aus 1RM und Start-Intensität (`anchorForIntensity`, verdrahtet in
-  `phaseEntryOverride`), abgelegt in `reference_weight` samt `reference_phase_id`. In den
-  Aufbauwochen wirkt die Rampe nur als **Untergrenze** (`mode: "floor"`): sie hebt einen zu
-  niedrigen Vorschlag an, hält einen höheren aber nicht zurück. Nur in der Entlastungswoche
-  deckelt sie (`mode: "cap"`), sonst wäre sie keine Entlastung. Grund: bei alltäglichen
-  Lasten ist die Rampe deutlich langsamer als der tatsächliche Fortschritt (rund +1 kg pro
-  Woche gegen +2,5 kg des Coaches, gleichauf erst ab etwa 116 kg) und unterhalb von 38,8 kg
-  bewegt sie nicht einmal eine Scheibenstufe – als Deckel hätte sie den Coach bei erreichtem
-  Ziel ausgebremst. Der Anker folgt deshalb dem tatsächlich gestemmten Gewicht in beide
-  Richtungen (`katalogPatch`), damit die Entlastungswoche relativ zum echten Stand rechnet.
-  Nur `strength`, `power` und `test`; ohne getestetes 1RM bleibt die Übung beim Coach und
-  sagt das auf ihrer Karte. Begründung in `docs/adr/0016-lastrampe-der-phase.md`.
-- **Lastfaktor und Lastrampe hängen nie an derselben Phase.** Zwei Wege, dieselbe Naht:
-  `rampLoad` in `coach.ts` nimmt entweder den Faktor je Phase (nur „Wiederaufbau nach
-  Fasten") oder den Wochenanteil der Rampe und liefert beides als `RampLoad` an `withRamp` –
-  mit dem Unterschied, in welche Richtung die Vorgabe wirkt. Der Lastfaktor deckelt (dort ist
-  das Nicht-Überziehen der Sinn), die Lastrampe trägt. Ein Seed-Regeltest hält fest, dass
-  keine Phase beides trägt, `lastfaktor.test.ts` sichert den Deckel des Lastfaktors ab.
 - **Lastfaktor ist überall sichtbar, aber nur wenn er wirkt.** Ob ein Faktor überhaupt
   wirkt, entscheidet ein Prüfwort an einer Stelle (`isNeutralLoad` in
   `lib/loadFactor.ts`, samt Rundungstoleranz) – genutzt von Journey-Start,
@@ -260,12 +229,8 @@ betroffene Tabelle beim Wiederherstellen leer.
   entstehen ebenfalls dort (Prozentangabe und Hinweistext) und
   werden von Phasenliste, Periodisierungskurve (Lastfaktor steckt in der
   Intensitätslinie), Trainingsbildschirm (`phaseContext.loadNote`, eingefroren auf die
-  laufende Einheit), Rückschau und Coach-Export genutzt. Dieselbe Stelle trägt die Texte
-  der Lastrampe (`intensityRange`, `intensityNote`, `intensityMissingRmNote`) – in den
-  Aufbauwochen benennen sie eine **Mindestlast**, nur die Entlastungswoche spricht von einer
-  Vorgabe, weil die Rampe dort tatsächlich deckelt; die
-  Intensitätslinie der Kurve rechnet dadurch wochengenau statt pro Phase flach. Journeys
-  ohne Lastvorgabe sehen unverändert aus – keine zusätzliche Zeile, kein Hinweis.
+  laufende Einheit), Rückschau und Coach-Export genutzt. Journeys mit Lastfaktor 1
+  überall sehen unverändert aus – keine zusätzliche Zeile, kein Hinweis.
 - **Datenzugriff gekapselt** in Query-/Mutation-Hooks je Entität (z. B.
   `useSessions`, `useExercises`). Komponenten kennen kein Supabase direkt.
 - **Naht zur Datenbank je Schreibbereich** (`src/lib/<bereich>Store.ts` +

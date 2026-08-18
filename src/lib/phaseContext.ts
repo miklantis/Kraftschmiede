@@ -10,8 +10,7 @@
 import { journeyPlacement, phaseRepBand } from "@/engine";
 import type { JourneySession, Placement } from "@/engine";
 import type { VolumePhase } from "@/engine/types";
-import { intensityNote, loadFactorNote, usesLoadFactor } from "@/lib/loadFactor";
-import { intensityForWeek, loadShareForWeek, plansLoad } from "@/engine/intensity";
+import { loadFactorNote, usesLoadFactor } from "@/lib/loadFactor";
 import type { JourneyRow, PhaseRow } from "@/schemas";
 
 export type PhaseContextJourney = JourneyRow & { phases: PhaseRow[] };
@@ -55,20 +54,6 @@ export interface PhaseContext {
   // wenn die laufende Journey ohne Lastfaktor arbeitet. In der letzten Phase
   // sagt er zusaetzlich, dass die Vorgabe endet.
   loadNote: string | null;
-  // Anteil, mit dem die Wochenlast am Anker der Phase haengt (1.0 in der ersten
-  // Aufbauwoche, darueber in den spaeteren, darunter in der Entlastungswoche).
-  // null, wenn die laufende Phase die Last nicht plant - dann steuert der Coach
-  // das Gewicht wie gewohnt.
-  loadShare: number | null;
-  // Geplante Intensitaet der laufenden Woche in Prozent des 1RM; null ohne
-  // Lastplanung. Nur fuer die Anzeige.
-  intensityPct: number | null;
-  // Start-Intensitaet der laufenden Phase in Prozent des 1RM; null ohne
-  // Lastplanung. Bezugspunkt fuer den Anker beim Eintritt in die Phase.
-  intensityStart: number | null;
-  // Laeuft gerade die Entlastungswoche der Phase? Nur dann deckelt die
-  // Lastrampe; in den Aufbauwochen ist sie bloss Untergrenze.
-  isDeloadWeek: boolean;
   // Die Platzierung selbst (Phasen-Index, Woche in der Phase ab 1, globale
   // Woche, durchlaufen ja/nein); null ohne aktive Journey.
   placement: Placement | null;
@@ -91,10 +76,6 @@ export function derivePhaseContext(
   let phaseId: string | null = null;
   let loadFactor: number | null = null;
   let loadNote: string | null = null;
-  let loadShare: number | null = null;
-  let intensityPct: number | null = null;
-  let intensityStart: number | null = null;
-  let isDeloadWeek = false;
   let placement: Placement | null = null;
   let phase: PhaseRow | null = null;
 
@@ -131,23 +112,6 @@ export function derivePhaseContext(
           placement.phaseIndex === journey.phases.length - 1,
         );
       }
-      // Lastrampe der Phase (zweites Steuerrad neben der Satzrampe). Nur wenn
-      // die Phase selbst Prozentwerte traegt; der Lastfaktor oben bleibt davon
-      // unberuehrt, beide haengen nie an derselben Phase.
-      const intensityPhase = {
-        intensityStart: phase.intensity_start,
-        intensityEnd: phase.intensity_end,
-        weeks: phase.weeks,
-        deloadWeek: phase.deload_week,
-      };
-      if (plansLoad(intensityPhase)) {
-        loadShare = loadShareForWeek(intensityPhase, weekInPhase);
-        intensityPct = intensityForWeek(intensityPhase, weekInPhase);
-        intensityStart = phase.intensity_start;
-        isDeloadWeek =
-          phase.deload_week != null && weekInPhase === phase.deload_week - 1;
-        loadNote = intensityNote(intensityPct, isDeloadWeek);
-      }
     }
   }
 
@@ -160,10 +124,6 @@ export function derivePhaseContext(
     phaseId,
     loadFactor,
     loadNote,
-    loadShare,
-    intensityPct,
-    intensityStart,
-    isDeloadWeek,
     placement,
     phase,
   };

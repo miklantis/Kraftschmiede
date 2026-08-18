@@ -1,12 +1,5 @@
-import { intensityForWeek, plansLoad } from "@/engine/intensity";
 import { focusLabel } from "@/lib/labels";
-import {
-  intensityNote,
-  intensityRange,
-  loadFactorNote,
-  loadPercent,
-  usesLoadFactor,
-} from "@/lib/loadFactor";
+import { loadFactorNote, loadPercent, usesLoadFactor } from "@/lib/loadFactor";
 import type { Focus } from "@/schemas/shared";
 
 // Phase einer aktiven Journey, soweit die Anzeige sie braucht. Werte snake_case-
@@ -22,9 +15,6 @@ export interface JourneyPhaseInput {
   repTargetMax: number | null;
   /** Anteil des Referenzgewichts, den die Phase vorgibt (1 = keine Vorgabe). */
   loadFactor: number;
-  /** Geplante Last der Phase in Prozent des 1RM; null ohne Lastrampe. */
-  intensityStart?: number | null;
-  intensityEnd?: number | null;
 }
 
 // Platzierung, soweit die Phasen-Anzeige sie braucht (aus engine.journeyPlacement).
@@ -70,25 +60,6 @@ function setsRamp(start: number, end: number): string {
 // Zustand (vergangen/aktuell/kuenftig), Meta-Zeile und Detailzeilen 1:1 wie V1
 // (journeyData): bei done sind alle Phasen vergangen; vor dem aktuellen Index
 // vergangen, am Index aktuell, danach kuenftig.
-// Hinweistext zur geplanten Last der laufenden Woche. null, wenn die Phase die
-// Last nicht plant. Die Woche kommt aus der Platzierung (1-basiert), die Rampe
-// rechnet 0-basiert - wie ueberall.
-function wochenLast(
-  p: JourneyPhaseInput,
-  placement: PhasePlacementInfo,
-): string | null {
-  const phase = {
-    intensityStart: p.intensityStart,
-    intensityEnd: p.intensityEnd,
-    weeks: p.weeks,
-    deloadWeek: p.deloadWeek,
-  };
-  if (!plansLoad(phase)) return null;
-  const wi = Math.max(0, placement.weekInPhase - 1);
-  const istEntlastung = p.deloadWeek != null && wi === p.deloadWeek - 1;
-  return intensityNote(intensityForWeek(phase, wi), istEntlastung);
-}
-
 export function buildPhaseViews(
   phases: JourneyPhaseInput[],
   placement: PhasePlacementInfo,
@@ -98,9 +69,6 @@ export function buildPhaseViews(
   // Lastfaktor sehen unveraendert aus.
   const withLoad = usesLoadFactor(phases.map((p) => p.loadFactor));
   return phases.map((p, i) => {
-    // Lastrampe der Phase (zweites Steuerrad). Beides haengt nie an derselben
-    // Phase, darum reicht eine Detailzeile fuer beide Wege.
-    const rampe = intensityRange(p.intensityStart, p.intensityEnd);
     const state: PhaseState = placement.done
       ? "past"
       : i < placement.phaseIndex
@@ -129,13 +97,11 @@ export function buildPhaseViews(
         ...(withLoad
           ? [{ k: "Vorgegebene Last", v: loadPercent(p.loadFactor) }]
           : []),
-        ...(rampe ? [{ k: "Mindestlast / Woche", v: rampe }] : []),
       ],
-      loadNote: !isCurrent
-        ? null
-        : withLoad
+      loadNote:
+        withLoad && isCurrent
           ? loadFactorNote(p.loadFactor, i === phases.length - 1)
-          : wochenLast(p, placement),
+          : null,
     };
   });
 }

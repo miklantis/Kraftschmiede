@@ -1,7 +1,6 @@
 import { volumeForWeek } from "@/engine";
-import { intensityForWeek, plansLoad } from "@/engine/intensity";
 import type { JourneyPhaseInput } from "@/lib/journey";
-import { intensityRange, isNeutralLoad, loadPercent } from "@/lib/loadFactor";
+import { isNeutralLoad, loadPercent } from "@/lib/loadFactor";
 
 // Reine Aufbereitung der Daten fuer die Periodisierungskurve, 1:1 aus V1
 // (charts.js drawJourneyChart, Datenteil). Kein DOM-/D3-Bezug: hier entstehen nur
@@ -46,10 +45,6 @@ export interface PeriodizationData {
 // (Lastfaktor < 1), zaehlt sie entsprechend weniger intensiv – sonst zeigte die
 // Kurve einer Wiederaufbau-Journey vier gleich intensive Wochen, obwohl in
 // Woche 1 nur 65 % des alten Gewichts auf der Stange liegen.
-//
-// Plant die Phase ihre Last selbst (Lastrampe), zaehlt stattdessen die geplante
-// Wochen-Intensitaet - siehe intensityWeekScore. Erst dadurch wird die
-// Intensitaetslinie innerhalb einer Phase wellenfoermig statt flach.
 function intensityScore(
   min: number | null,
   max: number | null,
@@ -58,27 +53,6 @@ function intensityScore(
   const mid = min != null && max != null ? (min + max) / 2 : 8;
   const load = loadFactor > 0 ? loadFactor : 1;
   return load / Math.max(1, mid);
-}
-
-// Intensitaets-Score einer einzelnen Woche einer lastgesteuerten Phase. Die
-// geplante Last (Prozent des 1RM) wird auf denselben Massstab gebracht wie der
-// Phasen-Score aus dem Wiederholungsband: der Startwert der Rampe entspricht dem
-// Bandscore, alles darueber und darunter bewegt sich proportional. Sonst
-// spraenge die Linie beim Wechsel zwischen geplanten und ungeplanten Phasen.
-function intensityWeekScore(
-  phase: {
-    intensityStart?: number | null;
-    intensityEnd?: number | null;
-    weeks?: number | null;
-    deloadWeek?: number | null;
-  },
-  weekIndex: number,
-  bandScore: number,
-): number {
-  const start = phase.intensityStart;
-  const woche = intensityForWeek(phase, weekIndex);
-  if (woche == null || start == null || !(start > 0)) return bandScore;
-  return bandScore * (woche / start);
 }
 
 // Baut aus den Phasen einer aktiven Journey und der aktuellen Gesamtwoche
@@ -98,21 +72,11 @@ export function buildPeriodization(
   phases.forEach((p, pi) => {
     const pw = Math.max(1, p.weeks || 1);
     const iScore = intensityScore(p.repTargetMin, p.repTargetMax, p.loadFactor);
-    const lastPhase = {
-      intensityStart: p.intensityStart,
-      intensityEnd: p.intensityEnd,
-      weeks: p.weeks,
-      deloadWeek: p.deloadWeek,
-    };
-    const plantLast = plansLoad(lastPhase);
-    const rampe = intensityRange(p.intensityStart, p.intensityEnd);
     bands.push({
       name: p.name || `Phase ${pi + 1}`,
       start: gw,
       end: gw + pw - 1,
-      loadLabel: !isNeutralLoad(p.loadFactor)
-        ? loadPercent(p.loadFactor)
-        : rampe,
+      loadLabel: isNeutralLoad(p.loadFactor) ? null : loadPercent(p.loadFactor),
     });
     for (let wi = 0; wi < pw; wi++) {
       const vol = volumeForWeek(
@@ -125,15 +89,10 @@ export function buildPeriodization(
         wi,
         true,
       );
-      // Plant die Phase die Last, zeichnet die geplante Wochen-Intensitaet die
-      // Linie; sonst bleibt es beim Phasen-Score aus dem Wiederholungsband.
-      const intens = plantLast
-        ? intensityWeekScore(lastPhase, wi, iScore)
-        : iScore;
       weeks.push({
         g: gw,
         vol,
-        intens,
+        intens: iScore,
         deload: !!(p.deloadWeek && wi === p.deloadWeek - 1),
       });
       vMin = Math.min(vMin, vol);

@@ -23,16 +23,6 @@ export interface SeedJourneyPhase {
    * vor, dort steuert die Journey das Gewicht.
    */
   loadFactor: number;
-  /**
-   * Geplante Last der Phase in Prozent des 1RM zu Beginn und am Ende
-   * (Lastrampe, Issue #200). null = die Phase plant die Last nicht, dann
-   * bestimmt der Coach das Gewicht wie gewohnt. Gesetzt nur bei strength,
-   * power und test - dort arbeitet das Gewicht, waehrend Saetze und
-   * Wiederholungen konstant bleiben. Hypertrophie und Kraftausdauer bleiben
-   * beim Coach, dort ist Volumen der Motor.
-   */
-  intensityStart: number | null;
-  intensityEnd: number | null;
 }
 
 export interface SeedJourneyTemplate {
@@ -54,10 +44,10 @@ export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
     summary:
       "Beginnt bewusst leicht, um Technik und Belastbarkeit aufzubauen, steigert dann Volumen für Muskelaufbau, schaltet auf Maximalkraft um und schließt mit einer Testwoche für neue Bestwerte.",
     phases: [
-      { name: "Wiedereinstieg", focus: "reentry", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 5, repTargetMax: 8, loadFactor: 1, intensityStart: null, intensityEnd: null },
-      { name: "Hypertrophie", focus: "hypertrophy", weeks: 4, setsStart: 3, setsEnd: 5, deloadWeek: 4, repTargetMin: 8, repTargetMax: 12, loadFactor: 1, intensityStart: null, intensityEnd: null },
-      { name: "Maximalkraft", focus: "strength", weeks: 4, setsStart: 4, setsEnd: 4, deloadWeek: 4, repTargetMin: 4, repTargetMax: 6, loadFactor: 1, intensityStart: 77.5, intensityEnd: 82.5 },
-      { name: "Übergang / Test", focus: "test", weeks: 1, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadFactor: 1, intensityStart: 90, intensityEnd: 90 },
+      { name: "Wiedereinstieg", focus: "reentry", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 5, repTargetMax: 8, loadFactor: 1 },
+      { name: "Hypertrophie", focus: "hypertrophy", weeks: 5, setsStart: 2, setsEnd: 6, deloadWeek: 4, repTargetMin: 8, repTargetMax: 12, loadFactor: 1 },
+      { name: "Maximalkraft", focus: "strength", weeks: 5, setsStart: 3, setsEnd: 5, deloadWeek: 4, repTargetMin: 4, repTargetMax: 6, loadFactor: 1 },
+      { name: "Übergang / Test", focus: "test", weeks: 1, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadFactor: 1 },
     ],
   },
   {
@@ -69,10 +59,10 @@ export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
     summary:
       "Diese Journey gibt das Gewicht selbst vor: In den ersten drei Wochen trainierst du mit 65, 80 und 95 Prozent des Gewichts von vor der Pause. Der Coach darf in dieser Zeit nicht darüber hinausgehen und steuert nur die Wiederholungen; nach unten reagiert er wie gewohnt, wenn Schmerz oder schlechte Erholung dazwischenkommen. Ab Woche vier bist du wieder beim alten Gewicht und der Coach arbeitet wieder normal. Bei allen anderen Vorlagen bestimmt er das Gewicht aus deiner letzten Leistung.",
     phases: [
-      { name: "Tasten", focus: "reentry", weeks: 1, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 8, repTargetMax: 10, loadFactor: 0.65, intensityStart: null, intensityEnd: null },
-      { name: "Reaktivieren", focus: "reentry", weeks: 1, setsStart: 3, setsEnd: 3, deloadWeek: null, repTargetMin: 6, repTargetMax: 10, loadFactor: 0.8, intensityStart: null, intensityEnd: null },
-      { name: "Anschluss", focus: "hypertrophy", weeks: 1, setsStart: 3, setsEnd: 4, deloadWeek: null, repTargetMin: 6, repTargetMax: 10, loadFactor: 0.95, intensityStart: null, intensityEnd: null },
-      { name: "Standort", focus: "test", weeks: 1, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 3, repTargetMax: 6, loadFactor: 1, intensityStart: null, intensityEnd: null },
+      { name: "Tasten", focus: "reentry", weeks: 1, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 8, repTargetMax: 10, loadFactor: 0.65 },
+      { name: "Reaktivieren", focus: "reentry", weeks: 1, setsStart: 3, setsEnd: 3, deloadWeek: null, repTargetMin: 6, repTargetMax: 10, loadFactor: 0.8 },
+      { name: "Anschluss", focus: "hypertrophy", weeks: 1, setsStart: 3, setsEnd: 4, deloadWeek: null, repTargetMin: 6, repTargetMax: 10, loadFactor: 0.95 },
+      { name: "Standort", focus: "test", weeks: 1, setsStart: 2, setsEnd: 3, deloadWeek: null, repTargetMin: 3, repTargetMax: 6, loadFactor: 1 },
     ],
   },
   {
@@ -84,9 +74,9 @@ export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
     summary:
       "Zwei Akkumulationsblöcke mit ansteigendem Volumen im Bereich 8–12 Wiederholungen, getrennt durch eine Entlastung. Fokus auf Reizsetzung und Wachstum, ohne in den schweren Maximalkraftbereich zu gehen.",
     phases: [
-      { name: "Akkumulation I", focus: "hypertrophy", weeks: 4, setsStart: 3, setsEnd: 5, deloadWeek: null, repTargetMin: 8, repTargetMax: 12, loadFactor: 1, intensityStart: null, intensityEnd: null },
-      { name: "Deload", focus: "maintenance", weeks: 1, setsStart: 4, setsEnd: 4, deloadWeek: 1, repTargetMin: 8, repTargetMax: 10, loadFactor: 1, intensityStart: null, intensityEnd: null },
-      { name: "Akkumulation II", focus: "hypertrophy", weeks: 4, setsStart: 4, setsEnd: 5, deloadWeek: 4, repTargetMin: 8, repTargetMax: 12, loadFactor: 1, intensityStart: null, intensityEnd: null },
+      { name: "Akkumulation I", focus: "hypertrophy", weeks: 4, setsStart: 3, setsEnd: 6, deloadWeek: null, repTargetMin: 8, repTargetMax: 12, loadFactor: 1 },
+      { name: "Deload", focus: "maintenance", weeks: 1, setsStart: 2, setsEnd: 2, deloadWeek: 1, repTargetMin: 8, repTargetMax: 10, loadFactor: 1 },
+      { name: "Akkumulation II", focus: "hypertrophy", weeks: 4, setsStart: 4, setsEnd: 6, deloadWeek: 4, repTargetMin: 8, repTargetMax: 12, loadFactor: 1 },
     ],
   },
   {
@@ -98,9 +88,9 @@ export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
     summary:
       "Baut eine Kraftbasis im Bereich 4–6 Wiederholungen, intensiviert auf 3–5 mit höherer Last und reduziertem Volumen und gipfelt in einer Peak- und Testphase für neue Maxima.",
     phases: [
-      { name: "Kraftbasis", focus: "strength", weeks: 4, setsStart: 4, setsEnd: 4, deloadWeek: 4, repTargetMin: 4, repTargetMax: 6, loadFactor: 1, intensityStart: 77.5, intensityEnd: 82.5 },
-      { name: "Intensivierung", focus: "power", weeks: 3, setsStart: 3, setsEnd: 3, deloadWeek: 3, repTargetMin: 3, repTargetMax: 5, loadFactor: 1, intensityStart: 82.5, intensityEnd: 87.5 },
-      { name: "Peak & Test", focus: "test", weeks: 2, setsStart: 3, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadFactor: 1, intensityStart: 87.5, intensityEnd: 92.5 },
+      { name: "Kraftbasis", focus: "strength", weeks: 4, setsStart: 3, setsEnd: 5, deloadWeek: null, repTargetMin: 4, repTargetMax: 6, loadFactor: 1 },
+      { name: "Intensivierung", focus: "power", weeks: 3, setsStart: 3, setsEnd: 4, deloadWeek: 3, repTargetMin: 3, repTargetMax: 5, loadFactor: 1 },
+      { name: "Peak & Test", focus: "test", weeks: 2, setsStart: 2, setsEnd: 3, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadFactor: 1 },
     ],
   },
   {
@@ -112,8 +102,8 @@ export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
     summary:
       "Höhere Wiederholungszahlen (12–18) bei kürzeren Pausen über zwei Blöcke. Verbessert muskuläre Ausdauer und Belastungstoleranz, gute Brücke zu funktionellem Training und Kettlebell-Arbeit.",
     phases: [
-      { name: "Aufbau Kapazität", focus: "endurance", weeks: 4, setsStart: 3, setsEnd: 5, deloadWeek: 4, repTargetMin: 12, repTargetMax: 18, loadFactor: 1, intensityStart: null, intensityEnd: null },
-      { name: "Verdichtung", focus: "endurance", weeks: 3, setsStart: 4, setsEnd: 6, deloadWeek: 3, repTargetMin: 12, repTargetMax: 15, loadFactor: 1, intensityStart: null, intensityEnd: null },
+      { name: "Aufbau Kapazität", focus: "endurance", weeks: 3, setsStart: 3, setsEnd: 5, deloadWeek: null, repTargetMin: 12, repTargetMax: 18, loadFactor: 1 },
+      { name: "Verdichtung", focus: "endurance", weeks: 3, setsStart: 4, setsEnd: 6, deloadWeek: 3, repTargetMin: 12, repTargetMax: 15, loadFactor: 1 },
     ],
   },
   {
@@ -125,7 +115,7 @@ export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
     summary:
       "Konstantes, geringes Volumen ohne Progressionsdruck. Hält Kraft und Technik mit minimalem Aufwand. Beliebig wiederholbar, bis wieder ein Aufbau- oder Kraftblock ansteht.",
     phases: [
-      { name: "Erhaltung", focus: "maintenance", weeks: 4, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 6, repTargetMax: 10, loadFactor: 1, intensityStart: null, intensityEnd: null },
+      { name: "Erhaltung", focus: "maintenance", weeks: 4, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 6, repTargetMax: 10, loadFactor: 1 },
     ],
   },
   {
@@ -135,12 +125,11 @@ export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
     forWhom:
       "Solide Grundlage vorhanden, klares Quartalsziel. Regelmäßiges Training über drei Monate.",
     summary:
-      "Ein kompletter Quartalszyklus: ein Hypertrophie-Block in zwei Abschnitten für Muskelmasse, ein Maximalkraft-Block für Last und eine kurze Peak- und Testphase. Jeder Abschnitt endet mit einer Entlastungswoche, und zur Testwoche hin sinkt das Volumen, damit du ausgeruht misst.",
+      "Ein kompletter Quartalszyklus: ein Hypertrophie-Block für Muskelmasse, ein Maximalkraft-Block für Last und eine kurze Peak- und Testphase. Jeweils mit Entlastungswoche, sodass der Fortschritt planbar bleibt.",
     phases: [
-      { name: "Hypertrophie I", focus: "hypertrophy", weeks: 4, setsStart: 3, setsEnd: 5, deloadWeek: 4, repTargetMin: 8, repTargetMax: 12, loadFactor: 1, intensityStart: null, intensityEnd: null },
-      { name: "Hypertrophie II", focus: "hypertrophy", weeks: 3, setsStart: 4, setsEnd: 5, deloadWeek: 3, repTargetMin: 8, repTargetMax: 12, loadFactor: 1, intensityStart: null, intensityEnd: null },
-      { name: "Maximalkraft", focus: "strength", weeks: 4, setsStart: 4, setsEnd: 4, deloadWeek: 4, repTargetMin: 4, repTargetMax: 6, loadFactor: 1, intensityStart: 77.5, intensityEnd: 82.5 },
-      { name: "Peak & Test", focus: "test", weeks: 2, setsStart: 3, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadFactor: 1, intensityStart: 85, intensityEnd: 90 },
+      { name: "Hypertrophie", focus: "hypertrophy", weeks: 6, setsStart: 3, setsEnd: 6, deloadWeek: 6, repTargetMin: 8, repTargetMax: 12, loadFactor: 1 },
+      { name: "Maximalkraft", focus: "strength", weeks: 5, setsStart: 3, setsEnd: 5, deloadWeek: 5, repTargetMin: 4, repTargetMax: 6, loadFactor: 1 },
+      { name: "Peak & Test", focus: "test", weeks: 2, setsStart: 2, setsEnd: 3, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadFactor: 1 },
     ],
   },
   {
@@ -150,15 +139,14 @@ export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
     forWhom:
       "Wer langfristig plant und über ein halbes Jahr strukturiert auf deutlich mehr Kraft und Masse hinarbeiten will.",
     summary:
-      "Ein langfristiger Plan über sechs Monate: sanfter Einstieg, zwei Hypertrophie-Blöcke im Wechsel mit drei Kraftblöcken, die von Block zu Block schwerer werden, abgeschlossen durch eine Peak- und Testphase. Jeder Block endet nach drei Aufbauwochen mit einer Entlastungswoche.",
+      "Ein langfristiger Plan über sechs Monate: sanfter Einstieg, zwei Hypertrophie-Blöcke und zwei Kraftblöcke im Wechsel, abgeschlossen durch eine Peak- und Testphase. Mehrere Entlastungswochen halten die Belastung nachhaltig.",
     phases: [
-      { name: "Wiedereinstieg", focus: "reentry", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 5, repTargetMax: 8, loadFactor: 1, intensityStart: null, intensityEnd: null },
-      { name: "Hypertrophie I", focus: "hypertrophy", weeks: 4, setsStart: 3, setsEnd: 5, deloadWeek: 4, repTargetMin: 8, repTargetMax: 12, loadFactor: 1, intensityStart: null, intensityEnd: null },
-      { name: "Kraft I", focus: "strength", weeks: 4, setsStart: 4, setsEnd: 4, deloadWeek: 4, repTargetMin: 4, repTargetMax: 6, loadFactor: 1, intensityStart: 75, intensityEnd: 80 },
-      { name: "Hypertrophie II", focus: "hypertrophy", weeks: 4, setsStart: 4, setsEnd: 5, deloadWeek: 4, repTargetMin: 8, repTargetMax: 12, loadFactor: 1, intensityStart: null, intensityEnd: null },
-      { name: "Kraft II", focus: "strength", weeks: 4, setsStart: 4, setsEnd: 4, deloadWeek: 4, repTargetMin: 4, repTargetMax: 6, loadFactor: 1, intensityStart: 77.5, intensityEnd: 82.5 },
-      { name: "Maximalkraft", focus: "strength", weeks: 4, setsStart: 4, setsEnd: 4, deloadWeek: 4, repTargetMin: 3, repTargetMax: 5, loadFactor: 1, intensityStart: 82.5, intensityEnd: 87.5 },
-      { name: "Peak & Test", focus: "test", weeks: 2, setsStart: 3, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadFactor: 1, intensityStart: 87.5, intensityEnd: 92.5 },
+      { name: "Wiedereinstieg", focus: "reentry", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 5, repTargetMax: 8, loadFactor: 1 },
+      { name: "Hypertrophie I", focus: "hypertrophy", weeks: 5, setsStart: 3, setsEnd: 6, deloadWeek: 5, repTargetMin: 8, repTargetMax: 12, loadFactor: 1 },
+      { name: "Kraft I", focus: "strength", weeks: 4, setsStart: 3, setsEnd: 5, deloadWeek: 4, repTargetMin: 4, repTargetMax: 6, loadFactor: 1 },
+      { name: "Hypertrophie II", focus: "hypertrophy", weeks: 5, setsStart: 4, setsEnd: 6, deloadWeek: 5, repTargetMin: 8, repTargetMax: 12, loadFactor: 1 },
+      { name: "Maximalkraft", focus: "strength", weeks: 6, setsStart: 3, setsEnd: 5, deloadWeek: 6, repTargetMin: 3, repTargetMax: 5, loadFactor: 1 },
+      { name: "Peak & Test", focus: "test", weeks: 2, setsStart: 2, setsEnd: 3, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadFactor: 1 },
     ],
   },
 ];

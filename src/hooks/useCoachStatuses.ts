@@ -105,7 +105,6 @@ export function useCoachStatuses(): UseCoachStatuses {
         targetScore: e.target_score,
         barId: e.bar_id,
         referenceWeight: e.reference_weight,
-        referencePhaseId: e.reference_phase_id,
       };
       const lastEntry = lastEntryByExercise[e.id] ?? null;
       const hadPriorData = workSets(lastEntry).length > 0;
@@ -121,9 +120,6 @@ export function useCoachStatuses(): UseCoachStatuses {
         repTarget,
         freeMode,
         loadFactor: ph.loadFactor,
-        loadShare: ph.loadShare,
-        phaseId: ph.phaseId,
-        isDeloadWeek: ph.isDeloadWeek,
       });
       // Denselben Phasenwechsel-Einstieg anwenden wie der Live-Aufbau, sonst
       // zeigt die Statusanzeige bei getrennten Repbaendern ein anderes Gewicht
@@ -137,10 +133,6 @@ export function useCoachStatuses(): UseCoachStatuses {
         lastEntry,
         plates,
         loadFactor: ph.loadFactor,
-        loadShare: ph.loadShare,
-        intensityStart: ph.intensityStart,
-        phaseId: ph.phaseId,
-        isDeloadWeek: ph.isDeloadWeek,
         suggestion,
       });
       out[e.id] = coachStatusFromSuggestion(

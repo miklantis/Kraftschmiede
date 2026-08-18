@@ -147,10 +147,6 @@ export async function writeJourneyStart(
     rep_target_min: p.rep_target_min,
     rep_target_max: p.rep_target_max,
     load_factor: p.load_factor,
-    // Lastrampe der Vorlage mitkopieren, sonst verliert die gestartete Journey
-    // genau die Werte, die ihre Kraftphasen ausmachen.
-    intensity_start: p.intensity_start,
-    intensity_end: p.intensity_end,
     position: i,
   }));
   await store.insertPhasen(phaseRows);

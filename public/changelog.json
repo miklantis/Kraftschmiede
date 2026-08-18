@@ -1,85 +1,12 @@
 {
   "versions": [
     {
-      "version": "1.35.1",
+      "version": "1.36.0",
       "date": "2026-08-18",
       "changes": [
-        "Der Hinweis zur geplanten Last sagt jetzt, was wirklich passiert. Er behauptete noch \"Das Gewicht gibt die Phase vor\" – das galt nur, solange die Last gedeckelt war. Jetzt steht dort \"Geplante Mindestlast\", und dass der Coach normal weiter steigert, wenn du mehr schaffst. Der Text erschien im Start-Popup und im Block zur aktuellen Phase; beide sind angepasst.",
-        "Passend dazu heisst die Zeile in der Phasenliste \"Mindestlast / Woche\" statt \"Geplante Last / Woche\".",
-        "Der Text der Entlastungswoche bleibt unveraendert – dort gibt die Phase das Gewicht tatsaechlich vor."
-      ]
-    },
-    {
-      "version": "1.35.0",
-      "date": "2026-08-18",
-      "changes": [
-        "Die geplante Last einer Kraftphase bremst dich nicht mehr aus. Bisher war sie eine Obergrenze: Auch wenn du dein Wiederholungsziel jede Woche erreicht hast, blieb das Gewicht stehen, weil der Plan noch nicht so weit war. Ab sofort ist sie eine Untergrenze – die Phase sorgt dafuer, dass du mindestens so schwer trainierst wie geplant, und wenn du mehr schaffst, steigert der Coach ganz normal weiter.",
-        "Der Grund: Die Lehrbuch-Rampe steigt rund ein Kilo pro Woche, dein Coach will nach einer sauberen Einheit zweieinhalb. Sie ist erst bei sehr hohen Gewichten schneller als dein Fortschritt – bis dahin haette sie dich nur zurueckgehalten. Jetzt fuehrt automatisch derjenige, der schneller ist.",
-        "Die Entlastungswoche deckelt weiterhin. Dort ist das leichtere Gewicht der ganze Sinn, und daran aendert sich nichts.",
-        "\"Wiederaufbau nach Fasten\" bleibt unveraendert: Nach einer Pause soll die Vorgabe gerade nicht ueberschritten werden, dort bleibt sie eine echte Obergrenze."
-      ]
-    },
-    {
-      "version": "1.34.2",
-      "date": "2026-08-18",
-      "changes": [
-        "Nur Dokumentation: Die Entscheidung hinter der neuen Lastrampe ist jetzt festgehalten, damit spaeter nachvollziehbar bleibt, warum die Kraftphasen so rechnen wie sie rechnen. An der App aendert sich nichts."
-      ]
-    },
-    {
-      "version": "1.34.1",
-      "date": "2026-08-18",
-      "changes": [
-        "Die geplante Last ist jetzt ueberall sichtbar: Die Phasenliste zeigt die Spanne einer Phase (\"77,5 % → 82,5 %\"), und die laufende Phase sagt dir, bei wie viel Prozent deines Maximums die aktuelle Woche liegt.",
-        "Die Periodisierungskurve zeichnet die Intensitaet endlich wochengenau statt pro Phase flach - der Anstieg ueber den Block und der Einbruch in der Entlastungswoche sind jetzt zu sehen.",
-        "Fehlt einer Uebung ein 1RM-Test, sagt die Karte in der Einheit das direkt: dort steuert der Coach weiter das Gewicht.",
-        "Auch die Rueckschau abgeschlossener Journeys haelt die geplante Last je Phase fest."
-      ]
-    },
-    {
-      "version": "1.34.0",
-      "date": "2026-08-18",
-      "changes": [
-        "Deine Kraft-, Power- und Testphasen geben jetzt wirklich die Last vor. Eine Maximalkraftphase startet bei 77,5 Prozent deines Maximums und arbeitet sich auf 82,5 Prozent hoch; engere Wiederholungsbaender liegen entsprechend schwerer, die Testphase geht bis nahe an dein Maximum.",
-        "In der Entlastungswoche faellt die Last deutlich zurueck - rund 70 statt 82,5 Prozent. Zusammen mit der halbierten Satzzahl ist das jetzt eine echte Entlastung statt einer etwas leichteren Trainingswoche.",
-        "Deine laufende Journey wurde mitgezogen: Die Maximalkraftphase und die Testwoche fuehren ab sofort ihre Lastrampe. Die Wochenaufteilung bleibt unveraendert - stehst du mitten in der Kraftphase, kann sich das vorgeschlagene Gewicht dort einmalig verschieben.",
-        "Hypertrophie, Kraftausdauer und Wiedereinstieg bleiben unveraendert beim Coach - dort ist das Volumen der Motor. \"Wiederaufbau nach Fasten\" arbeitet weiter wie bisher."
-      ]
-    },
-    {
-      "version": "1.33.0",
-      "date": "2026-08-18",
-      "changes": [
-        "Zweites Steuerrad fuer deine Trainingsphasen: Eine Kraft-, Power- oder Testphase kann jetzt die Last selbst vorgeben, statt sie allein dem Coach zu ueberlassen. Sie legt beim Start ihren Bezugspunkt aus deinem Maximum fest, steigert das Gewicht Woche fuer Woche und nimmt es in der Entlastungswoche deutlich zurueck.",
-        "Der Coach bleibt zustaendig fuer die Wiederholungen und reagiert weiterhin nach unten, wenn eine Einheit zu schwer war. Passiert das, wandert der Bezugspunkt mit nach unten - die naechste Woche setzt dann auf dem Niveau auf, das du tatsaechlich geschafft hast, statt wieder gegen dieselbe Wand zu laufen.",
-        "Fehlt fuer eine Uebung ein Maximum, steuert der Coach sie unveraendert weiter.",
-        "Sichtbar wird das, sobald die Vorlagen die neuen Werte fuehren; bis dahin aendert sich an deinem Training nichts."
-      ]
-    },
-    {
-      "version": "1.32.1",
-      "date": "2026-08-18",
-      "changes": [
-        "Vorarbeit fuer geplante Trainingslasten: Eine Phase kann jetzt hinterlegen, mit wie viel Prozent deines Maximums sie beginnt und endet. Sichtbar aendert sich noch nichts – bisher nutzt keine Vorlage die neue Moeglichkeit."
-      ]
-    },
-    {
-      "version": "1.32.0",
-      "date": "2026-08-18",
-      "changes": [
-        "Die Entlastungswoche entlastet jetzt wirklich: Statt drei Vierteln bleibt die Hälfte des Volumens der Vorwoche stehen, und sie wirkt auch in Phasen mit gleichbleibender Satzzahl – bisher lief sie dort ins Leere.",
-        "Die Journey-Vorlagen halten jetzt, was ihre Phasennamen versprechen. In Kraft-, Power- und Testphasen bleibt die Satzzahl über die ganze Phase gleich, dort arbeitet nur noch das Gewicht. Hypertrophiephasen steigern weiterhin das Volumen, aber flacher und ohne Sprünge.",
-        "Kein Block läuft mehr fünf oder sechs Wochen am Stück durch: Nach höchstens vier Aufbauwochen kommt eine Entlastungswoche.",
-        "Vor einer Testwoche sinkt das Volumen jetzt, statt zu steigen – du misst also ausgeruht statt müde.",
-        "Dadurch ändern sich einzelne Laufzeiten: \"Wiedereinstieg & Aufbau\" dauert 11 statt 13 Wochen, \"Kraftausdauer / Kondition\" 7 statt 6, und die \"6-Monats-Periodisierung\" bekommt einen zusätzlichen Kraftblock, bleibt aber bei 24 Wochen.",
-        "Deine laufende Journey wurde mitgezogen: Die Wochenaufteilung bleibt wie geplant, damit sich nichts unter dir verschiebt, die Satzzahlen folgen ab sofort den neuen Regeln."
-      ]
-    },
-    {
-      "version": "1.31.2",
-      "date": "2026-08-18",
-      "changes": [
-        "In der Workouts-Liste steht jetzt neben jedem Namen in Klammern, wie oft du das Workout schon trainiert hast – gezählt werden abgeschlossene Einheiten, egal ob das Workout aktiv oder archiviert ist."
+        "Alle Änderungen dieses Tages wurden auf deinen Wunsch zurückgenommen. Die App ist wieder auf dem Stand von gestern Abend.",
+        "Damit sind wieder weg: die geplante Last der Phase (die Prozentangaben und die Zeile \"Mindestlast / Woche\"), der umgebaute Belastungsverlauf der Journey-Vorlagen und die Trainingshäufigkeit neben dem Workout-Namen.",
+        "Auch deine Daten sind zurückgesetzt: Die Vorlagen haben wieder ihren alten Verlauf, und deine laufende Journey trainiert wieder mit den Satzzahlen von vorher. Deine Einheiten, Notizen und Messungen sind davon nicht berührt."
       ]
     },
     {
@@ -129,21 +56,21 @@
       "version": "1.28.2",
       "date": "2026-08-17",
       "changes": [
-        "Beim Auf- und Zuklappen einer Einheit im Übungs-Verlauf springt die Seite nicht mehr: die angetippte Zeile bleibt genau an ihrer Stelle auf dem Bildschirm stehen."
+        "Beim Auf- und Zuklappen einer Einheit im \u00dcbungs-Verlauf springt die Seite nicht mehr: die angetippte Zeile bleibt genau an ihrer Stelle auf dem Bildschirm stehen."
       ]
     },
     {
       "version": "1.28.1",
       "date": "2026-08-17",
       "changes": [
-        "Beim Aufklappen einer Einheit im Übungs-Verlauf bleiben das Gewicht rechts und der Pfeil jetzt oben auf Höhe des Datums stehen, statt in die Mitte der aufgeklappten Sätze zu rutschen."
+        "Beim Aufklappen einer Einheit im \u00dcbungs-Verlauf bleiben das Gewicht rechts und der Pfeil jetzt oben auf H\u00f6he des Datums stehen, statt in die Mitte der aufgeklappten S\u00e4tze zu rutschen."
       ]
     },
     {
       "version": "1.28.0",
       "date": "2026-08-17",
       "changes": [
-        "Der Verlauf auf der Übungs-Detailseite lässt sich jetzt aufklappen: Ein Tipp auf eine Einheit zeigt jeden einzelnen Satz mit Gewicht und Wiederholungen – und rechts daneben den Score als Zahl im runden Feld, genau wie die Score-Skala in den Einstellungen. So siehst du auf einen Blick, wie hart die Einheit war und an welchem Satz es kippte."
+        "Der Verlauf auf der \u00dcbungs-Detailseite l\u00e4sst sich jetzt aufklappen: Ein Tipp auf eine Einheit zeigt jeden einzelnen Satz mit Gewicht und Wiederholungen \u2013 und rechts daneben den Score als Zahl im runden Feld, genau wie die Score-Skala in den Einstellungen. So siehst du auf einen Blick, wie hart die Einheit war und an welchem Satz es kippte."
       ]
     },
     {

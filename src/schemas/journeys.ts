@@ -50,10 +50,6 @@ export const phaseRow = z.object({
   rep_target_min: z.number().int().nullable(),
   rep_target_max: z.number().int().nullable(),
   load_factor: z.number(),
-  // Geplante Intensitaet der Phase in Prozent des 1RM (Beginn/Ende der Rampe);
-  // null = die Phase plant die Last nicht, der Coach steuert das Gewicht.
-  intensity_start: z.number().nullable(),
-  intensity_end: z.number().nullable(),
   position: z.number().int(),
 });
 export type PhaseRow = z.infer<typeof phaseRow>;
@@ -65,8 +61,6 @@ export const phaseInsert = phaseRow
     rep_target_min: true,
     rep_target_max: true,
     load_factor: true,
-    intensity_start: true,
-    intensity_end: true,
     position: true,
   });
 export type PhaseInsert = z.infer<typeof phaseInsert>;
