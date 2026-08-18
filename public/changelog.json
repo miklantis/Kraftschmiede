@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.37.0",
+      "date": "2026-08-18",
+      "changes": [
+        "Auf der Seite \"Journey wählen\" kannst du dir jetzt je Vorlage den kompletten Phasen-Ablauf ansehen: Knopf \"Phasen ansehen\" auf der Karte aufklappen.",
+        "Der Block zeigt dieselben Angaben wie die Journey-Seite: pro Phase Name, Dauer, Wiederholungsband, Sätze bzw. Satz-Rampe, Entlastungswoche und - falls die Vorlage damit arbeitet - die vorgegebene Last.",
+        "Da noch keine Journey läuft, ist hier keine Phase als aktuell oder erledigt markiert; auf dem Handy sind alle Phasen aufgeklappt."
+      ]
+    },
+    {
       "version": "1.36.1",
       "date": "2026-08-18",
       "changes": [
@@ -66,21 +75,21 @@
       "version": "1.28.2",
       "date": "2026-08-17",
       "changes": [
-        "Beim Auf- und Zuklappen einer Einheit im \u00dcbungs-Verlauf springt die Seite nicht mehr: die angetippte Zeile bleibt genau an ihrer Stelle auf dem Bildschirm stehen."
+        "Beim Auf- und Zuklappen einer Einheit im Übungs-Verlauf springt die Seite nicht mehr: die angetippte Zeile bleibt genau an ihrer Stelle auf dem Bildschirm stehen."
       ]
     },
     {
       "version": "1.28.1",
       "date": "2026-08-17",
       "changes": [
-        "Beim Aufklappen einer Einheit im \u00dcbungs-Verlauf bleiben das Gewicht rechts und der Pfeil jetzt oben auf H\u00f6he des Datums stehen, statt in die Mitte der aufgeklappten S\u00e4tze zu rutschen."
+        "Beim Aufklappen einer Einheit im Übungs-Verlauf bleiben das Gewicht rechts und der Pfeil jetzt oben auf Höhe des Datums stehen, statt in die Mitte der aufgeklappten Sätze zu rutschen."
       ]
     },
     {
       "version": "1.28.0",
       "date": "2026-08-17",
       "changes": [
-        "Der Verlauf auf der \u00dcbungs-Detailseite l\u00e4sst sich jetzt aufklappen: Ein Tipp auf eine Einheit zeigt jeden einzelnen Satz mit Gewicht und Wiederholungen \u2013 und rechts daneben den Score als Zahl im runden Feld, genau wie die Score-Skala in den Einstellungen. So siehst du auf einen Blick, wie hart die Einheit war und an welchem Satz es kippte."
+        "Der Verlauf auf der Übungs-Detailseite lässt sich jetzt aufklappen: Ein Tipp auf eine Einheit zeigt jeden einzelnen Satz mit Gewicht und Wiederholungen – und rechts daneben den Score als Zahl im runden Feld, genau wie die Score-Skala in den Einstellungen. So siehst du auf einen Blick, wie hart die Einheit war und an welchem Satz es kippte."
       ]
     },
     {

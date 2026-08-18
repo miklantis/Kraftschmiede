@@ -10,13 +10,12 @@ function DetailRows({
   phase: PhaseView;
   layout: "grid" | "list";
 }): React.ReactElement {
+  // Heller Grund nur auf der akzent-getoenten Karte der laufenden Phase; sonst
+  // gedeckt, damit der Block auf weisser Karte ueberhaupt sichtbar bleibt.
+  const tone = phase.isCurrent ? "bg-white/70" : "bg-muted";
   const box =
     "flex flex-col gap-2.5 rounded-[12px] p-3.5 " +
-    (layout === "grid"
-      ? phase.isCurrent
-        ? "mt-3.5 bg-white/70"
-        : "mt-3.5 bg-muted"
-      : "bg-white/70");
+    (layout === "grid" ? "mt-3.5 " + tone : tone);
   return (
     <div className={box}>
       {phase.detail.map((d) => (
@@ -58,11 +57,18 @@ function LoadNote({ text }: { text: string }): React.ReactElement {
 // Phasen einer Journey. Desktop: Raster mit bis zu vier Spalten, jede Karte mit
 // Detailzeilen. Mobile: Liste, nur die aktuelle Phase zeigt Details. Optik aus
 // V1 (jph): aktuelle Phase akzent-getoent, kuenftige gedimmt.
+//
+// variant "preview" ist die Vorlagenliste: dort laeuft keine Journey, also gibt
+// es keine aufgeklappte aktuelle Phase - auf Mobile zeigen deshalb alle Phasen
+// ihre Detailzeilen.
 export function PhaseList({
   phases,
+  variant = "journey",
 }: {
   phases: PhaseView[];
+  variant?: "journey" | "preview";
 }): React.ReactElement {
+  const expandAll = variant === "preview";
   const cols = Math.min(Math.max(phases.length, 1), 4);
   return (
     <>
@@ -103,7 +109,8 @@ export function PhaseList({
         ))}
       </div>
 
-      {/* Mobile: Liste, nur die aktuelle Phase aufgeklappt. */}
+      {/* Mobile: Liste; in der Journey nur die aktuelle Phase aufgeklappt, in der
+          Vorschau alle. */}
       <div className="flex flex-col gap-2.5 min-[960px]:hidden">
         {phases.map((p, i) => (
           <div
@@ -131,7 +138,7 @@ export function PhaseList({
                 <div className="text-[12px] text-foreground-subtle">{p.meta}</div>
               </div>
             </div>
-            {p.isCurrent && (
+            {(p.isCurrent || expandAll) && (
               <div className="mx-3.5 mb-3.5">
                 {p.loadNote !== null && (
                   <div className="mb-2.5">

@@ -1,7 +1,8 @@
 import type { PhaseState } from "@/lib/journey";
 
 // Runder Statuspunkt je Phase. Vergangen: dunkelgrau mit Haken; aktuell:
-// Akzentgruen mit weissem Innenpunkt; kuenftig: hellgrau mit weissem Innenpunkt.
+// Akzentgruen mit weissem Innenpunkt; kuenftig und Vorschau (Vorlagenliste,
+// ohne laufende Journey): hellgrau mit weissem Innenpunkt.
 // Farben ueber Tokens (--foreground-secondary / --primary / --marker-idle).
 export function PhaseDot({
   state,
@@ -19,7 +20,7 @@ export function PhaseDot({
       </span>
     );
   }
-  if (state === "future") {
+  if (state === "future" || state === "preview") {
     return (
       <span className={base + " bg-marker-idle"}>
         <span className="size-2.5 rounded-full bg-white" />
