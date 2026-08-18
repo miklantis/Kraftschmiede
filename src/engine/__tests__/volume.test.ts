@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 import { deloadCheck, rampSets, volumeForWeek } from "../volume";
 import type { VolumePhase } from "../types";
 
-describe("volumeForWeek – Rampe & Deload (Paritaet zu V1)", () => {
+describe("volumeForWeek – Rampe & Deload", () => {
   // Phase A: 6 Wochen, Satz-Rampe 3..6, Deload in Woche 6 (letzte Woche).
   const A: VolumePhase = { setsStart: 3, setsEnd: 6, weeks: 6, deloadWeek: 6 };
   it("A W5 (Rampe vor Deload) = 5", () => {
     expect(volumeForWeek(A, 4, true)).toBe(5);
   });
-  it("A W6 Deload greift (75% der Vorwoche) = 4", () => {
-    expect(volumeForWeek(A, 5, true)).toBe(4);
+  it("A W6 Deload greift (50% der Vorwoche) = 3", () => {
+    expect(volumeForWeek(A, 5, true)).toBe(3);
   });
 
   // Phase B: 5 Wochen, Satz-Rampe 2..4, Deload in Woche 4 (vorletzte Woche).
@@ -25,6 +25,24 @@ describe("volumeForWeek – Rampe & Deload (Paritaet zu V1)", () => {
   });
   it("B W4 Deload bleibt von Markern unberuehrt = 2", () => {
     expect(volumeForWeek(B, 3, false)).toBe(2);
+  });
+
+  // Phase D: konstante Satzzahl (setsStart == setsEnd), wie sie die Kraft- und
+  // Testphasen der Vorlagen fahren. Frueher lief die Deload-Woche hier ins Leere,
+  // weil die Untergrenze setsStart immer griff.
+  const D: VolumePhase = { setsStart: 4, setsEnd: 4, weeks: 4, deloadWeek: 4 };
+  it("D W3 konstante Rampe = 4", () => {
+    expect(volumeForWeek(D, 2, true)).toBe(4);
+  });
+  it("D W4 Deload senkt trotz konstanter Satzzahl = 2", () => {
+    expect(volumeForWeek(D, 3, true)).toBe(2);
+  });
+
+  // Phase E: kleinste denkbare Phase - die Entlastung darf die Uebung nicht
+  // ganz aus dem Plan nehmen.
+  const E: VolumePhase = { setsStart: 2, setsEnd: 2, weeks: 1, deloadWeek: 1 };
+  it("E Deload faellt nie unter einen Arbeitssatz", () => {
+    expect(volumeForWeek(E, 0, true)).toBe(1);
   });
 
   // Phase ohne Deload: keine Senkung, Rampe steigt.
