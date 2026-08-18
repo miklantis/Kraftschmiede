@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.32.1",
+      "date": "2026-08-18",
+      "changes": [
+        "Vorarbeit fuer geplante Trainingslasten: Eine Phase kann jetzt hinterlegen, mit wie viel Prozent deines Maximums sie beginnt und endet. Sichtbar aendert sich noch nichts – bisher nutzt keine Vorlage die neue Moeglichkeit."
+      ]
+    },
+    {
       "version": "1.32.0",
       "date": "2026-08-18",
       "changes": [

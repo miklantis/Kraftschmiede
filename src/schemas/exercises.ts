@@ -36,6 +36,9 @@ export const exerciseRow = z.object({
   // Eingefrorenes Arbeitsgewicht vom Start einer Lastfaktor-Journey; null,
   // solange keine solche Journey laeuft.
   reference_weight: z.number().nullable(),
+  // Phase, zu der das Referenzgewicht gehoert. Erst damit laesst sich
+  // "Anker dieser Phase" von "noch kein Anker" unterscheiden.
+  reference_phase_id: uuid.nullable(),
   recovery_hours: z.number().int(),
   rm: z.number().nullable(),
   rm_as_of: isoDate.nullable(),
@@ -58,6 +61,7 @@ export const exerciseInsert = exerciseRow.omit({ id: true }).partial({
   target_score: true,
   work_weight: true,
   reference_weight: true,
+  reference_phase_id: true,
   recovery_hours: true,
   rm: true,
   rm_as_of: true,
