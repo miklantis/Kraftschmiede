@@ -105,6 +105,9 @@ export interface LiveEntry {
   tag: string;
   /** Einmaliger Phasenwechsel-Einstieg: Startgewicht aus dem 1RM statt Progression. */
   phaseEntry?: boolean;
+  /** Die Phase plant ihre Last, diese Uebung bleibt aber beim Coach, weil ihr
+   *  ein getestetes 1RM fehlt. Traegt den erklaerenden Hinweis auf der Karte. */
+  noRmForLoad?: boolean;
   /** Stange (nur Langhantel) - aufgeloest fuer Anzeige und Scheiben-Aufteilung. */
   barId: string | null;
   barName: string | null;
@@ -396,6 +399,7 @@ function parseEntries(v: unknown): LiveEntry[] {
         equipment,
         tag: str(o.tag),
         phaseEntry: bool(o.phaseEntry),
+        noRmForLoad: bool(o.noRmForLoad),
         barId: typeof o.barId === "string" ? o.barId : null,
         barName: typeof o.barName === "string" ? o.barName : null,
         barWeight: typeof o.barWeight === "number" ? o.barWeight : null,

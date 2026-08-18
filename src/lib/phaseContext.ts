@@ -10,7 +10,7 @@
 import { journeyPlacement, phaseRepBand } from "@/engine";
 import type { JourneySession, Placement } from "@/engine";
 import type { VolumePhase } from "@/engine/types";
-import { loadFactorNote, usesLoadFactor } from "@/lib/loadFactor";
+import { intensityNote, loadFactorNote, usesLoadFactor } from "@/lib/loadFactor";
 import { intensityForWeek, loadShareForWeek, plansLoad } from "@/engine/intensity";
 import type { JourneyRow, PhaseRow } from "@/schemas";
 
@@ -140,6 +140,10 @@ export function derivePhaseContext(
         loadShare = loadShareForWeek(intensityPhase, weekInPhase);
         intensityPct = intensityForWeek(intensityPhase, weekInPhase);
         intensityStart = phase.intensity_start;
+        loadNote = intensityNote(
+          intensityPct,
+          phase.deload_week != null && weekInPhase === phase.deload_week - 1,
+        );
       }
     }
   }

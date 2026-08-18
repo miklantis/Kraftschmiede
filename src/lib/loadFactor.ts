@@ -1,5 +1,7 @@
-// Anzeige-Seite des Lastfaktors (Journey "Wiederaufbau nach Fasten"). Die
-// Rechenseite liegt in coach.ts/engine; hier entstehen nur die Texte, damit
+// Anzeige-Seite der vorgegebenen Last. Zwei Wege, die nie an derselben Phase
+// haengen: der Lastfaktor je Phase (Journey "Wiederaufbau nach Fasten") und die
+// Lastrampe ueber die Phasenwochen (Kraft-, Power- und Testphasen, Issue #200).
+// Die Rechenseite liegt in coach.ts/engine; hier entstehen nur die Texte, damit
 // Journey-Seite, Periodisierungskurve und Trainingsbildschirm dieselbe Sprache
 // sprechen. Reine Funktionen ohne DB-/DOM-Bezug.
 
@@ -39,4 +41,47 @@ export function loadFactorNote(
     return `Volle Last: ${pct} deines Standes vor der Pause. Danach endet die Vorgabe und der Coach steuert wieder normal.`;
   }
   return `Volle Last: ${pct} deines Standes vor der Pause.`;
+}
+
+// ---- Lastrampe der Phase ----------------------------------------------------
+
+// Prozentangabe der geplanten Last ("80 %"), auf eine halbe Stufe gerundet -
+// die Rampen der Vorlagen arbeiten in Schritten von 2,5 Prozentpunkten, und
+// eine Woche mittendrin landet sonst auf krummen Zahlen.
+export function intensityPercent(pct: number): string {
+  return String(Math.round(pct * 2) / 2).replace(".", ",") + " %";
+}
+
+// Rampe einer Phase als Spanne ("77,5 → 82,5 %"), fuer die Phasenliste. Bei
+// gleichem Start- und Endwert nur die eine Zahl.
+export function intensityRange(
+  start: number | null | undefined,
+  end: number | null | undefined,
+): string | null {
+  if (start == null || end == null) return null;
+  if (Math.abs(start - end) < 1e-9) return intensityPercent(start);
+  return `${intensityPercent(start)} \u2192 ${intensityPercent(end)}`;
+}
+
+// Hinweistext zur laufenden Woche einer lastgesteuerten Phase. Er erklaert,
+// warum das Gewicht vorgegeben ist und wer noch was steuert - sonst wirkt eine
+// gedeckelte Last wie ein Fehler des Coaches. `isDeload` senkt den Ton: dort
+// ist der Rueckgang gewollt und keine Schwaeche.
+export function intensityNote(
+  pct: number | null | undefined,
+  isDeload: boolean,
+): string | null {
+  if (pct == null) return null;
+  const wert = intensityPercent(pct);
+  if (isDeload) {
+    return `Entlastungswoche: ${wert} deines Maximums. Die leichte Last ist gewollt - naechste Woche geht es wieder hoch.`;
+  }
+  return `Geplante Last dieser Woche: ${wert} deines Maximums. Das Gewicht gibt die Phase vor, die Wiederholungen steuert der Coach.`;
+}
+
+// Hinweis fuer eine Uebung, die von der Lastrampe ausgenommen bleibt, weil kein
+// getestetes Maximum vorliegt. Ohne diesen Satz wirkt es wie ein Fehler, dass
+// eine einzelne Uebung der Vorgabe nicht folgt.
+export function intensityMissingRmNote(): string {
+  return "Fuer diese Uebung fehlt ein 1RM-Test - hier steuert der Coach das Gewicht wie gewohnt.";
 }

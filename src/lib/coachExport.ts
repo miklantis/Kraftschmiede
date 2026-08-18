@@ -46,6 +46,9 @@ export interface CoachPhase {
   /** Vorgegebene Last der Phase als Anteil des Referenzgewichts; nur wenn die
    *  Journey damit arbeitet (sonst weggelassen). */
   loadFactor?: number;
+  /** Geplante Last der Phase in Prozent des 1RM (nur bei Lastrampe). */
+  intensityStart?: number;
+  intensityEnd?: number;
 }
 
 export interface CoachJourney {
@@ -376,6 +379,14 @@ export function buildCoachExport(
       ...(isNeutralLoad(num(p, "load_factor"))
         ? {}
         : { loadFactor: num(p, "load_factor") ?? 1 }),
+      // Lastrampe nur bei Phasen, die ihre Last planen - sonst traegt der
+      // Export in jeder Hypertrophiephase zwei leere Felder.
+      ...(num(p, "intensity_start") != null && num(p, "intensity_end") != null
+        ? {
+            intensityStart: num(p, "intensity_start") ?? 0,
+            intensityEnd: num(p, "intensity_end") ?? 0,
+          }
+        : {}),
     }));
 
     // aktuelle Woche/Phase ueber die getestete Placement-Engine
