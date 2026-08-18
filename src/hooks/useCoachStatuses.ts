@@ -123,6 +123,7 @@ export function useCoachStatuses(): UseCoachStatuses {
         loadFactor: ph.loadFactor,
         loadShare: ph.loadShare,
         phaseId: ph.phaseId,
+        isDeloadWeek: ph.isDeloadWeek,
       });
       // Denselben Phasenwechsel-Einstieg anwenden wie der Live-Aufbau, sonst
       // zeigt die Statusanzeige bei getrennten Repbaendern ein anderes Gewicht
@@ -139,6 +140,7 @@ export function useCoachStatuses(): UseCoachStatuses {
         loadShare: ph.loadShare,
         intensityStart: ph.intensityStart,
         phaseId: ph.phaseId,
+        isDeloadWeek: ph.isDeloadWeek,
         suggestion,
       });
       out[e.id] = coachStatusFromSuggestion(

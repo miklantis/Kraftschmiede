@@ -1,6 +1,6 @@
 # ADR-0016 – Lastrampe der Phase als zweites Steuerrad
 
-**Status:** akzeptiert
+**Status:** akzeptiert, Festlegung 3 überarbeitet am 2026-08-18 (siehe Nachtrag)
 **Datum:** 2026-08-18
 
 ## Kontext
@@ -49,11 +49,11 @@ für eine Kraftphase in Monat drei zu alt. Damit der Code „Anker dieser Phase"
 kein Anker" unterscheiden kann, hängt am Anker die Phase (`reference_phase_id`). Ohne
 diesen Bezug würde die Last pro Einheit statt pro Woche steigen.
 
-**3. Senkt der Coach, zieht die Rampe mit nach unten.** Der Anker wandert beim Beenden der
-Einheit proportional auf den tatsächlich gestemmten Stand – aber nur nach unten. Sonst
-liefe man in der Folgewoche wieder gegen dieselbe zu schwere Wand. Nach oben bleibt er
-stehen: ein guter Tag überholt den Plan nicht, sonst wäre die Rampe wieder eine
-Doppelprogression mit anderem Namen. Die Regel steht an einer Stelle (`katalogPatch`).
+**3. Der Anker folgt dem tatsächlich gestemmten Stand.** ~~Nur nach unten~~ – siehe Nachtrag
+unten. In beide Richtungen: nach unten, damit man in der Folgewoche nicht wieder gegen
+dieselbe zu schwere Wand läuft; nach oben, weil die Rampe in den Aufbauwochen nur noch
+Untergrenze ist und die Entlastungswoche sonst von einem veralteten Bezugspunkt rechnet. Die
+Regel steht an einer Stelle (`katalogPatch`).
 
 **4. Nur `strength`, `power` und `test`.** In der Hypertrophie ist das Volumen der Motor,
 dort passt die Doppelprogression. Das folgt derselben Begründung wie ADR-0015 (Moesgaard
@@ -93,3 +93,50 @@ ergibt rund 70 Prozent und trifft damit den Lehrbuch-Wert.
 - Bompa, Buzzichelli: *Periodization – Theory and Methodology of Training*, 6. Auflage,
   Kapitel 10 (Periodisierung der Kraft, MxS-I/MxS-II, Buffer, 3:1-Zuschnitt).
 - Moesgaard et al. 2022 (bereits in ADR-0015 herangezogen).
+
+---
+
+## Nachtrag 2026-08-18: Untergrenze statt Deckel
+
+Festlegung 3 hatte eine Nebenwirkung, die im Konzept-Gespräch nicht benannt war. Weil die
+Rampe deckelte (`cap`), hielt sie den Coach auch dann zurück, wenn das Wiederholungsziel
+jede Woche erreicht war – am oberen Bandende hat der Coach nichts mehr zu steuern, dann steht
+alles still.
+
+### Was gemessen wurde
+
+Zwei unabhängige Größenordnungen, beide gegen den Deckel:
+
+**Auflösung.** 77,5 → 82,5 % sind +6,45 %. Damit das eine 2,5-kg-Scheibenstufe überspringt,
+muss das Arbeitsgewicht über **38,8 kg** liegen. Darunter fährt die Phase konstantes Gewicht,
+unabhängig davon, wie sauber das 1RM ist.
+
+**Tempo.** Ohne Rundung legt die Rampe +1,02 kg pro Woche zu, der Coach nach jedem sauberen
+4×6 aber +2,50 kg. Die Rampe ist 2,4× langsamer und wäre erst ab rund **116 kg**
+Arbeitsgewicht gleichauf. Der Lehrbuch-Zuschnitt setzt Athleten im dreistelligen Bereich
+voraus, die pro Block wenige Kilo zulegen.
+
+Konkret ergab das für einen Deadlift mit Anker 47,5 kg und wöchentlich sauberem 4×6:
+47,5 / 47,5 / 50 – dreimal fast dasselbe Gewicht, obwohl das Ziel jedes Mal erreicht war.
+
+### Geänderte Entscheidung
+
+Die Lastrampe wirkt in den **Aufbauwochen nur noch als Untergrenze** (`mode: "floor"`): Sie
+garantiert eine Mindestlast, wer mehr schafft, darf über die Doppelprogression darüber
+hinaus. In der **Entlastungswoche deckelt sie weiter** (`mode: "cap"`) – sonst wäre sie keine
+Entlastung.
+
+Das löst beide Größenordnungen ohne Schwellenwert und passt sich dem Leistungsniveau selbst
+an: solange man schneller zulegt als der Plan, führt der Coach; wird die Rampe irgendwann
+schneller als die eigene Steigerung, übernimmt sie automatisch die Führung – genau dann, wenn
+der Lehrbuch-Zuschnitt zutrifft.
+
+**Der Lastfaktor behält seinen Deckel.** Bei „Wiederaufbau nach Fasten" ist das Deckeln der
+eigentliche Sinn: nach einer Pause soll gerade nicht überzogen werden. Damit trennen sich die
+beiden Wege auch in der Semantik, und `lastfaktor.test.ts` ist die Wache dafür.
+
+Als Folge muss der Anker dem tatsächlichen Stand auch **nach oben** folgen (Festlegung 3
+oben). Die alte Begründung „ein guter Tag überholt den Plan nicht" war an den Deckel
+gebunden und entfällt mit ihm.
+
+Erfasst in Issue #213.

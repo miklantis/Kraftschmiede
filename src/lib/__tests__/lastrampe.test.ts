@@ -187,7 +187,7 @@ describe("rampLoad – Lastrampe", () => {
     const r = rampLoad(exo, { loadShare: 80 / 77.5, phaseId: PHASE_ID });
     expect(r).not.toBeNull();
     expect(r!.weight).toBeCloseTo(95 * (80 / 77.5), 5);
-    expect(r!.cap).toBe(true);
+    expect(r!.mode).toBe("floor");
   });
 
   it("greift nicht, wenn der Anker aus einer anderen Phase stammt", () => {
@@ -207,7 +207,7 @@ describe("rampLoad – Lastrampe", () => {
 
   it("laesst den Lastfaktor-Weg unveraendert", () => {
     const r = rampLoad({ ...exo, referenceWeight: 60 }, { loadFactor: 0.65 });
-    expect(r).toEqual({ weight: 60 * 0.65, cap: true });
+    expect(r).toEqual({ weight: 60 * 0.65, mode: "cap" });
   });
 });
 
@@ -221,7 +221,7 @@ describe("buildLiveEntries – Lastrampe", () => {
     expect(res.entries[0]!.phaseEntry).toBe(true);
   });
 
-  it("traegt die Rampe ueber die Phasenwochen: 95 / 97,5 / 100 / 85", () => {
+  it("traegt die Rampe als Untergrenze und deckelt nur in der Entlastungswoche", () => {
     // Anker steht (Woche 1 hat ihn gesetzt), ab jetzt rechnet die Rampe.
     const verankert = {
       squat: { ...squat, referenceWeight: 95, referencePhaseId: PHASE_ID },
@@ -232,6 +232,8 @@ describe("buildLiveEntries – Lastrampe", () => {
           exercisesById: verankert,
           weekInPhase: wi,
           loadShare: loadShareForWeek(KRAFT, wi),
+          // Woche 4 ist die Entlastungswoche - nur dort deckelt die Rampe.
+          isDeloadWeek: wi === KRAFT.deloadWeek - 1,
         }),
       );
       return res.entries[0]!.sets[0]!.weight as number;
@@ -294,13 +296,16 @@ describe("katalogPatch – Anker nachziehen", () => {
     expect(patch.reference_weight).toBe(95);
   });
 
-  it("hebt den Anker nicht an, wenn mehr gestemmt wurde als geplant", () => {
+  it("zieht den Anker mit nach oben, wenn der Coach ueber die Rampe hinausgeht", () => {
+    // Seit die Rampe in den Aufbauwochen nur noch Untergrenze ist, muss der
+    // Anker mitwachsen - sonst rechnet die Entlastungswoche von einem
+    // veralteten Bezugspunkt und faellt viel zu hart aus.
     const patch = katalogPatch({
       ...basis,
       workWeight: 120,
       anchor: { phaseId: PHASE_ID, loadShare: 1, weight: 95 },
     });
-    expect(patch.reference_weight).toBe(95);
+    expect(patch.reference_weight).toBe(120);
   });
 
   it("laesst den Anker unberuehrt, wenn die Phase die Last nicht plant", () => {
@@ -449,5 +454,164 @@ describe("Anzeige der Lastrampe", () => {
     expect(linie[2]!).toBeGreaterThan(linie[1]!);
     expect(linie[3]!).toBeLessThan(linie[0]!);
     expect(daten.bands[0]!.loadLabel).toBe("77,5 % → 82,5 %");
+  });
+});
+
+// --- Untergrenze statt Deckel (ADR-0016, ueberarbeitet) ---
+
+describe("Lastrampe traegt, statt zu bremsen", () => {
+  const work = (o: Partial<EngineSet>): EngineSet => ({
+    type: "work",
+    weight: 47.5,
+    reps: 6,
+    done: true,
+    targetReps: 6,
+    targetWeight: 47.5,
+    score: 3,
+    ...o,
+  });
+  const entry = (sets: EngineSet[]): SetEntry => ({ sets });
+
+  // Deadlift-Fall aus #213: Anker 47,5, Band 4-6, jede Woche 4x6 sauber.
+  const DL = { intensityStart: 77.5, intensityEnd: 82.5, weeks: 4, deloadWeek: 4 };
+  const deadlift: LiveBuildExercise = {
+    ...squat,
+    id: "deadlift",
+    key: "deadlift",
+    name: "Kreuzheben",
+    workWeight: 47.5,
+    referenceWeight: 47.5,
+    referencePhaseId: PHASE_ID,
+    rm: 63,
+  };
+
+  function wochenGewicht(wi: number, letztes: number): number {
+    const res = buildLiveEntries(
+      input({
+        exercisesById: {
+          deadlift: { ...deadlift, workWeight: letztes, referenceWeight: 47.5 },
+        },
+        exerciseIds: ["deadlift"],
+        weekInPhase: wi,
+        loadShare: loadShareForWeek(DL, wi),
+        isDeloadWeek: wi === 3,
+        lastEntryByExercise: {
+          deadlift: entry([
+            work({ weight: letztes, targetWeight: letztes }),
+            work({ weight: letztes, targetWeight: letztes }),
+            work({ weight: letztes, targetWeight: letztes }),
+            work({ weight: letztes, targetWeight: letztes }),
+          ]),
+        },
+      }),
+    );
+    return res.entries[0]!.sets[0]!.weight as number;
+  }
+
+  it("laesst den Coach ueber die geplante Last hinaus steigern", () => {
+    // Frueher hielt die Rampe hier drei Wochen bei 47,5 fest, obwohl das Ziel
+    // jede Woche erreicht war. Jetzt fuehrt der Coach, solange er schneller ist.
+    const w1 = wochenGewicht(0, 47.5);
+    expect(w1).toBeGreaterThan(47.5);
+    const w2 = wochenGewicht(1, w1);
+    expect(w2).toBeGreaterThan(w1);
+    const w3 = wochenGewicht(2, w2);
+    expect(w3).toBeGreaterThan(w2);
+  });
+
+  it("deckelt in der Entlastungswoche trotz guter Leistung", () => {
+    // Stand 55 kg, Rampe der Entlastungswoche liegt weit darunter - hier muss
+    // sie greifen, sonst gaebe es keine Entlastung.
+    const wDeload = wochenGewicht(3, 55);
+    expect(wDeload).toBeLessThan(55);
+  });
+
+  it("hebt eine zu niedrige Last auf die geplante Mindestlast an", () => {
+    // Umgekehrter Fall: der Coach liegt unter dem Plan, dann traegt die Rampe.
+    const res = buildLiveEntries(
+      input({
+        exerciseIds: ["deadlift"],
+        exercisesById: {
+          deadlift: { ...deadlift, workWeight: 30, referenceWeight: 47.5 },
+        },
+        weekInPhase: 0,
+        loadShare: loadShareForWeek(DL, 0),
+        isDeloadWeek: false,
+      }),
+    );
+    expect(res.entries[0]!.sets[0]!.weight).toBe(47.5);
+  });
+
+  it("haelt den Lastfaktor weiterhin als Deckel", () => {
+    // "Wiederaufbau nach Fasten" darf sich nicht bewegen: dort ist das Deckeln
+    // der eigentliche Sinn.
+    const r = rampLoad(
+      {
+        key: "squat",
+        profile: "strength",
+        equipment: "barbell",
+        repRange: [8, 12],
+        workWeight: 60,
+        targetScore: 3,
+        barId: "bar1",
+        referenceWeight: 60,
+        referencePhaseId: null,
+      },
+      { loadFactor: 0.65 },
+    );
+    expect(r).toEqual({ weight: 39, mode: "cap" });
+  });
+});
+
+// --- Der Fall aus Issue #213, mit den echten Werten ---
+
+describe("Ankersetzung traegt ebenfalls nur als Untergrenze", () => {
+  // Back Squat wie in der laufenden Journey: work_weight 27,5 bei rm 31,69.
+  // Der Anker aus 77,5 % waere 22,5 - ein Rueckschritt von einer ganzen Stufe.
+  const echt: LiveBuildExercise = {
+    ...squat,
+    repRange: [6, 10],
+    workWeight: 27.5,
+    rm: 31.69,
+    referenceWeight: null,
+    referencePhaseId: null,
+  };
+  const PHASE5 = {
+    intensityStart: 77.5,
+    intensityEnd: 82.5,
+    weeks: 5,
+    deloadWeek: 4,
+  };
+
+  function bau(exo: LiveBuildExercise, wi: number) {
+    return buildLiveEntries(
+      input({
+        exercisesById: { squat: exo },
+        volumePhase: { setsStart: 4, setsEnd: 4, weeks: 5, deloadWeek: 4 },
+        weekInPhase: wi,
+        loadShare: loadShareForWeek(PHASE5, wi),
+        isDeloadWeek: wi === 3,
+      }),
+    );
+  }
+
+  it("zieht das Gewicht beim Setzen des Ankers nicht nach unten", () => {
+    const res = bau(echt, 2);
+    expect(res.entries[0]!.sets[0]!.weight).toBe(27.5);
+    // Der Anker wird trotzdem gemeldet, damit die Folgewochen einen Bezug haben.
+    expect(res.anchorByExercise.squat).toBe(22.5);
+    expect(res.entries[0]!.phaseEntry).toBe(false);
+  });
+
+  it("greift beim Setzen des Ankers, wenn der Coach zu leicht liegt", () => {
+    const zuLeicht = { ...echt, workWeight: 15 };
+    const res = bau(zuLeicht, 0);
+    expect(res.entries[0]!.sets[0]!.weight).toBe(22.5);
+    expect(res.entries[0]!.phaseEntry).toBe(true);
+  });
+
+  it("deckelt die Entlastungswoche auch beim Setzen des Ankers", () => {
+    const res = bau(echt, 3);
+    expect(res.entries[0]!.sets[0]!.weight as number).toBeLessThan(27.5);
   });
 });

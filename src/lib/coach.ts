@@ -280,6 +280,8 @@ export interface SuggestBuildCtx {
   // Id der laufenden Phase - nur damit laesst sich pruefen, ob der gespeicherte
   // Anker zu dieser Phase gehoert.
   phaseId?: string | null;
+  // Laeuft gerade die Entlastungswoche der Phase? Dann deckelt die Lastrampe.
+  isDeloadWeek?: boolean | null;
 }
 
 /** Was die Journey dieser Uebung an Last vorgibt. Zwei Wege, die nie
@@ -290,6 +292,9 @@ export interface RampInput {
   loadFactor?: number | null;
   loadShare?: number | null;
   phaseId?: string | null;
+  /** Ist die laufende Woche die Entlastungswoche der Phase? Dann deckelt die
+   *  Lastrampe, sonst wirkt sie nur als Untergrenze. */
+  isDeloadWeek?: boolean | null;
 }
 
 // Vorgabe der Journey fuer diese Uebung. Zwei Quellen, in dieser Reihenfolge:
@@ -319,9 +324,13 @@ export function rampLoad(
       o.phaseId != null &&
       exo.referencePhaseId === o.phaseId
     ) {
-      // Die geplante Last ist Ziel und Obergrenze: der Coach steuert nur noch
-      // die Wiederholungen und reagiert nach unten.
-      return { weight: ref * o.loadShare, cap: true };
+      // In den Aufbauwochen ist die geplante Last nur eine Untergrenze: die
+      // Phase garantiert eine Mindestlast, wer mehr schafft, darf weiter. In
+      // der Entlastungswoche deckelt sie dagegen - sonst waere sie keine.
+      return {
+        weight: ref * o.loadShare,
+        mode: o.isDeloadWeek ? "cap" : "floor",
+      };
     }
     return null;
   }
@@ -333,7 +342,12 @@ export function rampLoad(
   // isNeutralLoad (dort liegt die Toleranz).
   return {
     weight: ref * loadFactor,
-    cap: !isNeutralLoad(loadFactor) && loadFactor < 1,
+    // Unterhalb der vollen Last deckelt der Lastfaktor - genau darum geht es
+    // nach einer Pause. Bei voller Last (Abschlussphase) nur Untergrenze, damit
+    // die Journey wieder am alten Niveau ankommt. Was als "voll" gilt, sagt
+    // isNeutralLoad (dort liegt die Toleranz).
+    mode:
+      !isNeutralLoad(loadFactor) && loadFactor < 1 ? "cap" : "floor",
   };
 }
 
@@ -368,6 +382,7 @@ export function suggestForExercise(
       loadFactor: ctx.loadFactor,
       loadShare: ctx.loadShare,
       phaseId: ctx.phaseId,
+      isDeloadWeek: ctx.isDeloadWeek,
     }),
     step: ctx.weightStep,
     prevEntry: ctx.prevEntry ?? null,
@@ -420,6 +435,7 @@ export interface SuggestWithBarInput<B extends { weight: number }> {
   // Phase die Last nicht plant.
   loadShare?: number | null;
   phaseId?: string | null;
+  isDeloadWeek?: boolean | null;
 }
 
 export interface SuggestWithBarResult<B> {
@@ -448,6 +464,7 @@ export function suggestWithBar<B extends { weight: number }>(
       loadFactor: input.loadFactor,
       loadShare: input.loadShare,
       phaseId: input.phaseId,
+      isDeloadWeek: input.isDeloadWeek,
     });
     const bar = pickBarForTarget(rawSug.weight, input.bars);
     const suggestion = suggestForExercise(exo, {
@@ -462,6 +479,7 @@ export function suggestWithBar<B extends { weight: number }>(
       loadFactor: input.loadFactor,
       loadShare: input.loadShare,
       phaseId: input.phaseId,
+      isDeloadWeek: input.isDeloadWeek,
     });
     return { suggestion, bar };
   }
@@ -481,6 +499,7 @@ export function suggestWithBar<B extends { weight: number }>(
       loadFactor: input.loadFactor,
       loadShare: input.loadShare,
       phaseId: input.phaseId,
+      isDeloadWeek: input.isDeloadWeek,
     });
     return { suggestion, bar: null };
   }
@@ -494,6 +513,7 @@ export function suggestWithBar<B extends { weight: number }>(
     loadFactor: input.loadFactor,
     loadShare: input.loadShare,
     phaseId: input.phaseId,
+    isDeloadWeek: input.isDeloadWeek,
   });
   return { suggestion, bar: null };
 }

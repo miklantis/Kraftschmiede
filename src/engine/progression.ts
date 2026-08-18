@@ -17,14 +17,27 @@ export interface SuggestExercise {
 }
 
 // Von der Journey vorgegebene Last: Referenzgewicht x Lastfaktor der Phase.
-// `cap` = true, solange der Lastfaktor unter 1 liegt – dann ist `weight`
-// zugleich Zielwert und Obergrenze: die Rampe der Journey steuert das Gewicht,
-// nicht die Tagesform. Bei Lastfaktor 1 (Abschlussphase) wirkt `weight` nur als
-// Untergrenze, damit die Journey wieder exakt am alten Niveau ankommt und der
-// Coach von dort normal weiterarbeitet.
+// In welche Richtung die Vorgabe der Journey wirkt:
+//
+// - "cap": `weight` ist zugleich Ziel und Obergrenze. Die Journey steuert das
+//   Gewicht, die Tagesform nicht. Das braucht der Lastfaktor ("Wiederaufbau
+//   nach Fasten" – nach einer Pause soll gerade nicht ueberzogen werden) und
+//   die Entlastungswoche einer Lastrampe, sonst waere sie keine Entlastung.
+// - "floor": `weight` ist nur Untergrenze. Liegt der Vorschlag darunter, wird
+//   er angehoben; darueber bleibt er stehen. Das ist der Normalfall der
+//   Lastrampe in den Aufbauwochen: die Phase garantiert eine Mindestlast, wer
+//   mehr schafft, darf ueber die Doppelprogression weiter.
+//
+// Warum die Rampe in den Aufbauwochen nicht deckelt: sie ist bei alltaeglichen
+// Lasten deutlich langsamer als der tatsaechliche Fortschritt (rund +1 kg pro
+// Woche gegenueber +2,5 kg des Coaches, gleichauf erst ab etwa 116 kg
+// Arbeitsgewicht). Als Deckel haette sie den Coach jede Woche zurueckgehalten,
+// obwohl das Ziel erreicht war. Siehe docs/adr/0016-lastrampe-der-phase.md.
+export type RampMode = "cap" | "floor";
+
 export interface RampLoad {
   weight: number;
-  cap: boolean;
+  mode: RampMode;
 }
 
 export interface SuggestOpts {
@@ -146,7 +159,7 @@ export function suggestWeight(
   // Rampenlast der Journey, auf eine ladbare Stufe abgerundet.
   const ramp =
     o.ramp && o.ramp.weight > 0
-      ? { weight: ld(o.ramp.weight, true), cap: o.ramp.cap }
+      ? { weight: ld(o.ramp.weight, true), mode: o.ramp.mode }
       : null;
 
   // Die Vorgabe der Journey auf einen fertigen Vorschlag anwenden.
@@ -160,14 +173,16 @@ export function suggestWeight(
     capReps?: number,
   ): SuggestResult => {
     if (!ramp) return res;
-    if (!ramp.cap) {
-      // Abschlussphase: nur Untergrenze, und nur wenn nicht gerade gesenkt wird.
+    if (ramp.mode === "floor") {
+      // Nur Untergrenze: was drueber liegt, bleibt stehen. Angehoben wird auch
+      // hier nicht, wenn der Vorschlag gerade wegen Versagen oder Schmerz nach
+      // unten geht.
       if (reacting || res.weight >= ramp.weight - 1e-9) return res;
       return {
         weight: ramp.weight,
         targetReps: res.targetReps,
         decision: "increase",
-        note: "Abschlussphase – zurueck auf das Referenzgewicht",
+        note: "Phasenlast – Gewicht auf die geplante Mindestlast angehoben",
       };
     }
     if (res.weight > ramp.weight + 1e-9) {
@@ -177,7 +192,7 @@ export function suggestWeight(
         decision: reacting ? res.decision : "hold",
         note: reacting
           ? res.note
-          : "Lastfaktor der Phase – Gewicht bleibt gedeckelt",
+          : "Vorgabe der Phase – Gewicht bleibt gedeckelt",
       };
     }
     if (!reacting && res.weight < ramp.weight - 1e-9) {
@@ -185,7 +200,7 @@ export function suggestWeight(
         weight: ramp.weight,
         targetReps: res.targetReps,
         decision: "increase",
-        note: "Lastfaktor der Phase – Gewicht auf die Phasenlast angehoben",
+        note: "Vorgabe der Phase – Gewicht auf die Phasenlast angehoben",
       };
     }
     return res;

@@ -67,6 +67,8 @@ export interface LiveBuildInput {
   // Id der laufenden Phase; null ohne aktive Journey. Nur fuer die Pruefung,
   // ob der gespeicherte Anker zu dieser Phase gehoert.
   phaseId: string | null;
+  // Entlastungswoche der Phase? Dann deckelt die Lastrampe statt nur zu tragen.
+  isDeloadWeek?: boolean;
   // Letzter Krafteintrag je Uebung (Saetze) als Vordaten fuer den Vorschlag.
   lastEntryByExercise: Record<string, SetEntry | null>;
   // Der Eintrag davor je Uebung – nur fuer die Rueckwaertsregel des Coaches
@@ -155,6 +157,7 @@ export interface PhaseEntryInput {
   loadShare?: number | null;
   intensityStart?: number | null;
   phaseId?: string | null;
+  isDeloadWeek?: boolean | null;
   /** Vorschlag des Coaches (suggestWithBar), der ueberschrieben werden kann. */
   suggestion: { weight: number; targetReps: number };
 }
@@ -195,6 +198,7 @@ export function phaseEntryOverride(input: PhaseEntryInput): PhaseEntryResult {
     loadFactor: input.loadFactor,
     loadShare: input.loadShare,
     phaseId: input.phaseId,
+    isDeloadWeek: input.isDeloadWeek,
   });
 
   // Lastgesteuerte Phase: steht der Anker schon, hat die Rampe den Vorschlag
@@ -239,9 +243,13 @@ export function phaseEntryOverride(input: PhaseEntryInput): PhaseEntryResult {
 }
 
 // Einstieg in eine Phase, die ihre Last plant: den Anker aus 1RM und
-// Start-Intensitaet setzen und die Einheit direkt darauf beginnen. Ohne
-// brauchbares 1RM (oder ausserhalb der Langhantel-/Kurzhantel-Rechnung) bleibt
-// der Anker leer und der Coach steuert diese Uebung wie gewohnt weiter.
+// Start-Intensitaet setzen. Wie beim laufenden Betrieb traegt die geplante Last
+// hier nur als Untergrenze - liegt der Coach schon darueber, bleibt sein
+// Vorschlag stehen und der Anker wird trotzdem gesetzt (er wandert beim
+// Beenden ohnehin auf den tatsaechlichen Stand nach). Nur in der
+// Entlastungswoche deckelt die Vorgabe. Ohne brauchbares 1RM (oder ausserhalb
+// der Langhantel-/Kurzhantel-Rechnung) bleibt der Anker leer und der Coach
+// steuert diese Uebung wie gewohnt weiter.
 function anchorEntry(
   input: PhaseEntryInput,
   unchanged: PhaseEntryResult,
@@ -276,12 +284,22 @@ function anchorEntry(
   // laufende Phase) traegt er die Rampe mit.
   const share = input.loadShare ?? 1;
   const roh = anchor * share;
-  const weight = hatStufen
+  const vorgabe = hatStufen
     ? nearestDumbbell(roh, dumbbells, true)
     : nearestLoadable(roh, (input.bar as { weight: number }).weight, input.plates, true);
 
+  // Untergrenze in den Aufbauwochen, Deckel in der Entlastungswoche.
+  const traegt = input.isDeloadWeek
+    ? vorgabe < input.suggestion.weight
+    : vorgabe > input.suggestion.weight;
+  if (!traegt) {
+    // Der Coach liegt bereits richtig - Vorschlag stehen lassen, aber den Anker
+    // melden, damit die Folgewochen einen Bezugspunkt haben.
+    return { ...unchanged, anchor };
+  }
+
   return {
-    weight,
+    weight: vorgabe,
     // konservativ am leichteren (oberen) Bandende einsteigen
     targetReps: input.repTarget ? input.repTarget[1] : input.suggestion.targetReps,
     phaseEntry: true,
@@ -334,6 +352,7 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
       loadFactor: input.loadFactor,
       loadShare: input.loadShare,
       phaseId: input.phaseId,
+      isDeloadWeek: input.isDeloadWeek,
     });
 
     // Phasenwechsel-Einstieg (Regel s. phaseEntryOverride). Plant die Phase
@@ -350,6 +369,7 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
       loadShare: input.loadShare,
       intensityStart: input.intensityStart,
       phaseId: input.phaseId,
+      isDeloadWeek: input.isDeloadWeek,
       suggestion: sug,
     });
     if (entry.anchor != null && entry.anchor > 0) {

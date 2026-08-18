@@ -68,17 +68,20 @@ export function katalogPatch(input: KatalogPatchInput): ExercisePatch {
   return patch;
 }
 
-// Anker der Phase nach dieser Einheit. Er wandert nur nach unten: hat der Coach
-// wegen Versagen oder zu hoher Anstrengung gesenkt, soll die Rampe der
-// Restwochen auf dem tatsaechlich gestemmten Niveau weiterlaufen statt naechste
-// Woche wieder gegen dieselbe zu schwere Wand zu laufen. Nach oben bleibt er
-// stehen: ein guter Tag ueberholt den Plan nicht.
+// Anker der Phase nach dieser Einheit: er folgt dem tatsaechlich gestemmten
+// Arbeitsgewicht, in beide Richtungen.
 //
-// null = nichts schreiben (keine lastgesteuerte Phase oder der Anker haelt).
+// Nach unten, weil die Rampe der Restwochen sonst naechste Woche wieder gegen
+// dieselbe zu schwere Wand laeuft. Nach oben, weil die Lastrampe in den
+// Aufbauwochen nur noch Untergrenze ist (ADR-0016): geht der Coach darueber
+// hinaus, muss der Anker mitwachsen - sonst rechnet die Entlastungswoche von
+// einem veralteten Bezugspunkt und faellt viel zu hart aus (Stand 55 kg, Anker
+// noch 47,5 ergaebe eine Entlastung auf 42,5 statt auf rund 48).
+//
+// null = nichts schreiben (keine lastgesteuerte Phase oder keine Arbeitssaetze).
 function ankerNachEinheit(input: KatalogPatchInput): number | null {
   const a = input.anchor;
   if (!a || !(a.loadShare > 0) || !(a.weight > 0)) return null;
   if (!(input.workWeight > 0)) return a.weight;
-  const ausLeistung = input.workWeight / a.loadShare;
-  return ausLeistung < a.weight ? ausLeistung : a.weight;
+  return input.workWeight / a.loadShare;
 }
