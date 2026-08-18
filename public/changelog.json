@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.35.1",
+      "date": "2026-08-18",
+      "changes": [
+        "Der Hinweis zur geplanten Last sagt jetzt, was wirklich passiert. Er behauptete noch \"Das Gewicht gibt die Phase vor\" – das galt nur, solange die Last gedeckelt war. Jetzt steht dort \"Geplante Mindestlast\", und dass der Coach normal weiter steigert, wenn du mehr schaffst. Der Text erschien im Start-Popup und im Block zur aktuellen Phase; beide sind angepasst.",
+        "Passend dazu heisst die Zeile in der Phasenliste \"Mindestlast / Woche\" statt \"Geplante Last / Woche\".",
+        "Der Text der Entlastungswoche bleibt unveraendert – dort gibt die Phase das Gewicht tatsaechlich vor."
+      ]
+    },
+    {
       "version": "1.35.0",
       "date": "2026-08-18",
       "changes": [

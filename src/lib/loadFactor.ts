@@ -63,10 +63,16 @@ export function intensityRange(
   return `${intensityPercent(start)} \u2192 ${intensityPercent(end)}`;
 }
 
-// Hinweistext zur laufenden Woche einer lastgesteuerten Phase. Er erklaert,
-// warum das Gewicht vorgegeben ist und wer noch was steuert - sonst wirkt eine
-// gedeckelte Last wie ein Fehler des Coaches. `isDeload` senkt den Ton: dort
-// ist der Rueckgang gewollt und keine Schwaeche.
+// Hinweistext zur laufenden Woche einer lastgesteuerten Phase. Er sagt, was die
+// Phase fordert und wer darueber hinaus entscheidet.
+//
+// In den Aufbauwochen ist die geplante Last nur eine Untergrenze (ADR-0016,
+// Nachtrag): der Coach darf darueber steigern, und bei alltaeglichen Lasten tut
+// er das auch. Der Text muss das sagen - sonst behauptet er eine Vorgabe, die
+// die Gewichte daneben widerlegen.
+//
+// `isDeload` kehrt das um: dort deckelt die Rampe wirklich, und der Rueckgang
+// ist gewollt und keine Schwaeche.
 export function intensityNote(
   pct: number | null | undefined,
   isDeload: boolean,
@@ -76,7 +82,7 @@ export function intensityNote(
   if (isDeload) {
     return `Entlastungswoche: ${wert} deines Maximums. Die leichte Last ist gewollt - naechste Woche geht es wieder hoch.`;
   }
-  return `Geplante Last dieser Woche: ${wert} deines Maximums. Das Gewicht gibt die Phase vor, die Wiederholungen steuert der Coach.`;
+  return `Geplante Mindestlast dieser Woche: ${wert} deines Maximums. Schaffst du mehr, steigert der Coach normal weiter.`;
 }
 
 // Hinweis fuer eine Uebung, die von der Lastrampe ausgenommen bleibt, weil kein

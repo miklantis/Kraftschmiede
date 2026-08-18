@@ -366,7 +366,11 @@ describe("Anzeige der Lastrampe", () => {
   it("erklaert die Wochenlast und benennt die Entlastungswoche eigens", () => {
     const normal = intensityNote(80, false);
     expect(normal).toContain("80 %");
-    expect(normal).toContain("Wiederholungen steuert der Coach");
+    // Der Text muss die Untergrenze benennen, nicht eine Vorgabe behaupten:
+    // die Gewichte daneben liegen in der Regel darueber (#215).
+    expect(normal).toContain("Mindestlast");
+    expect(normal).toContain("steigert der Coach normal weiter");
+    expect(normal).not.toContain("gibt die Phase vor");
     const deload = intensityNote(70, true);
     expect(deload).toContain("Entlastungswoche");
     expect(deload).toContain("gewollt");
@@ -395,8 +399,8 @@ describe("Anzeige der Lastrampe", () => {
       done: false,
     });
     const v = views[0]!;
-    expect(v.detail.some((d) => d.k === "Geplante Last / Woche")).toBe(true);
-    expect(v.detail.find((d) => d.k === "Geplante Last / Woche")!.v).toBe(
+    expect(v.detail.some((d) => d.k === "Mindestlast / Woche")).toBe(true);
+    expect(v.detail.find((d) => d.k === "Mindestlast / Woche")!.v).toBe(
       "77,5 % → 82,5 %",
     );
     // Woche 2 der Rampe: 80 Prozent.
