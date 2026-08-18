@@ -108,7 +108,7 @@ export const supabaseHistoryStore: HistoryStore = {
     must(
       await supabase
         .from("exercises")
-        .update({ reference_weight: null })
+        .update({ reference_weight: null, reference_phase_id: null })
         .not("reference_weight", "is", null),
     );
   },
