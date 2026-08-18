@@ -72,8 +72,10 @@ Recovery-Fenster, Timer).
 - **exercises** – key, name, profile (strength/core/bodyweight), tier (main/accessory),
   equipment, bar_id (FK), description, metric (reps/duration bei Körpergewicht),
   muscle_groups (grobe Tags als text[]), rep_range_min/max, target_score, work_weight,
-  reference_weight (nullable, eingefrorenes Arbeitsgewicht zum Start einer
-  Lastfaktor-Journey), recovery_hours, rm/rm_as_of/rm_stale (zwischengespeichertes 1RM
+  reference_weight (nullable, Bezugspunkt einer Journey, die die Last vorgibt –
+  eingefroren zum Start einer Lastfaktor-Journey bzw. gesetzt beim Eintritt in eine
+  Phase mit Lastrampe), reference_phase_id (nullable, zu welcher Phase dieser
+  Bezugspunkt gehört), recovery_hours, rm/rm_as_of/rm_stale (zwischengespeichertes 1RM
   für den Coach), position
 - **exercise_muscles** – feine Regionen-Map: exercise_id (FK), region_id (Code-/SVG-Region),
   kategorie (primär/sekundär/stabilisierend)
@@ -83,7 +85,9 @@ Recovery-Fenster, Timer).
 - **journey_templates** – key, name, tagline, for_whom, summary, position
 - **journey_template_phases** – journey_template_id (FK), name, focus, weeks,
   sets_start, sets_end, deload_week (nullable), rep_target_min/max, load_factor
-  (Anteil des Referenzgewichts, Default 1.0 = gewohntes Verhalten), position
+  (Anteil des Referenzgewichts, Default 1.0 = gewohntes Verhalten),
+  intensity_start/intensity_end (nullable, geplante Last der Phase in Prozent des 1RM;
+  null = die Phase plant die Last nicht), position
 - **skills** – key, name, category, image, position
 - **skill_phases** – skill_id (FK), label, description, consecutive_sessions
   (aufeinanderfolgende Erfolge bis Aufstieg), position
@@ -103,7 +107,8 @@ Begründung in ADR-0003.
   `user_id where active` -> genau eine aktive Journey pro Nutzer (ADR-0004)
 - **phases** – journey_id (FK), name, focus, weeks, sets_start, sets_end, deload_week
   (nullable), rep_target_min/max, load_factor (Anteil des Referenzgewichts,
-  Default 1.0), position
+  Default 1.0), intensity_start/intensity_end (nullable, geplante Last in Prozent des
+  1RM), position
 - **journey_workouts** – ordnet Workouts der Journey zu: journey_id (FK), template_id (FK),
   `unique(user_id, journey_id, template_id)`. Reine Ja/Nein-Menge, bewusst ohne position
   (die Empfehlungsreihenfolge bestimmt der Coach); ON DELETE CASCADE über beide FKs
@@ -222,6 +227,25 @@ betroffene Tabelle beim Wiederherstellen leer.
   (`rampLoad` in `coach.ts`, angewandt in `progression.ts`); der 1RM-Einstieg beim
   Phasenwechsel ruht solange. Ohne Lastfaktor-Journey ändert sich nichts – auch dann
   nicht, wenn an den Übungen noch ein altes Referenzgewicht hängt.
+- **Die Phase gibt die Last vor, der Coach die Wiederholungen.** Trägt eine Phase
+  Prozentwerte (`intensity_start`/`intensity_end`), plant sie ihre Last selbst: die
+  Wochenrampe entsteht an einer Stelle (`intensityForWeek` in `engine/intensity.ts`,
+  abgeleitet in `derivePhaseContext`, angewandt über `rampLoad` und `withRamp`). Sie
+  interpoliert bewusst über die Aufbauwochen statt über alle – sonst wäre der Endwert in
+  einer Phase, die mit der Entlastungswoche endet, nie erreicht; die Entlastungswoche
+  liegt bei 85 % der Vorwoche (bei der Satzzahl sind es 50 %, bei der Last wäre das
+  absurd). Bezugspunkt ist ein Anker je Übung: gesetzt beim ersten Einsatz in der Phase
+  aus 1RM und Start-Intensität (`anchorForIntensity`, verdrahtet in
+  `phaseEntryOverride`), abgelegt in `reference_weight` samt `reference_phase_id`. Senkt
+  der Coach, wandert der Anker proportional mit nach unten, aber nie nach oben
+  (`katalogPatch`) – sonst liefe man in der Folgewoche gegen dieselbe zu schwere Wand,
+  und nach oben wäre es wieder eine Doppelprogression. Nur `strength`, `power` und
+  `test`; ohne getestetes 1RM bleibt die Übung beim Coach und sagt das auf ihrer Karte.
+  Begründung in `docs/adr/0016-lastrampe-der-phase.md`.
+- **Lastfaktor und Lastrampe hängen nie an derselben Phase.** Zwei Wege, dieselbe Naht:
+  `rampLoad` in `coach.ts` nimmt entweder den Faktor je Phase (nur „Wiederaufbau nach
+  Fasten") oder den Wochenanteil der Rampe und liefert beides als gedeckelte Vorgabe an
+  `withRamp`. Ein Seed-Regeltest hält fest, dass keine Phase beides trägt.
 - **Lastfaktor ist überall sichtbar, aber nur wenn er wirkt.** Ob ein Faktor überhaupt
   wirkt, entscheidet ein Prüfwort an einer Stelle (`isNeutralLoad` in
   `lib/loadFactor.ts`, samt Rundungstoleranz) – genutzt von Journey-Start,
@@ -229,8 +253,10 @@ betroffene Tabelle beim Wiederherstellen leer.
   entstehen ebenfalls dort (Prozentangabe und Hinweistext) und
   werden von Phasenliste, Periodisierungskurve (Lastfaktor steckt in der
   Intensitätslinie), Trainingsbildschirm (`phaseContext.loadNote`, eingefroren auf die
-  laufende Einheit), Rückschau und Coach-Export genutzt. Journeys mit Lastfaktor 1
-  überall sehen unverändert aus – keine zusätzliche Zeile, kein Hinweis.
+  laufende Einheit), Rückschau und Coach-Export genutzt. Dieselbe Stelle trägt die Texte
+  der Lastrampe (`intensityRange`, `intensityNote`, `intensityMissingRmNote`); die
+  Intensitätslinie der Kurve rechnet dadurch wochengenau statt pro Phase flach. Journeys
+  ohne Lastvorgabe sehen unverändert aus – keine zusätzliche Zeile, kein Hinweis.
 - **Datenzugriff gekapselt** in Query-/Mutation-Hooks je Entität (z. B.
   `useSessions`, `useExercises`). Komponenten kennen kein Supabase direkt.
 - **Naht zur Datenbank je Schreibbereich** (`src/lib/<bereich>Store.ts` +
