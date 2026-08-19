@@ -278,6 +278,26 @@ betroffene Tabelle beim Wiederherstellen leer.
   Einheitenzahl der Anzeige bleibt die tatsächliche. Die Testdaten kommen als
   `testDates` aus `rm_tests` (`useTestDates`) und werden überall gleich hereingereicht,
   damit Uebungsseite, Live-Aufbau und Journey dieselbe Woche zeigen.
+- **Der Wochenplan ist dort sichtbar, wo er wirkt.** Auf dem Trainingsbildschirm steht
+  der Hinweis der laufenden Planwoche (Phase und Woche, Sätze/Wiederholungen/RIR, was
+  den nächsten Gewichtsschritt auslöst, dazu der Cluster-Hinweis) – gebaut an einer
+  Stelle (`lib/planNote.ts`, Schrittweite und Einheit aus den Einstellungen), beim Start
+  auf die Einheit eingefroren wie der Lastfaktor-Hinweis (`WorkoutSession.planNote`) und
+  in Start-Popup und Live-Panel im selben Kasten gezeigt (`PlanNoteBanner`). Auf der
+  Journey-Seite klappt die laufende Phase mit Plan zur Wochentabelle auf
+  (`PhaseView.weekRows` aus `lib/journey.ts`): je Woche Sätze, Wiederholungen,
+  Ziel-Anstrengung und Wochenziel, abgeschlossene abgehakt, die laufende markiert. Die
+  Kombiwoche zeigt weiter ihren Ablauf (`comboNote`) statt Zahlen. Die Eckwerte einer
+  Phase mit Plan kommen ebenfalls aus dem Plan (Wiederholungen, Sätze, Ziel-Anstrengung
+  statt Band, Satz-Rampe und Deload) – Phasen ohne Plan sehen unverändert aus.
+- **Die Periodisierungskurve rechnet wochengenau, wenn ein Plan da ist.** Trägt eine
+  Phase einen Wochenplan, kommen beide Linien in `lib/periodization.ts` aus der
+  jeweiligen Planwoche statt aus den Eckwerten der Phase: die Intensität aus den
+  Wiederholungen der Woche mal dem Anteil am Arbeitsgewicht (`loadPct`), das Volumen aus
+  den Sätzen der Woche, und die Entlastungswoche ergibt sich aus `loadPct < 1` statt aus
+  `deload_week`. Dadurch steigt der Kraftblock sichtbar an und die Kombiwoche bricht
+  ein. Phasen ohne Plan rechnen unverändert über Repband und Satz-Rampe; der
+  Chart-Baustein selbst bleibt unangetastet (reiner Datenteil).
 - **Datenzugriff gekapselt** in Query-/Mutation-Hooks je Entität (z. B.
   `useSessions`, `useExercises`). Komponenten kennen kein Supabase direkt.
 - **Naht zur Datenbank je Schreibbereich** (`src/lib/<bereich>Store.ts` +

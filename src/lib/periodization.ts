@@ -1,4 +1,5 @@
-import { volumeForWeek } from "@/engine";
+import { volumeForWeek, weekPlanForWeek } from "@/engine";
+import type { WeekPlanWeek } from "@/engine";
 import type { JourneyPhaseInput } from "@/lib/journey";
 import { isNeutralLoad, loadPercent } from "@/lib/loadFactor";
 
@@ -10,6 +11,11 @@ import { isNeutralLoad, loadPercent } from "@/lib/loadFactor";
 // und Deload-Einbruch) und Intensitaet (aus der Wiederholungsspanne der Phase
 // abgeleitet: wenige Wiederholungen = hohe Intensitaet). Dazu die Phasen als
 // Baender ueber ihre Wochenspanne und die aktuelle Gesamtwoche als "jetzt"-Index.
+//
+// Traegt die Phase einen Wochenplan (Kraft, Schnellkraft, Test), kommen beide
+// Werte wochengenau aus dem Plan statt aus den Eckwerten der Phase (Issue #225,
+// Schritt 6): die Kraftphase steigt mit ihrer Wiederholungsleiter sichtbar an,
+// die Kombiwoche bricht ein. Phasen ohne Plan rechnen unveraendert weiter.
 
 // Eine Woche auf der Zeitachse. g = 0-basierte Gesamtwoche der Journey.
 export interface PeriodWeek {
@@ -55,6 +61,20 @@ function intensityScore(
   return load / Math.max(1, mid);
 }
 
+// Intensitaets-Score einer Planwoche: die Wiederholungen genau dieser Woche
+// statt der Spanne der ganzen Phase, dazu der Anteil des Arbeitsgewichts aus dem
+// Plan (Kombiwoche: 60 %). Dadurch steigt die Linie innerhalb der Kraftphase mit
+// der Wiederholungsleiter und faellt in der Kombiwoche deutlich ab.
+function planIntensityScore(week: WeekPlanWeek, loadFactor: number): number {
+  const mid =
+    week.repsMax != null && week.repsMax !== week.reps
+      ? (week.reps + week.repsMax) / 2
+      : week.reps;
+  const phaseLoad = loadFactor > 0 ? loadFactor : 1;
+  const weekLoad = week.loadPct > 0 ? week.loadPct : 1;
+  return (phaseLoad * weekLoad) / Math.max(1, mid);
+}
+
 // Baut aus den Phasen einer aktiven Journey und der aktuellen Gesamtwoche
 // (1-basiert, aus engine.journeyPlacement) das Kurven-Modell.
 export function buildPeriodization(
@@ -79,26 +99,35 @@ export function buildPeriodization(
       loadLabel: isNeutralLoad(p.loadFactor) ? null : loadPercent(p.loadFactor),
     });
     for (let wi = 0; wi < pw; wi++) {
-      const vol = volumeForWeek(
-        {
-          setsStart: p.setsStart,
-          setsEnd: p.setsEnd,
-          weeks: p.weeks,
-          deloadWeek: p.deloadWeek,
-        },
-        wi,
-        true,
-      );
+      // Wochenzeile des Plans (1-basiert); null = die Phase laeuft ohne Plan.
+      const row = p.weekPlan ? weekPlanForWeek(p.weekPlan, wi + 1) : null;
+      const vol = row
+        ? row.sets
+        : volumeForWeek(
+            {
+              setsStart: p.setsStart,
+              setsEnd: p.setsEnd,
+              weeks: p.weeks,
+              deloadWeek: p.deloadWeek,
+            },
+            wi,
+            true,
+          );
+      const intens = row ? planIntensityScore(row, p.loadFactor) : iScore;
       weeks.push({
         g: gw,
         vol,
-        intens: iScore,
-        deload: !!(p.deloadWeek && wi === p.deloadWeek - 1),
+        intens,
+        // Im Plan macht der Anteil am Arbeitsgewicht die Entlastungswoche aus
+        // (Kombiwoche), sonst die gesetzte Deload-Woche der Phase.
+        deload: row
+          ? row.loadPct < 1
+          : !!(p.deloadWeek && wi === p.deloadWeek - 1),
       });
       vMin = Math.min(vMin, vol);
       vMax = Math.max(vMax, vol);
-      iMin = Math.min(iMin, iScore);
-      iMax = Math.max(iMax, iScore);
+      iMin = Math.min(iMin, intens);
+      iMax = Math.max(iMax, intens);
       gw++;
     }
   });

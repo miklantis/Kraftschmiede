@@ -6,6 +6,7 @@ import {
   type JourneyPhaseInput,
   type PhasePlacementInfo,
 } from "../journey";
+import { buildComboWeekPlan, buildStrengthWeekPlan } from "@/engine";
 
 function phase(over: Partial<JourneyPhaseInput> = {}): JourneyPhaseInput {
   return {
@@ -18,6 +19,7 @@ function phase(over: Partial<JourneyPhaseInput> = {}): JourneyPhaseInput {
     repTargetMin: 8,
     repTargetMax: 12,
     loadFactor: 1,
+    weekPlan: null,
     ...over,
   };
 }
@@ -140,6 +142,99 @@ describe("buildPhaseViews \u2013 Lastfaktor", () => {
     });
     expect(views[0].detail).toHaveLength(3);
     expect(views[0].loadNote).toBeNull();
+  });
+});
+
+describe("buildPhaseViews – Wochenplan", () => {
+  // Kraftphase ueber 4 Wochen (Leiter 5, 4, 3, 2) plus Kombiwoche - genau der
+  // Aufbau, den der Kraftblock einer Journey hat.
+  const kraft = phase({
+    name: "Maximalkraft",
+    focus: "strength",
+    weeks: 4,
+    setsStart: 4,
+    setsEnd: 4,
+    deloadWeek: null,
+    repTargetMin: 4,
+    repTargetMax: 6,
+    weekPlan: buildStrengthWeekPlan(4),
+  });
+  const kombi = phase({
+    name: "Test",
+    focus: "test",
+    weeks: 1,
+    setsStart: 3,
+    setsEnd: 3,
+    deloadWeek: null,
+    weekPlan: buildComboWeekPlan(1),
+  });
+
+  it("zeigt an der laufenden Phase die Wochentabelle", () => {
+    const views = buildPhaseViews([kraft, kombi], {
+      phaseIndex: 0,
+      weekInPhase: 3,
+      done: false,
+    });
+    const rows = views[0].weekRows!;
+    expect(rows.map((r) => r.label)).toEqual([
+      "Woche 1",
+      "Woche 2",
+      "Woche 3",
+      "Woche 4",
+    ]);
+    expect(rows[2].targets).toBe("4 × 3 · RIR 1");
+    expect(rows.map((r) => r.state)).toEqual([
+      "past",
+      "past",
+      "current",
+      "future",
+    ]);
+    expect(rows[0].mark).toBe("✓");
+    expect(rows[2].mark).toBe("");
+    expect(rows[0].note).not.toBe("");
+  });
+
+  it("zeigt die Tabelle nur an der laufenden Phase", () => {
+    const views = buildPhaseViews([kraft, kombi], {
+      phaseIndex: 1,
+      weekInPhase: 1,
+      done: false,
+    });
+    expect(views[0].weekRows).toBeNull();
+  });
+
+  it("zeigt in der Kombiwoche den Ablauf statt Zahlen", () => {
+    const views = buildPhaseViews([kraft, kombi], {
+      phaseIndex: 1,
+      weekInPhase: 1,
+      done: false,
+    });
+    expect(views[1].weekRows).toBeNull();
+    expect(views[1].comboNote).toContain("1RM-Test");
+  });
+
+  it("nimmt die Detailzeilen aus dem Plan statt aus Band und Satz-Rampe", () => {
+    const views = buildPhaseViews([kraft, kombi], {
+      phaseIndex: 0,
+      weekInPhase: 1,
+      done: false,
+    });
+    expect(views[0].detail).toEqual([
+      { k: "Wiederholungen", v: "5 → 2 Wdh" },
+      { k: "Sätze / Woche", v: "4 Sätze" },
+      { k: "Ziel-Anstrengung", v: "RIR 2 → 1" },
+    ]);
+    expect(views[1].detail[0]).toEqual({ k: "Wiederholungen", v: "3–5 Wdh" });
+  });
+
+  it("laesst Phasen ohne Plan unveraendert", () => {
+    const views = buildPhaseViews(threePhases, {
+      phaseIndex: 1,
+      weekInPhase: 1,
+      done: false,
+    });
+    expect(views.every((v) => v.weekRows === null)).toBe(true);
+    expect(views[1].detail[0].k).toBe("Wiederholungsband");
   });
 });
 

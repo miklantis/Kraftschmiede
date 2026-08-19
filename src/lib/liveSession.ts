@@ -14,6 +14,8 @@
 // Eine reine Funktion (keine React-/DOM-Abhaengigkeit), damit die Engine-/
 // Format-Logik testbar bleibt - dieselbe Trennung wie im uebrigen Projekt.
 
+import type { PlanNote } from "@/lib/planNote";
+
 /** Zweistellig auffuellen (Sekunden/Minuten in der Uhr). */
 export function pad2(n: number): string {
   return n < 10 ? "0" + n : "" + n;
@@ -138,6 +140,9 @@ export interface WorkoutSession extends LiveSessionBase {
   /** Hinweis zur vorgegebenen Last der Phase (Lastfaktor-Journey), sonst null.
    *  Beim Start eingefroren, damit Start-Popup und Panel dasselbe zeigen. */
   loadNote: string | null;
+  /** Hinweis zur laufenden Woche des Wochenplans (Kraft-/Schnellkraft- und
+   *  Testphasen), sonst null. Ebenfalls beim Start eingefroren. */
+  planNote: PlanNote | null;
   /** Allgemeines Aufwaermen (Cardio) vor den Uebungen. */
   generalWarmup: { sets: LiveGeneralWarmupSet[] };
   /** Die vom Coach aufgebauten Uebungen mit ihren Saetzen (Lieferung 2). */
@@ -279,6 +284,7 @@ export function parseLive(raw: string | null): PersistedLive {
           journeyId: typeof sr.journeyId === "string" ? sr.journeyId : null,
           phaseId: typeof sr.phaseId === "string" ? sr.phaseId : null,
           loadNote: typeof sr.loadNote === "string" ? sr.loadNote : null,
+          planNote: parsePlanNote(sr.planNote),
           title: sr.title,
           startedAt: sr.startedAt,
           generalWarmup: parseGeneralWarmup(sr.generalWarmup),
@@ -312,6 +318,21 @@ function str(v: unknown, fallback = ""): string {
  *  `computeActive` selbst - die Liste kann sich unabhaengig aendern. */
 function parseFocus(v: unknown): number | null {
   return typeof v === "number" && Number.isInteger(v) && v >= 0 ? v : null;
+}
+
+/** Wochenplan-Hinweis aus dem Speicher. Fehlt er (Einheit aus der Zeit vor
+ *  Schritt 5) oder passt die Form nicht, laeuft die Einheit ohne Hinweis
+ *  weiter - der Text ist reine Anzeige. */
+function parsePlanNote(v: unknown): PlanNote | null {
+  if (typeof v !== "object" || v === null) return null;
+  const o = v as Record<string, unknown>;
+  if (typeof o.title !== "string" || typeof o.targets !== "string") return null;
+  return {
+    title: o.title,
+    targets: o.targets,
+    progress: str(o.progress),
+    hint: typeof o.hint === "string" ? o.hint : null,
+  };
 }
 
 function parseGeneralWarmup(v: unknown): { sets: LiveGeneralWarmupSet[] } {

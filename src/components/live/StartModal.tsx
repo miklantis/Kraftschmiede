@@ -11,6 +11,7 @@ import type {
   SkillSession,
 } from "@/lib/liveSession";
 import { LoadNoteBanner } from "./LoadNoteBanner";
+import { PlanNoteBanner } from "./PlanNoteBanner";
 
 // Start-Popup (vor der Einheit). Nutzt das Overlay-Primitive (Desktop zentriert,
 // Mobile Bodenblatt) und zeigt die Vorschau der Saetze - 1:1 wie V1:
@@ -151,6 +152,9 @@ function WorkoutPreview({ p }: { p: WorkoutSession }): React.ReactElement {
       </div>
       {p.loadNote !== null && (
         <LoadNoteBanner text={p.loadNote} className="mb-4" />
+      )}
+      {p.planNote !== null && (
+        <PlanNoteBanner note={p.planNote} className="mb-4" />
       )}
       {!todayBodyDone && (
         <div className="mb-4 flex items-center justify-between gap-3 rounded-[14px] border border-warning/30 bg-warning/10 px-4 py-3">

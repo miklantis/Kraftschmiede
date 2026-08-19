@@ -20,6 +20,7 @@ import { useGripDrag } from "./useGripDrag";
 import { LiveMiniBar } from "./LiveMiniBar";
 import { GeneralWarmupCard } from "./GeneralWarmupCard";
 import { LoadNoteBanner } from "./LoadNoteBanner";
+import { PlanNoteBanner } from "./PlanNoteBanner";
 import { ExerciseLiveCard } from "./ExerciseLiveCard";
 import { SkillLiveCard } from "./SkillLiveCard";
 import { RestBar } from "./RestBar";
@@ -54,6 +55,7 @@ function PanelContent({
   return (
     <div className="flex flex-col gap-3">
       {session.loadNote !== null && <LoadNoteBanner text={session.loadNote} />}
+      {session.planNote !== null && <PlanNoteBanner note={session.planNote} />}
       <GeneralWarmupCard
         sets={session.generalWarmup.sets}
         onToggle={live.toggleGeneralWarmup}

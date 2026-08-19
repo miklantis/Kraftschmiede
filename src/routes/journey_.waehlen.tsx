@@ -160,6 +160,7 @@ function JourneyPickerPage(): React.ReactElement {
       repTargetMin: p.rep_target_min,
       repTargetMax: p.rep_target_max,
       loadFactor: p.load_factor ?? 1,
+      weekPlan: p.week_plan,
     }));
     // Ohne "jetzt"-Marker ist die Gesamtwoche bedeutungslos; 1 als neutraler Wert.
     const periodization = buildPeriodization(phaseInputs, 1);
