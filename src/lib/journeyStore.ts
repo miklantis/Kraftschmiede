@@ -141,12 +141,16 @@ export const supabaseJourneyStore: JourneyStore = {
     );
   },
   async clearReferenzgewichte(userId) {
+    // Raeumt Gewicht und Phasenbezug zusammen: ein Anker ohne Gewicht zeigt
+    // sonst auf eine Phase der abgeloesten Journey. Der Filter greift, sobald
+    // eines von beiden gesetzt ist - sonst blieben genau die Zeilen stehen,
+    // bei denen nur noch der Phasenbezug haengt.
     must(
       await supabase
         .from("exercises")
-        .update({ reference_weight: null })
+        .update({ reference_weight: null, reference_phase_id: null })
         .eq("user_id", userId)
-        .not("reference_weight", "is", null),
+        .or("reference_weight.not.is.null,reference_phase_id.not.is.null"),
     );
   },
   async listZuordnungen(journeyId) {

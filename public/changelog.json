@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.37.2",
+      "date": "2026-08-19",
+      "changes": [
+        "Der versehentliche Journey-Wechsel ist zurückgenommen: \"Rückkehr 2026\" läuft wieder als deine aktive Journey, mit allen 30 Einheiten, den 6 zugewiesenen Workouts und ohne Enddatum. Die beiden leeren Journeys, die dabei entstanden sind, wurden entfernt - an ihnen hing keine Einheit.",
+        "Die Journey-Vorlage \"Maximalkraft / Peaking\" ist aus der Auswahl entfernt. Die übrigen sieben Vorlagen bleiben unverändert.",
+        "Im Hintergrund aufgeräumt: der Wochenplan der Kraftphase hängt wieder an deiner laufenden Journey, und deine Arbeitsgewichte in Bench Press, Deadlift, Bent Row, Push Press und Back Squat sind wieder als Startpunkt der Kraftphase hinterlegt."
+      ]
+    },
+    {
       "version": "1.37.1",
       "date": "2026-08-19",
       "changes": [
