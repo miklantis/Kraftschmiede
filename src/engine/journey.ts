@@ -9,10 +9,11 @@
 // Einheiten zaehlt einfach nicht und schiebt nichts.
 //
 // Eine Ausnahme: liegt in der Woche ein abgeschlossener 1RM-Test, ist sie
-// erfuellt - unabhaengig von der Einheitenzahl. Die Kombiwoche der Testphase hat
-// planmaessig nur zwei Einheiten (Entlastung und Test), die Journey wuerde dort
-// sonst haengen bleiben (#229). Die Testdaten reicht der Aufrufer als testDates
-// herein (aus rm_tests); ohne sie rechnet alles wie bisher.
+// erfuellt - unabhaengig von der Einheitenzahl. Die Testwoche der Testphase
+// plant keine Einheit, die Journey wuerde dort sonst haengen bleiben (#229).
+// Die Testdaten reicht der Aufrufer als testDates herein (aus rm_tests); ohne
+// sie rechnet alles wie bisher. Mit dem Abschluss ueber den Kalender (#240,
+// Schritt 2) faellt diese Ausnahme wieder weg.
 
 // Minimal benoetigte Session-Form. Die datenbeschaffende Schicht mappt die
 // snake_case-DB-Zeilen (journey_id) auf diese Engine-Form (journeyId).
@@ -130,9 +131,9 @@ function countingSessions(
 }
 
 // Wochen mit einem abgeschlossenen 1RM-Test. Sie gelten als erfuellt, egal wie
-// viele Einheiten in ihnen liegen: die Kombiwoche der Testphase hat planmaessig
-// nur zwei (Entlastung und Test), das Wochenziel sind drei - ohne diese Regel
-// bliebe die Journey dort haengen (#229).
+// viele Einheiten in ihnen liegen: die Testwoche der Testphase plant gar keine
+// Einheit, das Wochenziel sind drei - ohne diese Regel bliebe die Journey dort
+// haengen (#229).
 //
 // Gezaehlt werden nur Tests ab der ersten Einheit der Journey. Ein Test von
 // davor gehoert nicht zu ihr und wuerde die Journey sonst rueckwirkend
@@ -160,7 +161,7 @@ function testWeekKeys(
 }
 
 // Set-artiges Objekt der erfuellten Wochenschluessel: >= freqTarget Einheiten
-// oder ein 1RM-Test in der Woche (Kombiwoche, s. testWeekKeys).
+// oder ein 1RM-Test in der Woche (Testwoche, s. testWeekKeys).
 function fulfilledWeekKeys(
   sessions: JourneySession[],
   journeyId: string,

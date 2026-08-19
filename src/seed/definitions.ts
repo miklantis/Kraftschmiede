@@ -12,7 +12,7 @@ import type { Focus, Metric } from "@/schemas";
  * nicht: er faellt eindeutig aus Fokus und Phasenlaenge und wird beim Seeden
  * ueber `buildWeekPlan` (engine/weekPlan.ts) gerechnet - so gibt es nur eine
  * Pflegequelle fuer die Leiter. Kraftphasen haben keine Entlastungswoche mehr
- * (deloadWeek null); die Entlastung steckt in der Kombiwoche der Testphase.
+ * (deloadWeek null); die Entlastung steht am Anfang der Testphase.
  */
 export interface SeedJourneyPhase {
   name: string;
@@ -54,7 +54,7 @@ export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
       { name: "Wiedereinstieg", focus: "reentry", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 5, repTargetMax: 8, loadFactor: 1 },
       { name: "Hypertrophie", focus: "hypertrophy", weeks: 5, setsStart: 2, setsEnd: 6, deloadWeek: 4, repTargetMin: 8, repTargetMax: 12, loadFactor: 1 },
       { name: "Maximalkraft", focus: "strength", weeks: 5, setsStart: 4, setsEnd: 4, deloadWeek: null, repTargetMin: 4, repTargetMax: 6, loadFactor: 1 },
-      { name: "Übergang / Test", focus: "test", weeks: 1, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadFactor: 1 },
+      { name: "Übergang / Test", focus: "test", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadFactor: 1 },
     ],
   },
   {

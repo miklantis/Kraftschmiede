@@ -8,7 +8,7 @@ import { planContextFor, type PlanSource } from "../planContext";
 import { katalogPatch } from "../katalogPatch";
 import { buildWeekEntries } from "../lastEntries";
 import type { HistorySessionInput } from "../history";
-import { buildComboWeekPlan, buildStrengthWeekPlan, scoreForRir } from "@/engine";
+import { buildStrengthWeekPlan, buildTestPhaseWeekPlan, scoreForRir } from "@/engine";
 import type { EngineSet, SetEntry } from "@/engine/types";
 
 const PLAN = buildStrengthWeekPlan(5); // 5,5,4,3,2 – RIR 2, letzte zwei RIR 1
@@ -67,7 +67,7 @@ function planSource(over: Partial<PlanSource> = {}): PlanSource {
     prevWeek: PLAN[1]!,
     startReps: PLAN[0]!.reps,
     anchorPhaseId: PHASE,
-    comboWeek: false,
+    deload: false,
     currentWeekEntryByExercise: {},
     previousWeekEntryByExercise: {},
     ...over,
@@ -324,10 +324,10 @@ describe("buildWeekEntries – letzte Einheit je Uebung in einer Journey-Woche",
   });
 });
 
-// Kombiwoche der Testphase (Issue #225, Schritt 4): Entlastung mit 3 Saetzen zu
+// Entlastungswoche der Testphase (Issue #225, Schritt 4 / #240): 2 Saetze zu
 // 3-5 Wiederholungen und 60 % vom Startgewicht X der Kraftphase davor.
-describe("Kombiwoche – Entlastungsziele", () => {
-  const COMBO = buildComboWeekPlan(1);
+describe("Entlastungswoche der Testphase – Entlastungsziele", () => {
+  const COMBO = buildTestPhaseWeekPlan(2);
 
   // Uebung mit fortgeschriebenem Anker (47,5) und festgehaltenem Startgewicht
   // (37,5), beide an die Kraftphase gebunden.
@@ -345,7 +345,7 @@ describe("Kombiwoche – Entlastungsziele", () => {
       prevWeek: COMBO[0]!,
       startReps: COMBO[0]!.reps,
       anchorPhaseId: PHASE,
-      comboWeek: true,
+      deload: true,
       currentWeekEntryByExercise: {},
       previousWeekEntryByExercise: {},
       ...over,
@@ -358,16 +358,16 @@ describe("Kombiwoche – Entlastungsziele", () => {
       exercisesById: { bench: benchNachKraft, curl },
       phaseFocus: { focus: "test" },
       phaseRepTarget: [2, 4],
-      volumePhase: { setsStart: 2, setsEnd: 2, weeks: 1, deloadWeek: null },
+      volumePhase: { setsStart: 2, setsEnd: 2, weeks: 2, deloadWeek: null },
       weekInPhase: 0,
       planSource: comboSource(),
       ...over,
     });
   }
 
-  it("gibt 3 Saetze zu 3-5 Wiederholungen mit 60 % vom Startgewicht vor", () => {
+  it("gibt 2 Saetze zu 3-5 Wiederholungen mit 60 % vom Startgewicht vor", () => {
     const en = buildLiveEntries(comboInput()).entries[0]!;
-    expect(en.sets).toHaveLength(3);
+    expect(en.sets).toHaveLength(2);
     // 60 % von 37,5 = 22,5 kg (ladbar mit 20-kg-Stange)
     expect(en.sets.every((s) => s.weight === 22.5)).toBe(true);
     expect(en.sets.every((s) => s.targetReps === 5)).toBe(true);
@@ -387,7 +387,7 @@ describe("Kombiwoche – Entlastungsziele", () => {
     expect(ohneX.sets[0]!.weight).toBe(27.5);
   });
 
-  it("steigert in der Kombiwoche nicht, auch nach sauberer Vorwoche", () => {
+  it("steigert in der Entlastung nicht, auch nach sauberer Vorwoche", () => {
     const en = buildLiveEntries(
       comboInput({
         planSource: comboSource({
@@ -400,7 +400,7 @@ describe("Kombiwoche – Entlastungsziele", () => {
     expect(en.sets[0]!.weight).toBe(22.5);
   });
 
-  it("nimmt in der Kombiwoche das Startgewicht der Kraftphase als Anker", () => {
+  it("nimmt in der Entlastung das Startgewicht der Kraftphase als Anker", () => {
     const ctx = planContextFor(comboSource(), {
       id: "bench",
       referenceWeight: 47.5,

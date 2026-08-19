@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildPeriodization } from "@/lib/periodization";
 import type { JourneyPhaseInput } from "@/lib/journey";
-import { buildComboWeekPlan, buildStrengthWeekPlan } from "@/engine";
+import { buildStrengthWeekPlan, buildTestPhaseWeekPlan } from "@/engine";
 
 // Zwei Phasen mit bekannten Eckdaten, damit Volumen (Satz-Rampe + Deload),
 // Intensitaet (aus der Wiederholungsspanne) und die Baender exakt pruefbar sind.
@@ -135,7 +135,7 @@ describe("buildPeriodization", () => {
 
   // Issue #225, Schritt 6: Phasen mit Wochenplan rechnen wochengenau.
   describe("Phasen mit Wochenplan", () => {
-    const kraftUndKombi: JourneyPhaseInput[] = [
+    const kraftUndTest: JourneyPhaseInput[] = [
       phase({
         name: "Maximalkraft",
         focus: "strength",
@@ -150,45 +150,47 @@ describe("buildPeriodization", () => {
       phase({
         name: "Test",
         focus: "test",
-        weeks: 1,
+        weeks: 2,
         setsStart: 3,
         setsEnd: 3,
         deloadWeek: null,
-        weekPlan: buildComboWeekPlan(1),
+        weekPlan: buildTestPhaseWeekPlan(2),
       }),
     ];
 
     it("laesst die Intensitaet mit der Wiederholungsleiter steigen", () => {
-      const d = buildPeriodization(kraftUndKombi, 1);
-      // Leiter 5, 4, 3, 2 -> 1/5, 1/4, 1/3, 1/2; danach die Kombiwoche mit
-      // 60 % auf Mitte 4 -> 0,15.
+      const d = buildPeriodization(kraftUndTest, 1);
+      // Leiter 5, 4, 3, 2 -> 1/5, 1/4, 1/3, 1/2; danach die Entlastungswoche
+      // mit 60 % auf Mitte 4 -> 0,15 und die Testwoche als 1RM-Versuch -> 1.
       expect(d.weeks.map((w) => w.intens)).toEqual([
-        0.2, 0.25, 1 / 3, 0.5, 0.15,
+        0.2, 0.25, 1 / 3, 0.5, 0.15, 1,
       ]);
       expect(d.iMin).toBeCloseTo(0.15);
-      expect(d.iMax).toBeCloseTo(0.5);
+      expect(d.iMax).toBeCloseTo(1);
     });
 
     it("nimmt das Volumen aus den Saetzen des Plans statt aus der Satz-Rampe", () => {
-      const d = buildPeriodization(kraftUndKombi, 1);
-      expect(d.weeks.map((w) => w.vol)).toEqual([4, 4, 4, 4, 3]);
+      const d = buildPeriodization(kraftUndTest, 1);
+      // Die Testwoche plant keine Einheit: null Saetze.
+      expect(d.weeks.map((w) => w.vol)).toEqual([4, 4, 4, 4, 2, 0]);
     });
 
-    it("markiert die Kombiwoche als Entlastung", () => {
-      const d = buildPeriodization(kraftUndKombi, 1);
+    it("markiert die Entlastungswoche als Entlastung, die Testwoche nicht", () => {
+      const d = buildPeriodization(kraftUndTest, 1);
       expect(d.weeks.map((w) => w.deload)).toEqual([
         false,
         false,
         false,
         false,
         true,
+        false,
       ]);
     });
 
     it("rechnet Phasen ohne Plan daneben unveraendert", () => {
       const gemischt: JourneyPhaseInput[] = [
         phase({ name: "Aufbau", weeks: 2, setsStart: 2, setsEnd: 5 }),
-        kraftUndKombi[0]!,
+        kraftUndTest[0]!,
       ];
       const d = buildPeriodization(gemischt, 1);
       // Aufbau wie bisher (Rampe 2 -> 5 ueber 2 Wochen, Mitte 10 -> 0,1).

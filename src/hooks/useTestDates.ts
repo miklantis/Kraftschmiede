@@ -2,10 +2,9 @@ import { useMemo } from "react";
 import { useAllRmTests } from "./useRmTests";
 
 // Datum jedes abgeschlossenen 1RM-Tests, aufsteigend. Eine Kalenderwoche mit
-// Test gilt als erfuellt, unabhaengig von der Einheitenzahl: die Kombiwoche der
-// Testphase hat planmaessig nur zwei Einheiten (Entlastung und Test), das
-// Wochenziel sind drei - ohne diese Regel bliebe die Journey dort haengen
-// (Issue #225, Schritt 4 / #229).
+// Test gilt als erfuellt, unabhaengig von der Einheitenzahl: die Testwoche der
+// Testphase plant keine Einheit, das Wochenziel sind drei - ohne diese Regel
+// bliebe die Journey dort haengen (Issue #225, Schritt 4 / #229).
 //
 // Eine Stelle statt in jedem Hook: die Platzierung muss ueberall dieselbe sein,
 // sonst zeigt die Uebungsseite eine andere Woche als die gestartete Einheit.

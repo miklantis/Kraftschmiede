@@ -15,7 +15,8 @@ import { isNeutralLoad, loadPercent } from "@/lib/loadFactor";
 // Traegt die Phase einen Wochenplan (Kraft, Schnellkraft, Test), kommen beide
 // Werte wochengenau aus dem Plan statt aus den Eckwerten der Phase (Issue #225,
 // Schritt 6): die Kraftphase steigt mit ihrer Wiederholungsleiter sichtbar an,
-// die Kombiwoche bricht ein. Phasen ohne Plan rechnen unveraendert weiter.
+// die Entlastungswoche bricht ein und die Testwoche steht ohne Volumen auf
+// hoechster Intensitaet. Phasen ohne Plan rechnen unveraendert weiter.
 
 // Eine Woche auf der Zeitachse. g = 0-basierte Gesamtwoche der Journey.
 export interface PeriodWeek {
@@ -63,8 +64,8 @@ function intensityScore(
 
 // Intensitaets-Score einer Planwoche: die Wiederholungen genau dieser Woche
 // statt der Spanne der ganzen Phase, dazu der Anteil des Arbeitsgewichts aus dem
-// Plan (Kombiwoche: 60 %). Dadurch steigt die Linie innerhalb der Kraftphase mit
-// der Wiederholungsleiter und faellt in der Kombiwoche deutlich ab.
+// Plan (Entlastung: 60 %). Dadurch steigt die Linie innerhalb der Kraftphase mit
+// der Wiederholungsleiter und faellt in der Entlastungswoche deutlich ab.
 function planIntensityScore(week: WeekPlanWeek, loadFactor: number): number {
   const mid =
     week.repsMax != null && week.repsMax !== week.reps
@@ -119,7 +120,7 @@ export function buildPeriodization(
         vol,
         intens,
         // Im Plan macht der Anteil am Arbeitsgewicht die Entlastungswoche aus
-        // (Kombiwoche), sonst die gesetzte Deload-Woche der Phase.
+        // (Testphase), sonst die gesetzte Deload-Woche der Phase.
         deload: row
           ? row.loadPct < 1
           : !!(p.deloadWeek && wi === p.deloadWeek - 1),

@@ -77,7 +77,7 @@ Recovery-Fenster, Timer).
   das eingefrorene reference_weight gehört; ohne diesen Bezug lässt sich „Anker dieser
   Phase" nicht von „noch kein Anker" unterscheiden), plan_start_weight (nullable –
   Startgewicht X derselben Phase, also der Stand beim Eintritt; Bezug der Entlastung
-  in der Kombiwoche, Migration 0035), recovery_hours,
+  in der Entlastungswoche der Testphase, Migration 0035), recovery_hours,
   rm/rm_as_of/rm_stale (zwischengespeichertes 1RM für den Coach), position
 - **exercise_muscles** – feine Regionen-Map: exercise_id (FK), region_id (Code-/SVG-Region),
   kategorie (primär/sekundär/stabilisierend)
@@ -261,17 +261,25 @@ betroffene Tabelle beim Wiederherstellen leer.
   (welche Einheit liegt in dieser, welche in der vorigen Journey-Woche derselben Phase)
   liegt in `lib/lastEntries.ts` (`buildWeekEntries`) und `engine/journey.ts`
   (`journeyWeekLookup`), zusammengesetzt in `lib/planContext.ts`.
-- **Kombiwoche der Testphase entlastet, statt zu steigern.** Die Testphase läuft
-  denselben Weg, nur mit anderem Bezug: 3 Sätze zu 3–5 Wiederholungen mit dem `loadPct`
-  des Plans (60 %) vom Startgewicht X der vorangegangenen Kraftphase, ohne jede
-  Steigerung (`planWeekLoad` mit `deload`). X steht als `plan_start_weight` an der
-  Übung, gebunden an dieselbe Phase wie der Anker, und wird beim Eintritt in die Phase
-  einmal festgehalten (`lib/katalogPatch.ts`); fehlt es, gilt der Anker, sonst das 1RM.
-  Welche Phase den Bezug stellt, entscheidet `derivePhaseContext` (`comboWeek`,
-  `anchorPhaseId` – die nächste Kraft-/Schnellkraftphase davor).
-- **Eine Woche mit 1RM-Test ist erfüllt.** Die Kombiwoche hat planmäßig nur zwei
-  Einheiten (Entlastung und Test), das Wochenziel sind drei – ohne Ausnahme bliebe die
-  Journey dort hängen. Deshalb gilt in `engine/journey.ts` an einer Stelle
+- **Die Testphase entlastet erst, dann testet sie.** Bauregel in
+  `engine/weekPlan.ts` (`buildTestPhaseWeekPlan`): die letzte Woche einer Testphase ist
+  die reine Testwoche, jede Woche davor ist Entlastung. Die Entlastungswoche läuft
+  denselben Weg wie die Kraftwoche, nur mit anderem Bezug: 2 Sätze zu 3–5
+  Wiederholungen mit dem `loadPct` des Plans (60 %) vom Startgewicht X der
+  vorangegangenen Kraftphase, ohne jede Steigerung (`planWeekLoad` mit `deload`). X
+  steht als `plan_start_weight` an der Übung, gebunden an dieselbe Phase wie der Anker,
+  und wird beim Eintritt in die Phase einmal festgehalten (`lib/katalogPatch.ts`); fehlt
+  es, gilt der Anker, sonst das 1RM. Welche Phase den Bezug stellt, entscheidet
+  `derivePhaseContext` (`deload`, `anchorPhaseId` – die nächste Kraft-/Schnellkraftphase
+  davor).
+- **Die Testwoche plant nichts.** Sie steht mit `sets: 0` im Wochenplan
+  (`weekDemandsSession` fragt das ab) und gibt weder dem Coach noch der Anzeige etwas
+  vor: `derivePhaseContext` lässt den ganzen Plan-Block leer, der Coach rechnet dort wie
+  in einer Phase ohne Plan. Trainieren ist erlaubt, aber nicht eingeplant; der 1RM-Test
+  läuft unverändert von der Übungsseite. Ein neuer Phasentyp entsteht dafür nicht – die
+  Testphase bleibt `test`, nur mit zwei Wochen (Issue #240, Schritt 1).
+- **Eine Woche mit 1RM-Test ist erfüllt.** Die Testwoche plant gar keine Einheit, das
+  Wochenziel sind drei – ohne Ausnahme bliebe die Journey dort hängen. Deshalb gilt in `engine/journey.ts` an einer Stelle
   (`fulfilledWeekKeys`): liegt in einer Kalenderwoche ein abgeschlossener 1RM-Test, ist
   sie erfüllt, unabhängig von der Einheitenzahl. Gezählt werden nur Tests ab der ersten
   Einheit der Journey (ein älterer Test darf sie nicht rückwirkend vorrücken); die
@@ -287,16 +295,18 @@ betroffene Tabelle beim Wiederherstellen leer.
   Journey-Seite klappt die laufende Phase mit Plan zur Wochentabelle auf
   (`PhaseView.weekRows` aus `lib/journey.ts`): je Woche Sätze, Wiederholungen,
   Ziel-Anstrengung und Wochenziel, abgeschlossene abgehakt, die laufende markiert. Die
-  Kombiwoche zeigt weiter ihren Ablauf (`comboNote`) statt Zahlen. Die Eckwerte einer
+  Testphase zeigt weiter ihren Ablauf (`testNote`) statt Zahlen. Die Eckwerte einer
   Phase mit Plan kommen ebenfalls aus dem Plan (Wiederholungen, Sätze, Ziel-Anstrengung
-  statt Band, Satz-Rampe und Deload) – Phasen ohne Plan sehen unverändert aus.
+  statt Band, Satz-Rampe und Deload); gezählt werden dabei nur Wochen mit geplanter
+  Einheit, eine Phase ganz ohne Vorgabe sagt genau das. Phasen ohne Plan sehen
+  unverändert aus.
 - **Die Periodisierungskurve rechnet wochengenau, wenn ein Plan da ist.** Trägt eine
   Phase einen Wochenplan, kommen beide Linien in `lib/periodization.ts` aus der
   jeweiligen Planwoche statt aus den Eckwerten der Phase: die Intensität aus den
   Wiederholungen der Woche mal dem Anteil am Arbeitsgewicht (`loadPct`), das Volumen aus
   den Sätzen der Woche, und die Entlastungswoche ergibt sich aus `loadPct < 1` statt aus
-  `deload_week`. Dadurch steigt der Kraftblock sichtbar an und die Kombiwoche bricht
-  ein. Phasen ohne Plan rechnen unverändert über Repband und Satz-Rampe; der
+  `deload_week`. Dadurch steigt der Kraftblock sichtbar an, die Entlastungswoche bricht
+  ein und die Testwoche steht ohne Volumen auf höchster Intensität. Phasen ohne Plan rechnen unverändert über Repband und Satz-Rampe; der
   Chart-Baustein selbst bleibt unangetastet (reiner Datenteil).
 - **Datenzugriff gekapselt** in Query-/Mutation-Hooks je Entität (z. B.
   `useSessions`, `useExercises`). Komponenten kennen kein Supabase direkt.

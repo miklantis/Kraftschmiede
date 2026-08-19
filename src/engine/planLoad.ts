@@ -16,8 +16,8 @@
 //     wenn sie zweimal drankommt.
 //   - gesenkt wird nie. Nur eine im Training selbst reduzierte Last zieht den
 //     Anker nach unten nach (anchorAfterSession).
-//   - Kombiwoche der Testphase (deload): ein Anteil des Ankers - dort das
-//     Startgewicht X der vorangegangenen Kraftphase - ohne jede Steigerung.
+//   - Entlastungswoche der Testphase (deload): ein Anteil des Ankers - dort
+//     das Startgewicht X der vorangegangenen Kraftphase - ohne Steigerung.
 
 import { avg } from "./math";
 import { loadForReps } from "./phaseChange";
@@ -129,9 +129,9 @@ export interface PlanWeekLoadInput {
   loadPct?: number;
   /** Schrittweite eines Gewichtssprungs aus den Einstellungen. */
   step: number;
-  /** Kombiwoche: entlastet wird vom Anker (dort das Startgewicht X der
+  /** Entlastung: entlastet wird vom Anker (dort das Startgewicht X der
    *  vorangegangenen Kraftphase), gesteigert wird nicht - die Woche laeuft in
-   *  den 1RM-Test und nicht in den naechsten Schritt der Rampe. */
+   *  die Testwoche und nicht in den naechsten Schritt der Rampe. */
   deload?: boolean;
   opts?: PlanLoadOpts;
 }
@@ -156,7 +156,7 @@ export function planWeekLoad(input: PlanWeekLoadInput): PlanWeekLoad {
       input.opts,
     );
 
-  // Kombiwoche: ein Anteil des Ankers, ohne Steigerung. Liegt in der Woche
+  // Entlastung: ein Anteil des Ankers, ohne Steigerung. Liegt in der Woche
   // schon eine Einheit, gilt deren Vorgabe weiter (sonst wuerde die Entlastung
   // beim zweiten Mal noch einmal heruntergerechnet).
   if (input.deload) {

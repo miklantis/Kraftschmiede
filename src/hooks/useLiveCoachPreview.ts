@@ -138,10 +138,10 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
       // Wochenplan-Vorschau: gewertet wird die laufende Einheit, als waere sie
       // die Vorwoche - die Frage ist ja „was macht der Coach daraus". Anker ist
       // der Phasenanker, solange die Uebung in dieser Phase schon beendet
-      // wurde; sonst das gerade bewegte Gewicht. In der Kombiwoche gibt es
+      // wurde; sonst das gerade bewegte Gewicht. In der Entlastung gibt es
       // keinen Rueckfall auf das bewegte Gewicht: die Entlastung wuerde sonst
       // von der schon entlasteten Last noch einmal heruntergerechnet.
-      const anchor = planAnchor(ph.anchorPhaseId, ph.comboWeek, {
+      const anchor = planAnchor(ph.anchorPhaseId, ph.deload, {
         id: e.id,
         referenceWeight: e.reference_weight,
         referencePhaseId: e.reference_phase_id,
@@ -154,8 +154,8 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
               week: ph.planWeek,
               prevWeek: ph.planWeek,
               startReps: ph.firstPlanWeek.reps,
-              anchor: anchor ?? (ph.comboWeek ? null : workWeight),
-              deload: ph.comboWeek,
+              anchor: anchor ?? (ph.deload ? null : workWeight),
+              deload: ph.deload,
               currentWeekEntry: null,
               previousWeekEntry: lastEntry,
               rm: e.rm,

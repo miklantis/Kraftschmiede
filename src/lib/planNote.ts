@@ -17,7 +17,7 @@ export interface PlanNote {
   targets: string;
   /** Was diese Woche entscheidet ("Schaffst du alle, geht es …"). */
   progress: string;
-  /** Umgang mit schweren Saetzen; null in der Kombiwoche. */
+  /** Umgang mit schweren Saetzen; null in der Entlastungswoche. */
   hint: string | null;
 }
 
@@ -30,8 +30,8 @@ export interface PlanNoteInput {
   phaseWeeks: number;
   /** Geltende Zeile des Wochenplans. */
   week: WeekPlanWeek;
-  /** Kombiwoche der Testphase: entlasten statt steigern. */
-  comboWeek: boolean;
+  /** Entlastungswoche der Testphase: entlasten statt steigern. */
+  deload: boolean;
   /** Schrittweite eines Gewichtssprungs aus den Einstellungen. */
   weightStep: number | null;
   /** Gewichtseinheit aus den Einstellungen ("kg"/"lb"). */
@@ -46,9 +46,8 @@ const CLUSTER_HINT =
   "(z. B. 2 + 2 mit kurzer Pause), statt das Gewicht zu senken. Bist du platt, " +
   "reichen auch 3 Sätze.";
 
-const COMBO_PROGRESS =
-  "Locker bleiben: Diese Einheit ist die Entlastung vor dem 1RM-Test " +
-  "am Ende der Woche.";
+const DELOAD_PROGRESS =
+  "Locker bleiben: Diese Woche ist die Entlastung vor der Testwoche.";
 
 function repsText(week: WeekPlanWeek): string {
   const reps =
@@ -85,8 +84,8 @@ export function buildPlanNote(input: PlanNoteInput | null): PlanNote | null {
     .filter((s): s is string => s !== null)
     .join(" · ");
 
-  const progress = input.comboWeek
-    ? COMBO_PROGRESS
+  const progress = input.deload
+    ? DELOAD_PROGRESS
     : cur < weeks
       ? `Schaffst du alle Sätze sauber, geht es nächste Woche ` +
         `${fmtKg(step)} ${input.unit} hoch.`
@@ -97,6 +96,6 @@ export function buildPlanNote(input: PlanNoteInput | null): PlanNote | null {
     title: `${input.phaseName} · Woche ${cur} von ${weeks}`,
     targets,
     progress,
-    hint: input.comboWeek ? null : CLUSTER_HINT,
+    hint: input.deload ? null : CLUSTER_HINT,
   };
 }
