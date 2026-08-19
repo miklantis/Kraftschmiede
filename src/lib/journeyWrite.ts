@@ -147,6 +147,9 @@ export async function writeJourneyStart(
     rep_target_min: p.rep_target_min,
     rep_target_max: p.rep_target_max,
     load_factor: p.load_factor,
+    // Der Wochenplan der Vorlage wandert unveraendert in die Journey mit; ohne
+    // ihn liefe eine frisch gestartete Kraftphase wieder frei ueber den Coach.
+    week_plan: p.week_plan,
     position: i,
   }));
   await store.insertPhasen(phaseRows);

@@ -73,8 +73,10 @@ Recovery-Fenster, Timer).
   equipment, bar_id (FK), description, metric (reps/duration bei Körpergewicht),
   muscle_groups (grobe Tags als text[]), rep_range_min/max, target_score, work_weight,
   reference_weight (nullable, eingefrorenes Arbeitsgewicht zum Start einer
-  Lastfaktor-Journey), recovery_hours, rm/rm_as_of/rm_stale (zwischengespeichertes 1RM
-  für den Coach), position
+  Lastfaktor-Journey), reference_phase_id (FK auf phases, nullable – zu welcher Phase
+  das eingefrorene reference_weight gehört; ohne diesen Bezug lässt sich „Anker dieser
+  Phase" nicht von „noch kein Anker" unterscheiden), recovery_hours,
+  rm/rm_as_of/rm_stale (zwischengespeichertes 1RM für den Coach), position
 - **exercise_muscles** – feine Regionen-Map: exercise_id (FK), region_id (Code-/SVG-Region),
   kategorie (primär/sekundär/stabilisierend)
 - **templates** – key, name, image, active (Soft-Archiv), position. Namen pro Nutzer
@@ -83,7 +85,8 @@ Recovery-Fenster, Timer).
 - **journey_templates** – key, name, tagline, for_whom, summary, position
 - **journey_template_phases** – journey_template_id (FK), name, focus, weeks,
   sets_start, sets_end, deload_week (nullable), rep_target_min/max, load_factor
-  (Anteil des Referenzgewichts, Default 1.0 = gewohntes Verhalten), position
+  (Anteil des Referenzgewichts, Default 1.0 = gewohntes Verhalten), week_plan
+  (jsonb, nullable – Wochenplan der Phase, Form in `engine/weekPlan.ts`), position
 - **skills** – key, name, category, image, position
 - **skill_phases** – skill_id (FK), label, description, consecutive_sessions
   (aufeinanderfolgende Erfolge bis Aufstieg), position
@@ -103,7 +106,8 @@ Begründung in ADR-0003.
   `user_id where active` -> genau eine aktive Journey pro Nutzer (ADR-0004)
 - **phases** – journey_id (FK), name, focus, weeks, sets_start, sets_end, deload_week
   (nullable), rep_target_min/max, load_factor (Anteil des Referenzgewichts,
-  Default 1.0), position
+  Default 1.0), week_plan (jsonb, nullable – Kopie des Vorlagen-Wochenplans, wandert
+  beim Journey-Start mit der Phase mit), position
 - **journey_workouts** – ordnet Workouts der Journey zu: journey_id (FK), template_id (FK),
   `unique(user_id, journey_id, template_id)`. Reine Ja/Nein-Menge, bewusst ohne position
   (die Empfehlungsreihenfolge bestimmt der Coach); ON DELETE CASCADE über beide FKs
@@ -231,6 +235,14 @@ betroffene Tabelle beim Wiederherstellen leer.
   Intensitätslinie), Trainingsbildschirm (`phaseContext.loadNote`, eingefroren auf die
   laufende Einheit), Rückschau und Coach-Export genutzt. Journeys mit Lastfaktor 1
   überall sehen unverändert aus – keine zusätzliche Zeile, kein Hinweis.
+- **Wochenplan der Phase liegt an der Phase.** Kraft-, Schnellkraft- und Testphasen
+  tragen ihren Wochenplan als jsonb an der Phase (`week_plan`): je Woche Sätze,
+  Wiederholungen, Ziel-Anstrengung (RIR), Anteil am Arbeitsgewicht und ein kurzer
+  Wochenziel-Text. Gerechnet wird er an einer Stelle (`engine/weekPlan.ts`:
+  `buildWeekPlan` beim Seeden, `weekPlanForWeek` beim Lesen); das Zod-Schema dort ist
+  die Quelle der Wahrheit für die Form, die DB-Schemas verweisen nur darauf. Weil der
+  Plan an der Phase hängt, wandert er beim Journey-Start ohne eigene Kopierlogik mit.
+  Phasen ohne Plan (null) laufen unverändert über die Doppelprogression des Coaches.
 - **Datenzugriff gekapselt** in Query-/Mutation-Hooks je Entität (z. B.
   `useSessions`, `useExercises`). Komponenten kennen kein Supabase direkt.
 - **Naht zur Datenbank je Schreibbereich** (`src/lib/<bereich>Store.ts` +

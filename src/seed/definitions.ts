@@ -7,6 +7,13 @@ import type { Focus, Metric } from "@/schemas";
 
 // --- Journey-Vorlagen ---------------------------------------------------------
 
+/**
+ * Phase einer Journey-Vorlage. Der Wochenplan (week_plan) steht hier bewusst
+ * nicht: er faellt eindeutig aus Fokus und Phasenlaenge und wird beim Seeden
+ * ueber `buildWeekPlan` (engine/weekPlan.ts) gerechnet - so gibt es nur eine
+ * Pflegequelle fuer die Leiter. Kraftphasen haben keine Entlastungswoche mehr
+ * (deloadWeek null); die Entlastung steckt in der Kombiwoche der Testphase.
+ */
 export interface SeedJourneyPhase {
   name: string;
   focus: Focus;
@@ -46,7 +53,7 @@ export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
     phases: [
       { name: "Wiedereinstieg", focus: "reentry", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 5, repTargetMax: 8, loadFactor: 1 },
       { name: "Hypertrophie", focus: "hypertrophy", weeks: 5, setsStart: 2, setsEnd: 6, deloadWeek: 4, repTargetMin: 8, repTargetMax: 12, loadFactor: 1 },
-      { name: "Maximalkraft", focus: "strength", weeks: 5, setsStart: 4, setsEnd: 4, deloadWeek: 4, repTargetMin: 4, repTargetMax: 6, loadFactor: 1 },
+      { name: "Maximalkraft", focus: "strength", weeks: 5, setsStart: 4, setsEnd: 4, deloadWeek: null, repTargetMin: 4, repTargetMax: 6, loadFactor: 1 },
       { name: "Übergang / Test", focus: "test", weeks: 1, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadFactor: 1 },
     ],
   },
@@ -128,7 +135,7 @@ export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
       "Ein kompletter Quartalszyklus: ein Hypertrophie-Block für Muskelmasse, ein Maximalkraft-Block für Last und eine kurze Peak- und Testphase. Jeweils mit Entlastungswoche, sodass der Fortschritt planbar bleibt.",
     phases: [
       { name: "Hypertrophie", focus: "hypertrophy", weeks: 6, setsStart: 3, setsEnd: 6, deloadWeek: 6, repTargetMin: 8, repTargetMax: 12, loadFactor: 1 },
-      { name: "Maximalkraft", focus: "strength", weeks: 5, setsStart: 4, setsEnd: 4, deloadWeek: 5, repTargetMin: 4, repTargetMax: 6, loadFactor: 1 },
+      { name: "Maximalkraft", focus: "strength", weeks: 5, setsStart: 4, setsEnd: 4, deloadWeek: null, repTargetMin: 4, repTargetMax: 6, loadFactor: 1 },
       { name: "Peak & Test", focus: "test", weeks: 2, setsStart: 2, setsEnd: 3, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadFactor: 1 },
     ],
   },
@@ -143,9 +150,9 @@ export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
     phases: [
       { name: "Wiedereinstieg", focus: "reentry", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 5, repTargetMax: 8, loadFactor: 1 },
       { name: "Hypertrophie I", focus: "hypertrophy", weeks: 5, setsStart: 3, setsEnd: 6, deloadWeek: 5, repTargetMin: 8, repTargetMax: 12, loadFactor: 1 },
-      { name: "Kraft I", focus: "strength", weeks: 4, setsStart: 4, setsEnd: 4, deloadWeek: 4, repTargetMin: 4, repTargetMax: 6, loadFactor: 1 },
+      { name: "Kraft I", focus: "strength", weeks: 4, setsStart: 4, setsEnd: 4, deloadWeek: null, repTargetMin: 4, repTargetMax: 6, loadFactor: 1 },
       { name: "Hypertrophie II", focus: "hypertrophy", weeks: 5, setsStart: 4, setsEnd: 6, deloadWeek: 5, repTargetMin: 8, repTargetMax: 12, loadFactor: 1 },
-      { name: "Maximalkraft", focus: "strength", weeks: 6, setsStart: 4, setsEnd: 4, deloadWeek: 6, repTargetMin: 3, repTargetMax: 5, loadFactor: 1 },
+      { name: "Maximalkraft", focus: "strength", weeks: 6, setsStart: 4, setsEnd: 4, deloadWeek: null, repTargetMin: 3, repTargetMax: 5, loadFactor: 1 },
       { name: "Peak & Test", focus: "test", weeks: 2, setsStart: 2, setsEnd: 3, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadFactor: 1 },
     ],
   },

@@ -2,6 +2,7 @@
 // journey_templates und journey_template_phases.
 
 import { z } from "zod";
+import { weekPlanSchema } from "@/engine/weekPlan";
 import { focusEnum, uuid } from "./shared";
 
 // journey_templates – kuratierte Periodisierung als Vorlage.
@@ -31,7 +32,8 @@ export type JourneyTemplateInsert = z.infer<typeof journeyTemplateInsert>;
 // journey_template_phases – Phase einer Journey-Vorlage. rep_target_* steuert
 // spaeter die Doppelprogression. load_factor ist der Anteil des
 // Referenzgewichts, mit dem in dieser Phase gearbeitet wird (1.0 = volles
-// Niveau, also das gewohnte Verhalten).
+// Niveau, also das gewohnte Verhalten). week_plan ist der Wochenplan der Phase
+// (Form: engine/weekPlan.ts); er wandert beim Journey-Start mit der Phase mit.
 export const journeyTemplatePhaseRow = z.object({
   id: uuid,
   user_id: uuid,
@@ -45,6 +47,7 @@ export const journeyTemplatePhaseRow = z.object({
   rep_target_min: z.number().int().nullable(),
   rep_target_max: z.number().int().nullable(),
   load_factor: z.number(),
+  week_plan: weekPlanSchema.nullable(),
   position: z.number().int(),
 });
 export type JourneyTemplatePhaseRow = z.infer<typeof journeyTemplatePhaseRow>;
@@ -56,6 +59,7 @@ export const journeyTemplatePhaseInsert = journeyTemplatePhaseRow
     rep_target_min: true,
     rep_target_max: true,
     load_factor: true,
+    week_plan: true,
     position: true,
   });
 export type JourneyTemplatePhaseInsert = z.infer<
