@@ -87,20 +87,6 @@ export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
     ],
   },
   {
-    key: "strength_peak",
-    name: "Maximalkraft / Peaking",
-    tagline: "Schwere Lasten, gezielt zum 1RM",
-    forWhom:
-      "Fortgeschritten, Technik stabil. Ziel ist messbar mehr Kraft auf den Hauptübungen.",
-    summary:
-      "Baut eine Kraftbasis im Bereich 4–6 Wiederholungen, intensiviert auf 3–5 mit höherer Last und reduziertem Volumen und gipfelt in einer Peak- und Testphase für neue Maxima.",
-    phases: [
-      { name: "Kraftbasis", focus: "strength", weeks: 4, setsStart: 4, setsEnd: 4, deloadWeek: null, repTargetMin: 4, repTargetMax: 6, loadFactor: 1 },
-      { name: "Intensivierung", focus: "power", weeks: 3, setsStart: 3, setsEnd: 4, deloadWeek: 3, repTargetMin: 3, repTargetMax: 5, loadFactor: 1 },
-      { name: "Peak & Test", focus: "test", weeks: 2, setsStart: 2, setsEnd: 3, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadFactor: 1 },
-    ],
-  },
-  {
     key: "conditioning",
     name: "Kraftausdauer / Kondition",
     tagline: "Work Capacity und allgemeine Fitness",
