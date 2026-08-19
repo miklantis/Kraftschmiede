@@ -1,6 +1,16 @@
 {
   "versions": [
     {
+      "version": "1.38.2",
+      "date": "2026-08-19",
+      "changes": [
+        "Der Trainingsbildschirm sagt jetzt, was diese Woche gilt: über den Übungen stehen Phase und Woche, die Vorgabe der Woche (Sätze, Wiederholungen, Ziel-Anstrengung) und der Satz, was passieren muss, damit das Gewicht nächste Woche steigt. In der Kombiwoche steht dort stattdessen, dass die Einheit die Entlastung vor dem 1RM-Test ist.",
+        "Dazu ein Hinweis für schwere Sätze: Schaffst du die Wiederholungen nicht am Stück, teile den Satz (zum Beispiel 2 + 2 mit kurzer Pause), statt das Gewicht zu senken - und an platten Tagen reichen auch 3 Sätze.",
+        "Die laufende Kraftphase zeigt auf der Journey-Seite ihren ganzen Wochenplan: je Woche Sätze, Wiederholungen, Ziel-Anstrengung und das Wochenziel, abgeschlossene Wochen abgehakt, die laufende hervorgehoben.",
+        "Phasen mit Wochenplan zeigen in ihren Eckwerten jetzt die Zahlen des Plans (zum Beispiel Wiederholungen 5 → 2) statt des Wiederholungsbands, nach dem dort gar nicht trainiert wird. Journeys und Vorlagen ohne Wochenplan sehen unverändert aus."
+      ]
+    },
+    {
       "version": "1.38.1",
       "date": "2026-08-19",
       "changes": [

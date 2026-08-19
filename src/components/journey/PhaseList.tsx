@@ -1,5 +1,5 @@
 import { PhaseDot } from "./PhaseDot";
-import type { PhaseView } from "@/lib/journey";
+import type { PhaseView, PhaseWeekRow } from "@/lib/journey";
 
 // Detailzeilen einer Phase (Band, Satz-Rampe, Deload). Im Raster gestapelt
 // (Schluessel ueber Wert), in der Liste als Zeile (Schluessel links, Wert rechts).
@@ -51,6 +51,57 @@ function LoadNote({ text }: { text: string }): React.ReactElement {
   return (
     <div className="rounded-[12px] border border-primary/25 bg-white/70 px-3 py-2 text-[12.5px] leading-snug text-foreground">
       {text}
+    </div>
+  );
+}
+
+// Wochentabelle des Plans an der laufenden Kraftphase (Issue #225, Schritt 5):
+// je Woche Saetze, Wiederholungen und Ziel-Anstrengung, darunter das Wochenziel.
+// Abgeschlossene Wochen sind abgehakt und gedimmt, die laufende ist hervorgehoben.
+function WeekPlanRows({ rows }: { rows: PhaseWeekRow[] }): React.ReactElement {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="text-[11.5px] font-semibold uppercase tracking-wide text-muted-foreground">
+        Wochenplan
+      </div>
+      {rows.map((r) => (
+        <div
+          key={r.label}
+          className={
+            "rounded-[10px] px-2.5 py-2 " +
+            (r.state === "current"
+              ? "bg-white/85 ring-1 ring-primary/30"
+              : "bg-white/45")
+          }
+        >
+          <div className="flex items-baseline justify-between gap-2">
+            <span
+              className={
+                "text-[12.5px] " +
+                (r.state === "future"
+                  ? "text-foreground-subtle"
+                  : "text-foreground")
+              }
+            >
+              {r.mark ? r.mark + " " : ""}
+              {r.label}
+            </span>
+            <span
+              className={
+                "font-mono text-[12.5px] font-semibold " +
+                (r.state === "future"
+                  ? "text-foreground-subtle"
+                  : "text-foreground")
+              }
+            >
+              {r.targets}
+            </span>
+          </div>
+          <div className="mt-0.5 text-[11.5px] leading-snug text-muted-foreground">
+            {r.note}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -111,6 +162,11 @@ export function PhaseList({
               </div>
             )}
             <DetailRows phase={p} layout="grid" />
+            {p.weekRows !== null && (
+              <div className="mt-3.5">
+                <WeekPlanRows rows={p.weekRows} />
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -157,6 +213,11 @@ export function PhaseList({
                   </div>
                 )}
                 <DetailRows phase={p} layout="list" />
+                {p.weekRows !== null && (
+                  <div className="mt-2.5">
+                    <WeekPlanRows rows={p.weekRows} />
+                  </div>
+                )}
               </div>
             )}
           </div>

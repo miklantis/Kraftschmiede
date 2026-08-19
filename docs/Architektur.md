@@ -278,6 +278,18 @@ betroffene Tabelle beim Wiederherstellen leer.
   Einheitenzahl der Anzeige bleibt die tatsächliche. Die Testdaten kommen als
   `testDates` aus `rm_tests` (`useTestDates`) und werden überall gleich hereingereicht,
   damit Uebungsseite, Live-Aufbau und Journey dieselbe Woche zeigen.
+- **Der Wochenplan ist dort sichtbar, wo er wirkt.** Auf dem Trainingsbildschirm steht
+  der Hinweis der laufenden Planwoche (Phase und Woche, Sätze/Wiederholungen/RIR, was
+  den nächsten Gewichtsschritt auslöst, dazu der Cluster-Hinweis) – gebaut an einer
+  Stelle (`lib/planNote.ts`, Schrittweite und Einheit aus den Einstellungen), beim Start
+  auf die Einheit eingefroren wie der Lastfaktor-Hinweis (`WorkoutSession.planNote`) und
+  in Start-Popup und Live-Panel im selben Kasten gezeigt (`PlanNoteBanner`). Auf der
+  Journey-Seite klappt die laufende Phase mit Plan zur Wochentabelle auf
+  (`PhaseView.weekRows` aus `lib/journey.ts`): je Woche Sätze, Wiederholungen,
+  Ziel-Anstrengung und Wochenziel, abgeschlossene abgehakt, die laufende markiert. Die
+  Kombiwoche zeigt weiter ihren Ablauf (`comboNote`) statt Zahlen. Die Eckwerte einer
+  Phase mit Plan kommen ebenfalls aus dem Plan (Wiederholungen, Sätze, Ziel-Anstrengung
+  statt Band, Satz-Rampe und Deload) – Phasen ohne Plan sehen unverändert aus.
 - **Datenzugriff gekapselt** in Query-/Mutation-Hooks je Entität (z. B.
   `useSessions`, `useExercises`). Komponenten kennen kein Supabase direkt.
 - **Naht zur Datenbank je Schreibbereich** (`src/lib/<bereich>Store.ts` +

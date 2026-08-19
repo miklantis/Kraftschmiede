@@ -11,6 +11,7 @@ import { buildLastEntries, buildPrevEntries, buildWeekEntries } from "@/lib/last
 import { derivePhaseContext, toPlacementSessions } from "@/lib/phaseContext";
 import { journeyWeekLookup } from "@/engine";
 import type { PlanSource } from "@/lib/planContext";
+import { buildPlanNote, type PlanNote } from "@/lib/planNote";
 import { useExercises } from "./useExercises";
 import { useTemplates } from "./useTemplates";
 import { useSessions } from "./useSessions";
@@ -38,6 +39,8 @@ export interface UseLiveBuilder {
   phaseId: string | null;
   /** Hinweis zur vorgegebenen Last der laufenden Phase; null im Normalfall. */
   loadNote: string | null;
+  /** Hinweis zur laufenden Woche des Wochenplans; null ohne Plan-Phase. */
+  planNote: PlanNote | null;
 }
 
 export function useLiveBuilder(): UseLiveBuilder {
@@ -153,6 +156,23 @@ export function useLiveBuilder(): UseLiveBuilder {
         })()
       : null;
 
+    // Hinweistext der laufenden Planwoche fuer den Trainingsbildschirm: er wird
+    // beim Start auf die Einheit eingefroren, wie der Lastfaktor-Hinweis (#225,
+    // Schritt 5). Schrittweite und Einheit kommen aus den Einstellungen und
+    // stehen erst hier zur Verfuegung.
+    const planNote =
+      ph.planWeek && ph.phase
+        ? buildPlanNote({
+            phaseName: ph.phase.name,
+            weekInPhase: ph.placement?.weekInPhase ?? 1,
+            phaseWeeks: ph.phase.weeks,
+            week: ph.planWeek,
+            comboWeek: ph.comboWeek,
+            weightStep,
+            unit,
+          })
+        : null;
+
     return {
       exercisesById,
       bars,
@@ -164,6 +184,7 @@ export function useLiveBuilder(): UseLiveBuilder {
       unit,
       weightStep,
       planSource,
+      planNote,
       ...ph,
     };
   }, [
@@ -214,5 +235,6 @@ export function useLiveBuilder(): UseLiveBuilder {
     journeyId: base.journeyId,
     phaseId: base.phaseId,
     loadNote: base.loadNote,
+    planNote: base.planNote,
   };
 }

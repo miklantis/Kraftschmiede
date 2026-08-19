@@ -15,6 +15,7 @@ const SESSION: WorkoutSession = {
   journeyId: "j-1",
   phaseId: "p-1",
   loadNote: null,
+  planNote: null,
   title: "Oberkörper",
   startedAt: 1_700_000_000_000,
   generalWarmup: { sets: [{ minutes: 7, mode: "bike", done: false }] },
@@ -120,6 +121,28 @@ describe("liveSession", () => {
       const s = parseLive(JSON.stringify(obj)).session;
       expect(s !== null && s.kind === "workout" ? s.note : null).toBe("");
       expect(s !== null && s.kind === "workout" ? s.entries[0].note : null).toBe("");
+    });
+
+    // Issue #225, Schritt 5: der Wochenplan-Hinweis ist auf die Einheit
+    // eingefroren und ueberlebt den Reload; eine Einheit aus der Zeit davor
+    // laeuft ohne ihn weiter.
+    it("liest den Wochenplan-Hinweis und vertraegt sein Fehlen", () => {
+      const mitHinweis = {
+        ...SESSION,
+        planNote: {
+          title: "Maximalkraft · Woche 3 von 5",
+          targets: "4 Sätze × 4 Wiederholungen · Ziel RIR 1",
+          progress: "Schaffst du alle Sätze sauber, geht es nächste Woche 2,5 kg hoch.",
+          hint: "Teile den Satz statt das Gewicht zu senken.",
+        },
+      };
+      const raw = serializeLive({ session: mitHinweis, collapsed: false });
+      expect(parseLive(raw).session).toEqual(mitHinweis);
+
+      const obj = JSON.parse(raw) as { session: Record<string, unknown> };
+      delete obj.session.planNote;
+      const s = parseLive(JSON.stringify(obj)).session;
+      expect(s !== null && s.kind === "workout" ? s.planNote : "fehlt").toBeNull();
     });
 
     it("behaelt collapsed, verwirft aber eine unvollstaendige Session", () => {

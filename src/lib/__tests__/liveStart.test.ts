@@ -35,6 +35,12 @@ describe("buildWorkoutSession", () => {
     journeyId: "j1",
     phaseId: "p1",
     loadNote: "Woche 2: 80 %",
+    planNote: {
+      title: "Maximalkraft · Woche 3 von 5",
+      targets: "4 Sätze × 4 Wiederholungen · Ziel RIR 1",
+      progress: "Schaffst du alle Sätze sauber, geht es nächste Woche 2,5 kg hoch.",
+      hint: null,
+    },
     entries: [entry()],
     generalWarmup: { sets: [{ minutes: 10, mode: "bike", done: false }] },
   };
@@ -49,6 +55,8 @@ describe("buildWorkoutSession", () => {
     expect(s.journeyId).toBe("j1");
     expect(s.phaseId).toBe("p1");
     expect(s.loadNote).toBe("Woche 2: 80 %");
+    // Wochenplan-Hinweis wird wie der Lastfaktor-Hinweis eingefroren (#225).
+    expect(s.planNote).toBe(input.planNote);
   });
 
   it("uebernimmt Uebungen und Aufwaermen unveraendert", () => {
@@ -59,13 +67,20 @@ describe("buildWorkoutSession", () => {
 
   it("haelt eine Einheit ohne Journey und ohne Lastfaktor-Hinweis aus", () => {
     const s = buildWorkoutSession(
-      { ...input, journeyId: null, phaseId: null, loadNote: null },
+      {
+        ...input,
+        journeyId: null,
+        phaseId: null,
+        loadNote: null,
+        planNote: null,
+      },
       ID,
       NOW,
     );
     expect(s.journeyId).toBeNull();
     expect(s.phaseId).toBeNull();
     expect(s.loadNote).toBeNull();
+    expect(s.planNote).toBeNull();
   });
 });
 

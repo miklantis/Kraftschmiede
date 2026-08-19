@@ -8,6 +8,7 @@
 // Die neue Kennung (newLiveId) und die Startzeit reicht der Store herein, damit
 // die Fabriken rein und ohne Uhr pruefbar bleiben.
 
+import type { PlanNote } from "./planNote";
 import type {
   LiveEntry,
   RmTestSession,
@@ -23,6 +24,8 @@ export interface StartWorkoutInput {
   phaseId: string | null;
   /** Hinweis zur vorgegebenen Last der Phase; null ohne Lastfaktor-Journey. */
   loadNote: string | null;
+  /** Hinweis zur laufenden Woche des Wochenplans; null ohne Plan-Phase. */
+  planNote: PlanNote | null;
   entries: WorkoutSession["entries"];
   generalWarmup: WorkoutSession["generalWarmup"];
 }
@@ -45,8 +48,8 @@ export interface StartRmTestInput {
   generalWarmup: RmTestSession["generalWarmup"];
 }
 
-/** Gefuehrte Kraft-Einheit aus einer Vorlage. Journey, Phase und Lastfaktor-
- *  Hinweis werden zum Startzeitpunkt eingefroren (wie V1 buildLive). */
+/** Gefuehrte Kraft-Einheit aus einer Vorlage. Journey, Phase, Lastfaktor- und
+ *  Wochenplan-Hinweis werden zum Startzeitpunkt eingefroren (wie V1 buildLive). */
 export function buildWorkoutSession(
   input: StartWorkoutInput,
   id: string,
@@ -59,6 +62,7 @@ export function buildWorkoutSession(
     journeyId: input.journeyId,
     phaseId: input.phaseId,
     loadNote: input.loadNote,
+    planNote: input.planNote,
     title: input.title,
     startedAt: now,
     generalWarmup: input.generalWarmup,

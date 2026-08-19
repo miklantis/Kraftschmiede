@@ -15,6 +15,7 @@ function phase(overrides: Partial<JourneyPhaseInput>): JourneyPhaseInput {
     repTargetMin: 8,
     repTargetMax: 12,
     loadFactor: 1,
+    weekPlan: null,
     ...overrides,
   };
 }
