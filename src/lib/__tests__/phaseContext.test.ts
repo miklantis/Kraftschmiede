@@ -3,7 +3,7 @@
 // ist zusaetzlich in lastfaktor.test.ts gedeckt; hier steht das Uebrige.
 
 import { describe, expect, it } from "vitest";
-import { buildComboWeekPlan, buildStrengthWeekPlan } from "@/engine";
+import { buildStrengthWeekPlan, buildTestPhaseWeekPlan } from "@/engine";
 import { derivePhaseContext } from "../phaseContext";
 import type { PhaseContextJourney, SessionForPhase } from "../phaseContext";
 import type { PhaseRow } from "@/schemas";
@@ -114,7 +114,7 @@ describe("derivePhaseContext", () => {
       planWeek: null,
       prevPlanWeek: null,
       firstPlanWeek: null,
-      comboWeek: false,
+      deload: false,
       anchorPhaseId: null,
     });
   });
@@ -137,9 +137,10 @@ describe("derivePhaseContext", () => {
   });
 });
 
-// Kombiwoche (#229): die Testphase traegt einen Plan und holt ihre Last aus der
-// vorangegangenen Kraftphase - dort liegt das Startgewicht X.
-describe("derivePhaseContext – Kombiwoche der Testphase", () => {
+// Testphase (#229, #240): sie traegt einen Plan und holt ihre Last aus der
+// vorangegangenen Kraftphase - dort liegt das Startgewicht X. Die letzte Woche
+// der Phase ist die reine Testwoche und gibt gar nichts vor.
+describe("derivePhaseContext – Testphase", () => {
   const KRAFT = "00000000-0000-0000-0000-000000000010";
   const TEST = "00000000-0000-0000-0000-000000000011";
 
@@ -156,23 +157,31 @@ describe("derivePhaseContext – Kombiwoche der Testphase", () => {
       id: TEST,
       name: "Übergang / Test",
       focus: "test",
-      weeks: 1,
-      week_plan: buildComboWeekPlan(1),
+      weeks: 2,
+      week_plan: buildTestPhaseWeekPlan(2),
       position: 1,
     }),
   ];
 
-  // Drei Einheiten in der ersten Kalenderwoche erfuellen sie: die Journey steht
-  // eine Woche spaeter in der Testphase.
-  const sessions: SessionForPhase[] = ["2026-08-03", "2026-08-04", "2026-08-05"].map(
-    (date) => ({ date, status: "done", type: "strength", journey_id: JOURNEY_ID }),
-  );
+  // Drei Einheiten je Kalenderwoche erfuellen sie: die Journey steht eine Woche
+  // spaeter in der Entlastungswoche, zwei Wochen spaeter in der Testwoche.
+  function sessionsUpTo(...wochen: string[][]): SessionForPhase[] {
+    return wochen.flat().map((date) => ({
+      date,
+      status: "done",
+      type: "strength",
+      journey_id: JOURNEY_ID,
+    }));
+  }
+  const woche1 = ["2026-08-03", "2026-08-04", "2026-08-05"];
+  const woche2 = ["2026-08-10", "2026-08-11", "2026-08-12"];
+  const sessions = sessionsUpTo(woche1);
 
-  it("erkennt die laufende Testphase als Kombiwoche", () => {
+  it("erkennt die Entlastungswoche der Testphase", () => {
     const ctx = derivePhaseContext(journeyWith(phases), sessions, 3, "2026-08-12");
     expect(ctx.phaseId).toBe(TEST);
-    expect(ctx.comboWeek).toBe(true);
-    expect(ctx.planWeek).toMatchObject({ sets: 3, reps: 3, repsMax: 5, loadPct: 0.6 });
+    expect(ctx.deload).toBe(true);
+    expect(ctx.planWeek).toMatchObject({ sets: 2, reps: 3, repsMax: 5, loadPct: 0.6 });
   });
 
   it("bindet den Anker an die Kraftphase davor", () => {
@@ -180,10 +189,26 @@ describe("derivePhaseContext – Kombiwoche der Testphase", () => {
     expect(ctx.anchorPhaseId).toBe(KRAFT);
   });
 
+  it("gibt in der reinen Testwoche nichts vor", () => {
+    const ctx = derivePhaseContext(
+      journeyWith(phases),
+      sessionsUpTo(woche1, woche2),
+      3,
+      "2026-08-19",
+    );
+    expect(ctx.phaseId).toBe(TEST);
+    expect(ctx.placement?.weekInPhase).toBe(2);
+    expect(ctx.planWeek).toBeNull();
+    expect(ctx.prevPlanWeek).toBeNull();
+    expect(ctx.firstPlanWeek).toBeNull();
+    expect(ctx.deload).toBe(false);
+    expect(ctx.anchorPhaseId).toBeNull();
+  });
+
   it("bleibt in der Kraftphase bei der eigenen Phase als Anker", () => {
     const ctx = derivePhaseContext(journeyWith(phases), [], 3, "2026-08-05");
     expect(ctx.phaseId).toBe(KRAFT);
-    expect(ctx.comboWeek).toBe(false);
+    expect(ctx.deload).toBe(false);
     expect(ctx.anchorPhaseId).toBe(KRAFT);
   });
 
@@ -194,7 +219,7 @@ describe("derivePhaseContext – Kombiwoche der Testphase", () => {
       3,
       "2026-08-05",
     );
-    expect(ctx.comboWeek).toBe(true);
+    expect(ctx.deload).toBe(true);
     expect(ctx.anchorPhaseId).toBeNull();
   });
 });

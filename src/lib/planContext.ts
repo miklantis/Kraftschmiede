@@ -19,10 +19,10 @@ export interface PlanSource {
   /** Ziel-Wiederholungen der ersten Planwoche (Bezug des Startgewichts). */
   startReps: number | null;
   /** Phase, an die der Anker gebunden sein muss - in der Rampe die laufende
-   *  Phase, in der Kombiwoche die Kraftphase davor (dort liegt X). */
+   *  Phase, in der Entlastung die Kraftphase davor (dort liegt X). */
   anchorPhaseId: string | null;
-  /** Kombiwoche: entlasten statt steigern. */
-  comboWeek: boolean;
+  /** Entlastungswoche der Testphase: entlasten statt steigern. */
+  deload: boolean;
   /** Letzte Einheit je Uebung in der laufenden Journey-Woche. */
   currentWeekEntryByExercise: Record<string, SetEntry | null>;
   /** Letzte Einheit je Uebung in der vorigen Journey-Woche. */
@@ -42,18 +42,18 @@ export interface PlanAnchorExercise {
 
 /** Anker der Uebung fuer den Plan. Er zaehlt nur, wenn er an die Bezugsphase
  *  gebunden ist - sonst tritt die Uebung gerade in die Phase ein und bekommt ihr
- *  Startgewicht. In der Kombiwoche zaehlt das Startgewicht X der Kraftphase
+ *  Startgewicht. In der Entlastung zaehlt das Startgewicht X der Kraftphase
  *  davor (Rueckfall: deren fortgeschriebener Anker), nicht der Stand am
  *  Phasenende - entlastet wird von X. */
 export function planAnchor(
   anchorPhaseId: string | null,
-  comboWeek: boolean,
+  deload: boolean,
   exercise: PlanAnchorExercise,
 ): number | null {
   if (anchorPhaseId == null || exercise.referencePhaseId !== anchorPhaseId) {
     return null;
   }
-  if (!comboWeek) return exercise.referenceWeight;
+  if (!deload) return exercise.referenceWeight;
   return exercise.planStartWeight ?? exercise.referenceWeight;
 }
 
@@ -69,8 +69,8 @@ export function planContextFor(
     week: source.week,
     prevWeek: source.prevWeek,
     startReps: source.startReps,
-    anchor: planAnchor(source.anchorPhaseId, source.comboWeek, exercise),
-    deload: source.comboWeek,
+    anchor: planAnchor(source.anchorPhaseId, source.deload, exercise),
+    deload: source.deload,
     currentWeekEntry: source.currentWeekEntryByExercise[exercise.id] ?? null,
     previousWeekEntry: source.previousWeekEntryByExercise[exercise.id] ?? null,
     rm: exercise.rm,

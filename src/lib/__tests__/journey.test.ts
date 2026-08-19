@@ -6,7 +6,7 @@ import {
   type JourneyPhaseInput,
   type PhasePlacementInfo,
 } from "../journey";
-import { buildComboWeekPlan, buildStrengthWeekPlan } from "@/engine";
+import { buildStrengthWeekPlan, buildTestPhaseWeekPlan } from "@/engine";
 
 function phase(over: Partial<JourneyPhaseInput> = {}): JourneyPhaseInput {
   return {
@@ -159,18 +159,27 @@ describe("buildPhaseViews – Wochenplan", () => {
     repTargetMax: 6,
     weekPlan: buildStrengthWeekPlan(4),
   });
-  const kombi = phase({
-    name: "Test",
+  const test = phase({
+    name: "Übergang / Test",
+    focus: "test",
+    weeks: 2,
+    setsStart: 3,
+    setsEnd: 3,
+    deloadWeek: null,
+    weekPlan: buildTestPhaseWeekPlan(2),
+  });
+  const nurTest = phase({
+    name: "Standort",
     focus: "test",
     weeks: 1,
     setsStart: 3,
     setsEnd: 3,
     deloadWeek: null,
-    weekPlan: buildComboWeekPlan(1),
+    weekPlan: buildTestPhaseWeekPlan(1),
   });
 
   it("zeigt an der laufenden Phase die Wochentabelle", () => {
-    const views = buildPhaseViews([kraft, kombi], {
+    const views = buildPhaseViews([kraft, test], {
       phaseIndex: 0,
       weekInPhase: 3,
       done: false,
@@ -195,7 +204,7 @@ describe("buildPhaseViews – Wochenplan", () => {
   });
 
   it("zeigt die Tabelle nur an der laufenden Phase", () => {
-    const views = buildPhaseViews([kraft, kombi], {
+    const views = buildPhaseViews([kraft, test], {
       phaseIndex: 1,
       weekInPhase: 1,
       done: false,
@@ -203,18 +212,33 @@ describe("buildPhaseViews – Wochenplan", () => {
     expect(views[0].weekRows).toBeNull();
   });
 
-  it("zeigt in der Kombiwoche den Ablauf statt Zahlen", () => {
-    const views = buildPhaseViews([kraft, kombi], {
+  it("zeigt an der Testphase den Ablauf statt Zahlen", () => {
+    const views = buildPhaseViews([kraft, test], {
       phaseIndex: 1,
       weekInPhase: 1,
       done: false,
     });
     expect(views[1].weekRows).toBeNull();
-    expect(views[1].comboNote).toContain("1RM-Test");
+    expect(views[1].testNote).toContain("Entlastung");
+    expect(views[1].testNote).toContain("Testwoche");
+  });
+
+  it("nennt eine einwoechige Testphase eine reine Testwoche", () => {
+    const views = buildPhaseViews([kraft, nurTest], {
+      phaseIndex: 1,
+      weekInPhase: 1,
+      done: false,
+    });
+    expect(views[1].testNote).toContain("Reine Testwoche");
+    // Ohne geplante Einheit stehen keine Zahlen an der Phase.
+    expect(views[1].detail.slice(0, 2)).toEqual([
+      { k: "Vorgabe", v: "keine" },
+      { k: "Woche", v: "1RM-Test" },
+    ]);
   });
 
   it("nimmt die Detailzeilen aus dem Plan statt aus Band und Satz-Rampe", () => {
-    const views = buildPhaseViews([kraft, kombi], {
+    const views = buildPhaseViews([kraft, test], {
       phaseIndex: 0,
       weekInPhase: 1,
       done: false,
@@ -224,7 +248,12 @@ describe("buildPhaseViews – Wochenplan", () => {
       { k: "Sätze / Woche", v: "4 Sätze" },
       { k: "Ziel-Anstrengung", v: "RIR 2 → 1" },
     ]);
-    expect(views[1].detail[0]).toEqual({ k: "Wiederholungen", v: "3–5 Wdh" });
+    // Die Testphase zaehlt nur ihre Entlastungswoche - die Testwoche plant nichts.
+    expect(views[1].detail).toEqual([
+      { k: "Wiederholungen", v: "3–5 Wdh" },
+      { k: "Sätze / Woche", v: "2 Sätze" },
+      { k: "Ziel-Anstrengung", v: "RIR 3" },
+    ]);
   });
 
   it("laesst Phasen ohne Plan unveraendert", () => {

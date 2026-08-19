@@ -8,11 +8,12 @@
 // (toPlacementSessions) – sie stand vorher in jedem Aufrufer wortgleich.
 
 import {
-  hasComboFocus,
   hasLoadPlanFocus,
+  hasTestFocus,
   journeyPlacement,
   phaseRepBand,
   planGovernsLoad,
+  weekDemandsSession,
   weekPlanForWeek,
 } from "@/engine";
 import type { JourneySession, Placement, WeekPlanWeek } from "@/engine";
@@ -69,18 +70,19 @@ export interface PhaseContext {
   phase: PhaseRow | null;
   // Geltende Zeile des Phasen-Wochenplans (Saetze, Wiederholungen, Ziel-
   // Anstrengung). Gesetzt nur, wenn die Phase ihre Last ueber den Plan steuert
-  // (Kraft/Schnellkraft als Rampe, Testphase als Kombiwoche); sonst null und
-  // der Coach rechnet wie bisher.
+  // (Kraft/Schnellkraft als Rampe, Testphase als Entlastung); sonst null und
+  // der Coach rechnet wie bisher. Auch die reine Testwoche laesst das Feld leer:
+  // sie plant keine Einheit und gibt darum nichts vor.
   planWeek: WeekPlanWeek | null;
   // Zeile der Vorwoche – Massstab, an dem die letzte Einheit gemessen wird.
   prevPlanWeek: WeekPlanWeek | null;
   // Erste Zeile des Plans – Bezug des Startgewichts beim Phaseneintritt.
   firstPlanWeek: WeekPlanWeek | null;
-  // Laeuft die Phase als Kombiwoche (Testphase)? Dann entlastet der Plan vom
-  // Startgewicht X der vorangegangenen Kraftphase und steigert nichts.
-  comboWeek: boolean;
+  // Entlastet die laufende Planwoche (Testphase), statt zu steigern? Dann
+  // rechnet der Plan vom Startgewicht X der vorangegangenen Kraftphase.
+  deload: boolean;
   // Phase, an die der Anker der Uebung gebunden sein muss, damit er zaehlt: in
-  // der Rampe die laufende Phase selbst, in der Kombiwoche die vorangegangene
+  // der Rampe die laufende Phase selbst, in der Entlastung die vorangegangene
   // Kraftphase (dort liegt das Startgewicht X). null = kein Plan-Bezug.
   anchorPhaseId: string | null;
 }
@@ -107,7 +109,7 @@ export function derivePhaseContext(
   let planWeek: WeekPlanWeek | null = null;
   let prevPlanWeek: WeekPlanWeek | null = null;
   let firstPlanWeek: WeekPlanWeek | null = null;
-  let comboWeek = false;
+  let deload = false;
   let anchorPhaseId: string | null = null;
 
   if (journey) {
@@ -140,17 +142,22 @@ export function derivePhaseContext(
       // Wochenplan der Phase: er setzt Saetze, Wiederholungen und Ziel-
       // Anstrengung und steuert ueber engine/planLoad auch das Gewicht - in
       // Kraft- und Schnellkraftphasen als Rampe, in der Testphase als
-      // Kombiwoche (Entlastung vom Startgewicht X der Kraftphase davor).
-      if (planGovernsLoad(phase.focus) && phase.week_plan) {
-        planWeek = weekPlanForWeek(phase.week_plan, placement.weekInPhase);
+      // Entlastung vom Startgewicht X der Kraftphase davor.
+      //
+      // Die reine Testwoche am Ende der Testphase plant keine Einheit. Sie gibt
+      // deshalb gar nichts vor: der ganze Plan-Block bleibt leer, und der Coach
+      // rechnet dort wie in einer Phase ohne Plan (#240).
+      const week = weekPlanForWeek(phase.week_plan ?? null, placement.weekInPhase);
+      if (planGovernsLoad(phase.focus) && phase.week_plan && weekDemandsSession(week)) {
+        planWeek = week;
         prevPlanWeek = weekPlanForWeek(phase.week_plan, placement.weekInPhase - 1);
         firstPlanWeek = phase.week_plan[0] ?? null;
-        comboWeek = hasComboFocus(phase.focus);
+        deload = hasTestFocus(phase.focus);
         // Bezugsphase des Ankers: in der Rampe die Phase selbst, in der
-        // Kombiwoche die naechste Kraft-/Schnellkraftphase davor. Gibt es keine
+        // Entlastung die naechste Kraft-/Schnellkraftphase davor. Gibt es keine
         // (Testphase am Anfang der Journey), bleibt der Bezug leer und die
         // Entlastung rechnet aus dem 1RM.
-        anchorPhaseId = comboWeek
+        anchorPhaseId = deload
           ? (journey.phases
               .slice(0, placement.phaseIndex)
               .reverse()
@@ -181,7 +188,7 @@ export function derivePhaseContext(
     planWeek,
     prevPlanWeek,
     firstPlanWeek,
-    comboWeek,
+    deload,
     anchorPhaseId,
   };
 }

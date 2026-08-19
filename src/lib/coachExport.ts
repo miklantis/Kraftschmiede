@@ -386,7 +386,7 @@ export function buildCoachExport(
       type: str(s, "type") ?? "strength",
       journeyId: str(s, "journey_id"),
     }));
-    // Wochen mit einem 1RM-Test zaehlen als erfuellt (Kombiwoche, #229) - sonst
+    // Wochen mit einem 1RM-Test zaehlen als erfuellt (Testwoche, #229) - sonst
     // zeigte der Export eine andere Woche als die App.
     const testDates = raw.rmTests
       .map((t) => str(t, "date"))

@@ -42,7 +42,7 @@ export const exerciseRow = z.object({
   reference_phase_id: uuid.nullable(),
   // Startgewicht X der Phase, an die der Anker gebunden ist: der Stand beim
   // Eintritt, bevor die Rampe ihn fortgeschrieben hat. Bezug der Entlastung in
-  // der Kombiwoche (60 % von X). null = kein Startgewicht festgehalten.
+  // der Entlastungswoche (60 % von X). null = kein Startgewicht festgehalten.
   plan_start_weight: z.number().nullable(),
   recovery_hours: z.number().int(),
   rm: z.number().nullable(),

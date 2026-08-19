@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildComboWeekPlan,
   buildStrengthWeekPlan,
+  buildTestPhaseWeekPlan,
   buildWeekPlan,
-  COMBO_LOAD_PCT,
+  DELOAD_LOAD_PCT,
+  DELOAD_SETS,
   hasWeekPlanFocus,
   parseWeekPlan,
   repLadder,
+  weekDemandsSession,
   weekPlanForWeek,
   weekPlanSchema,
   WEEK_PLAN_SETS,
@@ -67,19 +69,41 @@ describe("buildStrengthWeekPlan – Kraft- und Schnellkraftphase", () => {
   });
 });
 
-describe("buildComboWeekPlan – Kombiwoche der Testphase", () => {
-  it("3 Saetze, 3-5 Wiederholungen, 60 % vom Arbeitsgewicht", () => {
-    const [woche] = buildComboWeekPlan(1);
-    expect(woche).toMatchObject({
+describe("buildTestPhaseWeekPlan – Entlastung, dann reine Testwoche", () => {
+  it("die letzte Woche ist die Testwoche: keine geplante Einheit", () => {
+    const plan = buildTestPhaseWeekPlan(2);
+    expect(plan.map((w) => w.week)).toEqual([1, 2]);
+    expect(plan[1]!).toMatchObject({ sets: 0, loadPct: 1 });
+    expect(weekDemandsSession(plan[1]!)).toBe(false);
+    expect(plan[1]!.note).toMatch(/Testwoche/);
+  });
+  it("jede Woche davor entlastet: 2 Saetze, 3-5 Wiederholungen, 60 %", () => {
+    const plan = buildTestPhaseWeekPlan(2);
+    expect(plan[0]!).toMatchObject({
       week: 1,
-      sets: 3,
+      sets: DELOAD_SETS,
       reps: 3,
       repsMax: 5,
-      loadPct: COMBO_LOAD_PCT,
+      rir: 3,
+      loadPct: DELOAD_LOAD_PCT,
     });
+    expect(weekDemandsSession(plan[0]!)).toBe(true);
   });
-  it("zweiwoechige Testphase bekommt beide Wochen", () => {
-    expect(buildComboWeekPlan(2).map((w) => w.week)).toEqual([1, 2]);
+  it("dreiwoechige Testphase entlastet zweimal und testet zuletzt", () => {
+    expect(buildTestPhaseWeekPlan(3).map((w) => w.sets)).toEqual([
+      DELOAD_SETS,
+      DELOAD_SETS,
+      0,
+    ]);
+  });
+  it("einwoechige Testphase ist nur die Testwoche", () => {
+    const plan = buildTestPhaseWeekPlan(1);
+    expect(plan).toHaveLength(1);
+    expect(plan[0]!.sets).toBe(0);
+  });
+  it("weekDemandsSession haelt auch ohne Woche", () => {
+    expect(weekDemandsSession(null)).toBe(false);
+    expect(weekDemandsSession(undefined)).toBe(false);
   });
 });
 
@@ -88,8 +112,9 @@ describe("buildWeekPlan – nur Kraft, Schnellkraft und Test bekommen einen Plan
     expect(buildWeekPlan("strength", 4)?.map((w) => w.reps)).toEqual([5, 4, 3, 2]);
     expect(buildWeekPlan("power", 3)?.map((w) => w.reps)).toEqual([5, 4, 3]);
   });
-  it("test faehrt die Kombiwoche", () => {
-    expect(buildWeekPlan("test", 1)?.[0]!.loadPct).toBe(COMBO_LOAD_PCT);
+  it("test faehrt Entlastung und Testwoche", () => {
+    expect(buildWeekPlan("test", 2)?.map((w) => w.sets)).toEqual([DELOAD_SETS, 0]);
+    expect(buildWeekPlan("test", 2)?.[0]!.loadPct).toBe(DELOAD_LOAD_PCT);
   });
   it("alle uebrigen Fokusse bleiben ohne Plan", () => {
     expect(buildWeekPlan("hypertrophy", 5)).toBeNull();
@@ -142,6 +167,8 @@ describe("weekPlanSchema – Form aus der Datenbank", () => {
     expect(parseWeekPlan([])).toBeNull();
     expect(parseWeekPlan("kein Plan")).toBeNull();
     expect(parseWeekPlan([{ week: 1, sets: 4 }])).toBeNull();
+    // Die Testwoche steht mit 0 Saetzen im Plan und muss gelesen werden.
+    expect(parseWeekPlan(buildTestPhaseWeekPlan(2))).toHaveLength(2);
     expect(parseWeekPlan(buildStrengthWeekPlan(3))).toHaveLength(3);
   });
 });

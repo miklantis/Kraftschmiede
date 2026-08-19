@@ -139,7 +139,7 @@ export function useLiveBuilder(): UseLiveBuilder {
             prevWeek: ph.prevPlanWeek,
             startReps: ph.firstPlanWeek?.reps ?? null,
             anchorPhaseId: ph.anchorPhaseId,
-            comboWeek: ph.comboWeek,
+            deload: ph.deload,
             currentWeekEntryByExercise: buildWeekEntries(
               detailedQ.data ?? [],
               weekOf,
@@ -167,7 +167,7 @@ export function useLiveBuilder(): UseLiveBuilder {
             weekInPhase: ph.placement?.weekInPhase ?? 1,
             phaseWeeks: ph.phase.weeks,
             week: ph.planWeek,
-            comboWeek: ph.comboWeek,
+            deload: ph.deload,
             weightStep,
             unit,
           })

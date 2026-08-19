@@ -1,4 +1,5 @@
 import type { WeekPlan } from "@/engine";
+import { weekDemandsSession } from "@/engine";
 import { focusLabel } from "@/lib/labels";
 import { loadFactorNote, loadPercent, usesLoadFactor } from "@/lib/loadFactor";
 import type { Focus } from "@/schemas/shared";
@@ -64,20 +65,27 @@ export interface PhaseView {
   /** Hinweis zur vorgegebenen Last, nur an der laufenden Phase einer
    *  Lastfaktor-Journey; sonst null. */
   loadNote: string | null;
-  /** Ablauf-Hinweis der laufenden Kombiwoche (Testphase); sonst null. */
-  comboNote: string | null;
-  /** Wochentabelle des Plans an der laufenden Phase; sonst null. Die Kombiwoche
-   *  zeigt ihren Ablauf (comboNote) statt Zahlen. */
+  /** Ablauf-Hinweis der laufenden Testphase; sonst null. */
+  testNote: string | null;
+  /** Wochentabelle des Plans an der laufenden Phase; sonst null. Die Testphase
+   *  zeigt ihren Ablauf (testNote) statt Zahlen. */
   weekRows: PhaseWeekRow[] | null;
 }
 
-// Ablauf der Kombiwoche in einem Satz: die Testphase fuehrt keinen Ablauf, sie
-// erklaert ihn nur - den 1RM-Test startet der Nutzer wie bisher von der
-// Uebungsseite (Issue #225, Schritt 4).
-export const COMBO_NOTE =
-  "Kombiwoche: Anfang der Woche die Entlastung (3 Sätze, " +
-  "60 % vom Startgewicht), Mitte der Woche Pause, Ende der Woche der " +
-  "1RM-Test von der Übungsseite. Die Woche gilt mit dem Test als erfüllt.";
+// Ablauf der Testphase in einem Satz: sie fuehrt keinen Ablauf, sie erklaert ihn
+// nur - den 1RM-Test startet der Nutzer wie bisher von der Uebungsseite. Seit
+// #240 besteht die Phase aus Entlastungswochen und der reinen Testwoche am
+// Ende; eine einwoechige Testphase ist nur die Testwoche.
+export function testPhaseNote(weeks: number): string {
+  const test =
+    "In der Testwoche gibt es keine Vorgabe: Der 1RM-Test läuft wie gewohnt " +
+    "von der Übungsseite, Training ist erlaubt, aber nicht eingeplant.";
+  return weeks > 1
+    ? "Erst die Entlastung (2 Sätze mit 60 % vom Startgewicht), dann die " +
+        "Testwoche. " +
+        test
+    : "Reine Testwoche. " + test;
+}
 
 function repBand(min: number | null, max: number | null): string {
   if (min == null || max == null) return "?";
@@ -99,7 +107,7 @@ function planSpan(values: number[]): string {
     : `${first} → ${last}`;
 }
 
-// Wiederholungen des Plans. Arbeitet er mit einem Band (Kombiwoche: 3-5), steht
+// Wiederholungen des Plans. Arbeitet er mit einem Band (Entlastung: 3-5), steht
 // das Band statt einer Leiter.
 function planReps(plan: WeekPlan): string {
   const band = plan.find((w) => w.repsMax != null && w.repsMax !== w.reps);
@@ -115,8 +123,23 @@ function planReps(plan: WeekPlan): string {
 // die Satzzahl kommt aus dem Plan statt aus der Satz-Rampe - sonst zeigte die
 // Kraftphase ein Band, nach dem gar nicht trainiert wird. Statt der Deload-Woche
 // (die es dort nicht gibt) steht die Ziel-Anstrengung.
+//
+// Gezaehlt werden nur Wochen mit geplanter Einheit: die reine Testwoche verlangt
+// nichts, in den Spannen stuende sonst "2 → 0 Sätze". Plant die Phase gar nichts
+// (einwoechige Testphase), sagen die Zeilen genau das.
 function phaseDetail(p: JourneyPhaseInput, withLoad: boolean): PhaseDetail[] {
-  const plan = p.weekPlan;
+  const geplant = p.weekPlan?.filter(weekDemandsSession) ?? [];
+  const plan = geplant.length > 0 ? geplant : null;
+  const loadRow = withLoad
+    ? [{ k: "Vorgegebene Last", v: loadPercent(p.loadFactor) }]
+    : [];
+  if (p.weekPlan && p.weekPlan.length > 0 && !plan) {
+    return [
+      { k: "Vorgabe", v: "keine" },
+      { k: "Woche", v: "1RM-Test" },
+      ...loadRow,
+    ];
+  }
   return [
     plan
       ? { k: "Wiederholungen", v: planReps(plan) }
@@ -140,9 +163,7 @@ function phaseDetail(p: JourneyPhaseInput, withLoad: boolean): PhaseDetail[] {
           v: `RIR ${planSpan(plan.map((w) => w.rir))}`,
         }
       : { k: "Deload", v: p.deloadWeek ? `Woche ${p.deloadWeek}` : "keiner" },
-    ...(withLoad
-      ? [{ k: "Vorgegebene Last", v: loadPercent(p.loadFactor) }]
-      : []),
+    ...loadRow,
   ];
 }
 
@@ -210,10 +231,10 @@ export function buildPhaseViews(
         withLoad && isCurrent
           ? loadFactorNote(p.loadFactor, i === phases.length - 1)
           : null,
-      // Nur an der laufenden Testphase: dort steht der Ablauf der Kombiwoche.
-      comboNote: isCurrent && p.focus === "test" ? COMBO_NOTE : null,
-      // Wochentabelle nur an der laufenden Phase mit Plan; die Kombiwoche zeigt
-      // ihren Ablauf (comboNote) statt Zahlen.
+      // Nur an der laufenden Testphase: dort steht ihr Ablauf.
+      testNote: isCurrent && p.focus === "test" ? testPhaseNote(p.weeks) : null,
+      // Wochentabelle nur an der laufenden Phase mit Plan; die Testphase zeigt
+      // ihren Ablauf (testNote) statt Zahlen.
       weekRows:
         isCurrent && p.weekPlan && p.focus !== "test"
           ? planWeekRows(p.weekPlan, placement.weekInPhase)
@@ -238,7 +259,7 @@ export function buildTemplatePhaseViews(
     meta: `${p.weeks} ${p.weeks === 1 ? "Woche" : "Wochen"}`,
     detail: phaseDetail(p, withLoad),
     loadNote: null,
-    comboNote: null,
+    testNote: null,
     // In der Vorschau laeuft keine Woche - die Tabelle gehoert zur laufenden
     // Journey, die Vorlage zeigt nur die Eckwerte der Phase.
     weekRows: null,

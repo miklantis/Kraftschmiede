@@ -45,8 +45,8 @@ function DetailRows({
 }
 
 // Hinweiskasten an der laufenden Phase: vorgegebene Last (Lastfaktor-Journeys)
-// bzw. Ablauf der Kombiwoche. Erklaert den bewusst niedrigen Vorschlag, das Ende
-// der Vorgabe oder die Woche aus Entlastung, Pause und 1RM-Test.
+// bzw. Ablauf der Testphase. Erklaert den bewusst niedrigen Vorschlag, das Ende
+// der Vorgabe oder den Ablauf aus Entlastung und Testwoche.
 function LoadNote({ text }: { text: string }): React.ReactElement {
   return (
     <div className="rounded-[12px] border border-primary/25 bg-white/70 px-3 py-2 text-[12.5px] leading-snug text-foreground">
@@ -156,9 +156,9 @@ export function PhaseList({
                 <LoadNote text={p.loadNote} />
               </div>
             )}
-            {p.comboNote !== null && (
+            {p.testNote !== null && (
               <div className="mt-3.5">
-                <LoadNote text={p.comboNote} />
+                <LoadNote text={p.testNote} />
               </div>
             )}
             <DetailRows phase={p} layout="grid" />
@@ -207,9 +207,9 @@ export function PhaseList({
                     <LoadNote text={p.loadNote} />
                   </div>
                 )}
-                {p.comboNote !== null && (
+                {p.testNote !== null && (
                   <div className="mb-2.5">
-                    <LoadNote text={p.comboNote} />
+                    <LoadNote text={p.testNote} />
                   </div>
                 )}
                 <DetailRows phase={p} layout="list" />

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { buildPlanNote } from "@/lib/planNote";
-import { buildComboWeekPlan, buildStrengthWeekPlan } from "@/engine";
+import { buildStrengthWeekPlan, buildTestPhaseWeekPlan } from "@/engine";
 
-// Wochenplan einer 5-Wochen-Kraftphase (Leiter 5, 5, 4, 3, 2) und die Kombiwoche
-// als Gegenprobe. Geprueft wird der fertige Text - er steht so auf dem
-// Trainingsbildschirm.
+// Wochenplan einer 5-Wochen-Kraftphase (Leiter 5, 5, 4, 3, 2) und die
+// Entlastungswoche der Testphase als Gegenprobe. Geprueft wird der fertige Text -
+// er steht so auf dem Trainingsbildschirm.
 const strength = buildStrengthWeekPlan(5);
-const combo = buildComboWeekPlan(1);
+const entlastung = buildTestPhaseWeekPlan(2);
 
 function note(weekInPhase: number) {
   return buildPlanNote({
@@ -14,7 +14,7 @@ function note(weekInPhase: number) {
     weekInPhase,
     phaseWeeks: 5,
     week: strength[weekInPhase - 1]!,
-    comboWeek: false,
+    deload: false,
     weightStep: 2.5,
     unit: "kg",
   });
@@ -48,27 +48,27 @@ describe("buildPlanNote", () => {
       weekInPhase: 1,
       phaseWeeks: 5,
       week: strength[0]!,
-      comboWeek: false,
+      deload: false,
       weightStep: 5,
       unit: "kg",
     })!;
     expect(n.progress).toContain("5 kg hoch");
   });
 
-  it("zeigt in der Kombiwoche Entlastung statt Steigerung", () => {
+  it("zeigt in der Entlastungswoche Entlastung statt Steigerung", () => {
     const n = buildPlanNote({
-      phaseName: "Test",
+      phaseName: "Übergang / Test",
       weekInPhase: 1,
-      phaseWeeks: 1,
-      week: combo[0]!,
-      comboWeek: true,
+      phaseWeeks: 2,
+      week: entlastung[0]!,
+      deload: true,
       weightStep: 2.5,
       unit: "kg",
     })!;
     expect(n.targets).toBe(
-      "3 Sätze × 3–5 Wiederholungen · 60 % vom Startgewicht · Ziel RIR 3",
+      "2 Sätze × 3–5 Wiederholungen · 60 % vom Startgewicht · Ziel RIR 3",
     );
-    expect(n.progress).toContain("1RM-Test");
+    expect(n.progress).toContain("Testwoche");
     // Cluster-Hinweis gehoert zu schweren Saetzen, nicht zur Entlastung.
     expect(n.hint).toBeNull();
   });

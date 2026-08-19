@@ -16,8 +16,9 @@ import { z } from "zod";
 export const weekPlanWeekSchema = z.object({
   /** 1-basierte Woche innerhalb der Phase. */
   week: z.number().int().positive(),
-  /** Arbeitssaetze dieser Woche (ohne Aufwaermen). */
-  sets: z.number().int().positive(),
+  /** Arbeitssaetze dieser Woche (ohne Aufwaermen). 0 = die Woche verlangt keine
+   *  geplante Einheit (reine Testwoche), siehe weekDemandsSession. */
+  sets: z.number().int().min(0),
   /** Ziel-Wiederholungen je Arbeitssatz; untere Grenze, wenn repsMax gesetzt ist. */
   reps: z.number().int().positive(),
   /** Obere Grenze, wenn die Woche mit einem Band statt einer festen Zahl arbeitet. */
@@ -59,13 +60,21 @@ export const WEEK_PLAN_SETS = 4;
 export const WEEK_PLAN_RIR = 2;
 export const WEEK_PLAN_RIR_PEAK = 1;
 
-/** Kombiwoche der Testphase: Entlastungseinheit, danach Ruhetage und 1RM-Test. */
-export const COMBO_SETS = 3;
-export const COMBO_REPS_MIN = 3;
-export const COMBO_REPS_MAX = 5;
-export const COMBO_LOAD_PCT = 0.6;
+/** Entlastungswoche der Testphase: leichte Einheiten mit 60 % vom
+ *  Arbeitsgewicht. Zwei Saetze statt drei - bei drei Einheiten in der Woche
+ *  waere die Summe sonst groesser als in einer Kraftwoche (#240). */
+export const DELOAD_SETS = 2;
+export const DELOAD_REPS_MIN = 3;
+export const DELOAD_REPS_MAX = 5;
+export const DELOAD_LOAD_PCT = 0.6;
 /** Bei 60 % vom Arbeitsgewicht ist die Einheit bewusst leicht. */
-export const COMBO_RIR = 3;
+export const DELOAD_RIR = 3;
+
+/** Reine Testwoche: keine geplante Einheit. Sie steht trotzdem als Zeile im
+ *  Plan - sonst waere sie in der Anzeige und in der Kurve nicht vorhanden. Die
+ *  uebrigen Werte beschreiben den 1RM-Versuch: eine Wiederholung ohne Reserve
+ *  auf vollem Gewicht, also hoechste Intensitaet bei null Volumen. */
+export const TEST_WEEK_SETS = 0;
 
 // Wiederholungsleitern der vier ueblichen Phasenlaengen.
 const LADDERS: Record<number, number[]> = {
@@ -110,7 +119,8 @@ function noteForWeek(weekIndex: number, ladder: number[]): string {
 }
 
 /** Wochenplan einer Kraft- oder Schnellkraftphase: feste Leiter, durchgehend
- *  4 Arbeitssaetze, keine Entlastungswoche - die steckt in der Kombiwoche. */
+ *  4 Arbeitssaetze, keine Entlastungswoche - die steht am Anfang der
+ *  Testphase. */
 export function buildStrengthWeekPlan(weeks: number): WeekPlan {
   const ladder = repLadder(weeks);
   return ladder.map((reps, i) => ({
@@ -124,20 +134,43 @@ export function buildStrengthWeekPlan(weeks: number): WeekPlan {
   }));
 }
 
-/** Wochenplan einer Testphase (Kombiwoche): Entlastungseinheit mit 60 % vom
- *  Arbeitsgewicht, danach Ruhetage und der 1RM-Test. Der Test selbst laeuft
- *  unveraendert von der Uebungsseite aus und steht nicht im Plan. */
-export function buildComboWeekPlan(weeks: number): WeekPlan {
+/** Wochenplan einer Testphase. Bauregel: die letzte Woche ist die reine
+ *  Testwoche, jede Woche davor ist Entlastung (#240). Eine einwoechige
+ *  Testphase besteht damit nur aus der Testwoche.
+ *
+ *  Die Testwoche plant nichts: trainiert werden darf, aber ohne Vorgabe, und
+ *  der 1RM-Test laeuft unveraendert von der Uebungsseite aus. */
+export function buildTestPhaseWeekPlan(weeks: number): WeekPlan {
   const n = Math.max(1, Math.round(weeks));
-  return Array.from({ length: n }, (_, i) => ({
-    week: i + 1,
-    sets: COMBO_SETS,
-    reps: COMBO_REPS_MIN,
-    repsMax: COMBO_REPS_MAX,
-    rir: COMBO_RIR,
-    loadPct: COMBO_LOAD_PCT,
-    note: "Entlastung mit 60 % vom Arbeitsgewicht, danach Ruhetage und 1RM-Test",
-  }));
+  return Array.from({ length: n }, (_, i) =>
+    i === n - 1
+      ? {
+          week: i + 1,
+          sets: TEST_WEEK_SETS,
+          reps: 1,
+          repsMax: null,
+          rir: 0,
+          loadPct: 1,
+          note: "Testwoche: keine Vorgabe, der 1RM-Test läuft über die Übungsseite",
+        }
+      : {
+          week: i + 1,
+          sets: DELOAD_SETS,
+          reps: DELOAD_REPS_MIN,
+          repsMax: DELOAD_REPS_MAX,
+          rir: DELOAD_RIR,
+          loadPct: DELOAD_LOAD_PCT,
+          note: "Entlastung mit 60 % vom Arbeitsgewicht, danach die Testwoche",
+        },
+  );
+}
+
+/** Verlangt diese Planwoche eine Einheit? Die reine Testwoche verlangt nichts
+ *  (0 Arbeitssaetze) - sie gibt weder dem Coach noch der Anzeige etwas vor. */
+export function weekDemandsSession(
+  week: WeekPlanWeek | null | undefined,
+): boolean {
+  return week != null && week.sets > 0;
 }
 
 /** Laeuft dieser Fokus nach Wochenplan? */
@@ -154,30 +187,31 @@ export function hasLoadPlanFocus(focus: string | null | undefined): boolean {
   return (LOAD_PLAN_FOCUSES as readonly string[]).includes(focus ?? "");
 }
 
-/** Fokus der Kombiwoche: die Testphase traegt ebenfalls einen Plan, steigert
- *  aber nichts - sie entlastet mit einem Anteil des Startgewichts X der
- *  vorangegangenen Kraftphase und laeuft danach in den 1RM-Test (Schritt 4). */
-export const COMBO_FOCUS = "test";
+/** Fokus der Testphase: sie traegt ebenfalls einen Plan, steigert aber nichts -
+ *  ihre Entlastungswochen arbeiten mit einem Anteil des Startgewichts X der
+ *  vorangegangenen Kraftphase, ihre letzte Woche plant gar nichts. */
+export const TEST_FOCUS = "test";
 
-/** Laeuft dieser Fokus als Kombiwoche (Entlastung, Ruhetage, 1RM-Test)? */
-export function hasComboFocus(focus: string | null | undefined): boolean {
-  return focus === COMBO_FOCUS;
+/** Laeuft dieser Fokus als Testphase (Entlastung, dann reine Testwoche)? */
+export function hasTestFocus(focus: string | null | undefined): boolean {
+  return focus === TEST_FOCUS;
 }
 
 /** Steuert der Wochenplan dieses Fokus das Gewicht - als Rampe (Kraft,
- *  Schnellkraft) oder als Entlastung (Kombiwoche)? */
+ *  Schnellkraft) oder als Entlastung (Testphase)? */
 export function planGovernsLoad(focus: string | null | undefined): boolean {
-  return hasLoadPlanFocus(focus) || hasComboFocus(focus);
+  return hasLoadPlanFocus(focus) || hasTestFocus(focus);
 }
 
 /** Plan zur Phase: Kraft und Schnellkraft bekommen die Leiter, Test die
- *  Kombiwoche, alle uebrigen Fokusse keinen Plan (null = Coach steuert weiter). */
+ *  Entlastung samt Testwoche, alle uebrigen Fokusse keinen Plan (null = Coach
+ *  steuert weiter). */
 export function buildWeekPlan(
   focus: string | null | undefined,
   weeks: number,
 ): WeekPlan | null {
   if (focus === "strength" || focus === "power") return buildStrengthWeekPlan(weeks);
-  if (focus === "test") return buildComboWeekPlan(weeks);
+  if (focus === "test") return buildTestPhaseWeekPlan(weeks);
   return null;
 }
 

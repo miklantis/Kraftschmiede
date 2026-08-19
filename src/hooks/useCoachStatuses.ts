@@ -112,7 +112,7 @@ export function useCoachStatuses(): UseCoachStatuses {
             prevWeek: ph.prevPlanWeek,
             startReps: ph.firstPlanWeek?.reps ?? null,
             anchorPhaseId: ph.anchorPhaseId,
-            comboWeek: ph.comboWeek,
+            deload: ph.deload,
             currentWeekEntryByExercise: buildWeekEntries(
               detailedQ.data ?? [],
               weekOf,

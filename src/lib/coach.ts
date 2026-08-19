@@ -182,7 +182,7 @@ export interface CoachBuildExercise {
   // wuerde pro Einheit statt pro Woche steigen.
   referencePhaseId: string | null;
   // Startgewicht X derselben Phase (Stand beim Eintritt). Bezug der Entlastung
-  // in der Kombiwoche; fehlt es, gilt der Anker.
+  // in der Entlastungswoche; fehlt es, gilt der Anker.
   planStartWeight?: number | null;
 }
 
@@ -314,9 +314,10 @@ export function rampLoad(
 // der Phase ruht dann. Fuer alle anderen Uebungen und Phasen aendert sich
 // nichts - der Plan uebersteuert an genau dieser einen Stelle.
 //
-// In der Kombiwoche der Testphase gilt derselbe Weg, nur entlastend: 3 Saetze zu
-// 3-5 Wiederholungen mit dem loadPct des Plans (60 %) vom Startgewicht X der
-// vorangegangenen Kraftphase, ohne Steigerung.
+// In der Entlastungswoche der Testphase gilt derselbe Weg, nur entlastend:
+// 2 Saetze zu 3-5 Wiederholungen mit dem loadPct des Plans (60 %) vom
+// Startgewicht X der vorangegangenen Kraftphase, ohne Steigerung. Die reine
+// Testwoche danach plant nichts und kommt hier gar nicht an.
 // ---------------------------------------------------------------------------
 
 /** Alles, was der Plan ueber diese Uebung wissen muss. Die Beschaffung liegt in
@@ -329,10 +330,10 @@ export interface PlanContext {
   /** Ziel-Wiederholungen der ersten Planwoche (Bezug des Startgewichts). */
   startReps: number;
   /** Anker der Phase (reference_weight, an diese Phase gebunden); null = die
-   *  Uebung tritt gerade in die Phase ein. In der Kombiwoche ist es das
+   *  Uebung tritt gerade in die Phase ein. In der Entlastungswoche ist es das
    *  Startgewicht X der vorangegangenen Kraftphase. */
   anchor: number | null;
-  /** Kombiwoche der Testphase: entlasten statt steigern (loadPct des Plans). */
+  /** Entlastungswoche der Testphase: entlasten statt steigern (loadPct). */
   deload?: boolean;
   /** Letzte Einheit dieser Uebung in der laufenden Journey-Woche. */
   currentWeekEntry: SetEntry | null;
@@ -378,7 +379,7 @@ const PLAN_NOTES: Record<string, string> = {
   "same-week": "Wochenplan – gleiche Woche, gleiches Gewicht",
   raised: "Wochenplan – Vorwoche sauber, Gewicht einen Schritt hoch",
   held: "Wochenplan – Gewicht bleibt stehen, Wiederholungen sinken planmäßig",
-  deload: "Kombiwoche – Entlastung vor dem 1RM-Test",
+  deload: "Entlastungswoche – locker vor der Testwoche",
 };
 
 /** Vorschlag aus dem Wochenplan; null, wenn der Plan hier nicht zustaendig ist. */

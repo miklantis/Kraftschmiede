@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "version": "1.39.0",
+      "date": "2026-08-19",
+      "changes": [
+        "Die Testphase am Ende des Kraftblocks dauert jetzt zwei Wochen statt einer: zuerst eine Entlastungswoche mit leichten Einheiten (2 Sätze, 60 % vom Startgewicht), danach eine reine Testwoche.",
+        "In der Testwoche ist nichts geplant. Du hast die ganze Woche Zeit für deine 1RM-Tests - die startest du wie gewohnt von der Übungsseite. Trainieren darfst du trotzdem, der Coach gibt dort nur nichts mehr vor.",
+        "Vorher war beides in eine Woche gequetscht: zu wenig Erholung und zu wenig Zeit, wenn vier bis fünf Hauptübungen drankommen.",
+        "Deine laufende Journey \"Rückkehr 2026\" zieht mit und dauert damit 14 statt 13 Wochen, ebenso die Vorlage \"Wiedereinstieg & Aufbau\". \"Wiederaufbau nach Fasten\" behält ihre einzelne Testwoche.",
+        "Noch offen: Die Journey schließt am Ende der Testwoche noch nicht von selbst ab - das kommt im nächsten Schritt."
+      ]
+    },
+    {
       "version": "1.38.4",
       "date": "2026-08-19",
       "changes": [
