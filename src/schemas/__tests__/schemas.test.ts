@@ -33,6 +33,7 @@ describe("Lese-Form (Row) verlangt alle Spalten", () => {
     work_weight: 100,
     reference_weight: null,
     reference_phase_id: null,
+    plan_start_weight: null,
     recovery_hours: 48,
     rm: null,
     rm_as_of: null,

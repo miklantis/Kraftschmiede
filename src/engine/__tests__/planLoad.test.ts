@@ -155,3 +155,49 @@ describe("anchorAfterSession – Anker nach der Einheit", () => {
     expect(anchorAfterSession(null, null)).toBeNull();
   });
 });
+
+// Kombiwoche der Testphase (#229): Entlastung vom Startgewicht X der
+// vorangegangenen Kraftphase, ohne jede Steigerung.
+describe("planWeekLoad – Kombiwoche (Entlastung)", () => {
+  const base = {
+    previousTargetScore: scoreForRir(2),
+    fallbackWeight: 0,
+    startReps: 3,
+    step: 2.5,
+    loadPct: 0.6,
+    deload: true,
+    opts: OPTS,
+  };
+
+  it("rechnet den Anteil vom Anker und rundet ladbar ab", () => {
+    // 60 % von 50 = 30 kg (mit 20-kg-Stange ladbar)
+    expect(planWeekLoad({ ...base, anchor: 50 })).toEqual({
+      weight: 30,
+      reason: "deload",
+    });
+  });
+
+  it("steigert auch nach einer sauberen Vorwoche nicht", () => {
+    const res = planWeekLoad({
+      ...base,
+      anchor: 50,
+      previousWeekEntry: entry([set(), set(), set(), set()]),
+    });
+    expect(res).toEqual({ weight: 30, reason: "deload" });
+  });
+
+  it("haelt die Vorgabe der Woche, wenn schon entlastet wurde", () => {
+    const res = planWeekLoad({
+      ...base,
+      anchor: 50,
+      currentWeekEntry: entry([set({ targetWeight: 30, weight: 30 })]),
+    });
+    expect(res).toEqual({ weight: 30, reason: "same-week" });
+  });
+
+  it("faellt ohne Startgewicht auf das 1RM zurueck", () => {
+    // 1RM 100, 3 Ziel-Wdh + 2 Reserve -> 85,7 -> 60 % = 51,4 -> 50 kg
+    const res = planWeekLoad({ ...base, anchor: null, est1RM: 100 });
+    expect(res).toEqual({ weight: 50, reason: "deload" });
+  });
+});

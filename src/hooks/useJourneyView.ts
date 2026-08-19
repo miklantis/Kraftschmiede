@@ -16,6 +16,7 @@ import { useSessions } from "./useSessions";
 import { useSettings } from "./useSettings";
 import { useJourneyTemplates } from "./useJourneyTemplates";
 import { useArchivedJourneys } from "./useArchivedJourneys";
+import { useTestDates } from "./useTestDates";
 
 // Anzeigefertiges Modell der Journey-Seite. Komponenten kennen weder Supabase
 // noch die Engine – sie bekommen Name, Meta-Zeile, fertige Phasen-Modelle und das
@@ -45,6 +46,7 @@ export function useJourneyView(): {
   const settingsQ = useSettings();
   const templatesQ = useJourneyTemplates();
   const archivedQ = useArchivedJourneys();
+  const testDates = useTestDates();
 
   const queries = [journeyQ, sessionsQ, settingsQ, templatesQ, archivedQ];
   const isLoading = queries.some((q) => q.isLoading);
@@ -68,6 +70,7 @@ export function useJourneyView(): {
       sessions,
       freqTarget,
       today,
+      testDates,
     ).placement;
     if (!placement) return null;
 
@@ -105,6 +108,7 @@ export function useJourneyView(): {
     sessionsQ.data,
     settingsQ.data,
     templatesQ.data,
+    testDates,
   ]);
 
   const archive = useMemo<ArchivedJourneyView[]>(() => {

@@ -108,7 +108,9 @@ export const supabaseHistoryStore: HistoryStore = {
     must(
       await supabase
         .from("exercises")
-        .update({ reference_weight: null })
+        // Mit dem Anker verschwindet auch das Startgewicht der Phase: es haengt
+        // an derselben Bindung und hat ohne sie keine Bedeutung.
+        .update({ reference_weight: null, plan_start_weight: null })
         .not("reference_weight", "is", null),
     );
   },

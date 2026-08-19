@@ -75,7 +75,9 @@ Recovery-Fenster, Timer).
   reference_weight (nullable, eingefrorenes Arbeitsgewicht zum Start einer
   Lastfaktor-Journey), reference_phase_id (FK auf phases, nullable – zu welcher Phase
   das eingefrorene reference_weight gehört; ohne diesen Bezug lässt sich „Anker dieser
-  Phase" nicht von „noch kein Anker" unterscheiden), recovery_hours,
+  Phase" nicht von „noch kein Anker" unterscheiden), plan_start_weight (nullable –
+  Startgewicht X derselben Phase, also der Stand beim Eintritt; Bezug der Entlastung
+  in der Kombiwoche, Migration 0035), recovery_hours,
   rm/rm_as_of/rm_stale (zwischengespeichertes 1RM für den Coach), position
 - **exercise_muscles** – feine Regionen-Map: exercise_id (FK), region_id (Code-/SVG-Region),
   kategorie (primär/sekundär/stabilisierend)
@@ -258,8 +260,24 @@ betroffene Tabelle beim Wiederherstellen leer.
   gebundener Anker zählt, sonst tritt die Übung gerade ein. Die Wochen-Buchhaltung
   (welche Einheit liegt in dieser, welche in der vorigen Journey-Woche derselben Phase)
   liegt in `lib/lastEntries.ts` (`buildWeekEntries`) und `engine/journey.ts`
-  (`journeyWeekLookup`), zusammengesetzt in `lib/planContext.ts`. Testphasen tragen zwar
-  einen Plan, holen ihre Last aber aus der Kombiwoche und bleiben vorerst außen vor.
+  (`journeyWeekLookup`), zusammengesetzt in `lib/planContext.ts`.
+- **Kombiwoche der Testphase entlastet, statt zu steigern.** Die Testphase läuft
+  denselben Weg, nur mit anderem Bezug: 3 Sätze zu 3–5 Wiederholungen mit dem `loadPct`
+  des Plans (60 %) vom Startgewicht X der vorangegangenen Kraftphase, ohne jede
+  Steigerung (`planWeekLoad` mit `deload`). X steht als `plan_start_weight` an der
+  Übung, gebunden an dieselbe Phase wie der Anker, und wird beim Eintritt in die Phase
+  einmal festgehalten (`lib/katalogPatch.ts`); fehlt es, gilt der Anker, sonst das 1RM.
+  Welche Phase den Bezug stellt, entscheidet `derivePhaseContext` (`comboWeek`,
+  `anchorPhaseId` – die nächste Kraft-/Schnellkraftphase davor).
+- **Eine Woche mit 1RM-Test ist erfüllt.** Die Kombiwoche hat planmäßig nur zwei
+  Einheiten (Entlastung und Test), das Wochenziel sind drei – ohne Ausnahme bliebe die
+  Journey dort hängen. Deshalb gilt in `engine/journey.ts` an einer Stelle
+  (`fulfilledWeekKeys`): liegt in einer Kalenderwoche ein abgeschlossener 1RM-Test, ist
+  sie erfüllt, unabhängig von der Einheitenzahl. Gezählt werden nur Tests ab der ersten
+  Einheit der Journey (ein älterer Test darf sie nicht rückwirkend vorrücken); die
+  Einheitenzahl der Anzeige bleibt die tatsächliche. Die Testdaten kommen als
+  `testDates` aus `rm_tests` (`useTestDates`) und werden überall gleich hereingereicht,
+  damit Uebungsseite, Live-Aufbau und Journey dieselbe Woche zeigen.
 - **Datenzugriff gekapselt** in Query-/Mutation-Hooks je Entität (z. B.
   `useSessions`, `useExercises`). Komponenten kennen kein Supabase direkt.
 - **Naht zur Datenbank je Schreibbereich** (`src/lib/<bereich>Store.ts` +

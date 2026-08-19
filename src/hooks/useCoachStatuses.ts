@@ -18,6 +18,7 @@ import { useSessionsDetailed } from "./useSessionsDetailed";
 import { useActiveJourney } from "./useJourney";
 import { useSettings } from "./useSettings";
 import { useBars, usePlates, useDumbbells } from "./useInventory";
+import { useTestDates } from "./useTestDates";
 
 // Coach-Status je Uebung fuer die Uebungsseite (Liste + Detail): was der Coach
 // fuer die naechste Einheit dieser Uebung entscheiden wuerde - steigern, halten,
@@ -49,6 +50,7 @@ export function useCoachStatuses(): UseCoachStatuses {
   const barsQ = useBars();
   const platesQ = usePlates();
   const dumbbellsQ = useDumbbells();
+  const testDates = useTestDates();
 
   const ready =
     exercisesQ.data != null &&
@@ -88,6 +90,7 @@ export function useCoachStatuses(): UseCoachStatuses {
       sessionsQ.data ?? [],
       freqTarget,
       todayISO(),
+      testDates,
     );
     const hasPhase = ph.volumePhase != null;
     // Ohne aktive Journey trainiert der Nutzer frei: der Coach gibt nichts vor,
@@ -101,13 +104,15 @@ export function useCoachStatuses(): UseCoachStatuses {
             toPlacementSessions(sessionsQ.data ?? []),
             ph.journeyId ?? "",
             freqTarget,
+            testDates,
           );
           const current = ph.placement?.globalWeek ?? 1;
           return {
             week: ph.planWeek,
             prevWeek: ph.prevPlanWeek,
             startReps: ph.firstPlanWeek?.reps ?? null,
-            phaseId: ph.phaseId,
+            anchorPhaseId: ph.anchorPhaseId,
+            comboWeek: ph.comboWeek,
             currentWeekEntryByExercise: buildWeekEntries(
               detailedQ.data ?? [],
               weekOf,
@@ -139,11 +144,13 @@ export function useCoachStatuses(): UseCoachStatuses {
         barId: e.bar_id,
         referenceWeight: e.reference_weight,
         referencePhaseId: e.reference_phase_id,
+        planStartWeight: e.plan_start_weight,
       };
       const plan = planContextFor(planSource, {
         id: e.id,
         referenceWeight: e.reference_weight,
         referencePhaseId: e.reference_phase_id,
+        planStartWeight: e.plan_start_weight,
         rm: e.rm,
       });
       const lastEntry = lastEntryByExercise[e.id] ?? null;
@@ -192,6 +199,7 @@ export function useCoachStatuses(): UseCoachStatuses {
     barsQ.data,
     platesQ.data,
     dumbbellsQ.data,
+    testDates,
   ]);
 
   return { isLoading, ready, byExercise };

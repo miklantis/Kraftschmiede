@@ -148,9 +148,15 @@ export const supabaseJourneyStore: JourneyStore = {
     must(
       await supabase
         .from("exercises")
-        .update({ reference_weight: null, reference_phase_id: null })
+        .update({
+          reference_weight: null,
+          reference_phase_id: null,
+          plan_start_weight: null,
+        })
         .eq("user_id", userId)
-        .or("reference_weight.not.is.null,reference_phase_id.not.is.null"),
+        .or(
+          "reference_weight.not.is.null,reference_phase_id.not.is.null,plan_start_weight.not.is.null",
+        ),
     );
   },
   async listZuordnungen(journeyId) {

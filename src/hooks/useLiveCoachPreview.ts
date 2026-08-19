@@ -8,6 +8,7 @@ import {
 import { activeRepTarget } from "@/lib/liveBuild";
 import { buildLastEntries } from "@/lib/lastEntries";
 import { derivePhaseContext } from "@/lib/phaseContext";
+import { planAnchor } from "@/lib/planContext";
 import {
   isBlockComplete,
   liveEntryToSetEntry,
@@ -22,6 +23,7 @@ import { useSessionsDetailed } from "./useSessionsDetailed";
 import { useActiveJourney } from "./useJourney";
 import { useSettings } from "./useSettings";
 import { useBars, usePlates, useDumbbells } from "./useInventory";
+import { useTestDates } from "./useTestDates";
 
 // Coach-Vorschau waehrend der laufenden Kraft-Einheit (#190): was der Coach aus
 // dem bisher Geleisteten eines Uebungsblocks machen wuerde - steigern, halten,
@@ -66,6 +68,7 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
   const barsQ = useBars();
   const platesQ = usePlates();
   const dumbbellsQ = useDumbbells();
+  const testDates = useTestDates();
 
   const workout = session?.kind === "workout" ? session : null;
 
@@ -100,6 +103,7 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
       sessionsQ.data ?? [],
       freqTarget,
       todayISO(),
+      testDates,
     );
     const hasPhase = ph.volumePhase != null;
     const freeMode = ph.journeyId === null;
@@ -129,20 +133,29 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
         barId: e.bar_id,
         referenceWeight: e.reference_weight,
         referencePhaseId: e.reference_phase_id,
+        planStartWeight: e.plan_start_weight,
       };
       // Wochenplan-Vorschau: gewertet wird die laufende Einheit, als waere sie
       // die Vorwoche - die Frage ist ja „was macht der Coach daraus". Anker ist
       // der Phasenanker, solange die Uebung in dieser Phase schon beendet
-      // wurde; sonst das gerade bewegte Gewicht.
+      // wurde; sonst das gerade bewegte Gewicht. In der Kombiwoche gibt es
+      // keinen Rueckfall auf das bewegte Gewicht: die Entlastung wuerde sonst
+      // von der schon entlasteten Last noch einmal heruntergerechnet.
+      const anchor = planAnchor(ph.anchorPhaseId, ph.comboWeek, {
+        id: e.id,
+        referenceWeight: e.reference_weight,
+        referencePhaseId: e.reference_phase_id,
+        planStartWeight: e.plan_start_weight,
+        rm: e.rm,
+      });
       const plan: PlanContext | null =
         ph.planWeek && ph.firstPlanWeek
           ? {
               week: ph.planWeek,
               prevWeek: ph.planWeek,
               startReps: ph.firstPlanWeek.reps,
-              anchor:
-                (e.reference_phase_id === ph.phaseId ? e.reference_weight : null) ??
-                workWeight,
+              anchor: anchor ?? (ph.comboWeek ? null : workWeight),
+              deload: ph.comboWeek,
               currentWeekEntry: null,
               previousWeekEntry: lastEntry,
               rm: e.rm,
@@ -183,6 +196,7 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
     barsQ.data,
     platesQ.data,
     dumbbellsQ.data,
+    testDates,
   ]);
 
   return { byEntry };

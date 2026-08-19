@@ -16,6 +16,8 @@
 //     wenn sie zweimal drankommt.
 //   - gesenkt wird nie. Nur eine im Training selbst reduzierte Last zieht den
 //     Anker nach unten nach (anchorAfterSession).
+//   - Kombiwoche der Testphase (deload): ein Anteil des Ankers - dort das
+//     Startgewicht X der vorangegangenen Kraftphase - ohne jede Steigerung.
 
 import { avg } from "./math";
 import { loadForReps } from "./phaseChange";
@@ -103,7 +105,7 @@ export function planWeekMet(
 }
 
 /** Warum das Gewicht so aussieht - fuer Entscheidung und Hinweistext. */
-export type PlanLoadReason = "start" | "same-week" | "raised" | "held";
+export type PlanLoadReason = "start" | "same-week" | "raised" | "held" | "deload";
 
 export interface PlanWeekLoadInput {
   /** Anker der laufenden Phase (reference_weight, an diese Phase gebunden);
@@ -127,6 +129,10 @@ export interface PlanWeekLoadInput {
   loadPct?: number;
   /** Schrittweite eines Gewichtssprungs aus den Einstellungen. */
   step: number;
+  /** Kombiwoche: entlastet wird vom Anker (dort das Startgewicht X der
+   *  vorangegangenen Kraftphase), gesteigert wird nicht - die Woche laeuft in
+   *  den 1RM-Test und nicht in den naechsten Schritt der Rampe. */
+  deload?: boolean;
   opts?: PlanLoadOpts;
 }
 
@@ -142,19 +148,28 @@ export function planWeekLoad(input: PlanWeekLoadInput): PlanWeekLoad {
   const scale = (w: number): number =>
     pct === 1 ? loadableDown(w, input.opts) : loadableDown(w * pct, input.opts);
 
+  const startWeight = (): number =>
+    planStartWeight(
+      input.est1RM,
+      input.startReps,
+      input.fallbackWeight,
+      input.opts,
+    );
+
+  // Kombiwoche: ein Anteil des Ankers, ohne Steigerung. Liegt in der Woche
+  // schon eine Einheit, gilt deren Vorgabe weiter (sonst wuerde die Entlastung
+  // beim zweiten Mal noch einmal heruntergerechnet).
+  if (input.deload) {
+    const same = topTargetWeight(input.currentWeekEntry);
+    if (same != null) return { weight: same, reason: "same-week" };
+    const base =
+      input.anchor != null && input.anchor > 0 ? input.anchor : startWeight();
+    return { weight: scale(base), reason: "deload" };
+  }
+
   // Kein Anker an dieser Phase: die Uebung tritt gerade ein -> Startgewicht.
   if (input.anchor == null || !(input.anchor > 0)) {
-    return {
-      weight: scale(
-        planStartWeight(
-          input.est1RM,
-          input.startReps,
-          input.fallbackWeight,
-          input.opts,
-        ),
-      ),
-      reason: "start",
-    };
+    return { weight: scale(startWeight()), reason: "start" };
   }
 
   // Schon in dieser Woche trainiert: dieselbe Vorgabe noch einmal. Bewusst die

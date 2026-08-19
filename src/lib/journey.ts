@@ -46,7 +46,17 @@ export interface PhaseView {
   /** Hinweis zur vorgegebenen Last, nur an der laufenden Phase einer
    *  Lastfaktor-Journey; sonst null. */
   loadNote: string | null;
+  /** Ablauf-Hinweis der laufenden Kombiwoche (Testphase); sonst null. */
+  comboNote: string | null;
 }
+
+// Ablauf der Kombiwoche in einem Satz: die Testphase fuehrt keinen Ablauf, sie
+// erklaert ihn nur - den 1RM-Test startet der Nutzer wie bisher von der
+// Uebungsseite (Issue #225, Schritt 4).
+export const COMBO_NOTE =
+  "Kombiwoche: Anfang der Woche die Entlastung (3 Sätze, " +
+  "60 % vom Startgewicht), Mitte der Woche Pause, Ende der Woche der " +
+  "1RM-Test von der Übungsseite. Die Woche gilt mit dem Test als erfüllt.";
 
 function repBand(min: number | null, max: number | null): string {
   if (min == null || max == null) return "?";
@@ -114,6 +124,8 @@ export function buildPhaseViews(
         withLoad && isCurrent
           ? loadFactorNote(p.loadFactor, i === phases.length - 1)
           : null,
+      // Nur an der laufenden Testphase: dort steht der Ablauf der Kombiwoche.
+      comboNote: isCurrent && p.focus === "test" ? COMBO_NOTE : null,
     };
   });
 }
@@ -134,6 +146,7 @@ export function buildTemplatePhaseViews(
     meta: `${p.weeks} ${p.weeks === 1 ? "Woche" : "Wochen"}`,
     detail: phaseDetail(p, withLoad),
     loadNote: null,
+    comboNote: null,
   }));
 }
 

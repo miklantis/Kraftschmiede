@@ -145,15 +145,29 @@ export function hasWeekPlanFocus(focus: string | null | undefined): boolean {
   return (WEEK_PLAN_FOCUSES as readonly string[]).includes(focus ?? "");
 }
 
-/** Fokusse, deren Wochenplan zusaetzlich die Last selbst steuert (Anker beim
- *  Phaseneintritt plus Wochenschritt, engine/planLoad.ts). `test` traegt zwar
- *  ebenfalls einen Plan, holt seine Last aber aus der vorangegangenen
- *  Kraftphase - das ist die Kombiwoche und kommt in Schritt 4 (#229). */
+/** Fokusse, deren Wochenplan die Last als Rampe steuert (Anker beim
+ *  Phaseneintritt plus Wochenschritt, engine/planLoad.ts). */
 export const LOAD_PLAN_FOCUSES = ["strength", "power"] as const;
 
-/** Steuert der Wochenplan dieses Fokus auch das Gewicht? */
+/** Steuert der Wochenplan dieses Fokus das Gewicht als Rampe? */
 export function hasLoadPlanFocus(focus: string | null | undefined): boolean {
   return (LOAD_PLAN_FOCUSES as readonly string[]).includes(focus ?? "");
+}
+
+/** Fokus der Kombiwoche: die Testphase traegt ebenfalls einen Plan, steigert
+ *  aber nichts - sie entlastet mit einem Anteil des Startgewichts X der
+ *  vorangegangenen Kraftphase und laeuft danach in den 1RM-Test (Schritt 4). */
+export const COMBO_FOCUS = "test";
+
+/** Laeuft dieser Fokus als Kombiwoche (Entlastung, Ruhetage, 1RM-Test)? */
+export function hasComboFocus(focus: string | null | undefined): boolean {
+  return focus === COMBO_FOCUS;
+}
+
+/** Steuert der Wochenplan dieses Fokus das Gewicht - als Rampe (Kraft,
+ *  Schnellkraft) oder als Entlastung (Kombiwoche)? */
+export function planGovernsLoad(focus: string | null | undefined): boolean {
+  return hasLoadPlanFocus(focus) || hasComboFocus(focus);
 }
 
 /** Plan zur Phase: Kraft und Schnellkraft bekommen die Leiter, Test die

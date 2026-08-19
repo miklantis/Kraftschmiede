@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.38.1",
+      "date": "2026-08-19",
+      "changes": [
+        "Die Kombiwoche am Ende des Kraftblocks gibt jetzt eigene Ziele vor: Startest du dort ein Workout, kommen 3 Sätze zu 3-5 Wiederholungen mit 60 % vom Startgewicht der vorangegangenen Kraftphase - die Entlastung vor dem Test findet damit wirklich statt, statt dass der Coach normale Arbeitsgewichte vorschlägt.",
+        "Eine Woche mit abgeschlossenem 1RM-Test gilt als erfüllt, auch wenn nur zwei Einheiten drin liegen. Die Kombiwoche ist genau so gebaut (Entlastung, Pause, Test) - vorher wäre die Journey dort stehen geblieben und nie weitergerückt.",
+        "Die Journey erklärt die Kombiwoche jetzt in einem Satz: Anfang der Woche Entlastung, Mitte der Woche Pause, Ende der Woche der 1RM-Test von der Übungsseite."
+      ]
+    },
+    {
       "version": "1.38.0",
       "date": "2026-08-19",
       "changes": [

@@ -2,7 +2,9 @@
 // Regel „Arbeitsgewicht immer, 1RM nur als Rekord“.
 //
 // Der Phasenanker einer Kraftphase mit Wochenplan liegt ebenfalls hier: er
-// folgt der Vorgabe nach unten, nie nach oben (Issue #225).
+// folgt der Vorgabe nach unten, nie nach oben (Issue #225). Beim Eintritt in die
+// Phase wird derselbe Wert als Startgewicht X festgehalten - davon entlastet
+// spaeter die Kombiwoche.
 //
 // Das Arbeitsgewicht der Uebung wird bei jedem Nachziehen gesetzt – es ist der
 // laufende Stand, kein Rekord. Das 1RM dagegen ist ein Rekord: es wird nur
@@ -37,7 +39,14 @@ export interface KatalogPatchInput {
   /** Anker der Phase mit Wochenplan – nur gesetzt, wenn der Plan diese Uebung
    *  in dieser Einheit gesteuert hat (Hauptuebung mit Kraftprofil in einer
    *  Kraft-/Schnellkraftphase). `plannedWeight` ist die Vorgabe der Einheit. */
-  planAnchor?: { phaseId: string; plannedWeight: number | null } | null;
+  planAnchor?: {
+    phaseId: string;
+    plannedWeight: number | null;
+    /** Phase, an die der bisherige Anker gebunden ist. Weicht sie ab, tritt die
+     *  Uebung mit dieser Einheit in die Phase ein - dann wird ihr Startgewicht X
+     *  zusaetzlich festgehalten (Bezug der Entlastung in der Kombiwoche). */
+    boundPhaseId?: string | null;
+  } | null;
 }
 
 export function katalogPatch(input: KatalogPatchInput): ExercisePatch {
@@ -69,6 +78,12 @@ export function katalogPatch(input: KatalogPatchInput): ExercisePatch {
     if (anchor != null && anchor > 0) {
       patch.reference_weight = anchor;
       patch.reference_phase_id = input.planAnchor.phaseId;
+      // Erste Einheit der Uebung in dieser Phase: derselbe Wert ist ihr
+      // Startgewicht X und bleibt stehen, waehrend der Anker weiterlaeuft. Die
+      // Kombiwoche entlastet von X, nicht vom Stand am Phasenende.
+      if (input.planAnchor.boundPhaseId !== input.planAnchor.phaseId) {
+        patch.plan_start_weight = anchor;
+      }
     }
   }
   return patch;

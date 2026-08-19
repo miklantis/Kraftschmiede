@@ -44,6 +44,8 @@ export interface ExercisePatch {
    *  Plan diese Uebung gesteuert hat). */
   reference_weight?: number;
   reference_phase_id?: string;
+  /** Startgewicht X der Phase – nur beim Eintritt der Uebung in die Phase. */
+  plan_start_weight?: number;
 }
 
 /** Default-mutationFn + Auffrischung registrieren. Greift auch fuer nach einem

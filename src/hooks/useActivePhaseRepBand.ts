@@ -1,6 +1,7 @@
 import { useActiveJourney } from "./useJourney";
 import { useSessions } from "./useSessions";
 import { useSettings } from "./useSettings";
+import { useTestDates } from "./useTestDates";
 import { derivePhaseContext } from "@/lib/phaseContext";
 import { todayISO } from "@/lib/format";
 
@@ -15,6 +16,7 @@ export function useActivePhaseRepBand(): [number, number] | null {
   const journeyQ = useActiveJourney();
   const sessionsQ = useSessions();
   const settingsQ = useSettings();
+  const testDates = useTestDates();
 
   const journey = journeyQ.data;
   const sessions = sessionsQ.data;
@@ -25,6 +27,7 @@ export function useActivePhaseRepBand(): [number, number] | null {
     sessions,
     settingsQ.data?.weekly_frequency_target || 3,
     todayISO(),
+    testDates,
   );
   return ph.phaseRepTarget;
 }

@@ -7,6 +7,12 @@
 // freqTarget zaehlende Einheiten liegen. Phase und Woche-in-Phase werden daraus
 // abgeleitet, nicht von Hand gesetzt. Keine Pausenlogik: eine Woche ohne genug
 // Einheiten zaehlt einfach nicht und schiebt nichts.
+//
+// Eine Ausnahme: liegt in der Woche ein abgeschlossener 1RM-Test, ist sie
+// erfuellt - unabhaengig von der Einheitenzahl. Die Kombiwoche der Testphase hat
+// planmaessig nur zwei Einheiten (Entlastung und Test), die Journey wuerde dort
+// sonst haengen bleiben (#229). Die Testdaten reicht der Aufrufer als testDates
+// herein (aus rm_tests); ohne sie rechnet alles wie bisher.
 
 // Minimal benoetigte Session-Form. Die datenbeschaffende Schicht mappt die
 // snake_case-DB-Zeilen (journey_id) auf diese Engine-Form (journeyId).
@@ -123,18 +129,50 @@ function countingSessions(
   );
 }
 
-// Set-artiges Objekt der erfuellten Wochenschluessel (>= freqTarget Einheiten).
+// Wochen mit einem abgeschlossenen 1RM-Test. Sie gelten als erfuellt, egal wie
+// viele Einheiten in ihnen liegen: die Kombiwoche der Testphase hat planmaessig
+// nur zwei (Entlastung und Test), das Wochenziel sind drei - ohne diese Regel
+// bliebe die Journey dort haengen (#229).
+//
+// Gezaehlt werden nur Tests ab der ersten Einheit der Journey. Ein Test von
+// davor gehoert nicht zu ihr und wuerde die Journey sonst rueckwirkend
+// vorruecken.
+function testWeekKeys(
+  sessions: JourneySession[],
+  journeyId: string,
+  testDates: readonly string[] | undefined,
+): Record<string, true> {
+  const out: Record<string, true> = {};
+  if (!testDates || testDates.length === 0) return out;
+  const counting = countingSessions(sessions, journeyId);
+  if (!counting.length) return out;
+  let firstKey = isoWeekKey(counting[0].date);
+  for (const s of counting) {
+    const k = isoWeekKey(s.date);
+    if (k < firstKey) firstKey = k;
+  }
+  for (const d of testDates) {
+    if (!d) continue;
+    const k = isoWeekKey(d);
+    if (k >= firstKey) out[k] = true;
+  }
+  return out;
+}
+
+// Set-artiges Objekt der erfuellten Wochenschluessel: >= freqTarget Einheiten
+// oder ein 1RM-Test in der Woche (Kombiwoche, s. testWeekKeys).
 function fulfilledWeekKeys(
   sessions: JourneySession[],
   journeyId: string,
   freqTarget: number,
+  testDates?: readonly string[],
 ): Record<string, true> {
   const counts: Record<string, number> = {};
   countingSessions(sessions, journeyId).forEach((s) => {
     const k = isoWeekKey(s.date);
     counts[k] = (counts[k] || 0) + 1;
   });
-  const out: Record<string, true> = {};
+  const out: Record<string, true> = testWeekKeys(sessions, journeyId, testDates);
   Object.keys(counts).forEach((k) => {
     if (counts[k] >= freqTarget) out[k] = true;
   });
@@ -149,9 +187,10 @@ export function journeyWeekForDate(
   sessions: JourneySession[],
   journeyId: string,
   freqTarget: number,
+  testDates?: readonly string[],
 ): number {
   const key = isoWeekKey(dateStr);
-  const ful = fulfilledWeekKeys(sessions, journeyId, freqTarget);
+  const ful = fulfilledWeekKeys(sessions, journeyId, freqTarget, testDates);
   let before = 0;
   Object.keys(ful).forEach((k) => {
     if (k < key) before++;
@@ -167,8 +206,11 @@ export function journeyWeekLookup(
   sessions: JourneySession[],
   journeyId: string,
   freqTarget: number,
+  testDates?: readonly string[],
 ): (dateStr: string) => number {
-  const keys = Object.keys(fulfilledWeekKeys(sessions, journeyId, freqTarget)).sort();
+  const keys = Object.keys(
+    fulfilledWeekKeys(sessions, journeyId, freqTarget, testDates),
+  ).sort();
   return (dateStr: string): number => {
     const key = isoWeekKey(dateStr);
     let before = 0;
@@ -216,8 +258,9 @@ export function journeyPlacement(
   sessions: JourneySession[],
   freqTarget: number,
   today: string,
+  testDates?: readonly string[],
 ): Placement {
-  const gw = journeyWeekForDate(today, sessions, journey.id, freqTarget);
+  const gw = journeyWeekForDate(today, sessions, journey.id, freqTarget, testDates);
   const p = phasePlacement(journey.phases || [], gw);
   return { ...p, globalWeek: gw };
 }
@@ -241,14 +284,17 @@ export function completesJourney(
   sessionsBefore: JourneySession[],
   freqTarget: number,
   date: string,
+  testDates?: readonly string[],
 ): boolean {
   const total = totalJourneyWeeks(journey.phases || []);
   if (total <= 0) return false;
   const target = Math.max(1, freqTarget || 1);
-  const week = journeyWeekForDate(date, sessionsBefore, journey.id, target);
+  const week = journeyWeekForDate(date, sessionsBefore, journey.id, target, testDates);
   if (week < total) return false;
-  const wp = weekProgress(sessionsBefore, journey.id, target, date);
-  return wp.units + 1 >= target;
+  const wp = weekProgress(sessionsBefore, journey.id, target, date, testDates);
+  // Liegt in der Woche schon ein 1RM-Test, ist sie ohnehin erfuellt - dann
+  // schliesst diese Einheit die Journey ab, auch ohne das volle Pensum.
+  return wp.fulfilled || wp.units + 1 >= target;
 }
 
 // Fortschritt der Kalenderwoche, in der dateStr liegt: gezaehlte Einheiten,
@@ -259,6 +305,7 @@ export function weekProgress(
   journeyId: string,
   freqTarget: number,
   dateStr: string,
+  testDates?: readonly string[],
 ): WeekProgress {
   const key = isoWeekKey(dateStr);
   let units = 0;
@@ -266,12 +313,15 @@ export function weekProgress(
     if (isoWeekKey(s.date) === key) units++;
   });
   const target = Math.max(1, freqTarget || 1);
+  // Ein 1RM-Test in der Woche erfuellt sie fuer sich - die Einheitenzahl bleibt
+  // aber die tatsaechliche (die Anzeige zaehlt keine Einheit dazu).
+  const hasTest = testWeekKeys(sessions, journeyId, testDates)[key] === true;
   return {
     isoKey: key,
     weekNum: isoWeekNumOf(key),
     units,
     target,
-    fulfilled: units >= target,
-    journeyWeek: journeyWeekForDate(dateStr, sessions, journeyId, target),
+    fulfilled: hasTest || units >= target,
+    journeyWeek: journeyWeekForDate(dateStr, sessions, journeyId, target, testDates),
   };
 }
