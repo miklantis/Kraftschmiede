@@ -109,22 +109,26 @@ import type { SetEntry } from "@/engine/types";
 const STRENGTH: CoachBuildExercise = {
   key: "squat",
   profile: "strength",
+  tier: "main" as const,
   equipment: "barbell",
   repRange: [8, 12],
   workWeight: 60,
   targetScore: 3,
   barId: "bar1",
   referenceWeight: null,
+  referencePhaseId: null,
 };
 const CORE: CoachBuildExercise = {
   key: "plank",
   profile: "core",
+  tier: "accessory" as const,
   equipment: "bodyweight",
   repRange: [12, 20],
   workWeight: 0,
   targetScore: 3,
   barId: null,
   referenceWeight: null,
+  referencePhaseId: null,
 };
 
 describe("coreCarry", () => {

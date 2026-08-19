@@ -145,6 +145,17 @@ export function hasWeekPlanFocus(focus: string | null | undefined): boolean {
   return (WEEK_PLAN_FOCUSES as readonly string[]).includes(focus ?? "");
 }
 
+/** Fokusse, deren Wochenplan zusaetzlich die Last selbst steuert (Anker beim
+ *  Phaseneintritt plus Wochenschritt, engine/planLoad.ts). `test` traegt zwar
+ *  ebenfalls einen Plan, holt seine Last aber aus der vorangegangenen
+ *  Kraftphase - das ist die Kombiwoche und kommt in Schritt 4 (#229). */
+export const LOAD_PLAN_FOCUSES = ["strength", "power"] as const;
+
+/** Steuert der Wochenplan dieses Fokus auch das Gewicht? */
+export function hasLoadPlanFocus(focus: string | null | undefined): boolean {
+  return (LOAD_PLAN_FOCUSES as readonly string[]).includes(focus ?? "");
+}
+
 /** Plan zur Phase: Kraft und Schnellkraft bekommen die Leiter, Test die
  *  Kombiwoche, alle uebrigen Fokusse keinen Plan (null = Coach steuert weiter). */
 export function buildWeekPlan(

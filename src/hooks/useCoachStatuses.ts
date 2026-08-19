@@ -7,8 +7,10 @@ import {
   type CoachStatus,
 } from "@/lib/coach";
 import { activeRepTarget, phaseEntryOverride } from "@/lib/liveBuild";
-import { buildLastEntries, buildPrevEntries } from "@/lib/lastEntries";
-import { derivePhaseContext } from "@/lib/phaseContext";
+import { planContextFor, type PlanSource } from "@/lib/planContext";
+import { buildLastEntries, buildPrevEntries, buildWeekEntries } from "@/lib/lastEntries";
+import { derivePhaseContext, toPlacementSessions } from "@/lib/phaseContext";
+import { journeyWeekLookup } from "@/engine";
 import { todayISO } from "@/lib/format";
 import { useExercises } from "./useExercises";
 import { useSessions } from "./useSessions";
@@ -92,10 +94,41 @@ export function useCoachStatuses(): UseCoachStatuses {
     // die Statusanzeige zeigt entsprechend "frei anpassbar".
     const freeMode = ph.journeyId === null;
 
+    // Wochenplan-Stand der laufenden Phase - dieselbe Quelle wie der Live-Aufbau.
+    const planSource: PlanSource | null = ph.planWeek
+      ? (() => {
+          const weekOf = journeyWeekLookup(
+            toPlacementSessions(sessionsQ.data ?? []),
+            ph.journeyId ?? "",
+            freqTarget,
+          );
+          const current = ph.placement?.globalWeek ?? 1;
+          return {
+            week: ph.planWeek,
+            prevWeek: ph.prevPlanWeek,
+            startReps: ph.firstPlanWeek?.reps ?? null,
+            phaseId: ph.phaseId,
+            currentWeekEntryByExercise: buildWeekEntries(
+              detailedQ.data ?? [],
+              weekOf,
+              current,
+              ph.phaseId,
+            ),
+            previousWeekEntryByExercise: buildWeekEntries(
+              detailedQ.data ?? [],
+              weekOf,
+              current - 1,
+              ph.phaseId,
+            ),
+          };
+        })()
+      : null;
+
     for (const e of exercisesQ.data ?? []) {
       const exo: CoachBuildExercise = {
         key: e.key,
         profile: e.profile,
+        tier: e.tier,
         equipment: e.equipment,
         repRange:
           e.rep_range_min != null && e.rep_range_max != null
@@ -105,10 +138,17 @@ export function useCoachStatuses(): UseCoachStatuses {
         targetScore: e.target_score,
         barId: e.bar_id,
         referenceWeight: e.reference_weight,
+        referencePhaseId: e.reference_phase_id,
       };
+      const plan = planContextFor(planSource, {
+        id: e.id,
+        referenceWeight: e.reference_weight,
+        referencePhaseId: e.reference_phase_id,
+        rm: e.rm,
+      });
       const lastEntry = lastEntryByExercise[e.id] ?? null;
       const hadPriorData = workSets(lastEntry).length > 0;
-      const repTarget = activeRepTarget(exo, ph.phaseRepTarget, hasPhase);
+      const repTarget = activeRepTarget(exo, ph.phaseRepTarget, hasPhase, plan);
       const { suggestion, bar } = suggestWithBar(exo, {
         phaseFocus: ph.phaseFocus,
         lastEntry,
@@ -120,6 +160,7 @@ export function useCoachStatuses(): UseCoachStatuses {
         repTarget,
         freeMode,
         loadFactor: ph.loadFactor,
+        plan,
       });
       // Denselben Phasenwechsel-Einstieg anwenden wie der Live-Aufbau, sonst
       // zeigt die Statusanzeige bei getrennten Repbaendern ein anderes Gewicht

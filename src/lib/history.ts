@@ -49,6 +49,10 @@ export interface HistoryExercise {
 export interface HistorySessionInput {
   id: string;
   date: string;
+  /** Phase der Journey, in der die Einheit lag. Optional, weil reine Anzeige sie
+   *  nicht braucht – der Wochenplan des Coaches schon (Einheiten der laufenden
+   *  Phase von denen davor trennen). */
+  phaseId?: string | null;
   type: "strength" | "yoga" | "skill";
   templateId: string | null;
   skillId: string | null;

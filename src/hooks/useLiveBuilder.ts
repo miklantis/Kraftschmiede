@@ -7,8 +7,10 @@ import type {
   LiveBuildResult,
 } from "@/lib/liveBuild";
 import { todayISO } from "@/lib/format";
-import { buildLastEntries, buildPrevEntries } from "@/lib/lastEntries";
-import { derivePhaseContext } from "@/lib/phaseContext";
+import { buildLastEntries, buildPrevEntries, buildWeekEntries } from "@/lib/lastEntries";
+import { derivePhaseContext, toPlacementSessions } from "@/lib/phaseContext";
+import { journeyWeekLookup } from "@/engine";
+import type { PlanSource } from "@/lib/planContext";
 import { useExercises } from "./useExercises";
 import { useTemplates } from "./useTemplates";
 import { useSessions } from "./useSessions";
@@ -67,6 +69,7 @@ export function useLiveBuilder(): UseLiveBuilder {
         key: e.key,
         name: e.name,
         profile: e.profile,
+        tier: e.tier,
         equipment: e.equipment,
         repRange:
           e.rep_range_min != null && e.rep_range_max != null
@@ -76,6 +79,7 @@ export function useLiveBuilder(): UseLiveBuilder {
         targetScore: e.target_score,
         barId: e.bar_id,
         referenceWeight: e.reference_weight,
+        referencePhaseId: e.reference_phase_id,
         rm: e.rm,
         muscleGroups: e.muscle_groups,
       };
@@ -112,6 +116,37 @@ export function useLiveBuilder(): UseLiveBuilder {
       todayISO(),
     );
 
+    // Wochenplan-Stand der laufenden Phase: welche Planwoche gilt und welche
+    // Einheiten liegen in dieser bzw. der vorigen Journey-Woche (#225).
+    const planSource: PlanSource | null = ph.planWeek
+      ? (() => {
+          const weekOf = journeyWeekLookup(
+            toPlacementSessions(sessionsQ.data ?? []),
+            ph.journeyId ?? "",
+            freqTarget,
+          );
+          const current = ph.placement?.globalWeek ?? 1;
+          return {
+            week: ph.planWeek,
+            prevWeek: ph.prevPlanWeek,
+            startReps: ph.firstPlanWeek?.reps ?? null,
+            phaseId: ph.phaseId,
+            currentWeekEntryByExercise: buildWeekEntries(
+              detailedQ.data ?? [],
+              weekOf,
+              current,
+              ph.phaseId,
+            ),
+            previousWeekEntryByExercise: buildWeekEntries(
+              detailedQ.data ?? [],
+              weekOf,
+              current - 1,
+              ph.phaseId,
+            ),
+          };
+        })()
+      : null;
+
     return {
       exercisesById,
       bars,
@@ -122,6 +157,7 @@ export function useLiveBuilder(): UseLiveBuilder {
       green,
       unit,
       weightStep,
+      planSource,
       ...ph,
     };
   }, [
@@ -152,6 +188,7 @@ export function useLiveBuilder(): UseLiveBuilder {
         recoveryGreen: base.green,
         freeMode: base.journeyId === null,
         loadFactor: base.loadFactor,
+        planSource: base.planSource,
         lastEntryByExercise: base.lastEntryByExercise,
         prevEntryByExercise: base.prevEntryByExercise,
         weightStep: base.weightStep,

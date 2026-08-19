@@ -243,6 +243,23 @@ betroffene Tabelle beim Wiederherstellen leer.
   die Quelle der Wahrheit für die Form, die DB-Schemas verweisen nur darauf. Weil der
   Plan an der Phase hängt, wandert er beim Journey-Start ohne eigene Kopierlogik mit.
   Phasen ohne Plan (null) laufen unverändert über die Doppelprogression des Coaches.
+- **Wochenplan schlägt Doppelprogression – an genau einer Stelle.** Trägt die laufende
+  Phase einen Wochenplan und ist die Übung eine Hauptübung mit Profil `strength`, gibt
+  der Plan Sätze, Wiederholungen und Ziel-Anstrengung vor; das Repband der Phase ruht
+  dann, ebenso Toleranz und Rückwärtsregel aus ADR-0015. Der Umschalter sitzt in
+  `suggestForExercise` (`lib/coach.ts`, `planSuggestion`), die Gewichtsregel selbst in
+  `engine/planLoad.ts`: Startgewicht beim Phaseneintritt aus dem geschätzten 1RM
+  (Planwiederholungen der ersten Woche + 2 Reserve, abgerundet), danach je Journey-Woche
+  ein `weight_step` hoch, wenn die letzte Einheit der Vorwoche voll sauber war – sonst
+  bleibt das Gewicht stehen. Innerhalb einer Woche liegt immer dasselbe Gewicht auf der
+  Übung. Gesenkt wird nie; nur eine im Training selbst reduzierte Last zieht den Anker
+  nach unten nach (`anchorAfterSession`, angewandt in `lib/katalogPatch.ts`). Der Anker
+  ist `reference_weight` samt `reference_phase_id` – nur ein an die laufende Phase
+  gebundener Anker zählt, sonst tritt die Übung gerade ein. Die Wochen-Buchhaltung
+  (welche Einheit liegt in dieser, welche in der vorigen Journey-Woche derselben Phase)
+  liegt in `lib/lastEntries.ts` (`buildWeekEntries`) und `engine/journey.ts`
+  (`journeyWeekLookup`), zusammengesetzt in `lib/planContext.ts`. Testphasen tragen zwar
+  einen Plan, holen ihre Last aber aus der Kombiwoche und bleiben vorerst außen vor.
 - **Datenzugriff gekapselt** in Query-/Mutation-Hooks je Entität (z. B.
   `useSessions`, `useExercises`). Komponenten kennen kein Supabase direkt.
 - **Naht zur Datenbank je Schreibbereich** (`src/lib/<bereich>Store.ts` +

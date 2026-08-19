@@ -18,3 +18,10 @@ export const SCORE_MAP: Record<number, ScoreInfo> = {
 export function scoreInfo(s: number): ScoreInfo | null {
   return SCORE_MAP[s] ?? null;
 }
+
+/** Score der Skala zu einer Ziel-Anstrengung in RIR: RIR 2 -> Score 3,
+ *  RIR 1 -> Score 4. Der Wochenplan denkt in RIR, Saetze tragen den Score -
+ *  hier steht die Umrechnung, damit sie nicht an mehreren Stellen liegt. */
+export function scoreForRir(rir: number): number {
+  return Math.min(5, Math.max(1, 5 - Math.round(rir)));
+}

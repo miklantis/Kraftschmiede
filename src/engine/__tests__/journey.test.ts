@@ -4,6 +4,7 @@ import {
   isoWeekNumOf,
   journeyPlacement,
   journeyWeekForDate,
+  journeyWeekLookup,
   phasePlacement,
   weekProgress,
   repTargetForFocus,
@@ -243,5 +244,24 @@ describe("completesJourney", () => {
     expect(completesJourney({ id: "j1", phases: [] }, [], 2, "2026-01-05")).toBe(
       false,
     );
+  });
+});
+
+describe("journeyWeekLookup", () => {
+  it("liefert dieselbe Wochennummer wie journeyWeekForDate", () => {
+    const freq = 3;
+    const sessions = [
+      s("2025-12-29"),
+      s("2025-12-30"),
+      s("2025-12-31"),
+      s("2026-01-05"),
+      s("2026-01-06"),
+      s("2026-01-07"),
+      s("2026-01-12"),
+    ];
+    const weekOf = journeyWeekLookup(sessions, "j1", freq);
+    for (const d of ["2025-12-29", "2026-01-06", "2026-01-13", "2026-01-20"]) {
+      expect(weekOf(d)).toBe(journeyWeekForDate(d, sessions, "j1", freq));
+    }
   });
 });

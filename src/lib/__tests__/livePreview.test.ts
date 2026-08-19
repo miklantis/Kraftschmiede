@@ -107,12 +107,14 @@ function previewState(e: LiveEntry, prevEntry: SetEntry | null = null): CoachSta
   const exo: CoachBuildExercise = {
     key: "bench",
     profile: "strength",
+    tier: "main" as const,
     equipment: "barbell",
     repRange: [8, 12],
     workWeight: liveWorkWeight(e)!,
     targetScore: 3,
     barId: "bar1",
     referenceWeight: null,
+    referencePhaseId: null,
   };
   const { suggestion } = suggestWithBar(exo, {
     phaseFocus: null,
@@ -199,12 +201,14 @@ describe("Vorschau auf die Coach-Entscheidung", () => {
     const exo: CoachBuildExercise = {
       key: "plank",
       profile: "core",
+      tier: "accessory" as const,
       equipment: "bodyweight",
       repRange: [12, 20],
       workWeight: liveWorkWeight(e)!,
       targetScore: 3,
       barId: null,
       referenceWeight: null,
+      referencePhaseId: null,
     };
     const { suggestion } = suggestWithBar(exo, {
       phaseFocus: null,

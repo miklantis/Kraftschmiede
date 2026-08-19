@@ -56,6 +56,7 @@ export function useSessionsDetailed() {
       return rows.map((row) => ({
         id: row.id,
         date: row.date,
+        phaseId: row.phase_id,
         type: row.type,
         templateId: row.template_id,
         skillId: row.skill_id,

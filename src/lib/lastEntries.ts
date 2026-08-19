@@ -65,3 +65,29 @@ export function buildPrevEntries(
   }
   return map;
 }
+
+// Letzter Krafteintrag je Uebung in einer bestimmten Journey-Woche derselben
+// Phase. Grundlage der Wochen-Regel des Wochenplans (#225, Schritt 3):
+// gewertet wird die letzte Einheit der Uebung in der Vorwoche, und innerhalb
+// einer Woche liegt auf einer Uebung immer dieselbe Vorgabe. Die Phase grenzt
+// mit ab, damit eine Einheit aus der Vorgaengerphase die neue Rampe nicht
+// anschiebt.
+export function buildWeekEntries(
+  detailed: HistorySessionInput[],
+  weekOf: (date: string) => number,
+  week: number,
+  phaseId: string | null,
+): Record<string, SetEntry> {
+  const map: Record<string, SetEntry> = {};
+  if (phaseId == null) return map;
+  const desc = detailed.slice().reverse();
+  for (const sess of desc) {
+    if ((sess.phaseId ?? null) !== phaseId) continue;
+    if (weekOf(sess.date) !== week) continue;
+    for (const ex of sess.exercises) {
+      if (!ex.exerciseId || map[ex.exerciseId]) continue;
+      map[ex.exerciseId] = { sets: ex.sets.map(toEngineSet) };
+    }
+  }
+  return map;
+}

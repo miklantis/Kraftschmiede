@@ -110,6 +110,9 @@ describe("derivePhaseContext", () => {
       loadNote: null,
       placement: null,
       phase: null,
+      planWeek: null,
+      prevPlanWeek: null,
+      firstPlanWeek: null,
     });
   });
 

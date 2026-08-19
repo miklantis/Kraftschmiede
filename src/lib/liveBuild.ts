@@ -13,8 +13,13 @@ import {
   plannedSets,
   lastWorkSetCount,
   rampLoad,
+  planGovernsExercise,
+  planSetCount,
+  planTargetScore,
   type CoachBuildExercise,
+  type PlanContext,
 } from "./coach";
+import { planContextFor, type PlanSource } from "./planContext";
 import { fmtNum } from "./format";
 import type {
   LiveEntry,
@@ -54,6 +59,9 @@ export interface LiveBuildInput {
   freeMode: boolean;
   // Lastfaktor der aktiven Phase; null ausserhalb einer Lastfaktor-Journey.
   loadFactor: number | null;
+  // Wochenplan-Stand der laufenden Phase; null = die Phase laeuft ueber die
+  // Doppelprogression des Coaches wie bisher.
+  planSource?: PlanSource | null;
   // Letzter Krafteintrag je Uebung (Saetze) als Vordaten fuer den Vorschlag.
   lastEntryByExercise: Record<string, SetEntry | null>;
   // Der Eintrag davor je Uebung – nur fuer die Rueckwaertsregel des Coaches
@@ -79,10 +87,13 @@ export interface LiveBuildResult {
 // bleibt nur das Tor. Exportiert, damit die Uebungs-Statusanzeige dieselbe
 // Abgrenzung nutzt.
 export function activeRepTarget(
-  exo: { profile: "strength" | "core" | "bodyweight" },
+  exo: { profile: "strength" | "core" | "bodyweight"; tier: "main" | "accessory" },
   phaseRepTarget: [number, number] | null,
   hasPhase: boolean,
+  plan?: PlanContext | null,
 ): [number, number] | null {
+  // Gibt der Wochenplan die Wiederholungen vor, ruht das Band der Phase.
+  if (planGovernsExercise(exo, plan)) return null;
   if (!hasPhase || exo.profile !== "strength") return null;
   return phaseRepTarget;
 }
@@ -219,7 +230,13 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
     // schwerste, die noch <= Ziel ist, sonst die leichteste; (3) mit dieser Stange
     // endgueltig rechnen (Gewicht ladbar + Aufwaermrampe). So klebt eine leichte
     // Uebung nicht mehr am Gewicht der schwersten Stange.
-    const repTarget = activeRepTarget(exo, input.phaseRepTarget, hasPhase);
+    const plan = planContextFor(input.planSource, {
+      id,
+      referenceWeight: exo.referenceWeight,
+      referencePhaseId: exo.referencePhaseId,
+      rm: exo.rm,
+    });
+    const repTarget = activeRepTarget(exo, input.phaseRepTarget, hasPhase, plan);
     const lastEntry = input.lastEntryByExercise[id] ?? null;
 
     const { suggestion: sug, bar } = suggestWithBar(exo, {
@@ -233,6 +250,7 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
       repTarget,
       freeMode: input.freeMode,
       loadFactor: input.loadFactor,
+      plan,
     });
 
     // Phasenwechsel-Einstieg (Regel s. phaseEntryOverride).
@@ -251,8 +269,9 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
     const phaseEntry = entry.phaseEntry;
 
     // Satzzahl: Core fix 3; im freien Training die Satzzahl der letzten Einheit
-    // dieser Uebung (ohne Vordaten der Standard), sonst die Phasen-Rampe.
-    let setN = setNDefault;
+    // dieser Uebung (ohne Vordaten der Standard); gibt der Wochenplan sie vor,
+    // gilt seine feste Zahl, sonst die Phasen-Rampe.
+    let setN = planSetCount(exo, plan, setNDefault);
     if (exo.profile === "core") setN = 3;
     else if (input.freeMode) setN = lastWorkSetCount(lastEntry) ?? setNDefault;
     const warm = warmupFor(
@@ -263,12 +282,15 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
       input.plates,
     ).map((w) => ({ reps: w.reps, weight: w.weight, done: false }));
 
+    // Ziel-Anstrengung: in einer Phase mit Wochenplan die der Planwoche (RIR),
+    // sonst der Zielscore der Uebung.
+    const targetScore = planTargetScore(exo, plan);
     const sets: LiveSet[] = [];
     for (let k = 0; k < Math.max(1, setN); k++) {
       sets.push({
         reps: wReps,
         weight: wWeight,
-        score: exo.targetScore,
+        score: targetScore,
         targetReps: wReps,
         targetWeight: wWeight,
         done: false,

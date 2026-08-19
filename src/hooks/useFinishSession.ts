@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { completesJourney, journeyWeekForDate } from "@/engine/journey";
+import { hasLoadPlanFocus } from "@/engine/weekPlan";
 import { todayISO } from "@/lib/format";
 import { asRmFormula } from "@/lib/rmTest";
 import { buildFinishRows } from "@/lib/liveFinish";
@@ -96,11 +97,21 @@ export function useFinishSession(): UseFinishSession {
         newId: () => crypto.randomUUID(),
       });
 
+      // Lief die Einheit in einer Phase mit Wochenplan? Dann fuehrt der Plan
+      // die Hauptuebungen mit Kraftprofil, und deren Anker wird nachgezogen.
+      const planPhase =
+        (journeyQ.data?.phases ?? []).find(
+          (p) =>
+            p.id === session.phaseId && hasLoadPlanFocus(p.focus) && !!p.week_plan,
+        ) ?? null;
+
       // Katalog-Patches: die Regel steht in katalogPatch, hier wird nur der
       // Katalog-Stand der Uebung dazugeholt.
       const byId = new Map((exercisesQ.data ?? []).map((e) => [e.id, e]));
       const exercisePatches: ExercisePatch[] = rows.exerciseUpdates.map((u) => {
         const exo = byId.get(u.exerciseId);
+        const planned =
+          planPhase && exo && exo.tier === "main" && exo.profile === "strength";
         return katalogPatch({
           exerciseId: u.exerciseId,
           workWeight: u.workWeight,
@@ -109,6 +120,9 @@ export function useFinishSession(): UseFinishSession {
           record1RM: u.record1RM,
           est1RM: u.est1RM,
           date,
+          planAnchor: planned
+            ? { phaseId: planPhase.id, plannedWeight: u.targetWeight }
+            : null,
         });
       });
 
