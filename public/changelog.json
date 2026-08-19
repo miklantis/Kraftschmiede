@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.38.4",
+      "date": "2026-08-19",
+      "changes": [
+        "Die Auswahl auf \"Journey wählen\" ist auf die zwei Vorlagen eingedampft, die du wirklich nutzt: \"Wiedereinstieg & Aufbau\" und \"Wiederaufbau nach Fasten\". Hypertrophie-Block, Kraftausdauer / Kondition, Erhaltung / Minimaldosis, 3-Monats-Block und 6-Monats-Periodisierung sind entfernt.",
+        "Deine laufende Journey bleibt davon unberührt – sie hängt an keiner Vorlage. Neue Vorlagen können jederzeit wieder angelegt werden."
+      ]
+    },
+    {
       "version": "1.38.3",
       "date": "2026-08-19",
       "changes": [
