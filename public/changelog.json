@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.38.3",
+      "date": "2026-08-19",
+      "changes": [
+        "Die Periodisierungskurve zeigt den Kraftblock jetzt so, wie er wirklich läuft: Die Intensitätslinie steigt Woche für Woche mit der Wiederholungsleiter an, statt über die ganze Phase flach zu liegen, und die Kombiwoche bricht sichtbar ein.",
+        "Die Volumenlinie kommt in Phasen mit Wochenplan aus dessen Sätzen; die Kombiwoche ist dort als Entlastungswoche markiert. Journeys und Vorlagen ohne Wochenplan sehen unverändert aus."
+      ]
+    },
+    {
       "version": "1.38.2",
       "date": "2026-08-19",
       "changes": [

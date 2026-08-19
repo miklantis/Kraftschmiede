@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildPeriodization } from "@/lib/periodization";
 import type { JourneyPhaseInput } from "@/lib/journey";
+import { buildComboWeekPlan, buildStrengthWeekPlan } from "@/engine";
 
 // Zwei Phasen mit bekannten Eckdaten, damit Volumen (Satz-Rampe + Deload),
 // Intensitaet (aus der Wiederholungsspanne) und die Baender exakt pruefbar sind.
@@ -130,6 +131,70 @@ describe("buildPeriodization", () => {
   it("vergibt einen Ersatznamen fuer Baender ohne Namen", () => {
     const d = buildPeriodization([phase({ name: "", weeks: 2 })], 1);
     expect(d.bands[0].name).toBe("Phase 1");
+  });
+
+  // Issue #225, Schritt 6: Phasen mit Wochenplan rechnen wochengenau.
+  describe("Phasen mit Wochenplan", () => {
+    const kraftUndKombi: JourneyPhaseInput[] = [
+      phase({
+        name: "Maximalkraft",
+        focus: "strength",
+        weeks: 4,
+        setsStart: 3,
+        setsEnd: 5,
+        deloadWeek: null,
+        repTargetMin: 4,
+        repTargetMax: 6,
+        weekPlan: buildStrengthWeekPlan(4),
+      }),
+      phase({
+        name: "Test",
+        focus: "test",
+        weeks: 1,
+        setsStart: 3,
+        setsEnd: 3,
+        deloadWeek: null,
+        weekPlan: buildComboWeekPlan(1),
+      }),
+    ];
+
+    it("laesst die Intensitaet mit der Wiederholungsleiter steigen", () => {
+      const d = buildPeriodization(kraftUndKombi, 1);
+      // Leiter 5, 4, 3, 2 -> 1/5, 1/4, 1/3, 1/2; danach die Kombiwoche mit
+      // 60 % auf Mitte 4 -> 0,15.
+      expect(d.weeks.map((w) => w.intens)).toEqual([
+        0.2, 0.25, 1 / 3, 0.5, 0.15,
+      ]);
+      expect(d.iMin).toBeCloseTo(0.15);
+      expect(d.iMax).toBeCloseTo(0.5);
+    });
+
+    it("nimmt das Volumen aus den Saetzen des Plans statt aus der Satz-Rampe", () => {
+      const d = buildPeriodization(kraftUndKombi, 1);
+      expect(d.weeks.map((w) => w.vol)).toEqual([4, 4, 4, 4, 3]);
+    });
+
+    it("markiert die Kombiwoche als Entlastung", () => {
+      const d = buildPeriodization(kraftUndKombi, 1);
+      expect(d.weeks.map((w) => w.deload)).toEqual([
+        false,
+        false,
+        false,
+        false,
+        true,
+      ]);
+    });
+
+    it("rechnet Phasen ohne Plan daneben unveraendert", () => {
+      const gemischt: JourneyPhaseInput[] = [
+        phase({ name: "Aufbau", weeks: 2, setsStart: 2, setsEnd: 5 }),
+        kraftUndKombi[0]!,
+      ];
+      const d = buildPeriodization(gemischt, 1);
+      // Aufbau wie bisher (Rampe 2 -> 5 ueber 2 Wochen, Mitte 10 -> 0,1).
+      expect(d.weeks.slice(0, 2).map((w) => w.vol)).toEqual([2, 5]);
+      expect(d.weeks.slice(0, 2).map((w) => w.intens)).toEqual([0.1, 0.1]);
+    });
   });
 
   it("liefert bei leerer Journey ein sicheres, leeres Modell", () => {
