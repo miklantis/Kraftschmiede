@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.37.1",
+      "date": "2026-08-19",
+      "changes": [
+        "Vorarbeit für den gesteuerten Kraftzyklus: Kraft-, Schnellkraft- und Testphasen tragen jetzt einen Wochenplan (Sätze, Wiederholungen und Ziel-Anstrengung je Woche). Die App rechnet damit noch nicht - das kommt im nächsten Schritt.",
+        "Schon wirksam: In Kraftphasen gibt es keine Entlastungswoche mehr - auch nicht in deiner laufenden Journey. Die Entlastung rückt später in die Woche vor dem 1RM-Test, damit nicht zwei Entlastungen kurz hintereinander liegen.",
+        "Ebenfalls schon hinterlegt: Deine aktuellen Arbeitsgewichte in Bench Press, Deadlift, Bent Row, Push Press und Back Squat sind als Startpunkt der laufenden Kraftphase festgehalten, damit der Umbau später nahtlos dort anschließt statt tiefer einzusteigen."
+      ]
+    },
+    {
       "version": "1.37.0",
       "date": "2026-08-18",
       "changes": [

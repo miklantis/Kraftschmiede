@@ -12,6 +12,7 @@ export * from "./progression";
 export * from "./phaseChange";
 export * from "./suitability";
 export * from "./volume";
+export * from "./weekPlan";
 export * from "./recovery";
 export * from "./skills";
 export * from "./journey";

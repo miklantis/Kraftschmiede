@@ -2,6 +2,7 @@
 // Idempotent: laeuft nur, wenn noch keine Skills fuer den Nutzer existieren.
 // Alles wird mit der user_id des angemeldeten Nutzers angelegt (RLS).
 
+import { buildWeekPlan } from "@/engine/weekPlan";
 import { supabase } from "@/lib/supabase";
 import {
   journeyTemplateSeeds,
@@ -129,6 +130,9 @@ async function seedJourneyTemplates(userId: string): Promise<void> {
         rep_target_min: p.repTargetMin,
         rep_target_max: p.repTargetMax,
         load_factor: p.loadFactor,
+        // Wochenplan faellt aus Fokus und Phasenlaenge; Kraft-, Schnellkraft-
+        // und Testphasen bekommen ihn, alle uebrigen bleiben ohne (null).
+        week_plan: buildWeekPlan(p.focus, p.weeks),
         position: i,
       });
     });

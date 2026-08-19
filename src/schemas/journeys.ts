@@ -3,6 +3,7 @@
 // Unique Index in der DB.
 
 import { z } from "zod";
+import { weekPlanSchema } from "@/engine/weekPlan";
 import { focusEnum, isoDate, isoTimestamp, uuid } from "./shared";
 
 // Status einer Journey (journeys.status).
@@ -37,6 +38,10 @@ export type JourneyInsert = z.infer<typeof journeyInsert>;
 // phases – Phase der konkreten Journey (Kopie der Vorlagenphase, frei anpassbar).
 // load_factor ist der Anteil des eingefrorenen Referenzgewichts, mit dem in
 // dieser Phase gearbeitet wird (1.0 = volles Niveau, also gewohntes Verhalten).
+// week_plan ist der Wochenplan der Phase (Saetze, Wiederholungen, Ziel-
+// Anstrengung je Woche); null = die Phase laeuft wie bisher ueber den Coach.
+// Die Form steht in der Engine (engine/weekPlan.ts), wo sie auch gerechnet wird
+// - hier steht nur der Spaltenbezug, damit es keine doppelte Pflege gibt.
 export const phaseRow = z.object({
   id: uuid,
   user_id: uuid,
@@ -50,6 +55,7 @@ export const phaseRow = z.object({
   rep_target_min: z.number().int().nullable(),
   rep_target_max: z.number().int().nullable(),
   load_factor: z.number(),
+  week_plan: weekPlanSchema.nullable(),
   position: z.number().int(),
 });
 export type PhaseRow = z.infer<typeof phaseRow>;
@@ -61,6 +67,7 @@ export const phaseInsert = phaseRow
     rep_target_min: true,
     rep_target_max: true,
     load_factor: true,
+    week_plan: true,
     position: true,
   });
 export type PhaseInsert = z.infer<typeof phaseInsert>;

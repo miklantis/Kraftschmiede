@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { buildWeekPlan } from "@/engine/weekPlan";
 import { journeyTemplateSeeds } from "@/seed/definitions";
 
 describe("Journey-Vorlagen im Seed", () => {
@@ -27,6 +28,41 @@ describe("Journey-Vorlagen im Seed", () => {
       for (const p of t.phases) {
         expect(p.loadFactor).toBe(1);
       }
+    }
+  });
+});
+
+describe("Wochenplan der Vorlagen-Phasen", () => {
+  const alle = journeyTemplateSeeds.flatMap((t) => t.phases);
+
+  it("gibt jeder Kraft-, Schnellkraft- und Testphase einen Plan ueber alle Wochen", () => {
+    const geplant = alle.filter((p) =>
+      ["strength", "power", "test"].includes(p.focus),
+    );
+    expect(geplant.length).toBeGreaterThan(0);
+    for (const p of geplant) {
+      const plan = buildWeekPlan(p.focus, p.weeks);
+      expect(plan).not.toBeNull();
+      expect(plan).toHaveLength(p.weeks);
+    }
+  });
+
+  it("laesst alle uebrigen Phasen beim Coach", () => {
+    const frei = alle.filter(
+      (p) => !["strength", "power", "test"].includes(p.focus),
+    );
+    for (const p of frei) {
+      expect(buildWeekPlan(p.focus, p.weeks)).toBeNull();
+    }
+  });
+
+  it("faehrt Kraftphasen ohne Entlastungswoche - die steckt in der Kombiwoche", () => {
+    const kraft = alle.filter((p) => p.focus === "strength");
+    expect(kraft.length).toBeGreaterThan(0);
+    for (const p of kraft) {
+      expect(p.deloadWeek).toBeNull();
+      expect(p.setsStart).toBe(4);
+      expect(p.setsEnd).toBe(4);
     }
   });
 });
