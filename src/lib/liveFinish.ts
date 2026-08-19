@@ -75,6 +75,10 @@ export interface FinishContext {
 export interface ExerciseUpdate {
   exerciseId: string;
   workWeight: number;
+  /** Hoechstes vorgegebenes Arbeitsgewicht der Einheit (Plan-Vorgabe); null,
+   *  wenn kein Satz eine Vorgabe trug. Bezug fuer den Anker einer Phase mit
+   *  Wochenplan: der Anker zieht nach unten nach, nach oben nie. */
+  targetWeight: number | null;
   /** Bester Schaetzwert der Einheit (alle sauberen Saetze). */
   est1RM: number | null;
   /** Rekord-Kandidat (nur Saetze mit <= RECORD_MAX_REPS Wiederholungen). */
@@ -161,9 +165,16 @@ export function buildFinishRows(ctx: FinishContext): FinishRows {
       note: en.note,
     });
 
+    let planned: number | null = null;
+    workDone.forEach((s) => {
+      const t = typeof s.targetWeight === "number" ? s.targetWeight : null;
+      if (t != null && t > 0 && (planned == null || t > planned)) planned = t;
+    });
+
     exerciseUpdates.push({
       exerciseId: en.exerciseId,
       workWeight: work.workWeight ?? 0,
+      targetWeight: planned,
       est1RM: work.est1RM,
       record1RM: work.record1RM,
     });

@@ -1,6 +1,16 @@
 {
   "versions": [
     {
+      "version": "1.38.0",
+      "date": "2026-08-19",
+      "changes": [
+        "Die Kraftphase läuft jetzt nach ihrem Wochenplan: Sätze, Wiederholungen und Ziel-Anstrengung stehen pro Woche fest, der Coach steuert nur noch das Gewicht. In deiner laufenden \"Maximalkraft\" heißt das 4 Arbeitssätze und die Wiederholungsleiter 5, 5, 4, 3, 2 statt des freien Bands 4-6.",
+        "Das Gewicht wandert im Wochentakt, nicht mehr von Einheit zu Einheit: War die letzte Einheit einer Übung in der Vorwoche sauber - alle Sätze voll, nichts reduziert, kein Versagen, Anstrengung im Wochenziel - geht es einen Schritt hoch. Sonst bleibt es stehen, und die Wiederholungszahl sinkt planmäßig weiter. Kommt eine Übung zweimal in einer Woche dran, liegt beide Male dasselbe Gewicht auf.",
+        "Gesenkt wird nie. Reduzierst du im Training selbst, zieht die Vorgabe für die nächste Woche auf diesen Stand nach; ein guter Tag mit mehr Gewicht überholt den Plan dagegen nicht.",
+        "Nur Hauptübungen mit Kraftprofil folgen dem Plan. Curl, Pull Over, Core- und Körpergewichtsübungen verhalten sich unverändert, ebenso alle anderen Phasen (Hypertrophie, Kraftausdauer, Wiedereinstieg, Erhaltung) und das freie Training ohne Journey."
+      ]
+    },
+    {
       "version": "1.37.2",
       "date": "2026-08-19",
       "changes": [

@@ -159,6 +159,27 @@ export function journeyWeekForDate(
   return before + 1;
 }
 
+/** Nachschlage-Funktion Datum -> Journey-Wochennummer. Gleiche Rechnung wie
+ *  journeyWeekForDate, aber die erfuellten Wochen werden nur einmal bestimmt -
+ *  gedacht fuer Aufrufer, die viele Einheiten einsortieren muessen (z. B. „letzte
+ *  Einheit dieser Uebung in der Vorwoche"). */
+export function journeyWeekLookup(
+  sessions: JourneySession[],
+  journeyId: string,
+  freqTarget: number,
+): (dateStr: string) => number {
+  const keys = Object.keys(fulfilledWeekKeys(sessions, journeyId, freqTarget)).sort();
+  return (dateStr: string): number => {
+    const key = isoWeekKey(dateStr);
+    let before = 0;
+    for (const k of keys) {
+      if (k < key) before++;
+      else break;
+    }
+    return before + 1;
+  };
+}
+
 // Mapping globale Wochennummer -> Phase + Woche-in-Phase. globalWeek groesser als
 // die Summe aller Phasenwochen => done:true (Journey durchlaufen).
 export function phasePlacement(

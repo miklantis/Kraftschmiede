@@ -16,14 +16,19 @@ import type { FinishSkillPayload } from "./finishSkillMutation";
 import type { EditPayload } from "./editSession";
 
 /** Aus einem Katalog-Patch die Datenbank-Felder bauen: Arbeitsgewicht immer,
- *  1RM nur wenn bestimmt (dann rm_stale zuruecksetzen). Eine Stelle fuer
- *  Beenden und Bearbeiten. */
+ *  1RM nur wenn bestimmt (dann rm_stale zuruecksetzen), Phasenanker nur, wenn
+ *  ein Wochenplan die Uebung gesteuert hat. Eine Stelle fuer Beenden und
+ *  Bearbeiten. */
 function exercisePatchToRecord(p: ExercisePatch): Record<string, unknown> {
   const patch: Record<string, unknown> = { work_weight: p.work_weight };
   if (p.rm != null) {
     patch.rm = p.rm;
     patch.rm_as_of = p.rm_as_of;
     patch.rm_stale = false;
+  }
+  if (p.reference_weight != null && p.reference_phase_id != null) {
+    patch.reference_weight = p.reference_weight;
+    patch.reference_phase_id = p.reference_phase_id;
   }
   return patch;
 }

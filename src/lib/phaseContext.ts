@@ -7,8 +7,8 @@
 // Auch die Abbildung der DB-Zeilen auf die Engine-Form liegt hier
 // (toPlacementSessions) – sie stand vorher in jedem Aufrufer wortgleich.
 
-import { journeyPlacement, phaseRepBand } from "@/engine";
-import type { JourneySession, Placement } from "@/engine";
+import { hasLoadPlanFocus, journeyPlacement, phaseRepBand, weekPlanForWeek } from "@/engine";
+import type { JourneySession, Placement, WeekPlanWeek } from "@/engine";
 import type { VolumePhase } from "@/engine/types";
 import { loadFactorNote, usesLoadFactor } from "@/lib/loadFactor";
 import type { JourneyRow, PhaseRow } from "@/schemas";
@@ -60,6 +60,14 @@ export interface PhaseContext {
   // Die laufende Phase als ganze Zeile – fuer Anzeigen, die mehr brauchen als
   // Fokus und Band (Name, Wochenzahl). null ohne aktive Journey/Phase.
   phase: PhaseRow | null;
+  // Geltende Zeile des Phasen-Wochenplans (Saetze, Wiederholungen, Ziel-
+  // Anstrengung). Gesetzt nur, wenn die Phase ihre Last ueber den Plan steuert
+  // (Kraft/Schnellkraft); sonst null und der Coach rechnet wie bisher.
+  planWeek: WeekPlanWeek | null;
+  // Zeile der Vorwoche – Massstab, an dem die letzte Einheit gemessen wird.
+  prevPlanWeek: WeekPlanWeek | null;
+  // Erste Zeile des Plans – Bezug des Startgewichts beim Phaseneintritt.
+  firstPlanWeek: WeekPlanWeek | null;
 }
 
 export function derivePhaseContext(
@@ -78,6 +86,9 @@ export function derivePhaseContext(
   let loadNote: string | null = null;
   let placement: Placement | null = null;
   let phase: PhaseRow | null = null;
+  let planWeek: WeekPlanWeek | null = null;
+  let prevPlanWeek: WeekPlanWeek | null = null;
+  let firstPlanWeek: WeekPlanWeek | null = null;
 
   if (journey) {
     journeyId = journey.id;
@@ -105,6 +116,15 @@ export function derivePhaseContext(
         phase.rep_target_max,
         phase.focus,
       );
+      // Wochenplan der Phase: er setzt Saetze, Wiederholungen und Ziel-
+      // Anstrengung und steuert ueber engine/planLoad auch das Gewicht. Nur
+      // Kraft- und Schnellkraftphasen; die Testphase traegt zwar einen Plan,
+      // holt ihre Last aber aus der Kombiwoche (Schritt 4, #229).
+      if (hasLoadPlanFocus(phase.focus) && phase.week_plan) {
+        planWeek = weekPlanForWeek(phase.week_plan, placement.weekInPhase);
+        prevPlanWeek = weekPlanForWeek(phase.week_plan, placement.weekInPhase - 1);
+        firstPlanWeek = phase.week_plan[0] ?? null;
+      }
       if (usesLoadFactor(journey.phases.map((p) => p.load_factor))) {
         loadFactor = phase.load_factor ?? 1;
         loadNote = loadFactorNote(
@@ -126,5 +146,8 @@ export function derivePhaseContext(
     loadNote,
     placement,
     phase,
+    planWeek,
+    prevPlanWeek,
+    firstPlanWeek,
   };
 }

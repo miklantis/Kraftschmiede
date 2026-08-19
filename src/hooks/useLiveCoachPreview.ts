@@ -3,6 +3,7 @@ import {
   suggestWithBar,
   coachStatusFromSuggestion,
   type CoachBuildExercise,
+  type PlanContext,
 } from "@/lib/coach";
 import { activeRepTarget } from "@/lib/liveBuild";
 import { buildLastEntries } from "@/lib/lastEntries";
@@ -115,6 +116,7 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
       const exo: CoachBuildExercise = {
         key: e.key,
         profile: e.profile,
+        tier: e.tier,
         equipment: e.equipment,
         repRange:
           e.rep_range_min != null && e.rep_range_max != null
@@ -126,7 +128,26 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
         targetScore: e.target_score,
         barId: e.bar_id,
         referenceWeight: e.reference_weight,
+        referencePhaseId: e.reference_phase_id,
       };
+      // Wochenplan-Vorschau: gewertet wird die laufende Einheit, als waere sie
+      // die Vorwoche - die Frage ist ja „was macht der Coach daraus". Anker ist
+      // der Phasenanker, solange die Uebung in dieser Phase schon beendet
+      // wurde; sonst das gerade bewegte Gewicht.
+      const plan: PlanContext | null =
+        ph.planWeek && ph.firstPlanWeek
+          ? {
+              week: ph.planWeek,
+              prevWeek: ph.planWeek,
+              startReps: ph.firstPlanWeek.reps,
+              anchor:
+                (e.reference_phase_id === ph.phaseId ? e.reference_weight : null) ??
+                workWeight,
+              currentWeekEntry: null,
+              previousWeekEntry: lastEntry,
+              rm: e.rm,
+            }
+          : null;
       const { suggestion } = suggestWithBar(exo, {
         phaseFocus: ph.phaseFocus,
         lastEntry,
@@ -135,9 +156,10 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
         bars,
         plates,
         dumbbells,
-        repTarget: activeRepTarget(exo, ph.phaseRepTarget, hasPhase),
+        repTarget: activeRepTarget(exo, ph.phaseRepTarget, hasPhase, plan),
         freeMode,
         loadFactor: ph.loadFactor,
+        plan,
       });
       // Begleit-/Koerpergewichtsuebungen und freies Training rechnen nicht
       // progressiv - dort gibt es nichts zu bewerten, also auch kein Icon.

@@ -40,6 +40,10 @@ export interface ExercisePatch {
   rm?: number;
   rm_as_of?: string;
   rm_stale?: boolean;
+  /** Anker einer Phase mit Wochenplan samt Phasenbindung (nur gesetzt, wenn der
+   *  Plan diese Uebung gesteuert hat). */
+  reference_weight?: number;
+  reference_phase_id?: string;
 }
 
 /** Default-mutationFn + Auffrischung registrieren. Greift auch fuer nach einem

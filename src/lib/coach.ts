@@ -9,12 +9,15 @@ import {
   suggestWeight,
   generateWarmup,
   volumeForWeek,
+  planWeekLoad,
+  scoreForRir,
 } from "@/engine";
 import type {
   SuitabilityResult,
   SuggestResult,
   SuggestExercise,
   RampLoad,
+  WeekPlanWeek,
 } from "@/engine";
 import type {
   Exercise,
@@ -163,14 +166,21 @@ export function rankWorkouts<T extends RankableTemplate>(
 export interface CoachBuildExercise {
   key: string | null;
   profile: "strength" | "core" | "bodyweight";
+  // Rolle der Uebung in der Einheit. Der Wochenplan der Kraftphase gilt nur fuer
+  // Hauptuebungen; Zusatzuebungen bleiben beim Coach.
+  tier: "main" | "accessory";
   equipment: "barbell" | "plate" | "bar" | "band" | "bodyweight" | "dumbbell";
   repRange: [number, number] | null;
   workWeight: number;
   targetScore: number;
   barId: string | null;
-  // Eingefrorenes Arbeitsgewicht vom Start einer Lastfaktor-Journey (null,
-  // solange keine solche laeuft). Bezugspunkt der Rampe.
+  // Eingefrorenes Arbeitsgewicht vom Start einer Lastfaktor-Journey bzw. Anker
+  // einer Phase mit Wochenplan (null, solange keines von beidem laeuft).
   referenceWeight: number | null;
+  // Phase, an die der Anker gebunden ist. Ohne diesen Bezug liesse sich „Anker
+  // dieser Phase" nicht von „noch kein Anker" unterscheiden, und die Last
+  // wuerde pro Einheit statt pro Woche steigen.
+  referencePhaseId: string | null;
 }
 
 // Coach-Entscheidung mit dem zusaetzlichen "carry" (bewusst keine Wertung) fuer
@@ -270,6 +280,9 @@ export interface SuggestBuildCtx {
   // Lastfaktor der aktiven Phase; null, wenn die laufende Journey ohne
   // Lastfaktor arbeitet (Normalfall).
   loadFactor?: number | null;
+  // Wochenplan-Bezug der laufenden Phase; null = die Phase laeuft ueber die
+  // Doppelprogression wie bisher.
+  plan?: PlanContext | null;
 }
 
 // Vorgabe der Journey fuer diese Uebung: Referenzgewicht x Lastfaktor. null,
@@ -290,6 +303,101 @@ export function rampLoad(
   };
 }
 
+// ---------------------------------------------------------------------------
+// Wochenplan der Kraftphase (Issue #225, Schritt 3). Traegt die laufende Phase
+// einen Wochenplan und ist die Uebung eine Hauptuebung mit Profil `strength`,
+// gibt der Plan Saetze, Wiederholungen und Ziel-Anstrengung vor; das Gewicht
+// kommt aus der Anker-Regel der Engine (planWeekLoad). Das Wiederholungsband
+// der Phase ruht dann. Fuer alle anderen Uebungen und Phasen aendert sich
+// nichts - der Plan uebersteuert an genau dieser einen Stelle.
+// ---------------------------------------------------------------------------
+
+/** Alles, was der Plan ueber diese Uebung wissen muss. Die Beschaffung liegt in
+ *  den Daten-Hooks (phaseContext + lastEntries), hier nur die Entscheidung. */
+export interface PlanContext {
+  /** Geltende Zeile des Wochenplans (Saetze, Wiederholungen, RIR). */
+  week: WeekPlanWeek;
+  /** Zeile der Vorwoche – Massstab fuer die Bewertung der letzten Einheit. */
+  prevWeek: WeekPlanWeek;
+  /** Ziel-Wiederholungen der ersten Planwoche (Bezug des Startgewichts). */
+  startReps: number;
+  /** Anker der Phase (reference_weight, an diese Phase gebunden); null = die
+   *  Uebung tritt gerade in die Phase ein. */
+  anchor: number | null;
+  /** Letzte Einheit dieser Uebung in der laufenden Journey-Woche. */
+  currentWeekEntry: SetEntry | null;
+  /** Letzte Einheit dieser Uebung in der vorigen Journey-Woche. */
+  previousWeekEntry: SetEntry | null;
+  /** Geschaetztes 1RM der Uebung (Startgewicht beim Phaseneintritt). */
+  rm: number | null;
+}
+
+/** Gibt der Wochenplan fuer diese Uebung die Vorgaben? Nur Hauptuebungen mit
+ *  Kraftprofil - Zusatzuebungen wie Curl und Pull Over fallen auf ihr eigenes
+ *  Band aus dem Uebungskatalog zurueck, Core und Koerpergewicht wie bisher. */
+export function planGovernsExercise(
+  exo: { profile: string; tier: string },
+  plan: PlanContext | null | undefined,
+): boolean {
+  return !!plan && exo.profile === "strength" && exo.tier === "main";
+}
+
+/** Satzzahl je Uebung: der Plan setzt sie fest, sonst bleibt es bei der
+ *  Wochen-Satzzahl der Phase. */
+export function planSetCount(
+  exo: { profile: string; tier: string },
+  plan: PlanContext | null | undefined,
+  fallback: number,
+): number {
+  return planGovernsExercise(exo, plan) ? plan!.week.sets : fallback;
+}
+
+/** Ziel-Anstrengung je Satz als Score: der Plan denkt in RIR, die Saetze tragen
+ *  den Score. Ohne Plan bleibt es beim Zielscore der Uebung. */
+export function planTargetScore(
+  exo: { profile: string; tier: string; targetScore: number },
+  plan: PlanContext | null | undefined,
+): number {
+  return planGovernsExercise(exo, plan)
+    ? scoreForRir(plan!.week.rir)
+    : exo.targetScore;
+}
+
+const PLAN_NOTES: Record<string, string> = {
+  start: "Wochenplan – Startgewicht der Phase",
+  "same-week": "Wochenplan – gleiche Woche, gleiches Gewicht",
+  raised: "Wochenplan – Vorwoche sauber, Gewicht einen Schritt hoch",
+  held: "Wochenplan – Gewicht bleibt stehen, Wiederholungen sinken planmäßig",
+};
+
+/** Vorschlag aus dem Wochenplan; null, wenn der Plan hier nicht zustaendig ist. */
+export function planSuggestion(
+  exo: CoachBuildExercise,
+  ctx: SuggestBuildCtx,
+): CoachSuggestion | null {
+  const plan = ctx.plan;
+  if (!planGovernsExercise(exo, plan)) return null;
+  const p = plan!;
+  const load = planWeekLoad({
+    anchor: p.anchor,
+    currentWeekEntry: p.currentWeekEntry,
+    previousWeekEntry: p.previousWeekEntry,
+    previousTargetScore: scoreForRir(p.prevWeek.rir),
+    est1RM: p.rm,
+    fallbackWeight: exo.workWeight,
+    startReps: p.startReps,
+    loadPct: p.week.loadPct,
+    step: ctx.weightStep ?? 2.5,
+    opts: { bar: ctx.bar, plates: ctx.plates, dumbbells: ctx.dumbbells },
+  });
+  return {
+    weight: load.weight,
+    targetReps: p.week.repsMax ?? p.week.reps,
+    decision: load.reason === "raised" ? "increase" : "hold",
+    note: PLAN_NOTES[load.reason] ?? PLAN_NOTES.held!,
+  };
+}
+
 // Gewichts-/Wdh.-Vorschlag. Core/Bodyweight -> coreCarry; sonst Doppelprogression
 // ueber die Engine, Wiedereinstiegs-Reduktion bei phase.focus === "reentry". Ein
 // gesetztes repTarget ueberschreibt das Repband der Uebung fuer die Rechnung.
@@ -303,6 +411,9 @@ export function suggestForExercise(
   if (ctx.freeMode) {
     return freeCarry(exo, ctx.lastEntry);
   }
+  // Der Wochenplan der Kraftphase uebersteuert die Doppelprogression.
+  const planned = planSuggestion(exo, ctx);
+  if (planned) return planned;
   const focus = ctx.phase ? ctx.phase.focus : null;
   const exUse: SuggestExercise = {
     workWeight: exo.workWeight,
@@ -365,6 +476,8 @@ export interface SuggestWithBarInput<B extends { weight: number }> {
   freeMode?: boolean;
   // Lastfaktor der aktiven Phase; null ausserhalb einer Lastfaktor-Journey.
   loadFactor?: number | null;
+  // Wochenplan-Bezug der laufenden Phase; null = Doppelprogression wie bisher.
+  plan?: PlanContext | null;
 }
 
 export interface SuggestWithBarResult<B> {
@@ -391,6 +504,7 @@ export function suggestWithBar<B extends { weight: number }>(
       repTarget: input.repTarget,
       freeMode: input.freeMode,
       loadFactor: input.loadFactor,
+      plan: input.plan ?? null,
     });
     const bar = pickBarForTarget(rawSug.weight, input.bars);
     const suggestion = suggestForExercise(exo, {
@@ -403,6 +517,7 @@ export function suggestWithBar<B extends { weight: number }>(
       repTarget: input.repTarget,
       freeMode: input.freeMode,
       loadFactor: input.loadFactor,
+      plan: input.plan ?? null,
     });
     return { suggestion, bar };
   }
@@ -420,17 +535,21 @@ export function suggestWithBar<B extends { weight: number }>(
       repTarget: input.repTarget,
       freeMode: input.freeMode,
       loadFactor: input.loadFactor,
+      plan: input.plan ?? null,
     });
     return { suggestion, bar: null };
   }
   const suggestion = suggestForExercise(exo, {
     phase: input.phaseFocus,
     lastEntry: input.lastEntry,
+    prevEntry: input.prevEntry ?? null,
+    weightStep: input.weightStep ?? null,
     bar: undefined,
     plates: input.plates,
     repTarget: input.repTarget,
     freeMode: input.freeMode,
     loadFactor: input.loadFactor,
+    plan: input.plan ?? null,
   });
   return { suggestion, bar: null };
 }
