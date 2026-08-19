@@ -29,6 +29,10 @@ function exercisePatchToRecord(p: ExercisePatch): Record<string, unknown> {
   if (p.reference_weight != null && p.reference_phase_id != null) {
     patch.reference_weight = p.reference_weight;
     patch.reference_phase_id = p.reference_phase_id;
+    // Startgewicht X nur beim Eintritt in die Phase; danach bleibt es stehen.
+    if (p.plan_start_weight != null) {
+      patch.plan_start_weight = p.plan_start_weight;
+    }
   }
   return patch;
 }

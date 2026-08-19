@@ -20,6 +20,7 @@ import { useSessions } from "./useSessions";
 import { useExercises } from "./useExercises";
 import { useBodyLog } from "./useBodyLog";
 import { useActiveJourney } from "./useJourney";
+import { useTestDates } from "./useTestDates";
 import { notifyJourneyDone } from "@/lib/journeyDone";
 
 export interface UseFinishSession {
@@ -36,6 +37,7 @@ export function useFinishSession(): UseFinishSession {
   const exercisesQ = useExercises();
   const bodyQ = useBodyLog();
   const journeyQ = useActiveJourney();
+  const testDates = useTestDates();
 
   const mutation = useMutation<void, Error, FinishPayload>({
     mutationKey: FINISH_MUTATION_KEY,
@@ -70,7 +72,13 @@ export function useFinishSession(): UseFinishSession {
       let journeyArchive: { journeyId: string; endDate: string } | undefined;
       if (session.journeyId) {
         const sessions = toPlacementSessions(sessionsQ.data ?? []);
-        week = journeyWeekForDate(date, sessions, session.journeyId, freqTarget);
+        week = journeyWeekForDate(
+          date,
+          sessions,
+          session.journeyId,
+          freqTarget,
+          testDates,
+        );
         const journey = journeyQ.data;
         if (
           journey &&
@@ -80,6 +88,7 @@ export function useFinishSession(): UseFinishSession {
             sessions,
             freqTarget,
             date,
+            testDates,
           )
         ) {
           journeyArchive = { journeyId: journey.id, endDate: date };
@@ -121,7 +130,11 @@ export function useFinishSession(): UseFinishSession {
           est1RM: u.est1RM,
           date,
           planAnchor: planned
-            ? { phaseId: planPhase.id, plannedWeight: u.targetWeight }
+            ? {
+                phaseId: planPhase.id,
+                plannedWeight: u.targetWeight,
+                boundPhaseId: exo?.reference_phase_id ?? null,
+              }
             : null,
         });
       });
@@ -148,6 +161,7 @@ export function useFinishSession(): UseFinishSession {
       exercisesQ.data,
       bodyQ.data,
       journeyQ.data,
+      testDates,
       mutation,
     ],
   );

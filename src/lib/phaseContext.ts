@@ -7,7 +7,14 @@
 // Auch die Abbildung der DB-Zeilen auf die Engine-Form liegt hier
 // (toPlacementSessions) – sie stand vorher in jedem Aufrufer wortgleich.
 
-import { hasLoadPlanFocus, journeyPlacement, phaseRepBand, weekPlanForWeek } from "@/engine";
+import {
+  hasComboFocus,
+  hasLoadPlanFocus,
+  journeyPlacement,
+  phaseRepBand,
+  planGovernsLoad,
+  weekPlanForWeek,
+} from "@/engine";
 import type { JourneySession, Placement, WeekPlanWeek } from "@/engine";
 import type { VolumePhase } from "@/engine/types";
 import { loadFactorNote, usesLoadFactor } from "@/lib/loadFactor";
@@ -62,12 +69,20 @@ export interface PhaseContext {
   phase: PhaseRow | null;
   // Geltende Zeile des Phasen-Wochenplans (Saetze, Wiederholungen, Ziel-
   // Anstrengung). Gesetzt nur, wenn die Phase ihre Last ueber den Plan steuert
-  // (Kraft/Schnellkraft); sonst null und der Coach rechnet wie bisher.
+  // (Kraft/Schnellkraft als Rampe, Testphase als Kombiwoche); sonst null und
+  // der Coach rechnet wie bisher.
   planWeek: WeekPlanWeek | null;
   // Zeile der Vorwoche – Massstab, an dem die letzte Einheit gemessen wird.
   prevPlanWeek: WeekPlanWeek | null;
   // Erste Zeile des Plans – Bezug des Startgewichts beim Phaseneintritt.
   firstPlanWeek: WeekPlanWeek | null;
+  // Laeuft die Phase als Kombiwoche (Testphase)? Dann entlastet der Plan vom
+  // Startgewicht X der vorangegangenen Kraftphase und steigert nichts.
+  comboWeek: boolean;
+  // Phase, an die der Anker der Uebung gebunden sein muss, damit er zaehlt: in
+  // der Rampe die laufende Phase selbst, in der Kombiwoche die vorangegangene
+  // Kraftphase (dort liegt das Startgewicht X). null = kein Plan-Bezug.
+  anchorPhaseId: string | null;
 }
 
 export function derivePhaseContext(
@@ -75,6 +90,9 @@ export function derivePhaseContext(
   sessions: ReadonlyArray<SessionForPhase>,
   freqTarget: number,
   today: string,
+  // Datum jedes 1RM-Tests: eine Woche mit Test gilt als erfuellt (Kombiwoche,
+  // #229). Ohne Angabe rechnet die Platzierung nur ueber die Einheiten.
+  testDates?: readonly string[],
 ): PhaseContext {
   let phaseFocus: { focus?: string } | null = null;
   let phaseRepTarget: [number, number] | null = null;
@@ -89,6 +107,8 @@ export function derivePhaseContext(
   let planWeek: WeekPlanWeek | null = null;
   let prevPlanWeek: WeekPlanWeek | null = null;
   let firstPlanWeek: WeekPlanWeek | null = null;
+  let comboWeek = false;
+  let anchorPhaseId: string | null = null;
 
   if (journey) {
     journeyId = journey.id;
@@ -97,6 +117,7 @@ export function derivePhaseContext(
       toPlacementSessions(sessions),
       freqTarget,
       today,
+      testDates,
     );
     phase = journey.phases[placement.phaseIndex] ?? null;
     if (phase) {
@@ -117,13 +138,24 @@ export function derivePhaseContext(
         phase.focus,
       );
       // Wochenplan der Phase: er setzt Saetze, Wiederholungen und Ziel-
-      // Anstrengung und steuert ueber engine/planLoad auch das Gewicht. Nur
-      // Kraft- und Schnellkraftphasen; die Testphase traegt zwar einen Plan,
-      // holt ihre Last aber aus der Kombiwoche (Schritt 4, #229).
-      if (hasLoadPlanFocus(phase.focus) && phase.week_plan) {
+      // Anstrengung und steuert ueber engine/planLoad auch das Gewicht - in
+      // Kraft- und Schnellkraftphasen als Rampe, in der Testphase als
+      // Kombiwoche (Entlastung vom Startgewicht X der Kraftphase davor).
+      if (planGovernsLoad(phase.focus) && phase.week_plan) {
         planWeek = weekPlanForWeek(phase.week_plan, placement.weekInPhase);
         prevPlanWeek = weekPlanForWeek(phase.week_plan, placement.weekInPhase - 1);
         firstPlanWeek = phase.week_plan[0] ?? null;
+        comboWeek = hasComboFocus(phase.focus);
+        // Bezugsphase des Ankers: in der Rampe die Phase selbst, in der
+        // Kombiwoche die naechste Kraft-/Schnellkraftphase davor. Gibt es keine
+        // (Testphase am Anfang der Journey), bleibt der Bezug leer und die
+        // Entlastung rechnet aus dem 1RM.
+        anchorPhaseId = comboWeek
+          ? (journey.phases
+              .slice(0, placement.phaseIndex)
+              .reverse()
+              .find((p) => hasLoadPlanFocus(p.focus))?.id ?? null)
+          : phase.id;
       }
       if (usesLoadFactor(journey.phases.map((p) => p.load_factor))) {
         loadFactor = phase.load_factor ?? 1;
@@ -149,5 +181,7 @@ export function derivePhaseContext(
     planWeek,
     prevPlanWeek,
     firstPlanWeek,
+    comboWeek,
+    anchorPhaseId,
   };
 }

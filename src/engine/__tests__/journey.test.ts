@@ -265,3 +265,59 @@ describe("journeyWeekLookup", () => {
     }
   });
 });
+
+// Kombiwoche (#229): eine Kalenderwoche mit abgeschlossenem 1RM-Test gilt als
+// erfuellt, unabhaengig von der Einheitenzahl.
+describe("Wochenerfuellung durch einen 1RM-Test", () => {
+  const freq = 3;
+
+  it("erfuellt die Woche mit Test trotz zu weniger Einheiten", () => {
+    const sessions = [
+      // KW01 regulaer erfuellt
+      s("2025-12-29"),
+      s("2025-12-30"),
+      s("2025-12-31"),
+      // KW02 nur die Entlastungseinheit
+      s("2026-01-05"),
+    ];
+    // ohne Test bleibt KW03 die Journey-Woche 2, mit Test rueckt sie auf 3
+    expect(journeyWeekForDate("2026-01-12", sessions, "j1", freq)).toBe(2);
+    expect(
+      journeyWeekForDate("2026-01-12", sessions, "j1", freq, ["2026-01-09"]),
+    ).toBe(3);
+  });
+
+  it("meldet die laufende Woche mit Test als erfuellt, ohne Einheiten zu erfinden", () => {
+    const sessions = [s("2026-01-05")];
+    const wp = weekProgress(sessions, "j1", freq, "2026-01-05", ["2026-01-09"]);
+    expect(wp.units).toBe(1);
+    expect(wp.fulfilled).toBe(true);
+  });
+
+  it("zaehlt Tests von vor der Journey nicht", () => {
+    const sessions = [s("2026-01-05"), s("2026-01-06"), s("2026-01-07")];
+    // Test aus der KW davor: die Journey darf nicht rueckwirkend vorruecken
+    expect(
+      journeyWeekForDate("2026-01-12", sessions, "j1", freq, ["2025-12-30"]),
+    ).toBe(2);
+  });
+
+  it("schliesst die Journey ab, wenn in der letzten Woche ein Test liegt", () => {
+    const j = { id: "j1", phases: [{ id: "p1", weeks: 2 }] };
+    // KW01 erfuellt -> die Einheit in KW02 liegt in der letzten Journey-Woche
+    const before = [s("2025-12-29"), s("2025-12-30")];
+    expect(completesJourney(j, before, 2, "2026-01-06")).toBe(false);
+    expect(completesJourney(j, before, 2, "2026-01-06", ["2026-01-05"])).toBe(
+      true,
+    );
+  });
+
+  it("liefert dieselben Wochennummern wie die Nachschlage-Funktion", () => {
+    const sessions = [s("2025-12-29"), s("2025-12-30"), s("2025-12-31"), s("2026-01-05")];
+    const tests = ["2026-01-09"];
+    const weekOf = journeyWeekLookup(sessions, "j1", freq, tests);
+    for (const d of ["2025-12-30", "2026-01-06", "2026-01-13"]) {
+      expect(weekOf(d)).toBe(journeyWeekForDate(d, sessions, "j1", freq, tests));
+    }
+  });
+});

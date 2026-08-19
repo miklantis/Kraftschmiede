@@ -1,4 +1,4 @@
-// Wochenplan-Bezug je Uebung (Issue #225, Schritt 3). Aus dem Phasen-Kontext
+// Wochenplan-Bezug je Uebung (Issue #225, Schritt 3/4). Aus dem Phasen-Kontext
 // (welche Planwoche gilt, welche Phase laeuft) und dem Verlauf (welche Einheit
 // liegt in dieser, welche in der vorigen Journey-Woche) entsteht der
 // PlanContext, den der Coach fuer seine Vorgabe braucht.
@@ -18,25 +18,46 @@ export interface PlanSource {
   prevWeek: WeekPlanWeek | null;
   /** Ziel-Wiederholungen der ersten Planwoche (Bezug des Startgewichts). */
   startReps: number | null;
-  /** Laufende Phase – nur ein daran gebundener Anker zaehlt. */
-  phaseId: string | null;
+  /** Phase, an die der Anker gebunden sein muss - in der Rampe die laufende
+   *  Phase, in der Kombiwoche die Kraftphase davor (dort liegt X). */
+  anchorPhaseId: string | null;
+  /** Kombiwoche: entlasten statt steigern. */
+  comboWeek: boolean;
   /** Letzte Einheit je Uebung in der laufenden Journey-Woche. */
   currentWeekEntryByExercise: Record<string, SetEntry | null>;
   /** Letzte Einheit je Uebung in der vorigen Journey-Woche. */
   previousWeekEntryByExercise: Record<string, SetEntry | null>;
 }
 
-/** Uebungsseite des Bezugs: Anker samt Phasenbindung und geschaetztes 1RM. */
+/** Uebungsseite des Bezugs: Anker samt Phasenbindung, Startgewicht der Phase
+ *  und geschaetztes 1RM. */
 export interface PlanAnchorExercise {
   id: string;
   referenceWeight: number | null;
   referencePhaseId: string | null;
+  /** Startgewicht X der Phase, an die der Anker gebunden ist. */
+  planStartWeight?: number | null;
   rm: number | null;
 }
 
-/** Plan-Bezug fuer eine Uebung; null, wenn die Phase keinen Wochenplan fuehrt.
- *  Der Anker zaehlt nur, wenn er an genau diese Phase gebunden ist - sonst tritt
- *  die Uebung gerade in die Phase ein und bekommt ihr Startgewicht. */
+/** Anker der Uebung fuer den Plan. Er zaehlt nur, wenn er an die Bezugsphase
+ *  gebunden ist - sonst tritt die Uebung gerade in die Phase ein und bekommt ihr
+ *  Startgewicht. In der Kombiwoche zaehlt das Startgewicht X der Kraftphase
+ *  davor (Rueckfall: deren fortgeschriebener Anker), nicht der Stand am
+ *  Phasenende - entlastet wird von X. */
+export function planAnchor(
+  anchorPhaseId: string | null,
+  comboWeek: boolean,
+  exercise: PlanAnchorExercise,
+): number | null {
+  if (anchorPhaseId == null || exercise.referencePhaseId !== anchorPhaseId) {
+    return null;
+  }
+  if (!comboWeek) return exercise.referenceWeight;
+  return exercise.planStartWeight ?? exercise.referenceWeight;
+}
+
+/** Plan-Bezug fuer eine Uebung; null, wenn die Phase keinen Wochenplan fuehrt. */
 export function planContextFor(
   source: PlanSource | null | undefined,
   exercise: PlanAnchorExercise,
@@ -44,13 +65,12 @@ export function planContextFor(
   if (!source || !source.week || !source.prevWeek || source.startReps == null) {
     return null;
   }
-  const bound =
-    source.phaseId != null && exercise.referencePhaseId === source.phaseId;
   return {
     week: source.week,
     prevWeek: source.prevWeek,
     startReps: source.startReps,
-    anchor: bound ? exercise.referenceWeight : null,
+    anchor: planAnchor(source.anchorPhaseId, source.comboWeek, exercise),
+    deload: source.comboWeek,
     currentWeekEntry: source.currentWeekEntryByExercise[exercise.id] ?? null,
     previousWeekEntry: source.previousWeekEntryByExercise[exercise.id] ?? null,
     rm: exercise.rm,

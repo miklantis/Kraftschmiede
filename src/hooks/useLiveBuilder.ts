@@ -19,6 +19,7 @@ import { useActiveJourney } from "./useJourney";
 import { useSettings } from "./useSettings";
 import { useBars, usePlates, useDumbbells } from "./useInventory";
 import { useLatestBody } from "./useBody";
+import { useTestDates } from "./useTestDates";
 
 // Stellt die laufende Einheit aus einer Vorlage zusammen (Phase 11, Lieferung 2).
 // Buendelt die Daten-Hooks, formt sie in die reine Build-Eingabe und ruft den
@@ -50,6 +51,7 @@ export function useLiveBuilder(): UseLiveBuilder {
   const platesQ = usePlates();
   const dumbbellsQ = useDumbbells();
   const bodyQ = useLatestBody();
+  const testDates = useTestDates();
 
   const ready =
     exercisesQ.data != null &&
@@ -80,6 +82,7 @@ export function useLiveBuilder(): UseLiveBuilder {
         barId: e.bar_id,
         referenceWeight: e.reference_weight,
         referencePhaseId: e.reference_phase_id,
+        planStartWeight: e.plan_start_weight,
         rm: e.rm,
         muscleGroups: e.muscle_groups,
       };
@@ -114,6 +117,7 @@ export function useLiveBuilder(): UseLiveBuilder {
       sessionsQ.data ?? [],
       freqTarget,
       todayISO(),
+      testDates,
     );
 
     // Wochenplan-Stand der laufenden Phase: welche Planwoche gilt und welche
@@ -124,13 +128,15 @@ export function useLiveBuilder(): UseLiveBuilder {
             toPlacementSessions(sessionsQ.data ?? []),
             ph.journeyId ?? "",
             freqTarget,
+            testDates,
           );
           const current = ph.placement?.globalWeek ?? 1;
           return {
             week: ph.planWeek,
             prevWeek: ph.prevPlanWeek,
             startReps: ph.firstPlanWeek?.reps ?? null,
-            phaseId: ph.phaseId,
+            anchorPhaseId: ph.anchorPhaseId,
+            comboWeek: ph.comboWeek,
             currentWeekEntryByExercise: buildWeekEntries(
               detailedQ.data ?? [],
               weekOf,
@@ -170,6 +176,7 @@ export function useLiveBuilder(): UseLiveBuilder {
     settingsQ.data,
     journeyQ.data,
     sessionsQ.data,
+    testDates,
   ]);
 
   const templates = templatesQ.data;

@@ -21,6 +21,7 @@ import { useSkills, useSkillProgress } from "./useSkills";
 import { useSettings } from "./useSettings";
 import { useOwnedEquipmentKeys } from "./useInventory";
 import { useLatestBody } from "./useBody";
+import { useTestDates } from "./useTestDates";
 
 // Anzeigefertiges Modell der Trainings-Uebersicht. Reine Daten – die Komponenten
 // kennen weder Supabase noch die Engine.
@@ -87,6 +88,7 @@ export function useTrainingOverview(): {
   const settingsQ = useSettings();
   const equipmentQ = useOwnedEquipmentKeys();
   const bodyQ = useLatestBody();
+  const testDates = useTestDates();
 
   const queries = [
     exercisesQ,
@@ -156,7 +158,13 @@ export function useTrainingOverview(): {
     };
     if (journey) {
       // Standort in der Journey kommt aus der einen Stelle (derivePhaseContext).
-      const ph = derivePhaseContext(journey, sessions, freqTarget, today);
+      const ph = derivePhaseContext(
+        journey,
+        sessions,
+        freqTarget,
+        today,
+        testDates,
+      );
       const placement = ph.placement;
       const currentPhase = ph.phase;
       phaseFocus = ph.phaseFocus;
@@ -166,6 +174,7 @@ export function useTrainingOverview(): {
         journey.id,
         freqTarget,
         today,
+        testDates,
       );
       const weekInPhase = placement?.weekInPhase ?? "?";
       const phaseWeeks = currentPhase?.weeks ?? "?";
@@ -344,6 +353,7 @@ export function useTrainingOverview(): {
     settingsQ.data,
     equipmentQ.data,
     bodyQ.data,
+    testDates,
   ]);
 
   return { isLoading, isError, error, data };

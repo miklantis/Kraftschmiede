@@ -234,6 +234,7 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
       id,
       referenceWeight: exo.referenceWeight,
       referencePhaseId: exo.referencePhaseId,
+      planStartWeight: exo.planStartWeight ?? null,
       rm: exo.rm,
     });
     const repTarget = activeRepTarget(exo, input.phaseRepTarget, hasPhase, plan);

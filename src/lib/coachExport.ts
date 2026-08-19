@@ -386,11 +386,17 @@ export function buildCoachExport(
       type: str(s, "type") ?? "strength",
       journeyId: str(s, "journey_id"),
     }));
+    // Wochen mit einem 1RM-Test zaehlen als erfuellt (Kombiwoche, #229) - sonst
+    // zeigte der Export eine andere Woche als die App.
+    const testDates = raw.rmTests
+      .map((t) => str(t, "date"))
+      .filter((d): d is string => d != null && d !== "");
     const placement = journeyPlacement(
       { id: jid, phases: jphases.map((p) => ({ id: str(p, "id") ?? "", weeks: num(p, "weeks") ?? 0 })) },
       placementSessions,
       freq,
       todayISO(today),
+      testDates,
     );
     const curPhase = phases[placement.phaseIndex] ?? null;
     // Abgeschlossene Journey (Rueckschau): kein "aktuell", sondern die volle

@@ -3,8 +3,9 @@
 // ist zusaetzlich in lastfaktor.test.ts gedeckt; hier steht das Uebrige.
 
 import { describe, expect, it } from "vitest";
+import { buildComboWeekPlan, buildStrengthWeekPlan } from "@/engine";
 import { derivePhaseContext } from "../phaseContext";
-import type { PhaseContextJourney } from "../phaseContext";
+import type { PhaseContextJourney, SessionForPhase } from "../phaseContext";
 import type { PhaseRow } from "@/schemas";
 
 const JOURNEY_ID = "00000000-0000-0000-0000-0000000000aa";
@@ -113,6 +114,8 @@ describe("derivePhaseContext", () => {
       planWeek: null,
       prevPlanWeek: null,
       firstPlanWeek: null,
+      comboWeek: false,
+      anchorPhaseId: null,
     });
   });
 
@@ -131,5 +134,67 @@ describe("derivePhaseContext", () => {
     });
     expect(ctx.phase?.name).toBe("Aufbau");
     expect(ctx.phaseId).toBe(ctx.phase?.id);
+  });
+});
+
+// Kombiwoche (#229): die Testphase traegt einen Plan und holt ihre Last aus der
+// vorangegangenen Kraftphase - dort liegt das Startgewicht X.
+describe("derivePhaseContext – Kombiwoche der Testphase", () => {
+  const KRAFT = "00000000-0000-0000-0000-000000000010";
+  const TEST = "00000000-0000-0000-0000-000000000011";
+
+  const phases = [
+    phase({
+      id: KRAFT,
+      name: "Maximalkraft",
+      focus: "strength",
+      weeks: 1,
+      week_plan: buildStrengthWeekPlan(1),
+      position: 0,
+    }),
+    phase({
+      id: TEST,
+      name: "Übergang / Test",
+      focus: "test",
+      weeks: 1,
+      week_plan: buildComboWeekPlan(1),
+      position: 1,
+    }),
+  ];
+
+  // Drei Einheiten in der ersten Kalenderwoche erfuellen sie: die Journey steht
+  // eine Woche spaeter in der Testphase.
+  const sessions: SessionForPhase[] = ["2026-08-03", "2026-08-04", "2026-08-05"].map(
+    (date) => ({ date, status: "done", type: "strength", journey_id: JOURNEY_ID }),
+  );
+
+  it("erkennt die laufende Testphase als Kombiwoche", () => {
+    const ctx = derivePhaseContext(journeyWith(phases), sessions, 3, "2026-08-12");
+    expect(ctx.phaseId).toBe(TEST);
+    expect(ctx.comboWeek).toBe(true);
+    expect(ctx.planWeek).toMatchObject({ sets: 3, reps: 3, repsMax: 5, loadPct: 0.6 });
+  });
+
+  it("bindet den Anker an die Kraftphase davor", () => {
+    const ctx = derivePhaseContext(journeyWith(phases), sessions, 3, "2026-08-12");
+    expect(ctx.anchorPhaseId).toBe(KRAFT);
+  });
+
+  it("bleibt in der Kraftphase bei der eigenen Phase als Anker", () => {
+    const ctx = derivePhaseContext(journeyWith(phases), [], 3, "2026-08-05");
+    expect(ctx.phaseId).toBe(KRAFT);
+    expect(ctx.comboWeek).toBe(false);
+    expect(ctx.anchorPhaseId).toBe(KRAFT);
+  });
+
+  it("laesst den Anker leer, wenn keine Kraftphase vorausgeht", () => {
+    const ctx = derivePhaseContext(
+      journeyWith([phases[1]!]),
+      [],
+      3,
+      "2026-08-05",
+    );
+    expect(ctx.comboWeek).toBe(true);
+    expect(ctx.anchorPhaseId).toBeNull();
   });
 });

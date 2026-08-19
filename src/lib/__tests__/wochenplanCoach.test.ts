@@ -1,5 +1,5 @@
 // Der Wochenplan im Zusammenspiel: was die Kraftphase dem Coach vorgibt und was
-// unveraendert beim Coach bleibt (Issue #225, Schritt 3).
+// unveraendert beim Coach bleibt (Issue #225, Schritt 3/4).
 
 import { describe, expect, it } from "vitest";
 import { buildLiveEntries } from "../liveBuild";
@@ -8,7 +8,7 @@ import { planContextFor, type PlanSource } from "../planContext";
 import { katalogPatch } from "../katalogPatch";
 import { buildWeekEntries } from "../lastEntries";
 import type { HistorySessionInput } from "../history";
-import { buildStrengthWeekPlan, scoreForRir } from "@/engine";
+import { buildComboWeekPlan, buildStrengthWeekPlan, scoreForRir } from "@/engine";
 import type { EngineSet, SetEntry } from "@/engine/types";
 
 const PLAN = buildStrengthWeekPlan(5); // 5,5,4,3,2 – RIR 2, letzte zwei RIR 1
@@ -66,7 +66,8 @@ function planSource(over: Partial<PlanSource> = {}): PlanSource {
     week: PLAN[2]!,
     prevWeek: PLAN[1]!,
     startReps: PLAN[0]!.reps,
-    phaseId: PHASE,
+    anchorPhaseId: PHASE,
+    comboWeek: false,
     currentWeekEntryByExercise: {},
     previousWeekEntryByExercise: {},
     ...over,
@@ -320,5 +321,123 @@ describe("buildWeekEntries – letzte Einheit je Uebung in einer Journey-Woche",
 
   it("bleibt ohne Phase leer", () => {
     expect(buildWeekEntries(verlauf, weekOf, 1, null)).toEqual({});
+  });
+});
+
+// Kombiwoche der Testphase (Issue #225, Schritt 4): Entlastung mit 3 Saetzen zu
+// 3-5 Wiederholungen und 60 % vom Startgewicht X der Kraftphase davor.
+describe("Kombiwoche – Entlastungsziele", () => {
+  const COMBO = buildComboWeekPlan(1);
+
+  // Uebung mit fortgeschriebenem Anker (47,5) und festgehaltenem Startgewicht
+  // (37,5), beide an die Kraftphase gebunden.
+  const benchNachKraft: LiveBuildExercise = {
+    ...bench,
+    workWeight: 47.5,
+    referenceWeight: 47.5,
+    referencePhaseId: PHASE,
+    planStartWeight: 37.5,
+  };
+
+  function comboSource(over: Partial<PlanSource> = {}): PlanSource {
+    return {
+      week: COMBO[0]!,
+      prevWeek: COMBO[0]!,
+      startReps: COMBO[0]!.reps,
+      anchorPhaseId: PHASE,
+      comboWeek: true,
+      currentWeekEntryByExercise: {},
+      previousWeekEntryByExercise: {},
+      ...over,
+    };
+  }
+
+  function comboInput(over: Partial<LiveBuildInput> = {}): LiveBuildInput {
+    return input({
+      exerciseIds: ["bench"],
+      exercisesById: { bench: benchNachKraft, curl },
+      phaseFocus: { focus: "test" },
+      phaseRepTarget: [2, 4],
+      volumePhase: { setsStart: 2, setsEnd: 2, weeks: 1, deloadWeek: null },
+      weekInPhase: 0,
+      planSource: comboSource(),
+      ...over,
+    });
+  }
+
+  it("gibt 3 Saetze zu 3-5 Wiederholungen mit 60 % vom Startgewicht vor", () => {
+    const en = buildLiveEntries(comboInput()).entries[0]!;
+    expect(en.sets).toHaveLength(3);
+    // 60 % von 37,5 = 22,5 kg (ladbar mit 20-kg-Stange)
+    expect(en.sets.every((s) => s.weight === 22.5)).toBe(true);
+    expect(en.sets.every((s) => s.targetReps === 5)).toBe(true);
+    expect(en.sets.every((s) => s.score === scoreForRir(3))).toBe(true);
+  });
+
+  it("rechnet nicht vom Stand am Phasenende, sondern vom Startgewicht", () => {
+    // ohne festgehaltenes X bleibt der Anker der Rueckfall: 60 % von 47,5
+    const ohneX = buildLiveEntries(
+      comboInput({
+        exercisesById: {
+          bench: { ...benchNachKraft, planStartWeight: null },
+          curl,
+        },
+      }),
+    ).entries[0]!;
+    expect(ohneX.sets[0]!.weight).toBe(27.5);
+  });
+
+  it("steigert in der Kombiwoche nicht, auch nach sauberer Vorwoche", () => {
+    const en = buildLiveEntries(
+      comboInput({
+        planSource: comboSource({
+          previousWeekEntryByExercise: {
+            bench: entry([set(), set(), set(), set()]),
+          },
+        }),
+      }),
+    ).entries[0]!;
+    expect(en.sets[0]!.weight).toBe(22.5);
+  });
+
+  it("nimmt in der Kombiwoche das Startgewicht der Kraftphase als Anker", () => {
+    const ctx = planContextFor(comboSource(), {
+      id: "bench",
+      referenceWeight: 47.5,
+      referencePhaseId: PHASE,
+      planStartWeight: 37.5,
+      rm: 50,
+    });
+    expect(ctx?.anchor).toBe(37.5);
+    expect(ctx?.deload).toBe(true);
+  });
+});
+
+describe("katalogPatch – Startgewicht der Phase", () => {
+  const basis = {
+    exerciseId: "bench",
+    tracksRm: false,
+    currentRm: null,
+    record1RM: null,
+    est1RM: null,
+    date: "2026-08-19",
+    workWeight: 40,
+  };
+
+  it("haelt X beim Eintritt in die Phase fest", () => {
+    const p = katalogPatch({
+      ...basis,
+      planAnchor: { phaseId: PHASE, plannedWeight: 40, boundPhaseId: null },
+    });
+    expect(p.plan_start_weight).toBe(40);
+  });
+
+  it("laesst X in spaeteren Wochen derselben Phase stehen", () => {
+    const p = katalogPatch({
+      ...basis,
+      planAnchor: { phaseId: PHASE, plannedWeight: 40, boundPhaseId: PHASE },
+    });
+    expect(p.reference_weight).toBe(40);
+    expect(p.plan_start_weight).toBeUndefined();
   });
 });
