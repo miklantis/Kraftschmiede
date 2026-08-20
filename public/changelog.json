@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.43.2",
+      "date": "2026-08-20",
+      "changes": [
+        "Im Wochenplan der Kraftphasen stehen keine Erklärsätze mehr unter den Wochen - die Karte zeigt nur noch Woche, Sätze, Wiederholungen und RIR.",
+        "Die Hinweise der Testphase (Entlastungswoche und Testwoche) bleiben, dort sagen sie etwas aus."
+      ]
+    },
+    {
       "version": "1.43.1",
       "date": "2026-08-20",
       "changes": [

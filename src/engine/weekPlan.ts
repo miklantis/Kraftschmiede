@@ -109,15 +109,6 @@ function rirForWeek(weekIndex: number, weeks: number): number {
   return weekIndex >= weeks - peakWeeks ? WEEK_PLAN_RIR_PEAK : WEEK_PLAN_RIR;
 }
 
-// Kurzer Wochenziel-Text aus der Stellung der Woche in der Leiter.
-function noteForWeek(weekIndex: number, ladder: number[]): string {
-  if (weekIndex === 0) return "Startgewicht setzen, alle Sätze sauber";
-  if (weekIndex === ladder.length - 1) return "Schwerste Woche der Phase";
-  return ladder[weekIndex] === ladder[weekIndex - 1]
-    ? "Gleiche Wiederholungen, Gewicht darf steigen"
-    : "Eine Wiederholung weniger, dafür schwerer";
-}
-
 /** Wochenplan einer Kraft- oder Schnellkraftphase: feste Leiter, durchgehend
  *  4 Arbeitssaetze, keine Entlastungswoche - die steht am Anfang der
  *  Testphase. */
@@ -130,7 +121,9 @@ export function buildStrengthWeekPlan(weeks: number): WeekPlan {
     repsMax: null,
     rir: rirForWeek(i, ladder.length),
     loadPct: 1,
-    note: noteForWeek(i, ladder),
+    // Kein Wochentext: die Leiter erklaert sich ueber Saetze, Wiederholungen
+    // und RIR - zusaetzliche Saetze machen die Phasenkarte nur unruhig (#275).
+    note: "",
   }));
 }
 
