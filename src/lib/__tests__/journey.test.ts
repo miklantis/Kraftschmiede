@@ -200,7 +200,8 @@ describe("buildPhaseViews – Wochenplan", () => {
     ]);
     expect(rows[0].mark).toBe("✓");
     expect(rows[2].mark).toBe("");
-    expect(rows[0].note).not.toBe("");
+    // Kraftphasen tragen keinen Wochentext mehr (#275).
+    expect(rows[0].note).toBe("");
   });
 
   it("zeigt die Tabelle nur an der laufenden Phase", () => {

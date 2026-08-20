@@ -61,11 +61,9 @@ describe("buildStrengthWeekPlan – Kraft- und Schnellkraftphase", () => {
     expect(plan.every((w) => w.loadPct === 1)).toBe(true);
     expect(plan.every((w) => w.repsMax === null)).toBe(true);
   });
-  it("jede Woche hat einen Wochenziel-Text", () => {
+  it("fuehrt keinen Wochenziel-Text mehr (#275)", () => {
     const plan = buildStrengthWeekPlan(5);
-    expect(plan.every((w) => w.note.length > 0)).toBe(true);
-    expect(plan[0]!.note).toMatch(/Startgewicht/);
-    expect(plan[4]!.note).toMatch(/Schwerste/);
+    expect(plan.every((w) => w.note === "")).toBe(true);
   });
 });
 

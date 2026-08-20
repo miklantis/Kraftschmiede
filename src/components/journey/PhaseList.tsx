@@ -97,9 +97,11 @@ function WeekPlanRows({ rows }: { rows: PhaseWeekRow[] }): React.ReactElement {
               {r.targets}
             </span>
           </div>
-          <div className="mt-0.5 text-[11.5px] leading-snug text-muted-foreground">
-            {r.note}
-          </div>
+          {r.note && (
+            <div className="mt-0.5 text-[11.5px] leading-snug text-muted-foreground">
+              {r.note}
+            </div>
+          )}
         </div>
       ))}
     </div>
