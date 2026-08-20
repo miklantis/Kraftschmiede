@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.42.1",
+      "date": "2026-08-20",
+      "changes": [
+        "Die Hauptübung \"Deadlift\" heißt jetzt \"Romanian Deadlift (RDL)\" - so, wie du sie tatsächlich trainierst. Die Beschreibung passt jetzt auch dazu: Start im Stand, Knie leicht gebeugt, Hantel eng an den Beinen bis etwa Mitte Schienbein, zurück aus der Hüfte.",
+        "Deine Zahlen bleiben unverändert: 1RM, Arbeitsgewicht, Startgewicht der Kraftphase, Meilenstein und die komplette Trainingshistorie hängen an der Übung selbst, nicht am Namen. Auch der Wiederholungsbereich von 4 bis 8 bleibt so."
+      ]
+    },
+    {
       "version": "1.42.0",
       "date": "2026-08-20",
       "changes": [
