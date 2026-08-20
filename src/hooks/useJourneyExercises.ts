@@ -123,11 +123,7 @@ export function useJourneyExercises(
       data[id] = {
         chart: {
           dates: history.map((e) => e.date),
-          series: buildJourneySeries(
-            history,
-            exercise.profile,
-            exercise.metric,
-          ),
+          series: buildJourneySeries(history, exercise.metric),
           marks: journeyPhaseMarks(history, phaseNames),
         },
         // Statistikzeile aus derselben journey-gefilterten Liste: bestes Set,

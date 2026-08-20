@@ -46,8 +46,9 @@ function bestEffort(history: readonly ExHistoryEntry[]): JourneyStat | null {
 
 // Statistikzeile einer Uebung fuer ihre Journey-Kachel: beste Leistung,
 // Veraenderung seit Journey-Start und die Zahl der Einheiten in dieser Journey.
-// Die Veraenderung braucht ein geschaetztes 1RM und faellt deshalb bei Core-
-// und Koerpergewichts-Uebungen weg – dort steuert der Coach die Last nicht.
+// Die Veraenderung braucht ein geschaetztes 1RM und faellt deshalb dort weg, wo
+// ohne Gewicht gearbeitet wird (Haltezeit, Koerpergewicht) – nicht am Profil
+// entlang: eine Core-Uebung mit Arbeitsgewicht bekommt sie.
 export function buildJourneyStats(
   history: readonly ExHistoryEntry[],
 ): JourneyStat[] {

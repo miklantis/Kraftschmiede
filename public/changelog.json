@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.45.1",
+      "date": "2026-08-20",
+      "changes": [
+        "Core-Übungen mit Gewicht (Core Twist, Core Situps, Core Cocoon) zeigen in der Journey-Kachel jetzt auch ihre Gewichts- und Trendlinie - vorher fehlte dort ausgerechnet die Linie, an der die Progression hängt.",
+        "Welche Linien eine Kachel zeigt, entscheiden jetzt die Daten der Übung und nicht mehr ihre Kategorie: Plank und die Körpergewichts-Übungen bleiben deshalb unverändert bei Wiederholungen bzw. Haltezeit und Score."
+      ]
+    },
+    {
       "version": "1.45.0",
       "date": "2026-08-20",
       "changes": [

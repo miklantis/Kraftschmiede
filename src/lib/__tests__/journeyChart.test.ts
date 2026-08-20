@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   buildJourneySeries,
   journeyPhaseMarks,
-  journeySeriesKeysFor,
   parseSeriesKeys,
   seriesValueText,
   serializeSeriesKeys,
@@ -69,29 +68,13 @@ describe("repsPerSet", () => {
   });
 });
 
-describe("journeySeriesKeysFor", () => {
-  it("gibt journey-gesteuerten Uebungen alle vier Serien", () => {
-    expect(journeySeriesKeysFor("strength")).toEqual([
-      "weight",
-      "reps",
-      "score",
-      "trend",
-    ]);
-  });
-
-  it("laesst bei Core und Koerpergewicht Gewicht und Trend weg", () => {
-    expect(journeySeriesKeysFor("core")).toEqual(["reps", "score"]);
-    expect(journeySeriesKeysFor("bodyweight")).toEqual(["reps", "score"]);
-  });
-});
-
 describe("buildJourneySeries", () => {
   it("baut je Serie einen Punkt pro Einheit", () => {
     const history = [
       entry({ date: "2026-01-05", topW: 80, est1RM: 96, score: 3 }),
       entry({ date: "2026-01-12", topW: 82.5, est1RM: 99, score: 4 }),
     ];
-    const series = buildJourneySeries(history, "strength", "reps");
+    const series = buildJourneySeries(history, "reps");
     expect(series.map((s) => s.key)).toEqual([
       "weight",
       "reps",
@@ -114,7 +97,7 @@ describe("buildJourneySeries", () => {
         sets: [{ weight: null, reps: null, durationSec: 40, score: 3 }],
       }),
     ];
-    const series = buildJourneySeries(history, "bodyweight", "duration");
+    const series = buildJourneySeries(history, "duration");
     expect(series.map((s) => s.key)).toEqual(["reps", "score"]);
     expect(series[0].label).toBe("Haltezeit");
     expect(series[0].unit).toBe("seconds");
@@ -123,8 +106,43 @@ describe("buildJourneySeries", () => {
 
   it("laesst Serien ohne einen einzigen Wert weg", () => {
     const history = [entry({ score: null, est1RM: null })];
-    const series = buildJourneySeries(history, "strength", "reps");
+    const series = buildJourneySeries(history, "reps");
     expect(series.map((s) => s.key)).toEqual(["weight", "reps"]);
+  });
+
+  // Der Fall, der die profilbasierte Regel gekippt hat (#290): drei der vier
+  // Core-Uebungen im Katalog tragen ein Arbeitsgewicht.
+  it("gibt einer Core-Uebung mit Gewicht ihre Gewichts- und Trendlinie", () => {
+    const history = [
+      entry({
+        topW: 16,
+        est1RM: 22.7,
+        sets: [
+          { weight: 16, reps: 15, durationSec: null, score: 3 },
+          { weight: 16, reps: 15, durationSec: null, score: 4 },
+        ],
+      }),
+    ];
+    const series = buildJourneySeries(history, null);
+    expect(series.map((s) => s.key)).toEqual([
+      "weight",
+      "reps",
+      "score",
+      "trend",
+    ]);
+    expect(series[0].points[0].value).toBe(16);
+  });
+
+  it("zieht ohne Gewicht keine Nulllinie fuer Gewicht und Trend", () => {
+    const history = [
+      entry({
+        topW: 0,
+        est1RM: 0,
+        sets: [{ weight: null, reps: 12, durationSec: null, score: 3 }],
+      }),
+    ];
+    const series = buildJourneySeries(history, "reps");
+    expect(series.map((s) => s.key)).toEqual(["reps", "score"]);
   });
 });
 

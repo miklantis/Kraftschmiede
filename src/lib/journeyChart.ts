@@ -6,7 +6,8 @@
 // dieser mehrere Linien gleichzeitig: was das Gewicht gemacht hat, wo die
 // Wiederholungen gewandert sind, wie schwer es sich anfuehlte und wohin die
 // Leistung laeuft. Jede Serie wird auf ihre eigene Spanne normalisiert (das
-// macht die Komponente) – hier entstehen nur die Rohwerte je Einheit.
+// macht die Komponente) – hier entstehen nur die Rohwerte je Einheit. Welche
+// Serien eine Uebung hat, sagen ihre Daten (siehe buildJourneySeries).
 //
 // Ein Datenpunkt ist eine absolvierte Einheit dieser Uebung in dieser Journey,
 // nicht die Journey-Woche: bei Hypertrophie fallen mehrere Entscheidungen pro
@@ -52,16 +53,6 @@ export interface JourneyChartSeries {
   points: JourneyChartPoint[];
 }
 
-// Welche Serien eine Uebung ueberhaupt hat. Journey-gesteuert (Profil
-// "strength", Haupt- wie Assistenzuebungen) sind es alle vier; Core und
-// Koerpergewicht steuert der Coach nicht ueber die Journey – dort gibt es
-// weder ein Arbeitsgewicht noch einen Leistungstrend, nur die Leistung je Satz
-// (Wiederholungen bzw. Haltezeit) und die Anstrengung.
-export function journeySeriesKeysFor(profile: string): JourneySeriesKey[] {
-  if (profile === "core" || profile === "bodyweight") return ["reps", "score"];
-  return [...JOURNEY_SERIES_KEYS];
-}
-
 function seriesLabel(
   key: JourneySeriesKey,
   metric: "reps" | "duration" | null,
@@ -92,20 +83,27 @@ function seriesValue(
 ): number | null {
   if (key === "weight") return e.topW > 0 ? e.topW : null;
   if (key === "score") return e.score;
-  if (key === "trend") return e.est1RM;
+  // Ohne Gewicht gibt es kein geschaetztes 1RM (die Engine liefert dann null);
+  // die 0 wird zusaetzlich abgefangen, damit keine Nulllinie entsteht.
+  if (key === "trend") return e.est1RM != null && e.est1RM > 0 ? e.est1RM : null;
   if (metric === "duration") return e.sec > 0 ? e.sec : null;
   return repsPerSet(e);
 }
 
 // Die Serien einer Uebung aus ihrem (bereits journey-gefilterten) Verlauf.
-// Serien ohne einen einzigen Wert fallen weg – eine leere Linie sagt nichts.
+//
+// Welche Serien erscheinen, entscheiden die DATEN, nicht das Profil: eine Serie
+// ohne einen einzigen Wert faellt weg. Damit zeigt eine Core-Uebung mit
+// Arbeitsgewicht (Core Twist) ihre Gewichts- und Trendlinie, waehrend Plank und
+// die Koerpergewichts-Uebungen (kein Gewicht, kein geschaetztes 1RM) von selbst
+// nur Leistung je Satz und Anstrengung tragen. Eine Regel am Profil hatte genau
+// hier danebengelegen und Core pauschal die Gewichtslinie genommen.
 export function buildJourneySeries(
   history: readonly ExHistoryEntry[],
-  profile: string,
   metric: "reps" | "duration" | null,
 ): JourneyChartSeries[] {
   const out: JourneyChartSeries[] = [];
-  for (const key of journeySeriesKeysFor(profile)) {
+  for (const key of JOURNEY_SERIES_KEYS) {
     const points: JourneyChartPoint[] = [];
     for (const e of history) {
       const v = seriesValue(key, e, metric);
