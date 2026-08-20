@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.43.0",
+      "date": "2026-08-20",
+      "changes": [
+        "Das klassische Kreuzheben vom Boden ist jetzt als eigene Hauptübung \"Deadlift\" angelegt - direkt hinter dem Romanian Deadlift in der Übungsliste. Beide laufen getrennt: eigene Gewichte, eigener 1RM, eigener Verlauf, eigene Meilensteine.",
+        "Die Übung startet bewusst ohne Gewicht. Bis zum ersten 1RM-Test schlägt die App die leere Stange vor; ab dem ersten geloggten Satz rechnet sie wie gewohnt weiter.",
+        "Sie taucht ab sofort in der Trainings-Empfehlung auf und wird in der Testwoche mitgetestet. Erholungsfenster 72 Stunden und die kürzere Aufwärmrampe gelten wie beim RDL."
+      ]
+    },
+    {
       "version": "1.42.1",
       "date": "2026-08-20",
       "changes": [
