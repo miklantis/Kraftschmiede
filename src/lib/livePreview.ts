@@ -29,20 +29,14 @@
 
 import type { SetEntry, EngineSet } from "@/engine/types";
 import type { CoachScope } from "@/engine";
-import type { CoachStatus, PlanOutlook } from "./coach";
+import type { CoachView } from "./coach";
 import type { LiveEntry, LiveSet } from "./liveSession";
 
-/** Coach-Vorschau eines Uebungsblocks. */
-export interface LiveCoachPreview {
-  /** Die Zahlen, die vorn stehen: im Wochenplan die Vorgabe dieser Woche, sonst
-   *  der Vorschlag fuer die naechste Einheit - was von beidem, sagt `scope`. */
-  status: CoachStatus;
-  /** Fuer welchen Zeitraum die Zahlen in `status` gelten (#268, Schritt 2). */
-  scope: CoachScope;
-  /** Ausblick auf die naechste Woche; null ausserhalb des Wochenplans, in der
-   *  letzten Phasenwoche, in der Entlastungswoche und solange kein Arbeitssatz
-   *  abgehakt ist (vorher gibt es nichts zu bewerten). */
-  outlook: PlanOutlook | null;
+/** Coach-Vorschau eines Uebungsblocks: derselbe Block wie auf der Uebungsseite
+ *  (CoachView), nur zusaetzlich mit dem Zwischenstand der laufenden Einheit.
+ *  Der Ausblick bleibt hier leer, solange kein Arbeitssatz abgehakt ist - dann
+ *  gibt es nichts zu bewerten. */
+export interface LiveCoachPreview extends CoachView {
   /** `provisional` heisst: es stehen noch offene Arbeitssaetze im Block, der
    *  Stand kann also noch wandern. Betrifft nur die Zeile, die wandern KANN -
    *  die Wochenvorgabe steht fest, egal wie die Einheit laeuft. */

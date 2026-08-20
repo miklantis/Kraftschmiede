@@ -26,7 +26,7 @@ export function useExercisesView(): ExercisesView {
 
   const unit = settingsQ.data?.unit ?? "kg";
   const states = Object.fromEntries(
-    Object.entries(coach.byExercise).map(([id, s]) => [id, s.state]),
+    Object.entries(coach.byExercise).map(([id, v]) => [id, v.status.state]),
   );
   const groups = exercisesQ.data
     ? groupExercises(exercisesQ.data, unit, states)

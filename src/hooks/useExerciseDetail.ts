@@ -6,7 +6,7 @@ import { useSkills } from "./useSkills";
 import { useCoachStatuses } from "./useCoachStatuses";
 import { skillSeeds } from "@/seed/definitions";
 import { muscleValuesFromRows } from "@/lib/muscles";
-import type { CoachStatus } from "@/lib/coach";
+import type { CoachView } from "@/lib/coach";
 import {
   buildExerciseHistory,
   exBestSet,
@@ -49,9 +49,10 @@ export interface ExerciseDetailView {
   unit: string;
   // Region->Intensitaet (0..1) fuer die MuscleMap; leer = nur graue Silhouette.
   muscleValues: Record<string, number>;
-  // Coach-Lesart fuer die naechste Einheit dieser Uebung (null = noch nicht
-  // berechnet oder keine Uebung).
-  coach: CoachStatus | null;
+  // Coach-Block dieser Uebung: Zahlen, Geltungsbereich und Ausblick - dieselbe
+  // Form wie auf der Uebungskarte im Training (null = noch nicht berechnet oder
+  // keine Uebung).
+  coach: CoachView | null;
 }
 
 // Beste-Satz-Zeile einer Einheit: hoechstes Gewicht, dann meiste Wiederholungen.

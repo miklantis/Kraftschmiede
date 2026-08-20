@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.44.3",
+      "date": "2026-08-20",
+      "changes": [
+        "Der Hinweis oben im Training sagt jetzt genau, woran die Steigerung hängt: Gewertet wird die letzte Einheit einer Übung in der Woche - und \"sauber\" heißt alle Sätze mit den vorgegebenen Wiederholungen, nicht härter als die Ziel-Anstrengung.",
+        "Wer eine Übung zweimal pro Woche trainiert, sieht damit, dass die zweite Einheit den Ausschlag gibt.",
+        "Die Übungsseite gibt jetzt dieselbe Auskunft wie die Karte im Training: \"Diese Woche\" bzw. \"Beim nächsten Mal\" samt Ausblick auf die nächste Woche."
+      ]
+    },
+    {
       "version": "1.44.2",
       "date": "2026-08-20",
       "changes": [

@@ -13,6 +13,7 @@ import {
   anchorAfterSession,
   weekDemandsSession,
   scoreForRir,
+  workSets,
 } from "@/engine";
 import type {
   SuitabilityResult,
@@ -442,6 +443,16 @@ export interface PlanOutlook {
   targetReps: number;
 }
 
+/** Schwerstes Arbeitsgewicht einer gespeicherten Einheit; null ohne
+ *  Arbeitssatz. Gegenstueck zu liveWorkWeight (lib/livePreview) fuer die
+ *  laufende Einheit - dieselbe Groesse, die beim Beenden in den Katalog geht,
+ *  und damit die, die den Anker nach unten nachzieht. */
+export function entryWorkWeight(entry: SetEntry | null | undefined): number | null {
+  const ws = workSets(entry);
+  if (ws.length === 0) return null;
+  return Math.max(...ws.map((s) => s.weight));
+}
+
 export interface PlanOutlookInput {
   /** Vorgabe der laufenden Woche - das Gewicht, das auf den Saetzen liegt. */
   weekWeight: number;
@@ -667,6 +678,24 @@ export interface CoachStatus {
   reason: CoachReason;
   // Fertiger Satz aus dem Textmodul (lib/coachText.ts).
   note: string;
+}
+
+/** Was ein Coach-Block zeigt - dieselbe Form fuer die Uebungskarte im Training
+ *  und den Coach-Kasten der Uebungsseite (Issue #268, Schritt 4). Vorher trug
+ *  die Uebungsseite nur die nackten Zahlen: ohne Beschriftung war nicht zu
+ *  sehen, ob sie fuer die ganze Woche gelten oder nur fuer die naechste
+ *  Einheit, und der Ausblick fehlte dort ganz. */
+export interface CoachView {
+  /** Die Zahlen, die vorn stehen: im Wochenplan die Vorgabe dieser Woche,
+   *  sonst der Vorschlag fuer die naechste Einheit - was von beidem, sagt
+   *  `scope`. */
+  status: CoachStatus;
+  /** Fuer welchen Zeitraum die Zahlen in `status` gelten (#268, Schritt 2). */
+  scope: CoachScope;
+  /** Ausblick auf die naechste Woche; null ausserhalb des Wochenplans, in der
+   *  letzten Phasenwoche, in der Entlastungswoche und solange die laufende
+   *  Woche nichts Bewertbares hergibt. */
+  outlook: PlanOutlook | null;
 }
 
 /** Coach-Entscheidung in die Anzeigeform. `unit` kommt aus den Einstellungen

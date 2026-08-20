@@ -231,6 +231,20 @@ betroffene Tabelle beim Wiederherstellen leer.
   beiden Fällen erst mit dem ersten abgehakten Satz. Das Coach-Zeichen setzt damit keine
   Bewertung der laufenden Einheit mehr voraus: ohne jede Vordaten steht es wie auf der
   Übungsseite im Zustand „Start".
+- **Die Steigerungs-Regel steht genau einmal, und beide Anzeigeorte sprechen dieselbe
+  Sprache.** Woran die Steigerung hängt, sagt der Wochenplan-Hinweis oben
+  (`lib/planNote.ts`) und sonst nichts: gewertet wird die **letzte Einheit einer Übung in
+  der Woche** – wer zweimal pro Woche trainiert, dessen schwache zweite Einheit kassiert
+  die saubere erste –, und „sauber" heißt alle Sätze mit den vorgegebenen Wiederholungen,
+  nicht härter als die Ziel-Anstrengung der Woche. Die Übungskarten wiederholen diesen
+  Vorbehalt nicht; sie zeigen Wochenvorgabe und Ausblick. Beides zeigt auch die
+  Übungs-Detailseite: Trainingskarte und Coach-Kasten lesen dieselbe Anzeigeform
+  `CoachView` (`lib/coach.ts`: Zahlen, `CoachScope`, Ausblick), gefüllt von
+  `useLiveCoachPreview` bzw. `useCoachStatuses`. Bewertet wird dort die letzte
+  gespeicherte Einheit der laufenden Journey-Woche (`plan.currentWeekEntry`) statt der
+  laufenden – steht diese Woche noch nichts, gibt es wie vor dem ersten abgehakten Satz
+  keinen Ausblick. Einen Zwischenstand-Zusatz trägt die Übungsseite nie: außerhalb der
+  Einheit wandert nichts mehr.
 - **Phasen-Repband schlägt Übungs-Repband.** Läuft eine Journey, rechnet der Coach bei
   Kraftübungen mit dem Wiederholungsband der aktiven Phase (ersatzweise aus deren Fokus
   abgeleitet); das Band aus dem Übungskatalog ruht solange. Core- und

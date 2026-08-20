@@ -103,6 +103,7 @@ import {
   pickBarForTarget,
   planSuggestion,
   planOutlook,
+  entryWorkWeight,
   coachScopeFor,
   type CoachBuildExercise,
   type CoachSuggestion,
@@ -387,6 +388,27 @@ describe("planSuggestion – Kennung des Wochenplans", () => {
 
   it("Zusatzuebung bleibt bei der Doppelprogression", () => {
     expect(planSuggestion(CORE, ctx(plan()))).toBeNull();
+  });
+});
+
+// Issue #268, Schritt 4: Die Uebungsseite rechnet ihren Ausblick aus der
+// gespeicherten Einheit der laufenden Woche und braucht dafuer dieselbe Groesse,
+// die im Training aus den abgehakten Saetzen kommt (liveWorkWeight).
+describe("entryWorkWeight – schwerster Arbeitssatz einer Einheit", () => {
+  it("nimmt das hoechste Arbeitsgewicht, Aufwaermen zaehlt nicht", () => {
+    const entry: SetEntry = {
+      sets: [
+        { type: "warmup", weight: 60, reps: 5 },
+        { type: "work", weight: 40, reps: 4 },
+        { type: "work", weight: 42.5, reps: 4 },
+      ],
+    };
+    expect(entryWorkWeight(entry)).toBe(42.5);
+  });
+
+  it("liefert ohne Arbeitssatz null", () => {
+    expect(entryWorkWeight(null)).toBeNull();
+    expect(entryWorkWeight({ sets: [{ type: "warmup", weight: 60, reps: 5 }] })).toBeNull();
   });
 });
 
