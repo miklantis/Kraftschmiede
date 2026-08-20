@@ -85,6 +85,7 @@ export function useCoachStatuses(): UseCoachStatuses {
     // Die Einheit davor je Uebung – Grundlage der Rueckwaertsregel des Coaches.
     const prevEntryByExercise = buildPrevEntries(detailedQ.data ?? []);
     const weightStep = settingsQ.data?.weight_step ?? null;
+    const unit = settingsQ.data?.unit ?? "kg";
     const freqTarget = settingsQ.data?.weekly_frequency_target || 3;
 
     const ph = derivePhaseContext(
@@ -187,6 +188,7 @@ export function useCoachStatuses(): UseCoachStatuses {
       out[e.id] = coachStatusFromSuggestion(
         { ...suggestion, weight: entry.weight, targetReps: entry.targetReps },
         hadPriorData,
+        unit,
       );
     }
     return out;

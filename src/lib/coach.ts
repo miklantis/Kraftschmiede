@@ -16,6 +16,9 @@ import type {
   SuitabilityResult,
   SuggestResult,
   SuggestExercise,
+  CoachReason,
+  CoachReasonCode,
+  PlanLoadReason,
   RampLoad,
   WeekPlanWeek,
 } from "@/engine";
@@ -28,6 +31,7 @@ import type {
   VolumePhase,
 } from "@/engine/types";
 import { isoWeekKey } from "@/engine/journey";
+import { coachNote } from "./coachText";
 import { isNeutralLoad } from "./loadFactor";
 
 // Eine abgeschlossene Krafteinheit, reduziert auf das fuer das Ranking Noetige:
@@ -193,7 +197,8 @@ export interface CoachSuggestion {
   weight: number;
   targetReps: number;
   decision: CoachDecision;
-  note: string;
+  /** Kennung samt Zahlen; den Satz baut lib/coachText.ts (Issue #268). */
+  reason: CoachReason;
 }
 
 // Uebernahme ohne Progression: Vorbelegung = letzter Arbeitssatz mit dem
@@ -203,8 +208,8 @@ export interface CoachSuggestion {
 function carrySuggestion(
   exo: CoachBuildExercise,
   lastEntry: SetEntry | null,
-  noteCarried: string,
-  noteStart: string,
+  codeCarried: CoachReasonCode,
+  codeStart: CoachReasonCode,
 ): CoachSuggestion {
   const range = exo.repRange ?? [12, 20];
   const ws = lastEntry
@@ -219,14 +224,14 @@ function carrySuggestion(
       weight: top.weight != null ? top.weight : exo.workWeight || 0,
       targetReps: top.reps || range[1],
       decision: "carry",
-      note: noteCarried,
+      reason: { code: codeCarried },
     };
   }
   return {
     weight: exo.workWeight || 0,
     targetReps: range[1],
     decision: "carry",
-    note: noteStart,
+    reason: { code: codeStart },
   };
 }
 
@@ -235,12 +240,7 @@ export function coreCarry(
   exo: CoachBuildExercise,
   lastEntry: SetEntry | null,
 ): CoachSuggestion {
-  return carrySuggestion(
-    exo,
-    lastEntry,
-    "Begleitübung – letztes Mal übernommen, frei anpassbar",
-    "Begleitübung – Startwert, frei anpassbar",
-  );
+  return carrySuggestion(exo, lastEntry, "carry-last", "carry-start");
 }
 
 // Freies Training (keine aktive Journey): der Coach gibt nichts vor. Jede Uebung
@@ -250,12 +250,7 @@ export function freeCarry(
   exo: CoachBuildExercise,
   lastEntry: SetEntry | null,
 ): CoachSuggestion {
-  return carrySuggestion(
-    exo,
-    lastEntry,
-    "Freies Training – Werte vom letzten Mal, frei anpassbar",
-    "Freies Training – Startwert, frei anpassbar",
-  );
+  return carrySuggestion(exo, lastEntry, "free-last", "free-start");
 }
 
 // Arbeitssatzzahl der letzten Einheit einer Uebung (Aufwaermen ausgenommen).
@@ -374,12 +369,14 @@ export function planTargetScore(
     : exo.targetScore;
 }
 
-const PLAN_NOTES: Record<string, string> = {
-  start: "Wochenplan – Startgewicht der Phase",
-  "same-week": "Wochenplan – gleiche Woche, gleiches Gewicht",
-  raised: "Wochenplan – Vorwoche sauber, Gewicht einen Schritt hoch",
-  held: "Wochenplan – Gewicht bleibt stehen, Wiederholungen sinken planmäßig",
-  deload: "Entlastungswoche – locker vor der Testwoche",
+/** Kennung der Wochenplan-Regel in die Kennung des Textkatalogs. Der Satz dazu
+ *  steht in lib/coachText.ts - hier faellt keine Formulierung mehr. */
+const PLAN_CODES: Record<PlanLoadReason, CoachReasonCode> = {
+  start: "plan-start",
+  "same-week": "plan-same-week",
+  raised: "plan-raised",
+  held: "plan-held",
+  deload: "plan-deload",
 };
 
 /** Vorschlag aus dem Wochenplan; null, wenn der Plan hier nicht zustaendig ist. */
@@ -407,7 +404,7 @@ export function planSuggestion(
     weight: load.weight,
     targetReps: p.week.repsMax ?? p.week.reps,
     decision: load.reason === "raised" ? "increase" : "hold",
-    note: PLAN_NOTES[load.reason] ?? PLAN_NOTES.held!,
+    reason: { code: PLAN_CODES[load.reason], diff: load.diff },
   };
 }
 
@@ -583,12 +580,18 @@ export interface CoachStatus {
   decision: CoachDecision;
   weight: number;
   targetReps: number;
+  // Kennung der Begruendung - fuer alles, was mehr als den Satz braucht.
+  reason: CoachReason;
+  // Fertiger Satz aus dem Textmodul (lib/coachText.ts).
   note: string;
 }
 
+/** Coach-Entscheidung in die Anzeigeform. `unit` kommt aus den Einstellungen
+ *  ("kg"/"lb") und wird nur fuer Saetze mit Gewichtsdifferenz gebraucht. */
 export function coachStatusFromSuggestion(
   sug: CoachSuggestion,
   hadPriorData: boolean,
+  unit: string,
 ): CoachStatus {
   let state: CoachState;
   if (sug.decision === "carry") state = "carry";
@@ -602,7 +605,8 @@ export function coachStatusFromSuggestion(
     decision: sug.decision,
     weight: sug.weight,
     targetReps: sug.targetReps,
-    note: sug.note,
+    reason: sug.reason,
+    note: coachNote(sug.reason, unit),
   };
 }
 

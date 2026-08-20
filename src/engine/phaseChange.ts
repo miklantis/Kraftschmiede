@@ -2,6 +2,7 @@
 // statt es nur Session fuer Session nachlaufen zu lassen. Reine Rechnung – kennt
 // weder DB noch Phase, bekommt nur ein geschaetztes 1RM und die Zielzone.
 
+import type { CoachReason } from "./coachReason";
 import { nearestLoadable } from "./plates";
 import type { Bar } from "./types";
 
@@ -26,7 +27,8 @@ export type PhaseWeightDecision = "hold" | "raise" | "lower";
 export interface PhaseWeightResult {
   weight: number;
   decision: PhaseWeightDecision;
-  note: string;
+  /** Kennung samt Zahlen; den Satz baut lib/coachText.ts (Issue #268). */
+  reason: CoachReason;
 }
 
 const DEFAULT_PLATES = [1.25, 2.5, 5, 10, 15, 20, 25];
@@ -47,8 +49,15 @@ export function workWeightForPhase(
   const maxUp = o.maxUpPct == null ? 0.12 : o.maxUpPct;
   const range = repRange ?? [8, 12];
 
+  // Differenz zum heutigen Arbeitsgewicht - Zahl fuer den Begruendungstext.
+  const diffTo = (w: number): number => Math.round((w - cur) * 100) / 100;
+
   if (!(est1RM != null && est1RM > 0)) {
-    return { weight: cur, decision: "hold", note: "kein 1RM – Gewicht halten" };
+    return {
+      weight: cur,
+      decision: "hold",
+      reason: { code: "phase-no-rm", diff: 0 },
+    };
   }
 
   const reps = (range[1] || range[0] || 8) + buffer; // oberes Bandende + RIR
@@ -62,18 +71,18 @@ export function workWeightForPhase(
       return {
         weight: cur,
         decision: "hold",
-        note: "Phasenwechsel: bereits passend, Gewicht halten",
+        reason: { code: "phase-fit", diff: 0 },
       };
     }
     return {
       weight: capped,
       decision: "raise",
-      note: "Phasenwechsel: Last gepuffert auf neue Zone angehoben",
+      reason: { code: "phase-raise", diff: diffTo(capped) },
     };
   }
   return {
     weight: target,
     decision: "lower",
-    note: "Phasenwechsel: zu schwere Last auf leichtere Zone gesenkt",
+    reason: { code: "phase-lower", diff: diffTo(target) },
   };
 }

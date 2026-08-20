@@ -80,7 +80,7 @@ describe("planWeekLoad – Gewicht der laufenden Journey-Woche", () => {
 
   it("ohne Anker: Startgewicht der Phase aus dem 1RM", () => {
     const res = planWeekLoad({ ...base, anchor: null, est1RM: 100 });
-    expect(res).toEqual({ weight: 80, reason: "start" });
+    expect(res).toEqual({ weight: 80, reason: "start", diff: 0 });
   });
 
   it("Vorwoche sauber: ein Schritt hoch", () => {
@@ -89,7 +89,7 @@ describe("planWeekLoad – Gewicht der laufenden Journey-Woche", () => {
       anchor: 40,
       previousWeekEntry: entry([set(), set(), set(), set()]),
     });
-    expect(res).toEqual({ weight: 42.5, reason: "raised" });
+    expect(res).toEqual({ weight: 42.5, reason: "raised", diff: 2.5 });
   });
 
   it("Vorwoche verfehlt: Gewicht bleibt stehen", () => {
@@ -98,12 +98,12 @@ describe("planWeekLoad – Gewicht der laufenden Journey-Woche", () => {
       anchor: 40,
       previousWeekEntry: entry([set(), set({ reps: 3 })]),
     });
-    expect(res).toEqual({ weight: 40, reason: "held" });
+    expect(res).toEqual({ weight: 40, reason: "held", diff: 0 });
   });
 
   it("Uebung war in der Vorwoche nicht dran: ohne Beleg keine Erhoehung", () => {
     const res = planWeekLoad({ ...base, anchor: 40, previousWeekEntry: null });
-    expect(res).toEqual({ weight: 40, reason: "held" });
+    expect(res).toEqual({ weight: 40, reason: "held", diff: 0 });
   });
 
   it("zweite Einheit derselben Woche: gleiche Vorgabe wie die erste", () => {
@@ -113,7 +113,7 @@ describe("planWeekLoad – Gewicht der laufenden Journey-Woche", () => {
       currentWeekEntry: entry([set({ targetWeight: 42.5, weight: 42.5 })]),
       previousWeekEntry: entry([set(), set(), set(), set()]),
     });
-    expect(res).toEqual({ weight: 42.5, reason: "same-week" });
+    expect(res).toEqual({ weight: 42.5, reason: "same-week", diff: 0 });
   });
 
   it("gleiche Woche: auch eine im Training reduzierte Last aendert die Vorgabe nicht", () => {
@@ -122,7 +122,7 @@ describe("planWeekLoad – Gewicht der laufenden Journey-Woche", () => {
       anchor: 40,
       currentWeekEntry: entry([set({ targetWeight: 42.5, weight: 37.5 })]),
     });
-    expect(res).toEqual({ weight: 42.5, reason: "same-week" });
+    expect(res).toEqual({ weight: 42.5, reason: "same-week", diff: 0 });
   });
 
   it("Schrittweite aus den Einstellungen, auf eine ladbare Stufe abgerundet", () => {
@@ -134,6 +134,8 @@ describe("planWeekLoad – Gewicht der laufenden Journey-Woche", () => {
     });
     // 44 kg sind mit 1,25er Scheiben nicht ladbar -> 42,5 kg
     expect(res.weight).toBe(42.5);
+    // und der Text nennt die echte Differenz (2,5), nicht die Schrittweite (4)
+    expect(res.diff).toBe(2.5);
   });
 
   it("loadPct der Planwoche senkt die Last (Entlastung der Kombiwoche)", () => {
@@ -174,6 +176,7 @@ describe("planWeekLoad – Kombiwoche (Entlastung)", () => {
     expect(planWeekLoad({ ...base, anchor: 50 })).toEqual({
       weight: 30,
       reason: "deload",
+      diff: 0,
     });
   });
 
@@ -183,7 +186,7 @@ describe("planWeekLoad – Kombiwoche (Entlastung)", () => {
       anchor: 50,
       previousWeekEntry: entry([set(), set(), set(), set()]),
     });
-    expect(res).toEqual({ weight: 30, reason: "deload" });
+    expect(res).toEqual({ weight: 30, reason: "deload", diff: 0 });
   });
 
   it("haelt die Vorgabe der Woche, wenn schon entlastet wurde", () => {
@@ -192,12 +195,12 @@ describe("planWeekLoad – Kombiwoche (Entlastung)", () => {
       anchor: 50,
       currentWeekEntry: entry([set({ targetWeight: 30, weight: 30 })]),
     });
-    expect(res).toEqual({ weight: 30, reason: "same-week" });
+    expect(res).toEqual({ weight: 30, reason: "same-week", diff: 0 });
   });
 
   it("faellt ohne Startgewicht auf das 1RM zurueck", () => {
     // 1RM 100, 3 Ziel-Wdh + 2 Reserve -> 85,7 -> 60 % = 51,4 -> 50 kg
     const res = planWeekLoad({ ...base, anchor: null, est1RM: 100 });
-    expect(res).toEqual({ weight: 50, reason: "deload" });
+    expect(res).toEqual({ weight: 50, reason: "deload", diff: 0 });
   });
 });

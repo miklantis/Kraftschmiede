@@ -101,10 +101,13 @@ import {
   warmupFor,
   plannedSets,
   pickBarForTarget,
+  planSuggestion,
   type CoachBuildExercise,
   type CoachSuggestion,
+  type PlanContext,
 } from "../coach";
 import type { SetEntry } from "@/engine/types";
+import type { WeekPlanWeek } from "@/engine";
 
 const STRENGTH: CoachBuildExercise = {
   key: "squat",
@@ -278,30 +281,127 @@ describe("coachStatusFromSuggestion", () => {
     weight: 60,
     targetReps: 10,
     decision,
-    note: "",
+    reason: { code: "hold-hard" },
   });
 
   it("bildet die Engine-Entscheidung auf die grobe Lesart ab", () => {
-    expect(coachStatusFromSuggestion(sug("increase"), true).state).toBe("up");
-    expect(coachStatusFromSuggestion(sug("increase-reps"), true).state).toBe("up");
-    expect(coachStatusFromSuggestion(sug("hold"), true).state).toBe("hold");
-    expect(coachStatusFromSuggestion(sug("decrease"), true).state).toBe("down");
+    expect(coachStatusFromSuggestion(sug("increase"), true, "kg").state).toBe("up");
+    expect(coachStatusFromSuggestion(sug("increase-reps"), true, "kg").state).toBe("up");
+    expect(coachStatusFromSuggestion(sug("hold"), true, "kg").state).toBe("hold");
+    expect(coachStatusFromSuggestion(sug("decrease"), true, "kg").state).toBe("down");
   });
 
   it("zeigt Begleituebungen als carry, unabhaengig von Vordaten", () => {
-    expect(coachStatusFromSuggestion(sug("carry"), true).state).toBe("carry");
-    expect(coachStatusFromSuggestion(sug("carry"), false).state).toBe("carry");
+    expect(coachStatusFromSuggestion(sug("carry"), true, "kg").state).toBe("carry");
+    expect(coachStatusFromSuggestion(sug("carry"), false, "kg").state).toBe("carry");
   });
 
   it("ohne Vordaten -> Start (vor der Auf/Halten/Senken-Wertung)", () => {
-    expect(coachStatusFromSuggestion(sug("hold"), false).state).toBe("start");
-    expect(coachStatusFromSuggestion(sug("increase"), false).state).toBe("start");
+    expect(coachStatusFromSuggestion(sug("hold"), false, "kg").state).toBe("start");
+    expect(coachStatusFromSuggestion(sug("increase"), false, "kg").state).toBe("start");
   });
 
   it("reicht Gewicht, Ziel-Wdh und Entscheidung durch", () => {
-    const s = coachStatusFromSuggestion(sug("increase"), true);
+    const s = coachStatusFromSuggestion(sug("increase"), true, "kg");
     expect(s.weight).toBe(60);
     expect(s.targetReps).toBe(10);
     expect(s.decision).toBe("increase");
+  });
+});
+
+// Issue #268, Schritt 1: der Wochenplan liefert Kennung und Differenz, den
+// Satz baut lib/coachText.ts.
+describe("planSuggestion – Kennung des Wochenplans", () => {
+  const week = (o: Partial<WeekPlanWeek> = {}): WeekPlanWeek => ({
+    week: 2,
+    sets: 4,
+    reps: 4,
+    repsMax: null,
+    rir: 2,
+    loadPct: 1,
+    note: "",
+    ...o,
+  });
+  // Eine saubere Vorwoche: alle Saetze voll, in der Ziel-Anstrengung.
+  const sauber: SetEntry = {
+    sets: [1, 2, 3, 4].map(() => ({
+      type: "work" as const,
+      weight: 40,
+      reps: 5,
+      targetReps: 5,
+      targetWeight: 40,
+      score: 3,
+      done: true,
+    })),
+  };
+  const plan = (o: Partial<PlanContext> = {}): PlanContext => ({
+    week: week(),
+    prevWeek: week({ week: 1, reps: 5 }),
+    startReps: 5,
+    anchor: 40,
+    currentWeekEntry: null,
+    previousWeekEntry: null,
+    rm: null,
+    ...o,
+  });
+  const ctx = (p: PlanContext): Parameters<typeof planSuggestion>[1] => ({
+    phase: null,
+    lastEntry: null,
+    weightStep: 2.5,
+    bar: { weight: 20 },
+    plates: [1.25, 2.5, 5, 10, 15, 20],
+    plan: p,
+  });
+
+  it("Vorwoche sauber: Kennung plus echte Differenz", () => {
+    const r = planSuggestion(STRENGTH, ctx(plan({ previousWeekEntry: sauber })));
+    expect(r?.weight).toBe(42.5);
+    expect(r?.reason).toEqual({ code: "plan-raised", diff: 2.5 });
+  });
+
+  it("Vorwoche verfehlt: Gewicht bleibt stehen", () => {
+    const r = planSuggestion(STRENGTH, ctx(plan({ previousWeekEntry: null })));
+    expect(r?.weight).toBe(40);
+    expect(r?.reason).toEqual({ code: "plan-held", diff: 0 });
+  });
+
+  it("zweite Einheit derselben Woche: gleiche Vorgabe, keine Differenz", () => {
+    const r = planSuggestion(
+      STRENGTH,
+      ctx(
+        plan({
+          currentWeekEntry: {
+            sets: [
+              { type: "work", weight: 42.5, reps: 4, targetReps: 4, targetWeight: 42.5, done: true },
+            ],
+          },
+          previousWeekEntry: sauber,
+        }),
+      ),
+    );
+    expect(r?.reason).toEqual({ code: "plan-same-week", diff: 0 });
+  });
+
+  it("Zusatzuebung bleibt bei der Doppelprogression", () => {
+    expect(planSuggestion(CORE, ctx(plan()))).toBeNull();
+  });
+});
+
+describe("coachStatusFromSuggestion – Satz aus der Kennung", () => {
+  it("baut den sichtbaren Satz aus Kennung und Einheit", () => {
+    const st = coachStatusFromSuggestion(
+      {
+        weight: 42.5,
+        targetReps: 4,
+        decision: "increase",
+        reason: { code: "plan-raised", diff: 2.5 },
+      },
+      true,
+      "kg",
+    );
+    expect(st.note).toBe(
+      "Vorwoche sauber durchgezogen – deshalb liegen jetzt 2,5 kg mehr drauf.",
+    );
+    expect(st.reason.code).toBe("plan-raised");
   });
 });

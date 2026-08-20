@@ -194,6 +194,19 @@ betroffene Tabelle beim Wiederherstellen leer.
   Glue-/Coach-Schicht greift darauf zu.
 - **Coach als eigenes, testbares Modul** (`coach.ts`): nimmt Zustand explizit herein,
   gibt Entscheidungen heraus – gleiche Form wie die Engine. Kein DOM-Bezug.
+- **Eine Textquelle für alle Coach-Begründungen.** Engine und Rechnung geben keine
+  fertigen deutschen Sätze mehr aus, sondern eine Kennung samt der Zahlen, die der Text
+  braucht (`CoachReason` in `engine/coachReason.ts`: Kennung, tatsächliche Differenz zum
+  heutigen Gewicht, oberes Ende des Wiederholungsbandes). Den Satz baut ausschließlich
+  `lib/coachText.ts` – Trainingsbildschirm und Übungs-Detailseite lesen ihn über
+  `coachStatusFromSuggestion`. Vorher lagen die Texte in drei Töpfen
+  (Doppelprogression, Wochenplan, Phasenwechsel) mit unterschiedlicher Sprache; jetzt
+  lässt sich eine gemeinsame Sprache erzwingen statt nur vereinbaren, und
+  Textänderungen fassen die Rechenlogik nicht mehr an. Der Katalog nennt statt „ein
+  Schritt" immer die echte Differenz zwischen heutigem und vorgeschlagenem Gewicht –
+  bei Kurzhanteln und krummen Scheiben weicht sie von der eingestellten Schrittweite ab;
+  ergibt sich keine Differenz, bleibt derselbe Satz ohne Zahl. Dass es zu jeder Kennung
+  genau einen Satz gibt, sichert ein Test über `COACH_REASON_CODES`.
 - **Phasen-Repband schlägt Übungs-Repband.** Läuft eine Journey, rechnet der Coach bei
   Kraftübungen mit dem Wiederholungsband der aktiven Phase (ersatzweise aus deren Fokus
   abgeleitet); das Band aus dem Übungskatalog ruht solange. Core- und

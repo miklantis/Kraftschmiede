@@ -126,7 +126,7 @@ function previewState(e: LiveEntry, prevEntry: SetEntry | null = null): CoachSta
     dumbbells: [],
     repTarget: null,
   });
-  return coachStatusFromSuggestion(suggestion, true).state;
+  return coachStatusFromSuggestion(suggestion, true, "kg").state;
 }
 
 describe("Vorschau auf die Coach-Entscheidung", () => {

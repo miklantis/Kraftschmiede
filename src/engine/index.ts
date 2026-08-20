@@ -8,6 +8,7 @@ export * from "./oneRM";
 export * from "./score";
 export * from "./target";
 export * from "./warmup";
+export * from "./coachReason";
 export * from "./progression";
 export * from "./phaseChange";
 export * from "./suitability";
