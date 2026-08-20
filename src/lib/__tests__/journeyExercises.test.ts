@@ -3,8 +3,15 @@ import {
   buildJourneyExerciseGroups,
   journeyExerciseIds,
 } from "@/lib/journeyExercises";
+import type { JourneyExerciseChart } from "@/lib/journeyExercises";
 import type { WorkoutExerciseInfo, WorkoutInput } from "@/lib/workouts";
 import type { ExerciseRow } from "@/schemas";
+
+// Chart-Nutzlast einer Uebung; fuer die Gruppierung zaehlt nur, wie viele
+// Einheiten (Daten) sie traegt.
+function chart(...dates: string[]): JourneyExerciseChart {
+  return { dates, series: [], marks: [] };
+}
 
 // Minimaler, ueberschreibbarer ExerciseRow fuer die Tests.
 function ex(id: string, overrides: Partial<ExerciseRow> = {}): ExerciseRow {
@@ -145,16 +152,35 @@ describe("buildJourneyExerciseGroups", () => {
     expect(groups[0].items.map((i) => i.id)).toEqual(["kniebeuge"]);
   });
 
-  it("uebernimmt die Einheiten-Zahl, ohne Einheit bleibt sie 0", () => {
+  it("zaehlt die Einheiten aus den Chart-Daten; ohne Einheit bleibt es 0", () => {
+    const kniebeugeChart = chart("2026-01-05", "2026-01-12", "2026-01-19");
     const groups = buildJourneyExerciseGroups(
       katalog,
       new Set(["kniebeuge", "bankdruecken"]),
-      { kniebeuge: 4 },
+      { kniebeuge: kniebeugeChart },
     );
     expect(groups[0].items).toEqual([
-      { id: "kniebeuge", name: "kniebeuge", sessionCount: 4 },
-      { id: "bankdruecken", name: "bankdruecken", sessionCount: 0 },
+      {
+        id: "kniebeuge",
+        name: "kniebeuge",
+        sessionCount: 3,
+        chart: kniebeugeChart,
+      },
+      {
+        id: "bankdruecken",
+        name: "bankdruecken",
+        sessionCount: 0,
+        chart: null,
+      },
     ]);
+  });
+
+  it("behandelt eine leere Chart-Nutzlast wie keine Einheit", () => {
+    const groups = buildJourneyExerciseGroups(katalog, new Set(["kniebeuge"]), {
+      kniebeuge: chart(),
+    });
+    expect(groups[0].items[0].sessionCount).toBe(0);
+    expect(groups[0].items[0].chart).toBeNull();
   });
 
   it("ignoriert Ids, die es im Katalog nicht mehr gibt", () => {

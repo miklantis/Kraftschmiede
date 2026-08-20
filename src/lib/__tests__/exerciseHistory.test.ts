@@ -412,6 +412,7 @@ describe("recordSeries – 1RM-Rekord-Treppe", () => {
     date,
     journeyId: null,
     journeyWeek: null,
+    phaseId: null,
     topW: 0,
     reps: 0,
     vol: 0,

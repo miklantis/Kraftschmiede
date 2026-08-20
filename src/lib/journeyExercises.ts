@@ -20,13 +20,26 @@ import {
   type WorkoutExerciseInfo,
   type WorkoutInput,
 } from "./workouts";
+import type { JourneyChartSeries, JourneyPhaseMark } from "./journeyChart";
+
+// Alles, was die Kachel einer Uebung zum Zeichnen braucht: die Zeitachse (ein
+// Eintrag je absolvierter Einheit, aelteste zuerst), die Serien und die
+// Phasengrenzen.
+export interface JourneyExerciseChart {
+  dates: string[];
+  series: JourneyChartSeries[];
+  marks: JourneyPhaseMark[];
+}
 
 // Eine Zeile des Abschnitts: die Uebung und wie oft sie in dieser Journey
-// gelaufen ist. sessionCount 0 heisst Platzhalter-Zeile ("noch keine Einheit").
+// gelaufen ist. sessionCount 0 (chart null) heisst Platzhalter-Zeile
+// ("noch keine Einheit") – sie haelt den Platz in der Reihenfolge frei, bis die
+// erste Einheit sie zur vollen Kachel macht.
 export interface JourneyExerciseRow {
   id: string;
   name: string;
   sessionCount: number;
+  chart: JourneyExerciseChart | null;
 }
 
 export interface JourneyExerciseGroup {
@@ -72,7 +85,7 @@ export function journeyExerciseIds(
 export function buildJourneyExerciseGroups(
   exercises: readonly ExerciseRow[],
   exerciseIds: ReadonlySet<string>,
-  sessionCounts: Readonly<Record<string, number>>,
+  charts: Readonly<Record<string, JourneyExerciseChart | undefined>>,
 ): JourneyExerciseGroup[] {
   const buckets: Record<ExerciseGroupKey, JourneyExerciseRow[]> = {
     main: [],
@@ -83,10 +96,13 @@ export function buildJourneyExerciseGroups(
 
   for (const e of exercises) {
     if (!exerciseIds.has(e.id)) continue;
+    const chart = charts[e.id];
+    const hasEntries = chart != null && chart.dates.length > 0;
     buckets[exerciseGroupKey(e)].push({
       id: e.id,
       name: e.name,
-      sessionCount: sessionCounts[e.id] ?? 0,
+      sessionCount: hasEntries ? chart.dates.length : 0,
+      chart: hasEntries ? chart : null,
     });
   }
 

@@ -2,15 +2,18 @@ import { useMemo } from "react";
 import {
   buildJourneyExerciseGroups,
   journeyExerciseIds,
+  type JourneyExerciseChart,
   type JourneyExerciseGroup,
 } from "@/lib/journeyExercises";
 import {
   buildExerciseHistory,
   filterJourneySessions,
 } from "@/lib/exerciseHistory";
+import { buildJourneySeries, journeyPhaseMarks } from "@/lib/journeyChart";
 import type { WorkoutExerciseInfo, WorkoutInput } from "@/lib/workouts";
 import { useExercises } from "./useExercises";
 import { useTemplates } from "./useTemplates";
+import { useActiveJourney } from "./useJourney";
 import { useJourneyWorkouts } from "./useJourneyWorkouts";
 import { useSessionsDetailed } from "./useSessionsDetailed";
 import { useSettings } from "./useSettings";
@@ -23,6 +26,8 @@ export interface JourneyExercisesView {
   ready: boolean;
   /** Leer, solange kein nutzbares Workout zugewiesen ist (Leerzustand). */
   groups: JourneyExerciseGroup[];
+  /** Gewichtseinheit fuer die Werte im Chart-Tooltip. */
+  unit: string;
 }
 
 // Ansichtsmodell des Abschnitts "Uebungen in dieser Journey": welche Uebungen
@@ -42,6 +47,7 @@ export function useJourneyExercises(
 ): JourneyExercisesView {
   const exercisesQ = useExercises();
   const templatesQ = useTemplates();
+  const journeyQ = useActiveJourney();
   const assignedQ = useJourneyWorkouts(journeyId);
   const sessionsQ = useSessionsDetailed();
   const settingsQ = useSettings();
@@ -64,6 +70,19 @@ export function useJourneyExercises(
     sessionsQ.data != null;
 
   const rmFormula = settingsQ.data?.rm_formula ?? "mean";
+  const unit = settingsQ.data?.unit ?? "kg";
+
+  // Phasennamen fuer die Trennlinien im Chart. Sie kommen aus der Journey
+  // selbst; ist die gefragte Journey nicht die aktive (spaeter: Rueckschau),
+  // bleiben die Namen leer und der Chart zeichnet keine Grenzen, statt fremde
+  // Phasen anzuschreiben.
+  const journey = journeyQ.data ?? null;
+  const phaseNames = useMemo<Record<string, string>>(() => {
+    if (journey == null || journey.id !== journeyId) return {};
+    const out: Record<string, string> = {};
+    for (const p of journey.phases) out[p.id] = p.name;
+    return out;
+  }, [journey, journeyId]);
 
   const groups = useMemo<JourneyExerciseGroup[]>(() => {
     if (!ready || journeyId === null) return [];
@@ -86,15 +105,27 @@ export function useJourneyExercises(
       sessionsQ.data ?? [],
       journeyId,
     );
-    const counts: Record<string, number> = {};
+    const byId = new Map((exercisesQ.data ?? []).map((e) => [e.id, e]));
+    const charts: Record<string, JourneyExerciseChart | undefined> = {};
     for (const id of ids) {
-      counts[id] = buildExerciseHistory(id, journeySessions, rmFormula).length;
+      const exercise = byId.get(id);
+      if (!exercise) continue;
+      const history = buildExerciseHistory(id, journeySessions, rmFormula);
+      charts[id] = {
+        dates: history.map((e) => e.date),
+        series: buildJourneySeries(
+          history,
+          exercise.profile,
+          exercise.metric,
+        ),
+        marks: journeyPhaseMarks(history, phaseNames),
+      };
     }
 
     return buildJourneyExerciseGroups(
       exercisesQ.data ?? [],
       new Set(ids),
-      counts,
+      charts,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -105,6 +136,7 @@ export function useJourneyExercises(
     assignedQ.data,
     sessionsQ.data,
     rmFormula,
+    phaseNames,
   ]);
 
   return {
@@ -113,5 +145,6 @@ export function useJourneyExercises(
     error,
     ready,
     groups,
+    unit,
   };
 }

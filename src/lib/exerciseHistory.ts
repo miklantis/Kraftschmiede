@@ -37,6 +37,10 @@ export interface ExHistoryEntry {
   // raten. null = frei trainiert bzw. nicht mitgeliefert.
   journeyId: string | null;
   journeyWeek: number | null;
+  // Phase, in der die Einheit lag (sessions.phase_id). Traegt die Phasengrenzen
+  // im Journey-Chart: beim Phaseneintritt setzt der Coach den Anker neu, ohne
+  // Markierung saehe dieser gewollte Sprung nach Fehler aus.
+  phaseId: string | null;
   // Skill-Einheiten (ueber die Skill-Definition zugeordnet): kein Gewicht/1RM/
   // Score. metric + target steuern die Anzeige im Verlauf (Chips + "Ziel X").
   skill?: boolean;
@@ -116,6 +120,7 @@ export function buildExerciseHistory(
         date: s.date,
         journeyId: s.journeyId ?? null,
         journeyWeek: s.journeyWeek ?? null,
+        phaseId: s.phaseId ?? null,
         topW,
         reps,
         vol,
@@ -159,6 +164,7 @@ export function buildExerciseHistory(
           date: s.date,
           journeyId: s.journeyId ?? null,
           journeyWeek: s.journeyWeek ?? null,
+          phaseId: s.phaseId ?? null,
           topW: 0,
           reps: sumReps,
           vol: isDur ? topSec : sumReps,
@@ -197,6 +203,34 @@ export function filterJourneySessions(
   journeyId: string,
 ): HistorySessionInput[] {
   return sessions.filter((s) => s.journeyId === journeyId);
+}
+
+// Die Wiederholungszahl JE ARBEITSSATZ einer Einheit – die Zahl, die bei
+// Doppelprogression wandert. Bewusst nicht die Summe der Einheit (das ist die
+// Metrik "Wdh" auf der Uebungsseite): bei drei Saetzen a 8 Wiederholungen ist
+// die gesuchte Zahl 8, nicht 24.
+//
+// Gerade Saetze sind der Normalfall, dann ist die Antwort eindeutig. Weichen
+// einzelne Saetze ab (ein abgebrochener letzter Satz, eine Pyramide), zaehlt
+// die haeufigste Wiederholungszahl, bei Gleichstand die hoehere – so bleibt es
+// immer eine tatsaechlich geleistete Zahl. null, wenn kein Satz Wiederholungen
+// traegt (reine Haltezeit-Uebung).
+export function repsPerSet(e: ExHistoryEntry): number | null {
+  const reps = e.sets
+    .map((s) => s.reps)
+    .filter((r): r is number => typeof r === "number" && r > 0);
+  if (reps.length === 0) return null;
+  const count = new Map<number, number>();
+  for (const r of reps) count.set(r, (count.get(r) ?? 0) + 1);
+  let best = reps[0];
+  let bestN = 0;
+  for (const [r, n] of count) {
+    if (n > bestN || (n === bestN && r > best)) {
+      best = r;
+      bestN = n;
+    }
+  }
+  return best;
 }
 
 // Bester einzelner Arbeitssatz ueber den ganzen Verlauf (hoechstes Gewicht,
