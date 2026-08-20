@@ -3,14 +3,18 @@ import {
   buildJourneyExerciseGroups,
   journeyExerciseIds,
 } from "@/lib/journeyExercises";
-import type { JourneyExerciseChart } from "@/lib/journeyExercises";
+import type { JourneyExerciseData } from "@/lib/journeyExercises";
 import type { WorkoutExerciseInfo, WorkoutInput } from "@/lib/workouts";
 import type { ExerciseRow } from "@/schemas";
 
-// Chart-Nutzlast einer Uebung; fuer die Gruppierung zaehlt nur, wie viele
+// Kachel-Nutzlast einer Uebung; fuer die Gruppierung zaehlt nur, wie viele
 // Einheiten (Daten) sie traegt.
-function chart(...dates: string[]): JourneyExerciseChart {
-  return { dates, series: [], marks: [] };
+function kachel(...dates: string[]): JourneyExerciseData {
+  return {
+    chart: { dates, series: [], marks: [] },
+    stats: [{ value: String(dates.length), label: "Einheiten" }],
+    coach: null,
+  };
 }
 
 // Minimaler, ueberschreibbarer ExerciseRow fuer die Tests.
@@ -153,34 +157,39 @@ describe("buildJourneyExerciseGroups", () => {
   });
 
   it("zaehlt die Einheiten aus den Chart-Daten; ohne Einheit bleibt es 0", () => {
-    const kniebeugeChart = chart("2026-01-05", "2026-01-12", "2026-01-19");
+    const kniebeuge = kachel("2026-01-05", "2026-01-12", "2026-01-19");
     const groups = buildJourneyExerciseGroups(
       katalog,
       new Set(["kniebeuge", "bankdruecken"]),
-      { kniebeuge: kniebeugeChart },
+      { kniebeuge },
     );
     expect(groups[0].items).toEqual([
       {
         id: "kniebeuge",
         name: "kniebeuge",
         sessionCount: 3,
-        chart: kniebeugeChart,
+        chart: kniebeuge.chart,
+        stats: kniebeuge.stats,
+        coach: null,
       },
       {
         id: "bankdruecken",
         name: "bankdruecken",
         sessionCount: 0,
         chart: null,
+        stats: [],
+        coach: null,
       },
     ]);
   });
 
-  it("behandelt eine leere Chart-Nutzlast wie keine Einheit", () => {
+  it("behandelt eine leere Kachel-Nutzlast wie keine Einheit", () => {
     const groups = buildJourneyExerciseGroups(katalog, new Set(["kniebeuge"]), {
-      kniebeuge: chart(),
+      kniebeuge: kachel(),
     });
     expect(groups[0].items[0].sessionCount).toBe(0);
     expect(groups[0].items[0].chart).toBeNull();
+    expect(groups[0].items[0].stats).toEqual([]);
   });
 
   it("ignoriert Ids, die es im Katalog nicht mehr gibt", () => {

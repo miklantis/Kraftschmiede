@@ -57,6 +57,8 @@ export function JourneyExercisesSection(): React.ReactElement | null {
                         key={it.id}
                         name={it.name}
                         chart={it.chart}
+                        stats={it.stats}
+                        coach={it.coach}
                         activeKeys={active}
                         unit={unit}
                         onOpen={() => open(it.id)}

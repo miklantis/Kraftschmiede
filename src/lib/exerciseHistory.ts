@@ -255,6 +255,21 @@ export function exBestSet(
   return best;
 }
 
+// 1RM-Veraenderung ueber die GANZE uebergebene Liste als Prozent-String – vom
+// ersten bis zum letzten Wert. Gegenstueck zu exSixWeekPct, das ein festes
+// Zeitfenster nimmt: hier bestimmt der Aufrufer den Zeitraum ueber die Liste,
+// die er hereingibt (z. B. nur die Einheiten einer Journey). null bei zu wenig
+// Daten.
+export function exChangePct(h: readonly ExHistoryEntry[]): string | null {
+  const s = h.filter((x) => x.est1RM != null);
+  if (s.length < 2) return null;
+  const first = s[0].est1RM as number;
+  const last = s[s.length - 1].est1RM as number;
+  if (!first || !last) return null;
+  const pct = (last / first - 1) * 100;
+  return (pct >= 0 ? "+" : "") + Math.round(pct) + "%";
+}
+
 // 1RM-Veraenderung ueber ~6 Wochen als Prozent-String; null bei zu wenig Daten.
 export function exSixWeekPct(h: readonly ExHistoryEntry[]): string | null {
   const s = h.filter((x) => x.est1RM != null);

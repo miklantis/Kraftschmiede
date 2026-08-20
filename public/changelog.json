@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "version": "1.45.0",
+      "date": "2026-08-20",
+      "changes": [
+        "Die Journey-Kacheln sind vollständig: Rechts neben dem Verlauf steht jetzt der Coach-Block - links wo die Übung herkommt, rechts wo sie gerade steht.",
+        "Es ist derselbe Kasten wie auf der Übungsseite (Status, \"Diese Woche\" bzw. \"Beim nächsten Mal\", Begründung und Ausblick) - nur ohne \"Anpassen\"-Knopf, denn die Journey-Seite ist zum Anschauen da.",
+        "Die Zahlenzeile darunter rechnet auf die Journey: bestes Set in dieser Journey, Veränderung seit dem Journey-Start und die Einheiten in dieser Journey.",
+        "Bei Core- und Körpergewichts-Übungen sagt der Block, was der Coach dort tut: fortschreiben statt Last vorgeben.",
+        "Auf dem Desktop stehen Verlauf und Coach nebeneinander (zwei Drittel / ein Drittel), auf dem Handy untereinander."
+      ]
+    },
+    {
       "version": "1.44.5",
       "date": "2026-08-20",
       "changes": [
