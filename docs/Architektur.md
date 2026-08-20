@@ -278,6 +278,18 @@ betroffene Tabelle beim Wiederherstellen leer.
   in einer Phase ohne Plan. Trainieren ist erlaubt, aber nicht eingeplant; der 1RM-Test
   läuft unverändert von der Übungsseite. Ein neuer Phasentyp entsteht dafür nicht – die
   Testphase bleibt `test`, nur mit zwei Wochen (Issue #240, Schritt 1).
+- **Die Testwoche erklärt sich auf dem Trainingsbildschirm selbst.** Statt der Lücke, die
+  eine Woche ohne Plan sonst hinterlässt, steht dort der Hinweis, dass die Testwoche läuft
+  und bis wann (`sundayOfWeek` in `engine/journey.ts`), darunter die Hauptübungen mit
+  direktem Test-Start und einem Haken für die, die in dieser Kalenderwoche schon getestet
+  sind (`TestWeekPanel`). Erkannt wird die Woche an einer Stelle
+  (`derivePhaseContext.testWeek`: Testfokus, Plan vorhanden, Woche verlangt nichts, Journey
+  noch nicht durchlaufen). Die Liste ist reine Ableitung aus dem Bestand – Übungen mit Rang
+  `main` und `profile !== "bodyweight"`, abgeglichen mit `rm_tests` der laufenden
+  Kalenderwoche (`lib/testWeek.ts`) – und **entscheidet nichts**: die Woche endet am
+  Sonntag, unabhängig davon, was offen bleibt. Gestartet wird über die bestehende Mechanik
+  (`useStartRmTest.startById`), Empfehlung und Workout-Liste bleiben unverändert darunter
+  stehen, damit Trainieren in der Testwoche nicht verstellt ist (Issue #240, Schritt 3).
 - **Eine Woche, die nichts verlangt, erfüllt sich selbst.** Eine Journey-Woche gilt
   normal als erfüllt, wenn genug zählende Einheiten in ihr liegen. Genau eine Ausnahme,
   an genau einer Stelle in `engine/journey.ts` (`fulfilledWeeks`): plant die Woche gar

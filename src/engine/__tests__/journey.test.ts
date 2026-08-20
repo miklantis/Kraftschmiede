@@ -10,6 +10,7 @@ import {
   weekProgress,
   repTargetForFocus,
   phaseRepBand,
+  sundayOfWeek,
   totalJourneyWeeks,
   type JourneySession,
   type PhaseLike,
@@ -39,6 +40,22 @@ describe("isoWeekKey", () => {
 
   it("ist lexikografisch chronologisch (fuehrende Null)", () => {
     expect(isoWeekKey("2026-03-02") > isoWeekKey("2026-01-05")).toBe(true);
+  });
+});
+
+describe("sundayOfWeek", () => {
+  it("liefert den Sonntag der Kalenderwoche", () => {
+    // Mi 19.08.2026 liegt in der Woche Mo 17.08. bis So 23.08.
+    expect(sundayOfWeek("2026-08-19")).toBe("2026-08-23");
+  });
+
+  it("bleibt am Montag und am Sonntag in derselben Woche", () => {
+    expect(sundayOfWeek("2026-08-17")).toBe("2026-08-23");
+    expect(sundayOfWeek("2026-08-23")).toBe("2026-08-23");
+  });
+
+  it("traegt ueber den Monats- und Jahreswechsel", () => {
+    expect(sundayOfWeek("2026-12-31")).toBe("2027-01-03");
   });
 });
 

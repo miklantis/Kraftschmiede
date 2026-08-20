@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { weekProgress, skillAdvice, type Exercise } from "@/engine";
+import { sundayOfWeek, weekProgress, skillAdvice, type Exercise } from "@/engine";
 import {
   derivePhaseContext,
   toPlacementPhases,
@@ -15,8 +15,14 @@ import {
   isJourneyCapable,
   selectRecommendationTemplates,
 } from "@/lib/workouts";
+import {
+  testWeekExercises,
+  testWeekStand,
+  type TestWeekExercise,
+} from "@/lib/testWeek";
 import { longDateDE, todayISO } from "@/lib/format";
 import { useExercises } from "./useExercises";
+import { useAllRmTests } from "./useRmTests";
 import { useTemplates } from "./useTemplates";
 import { useSessions } from "./useSessions";
 import { useActiveJourney } from "./useJourney";
@@ -52,6 +58,17 @@ export interface SkillCard {
   mastered: boolean;
 }
 
+/** Die laufende Testwoche, fertig fuer die Anzeige. null, solange keine laeuft -
+ *  dann steht auf dem Trainingsbildschirm nichts davon (#240). */
+export interface TestWeekView {
+  /** Frist der Woche als langes Datum, z. B. "Sonntag, 30. August". */
+  untilLabel: string;
+  /** Kurzer Stand, z. B. "2 von 5 getestet"; leer ohne Hauptuebungen. */
+  stand: string;
+  /** Hauptuebungen mit 1RM, abgehakt sobald diese Woche getestet. */
+  exercises: TestWeekExercise[];
+}
+
 export interface TrainingOverview {
   date: string;
   /** Journey-Streifen oben. Ohne aktive Journey der Hinweis auf das freie
@@ -63,6 +80,10 @@ export interface TrainingOverview {
     total: number;
     showDots: boolean;
   };
+  /** Laeuft die reine Testwoche? Dann steht ueber den Workouts der Hinweis auf
+   *  die Frist und die Liste der Hauptuebungen. Die Empfehlung bleibt daneben
+   *  bestehen - trainieren ist erlaubt, nur ohne Vorgabe. */
+  testWeek: TestWeekView | null;
   hero: WorkoutCard | null;
   others: WorkoutCard[];
   /** Empfehlung faellt mangels nutzbarer Journey-Zuweisung auf die ganze
@@ -91,6 +112,9 @@ export function useTrainingOverview(): {
   const settingsQ = useSettings();
   const equipmentQ = useOwnedEquipmentKeys();
   const bodyQ = useLatestBody();
+  // Die 1RM-Tests braucht nur die Testwoche - der Verlauf auf derselben Seite
+  // holt sie ohnehin, es kommt also keine zusaetzliche Abfrage dazu.
+  const rmTestsQ = useAllRmTests();
 
   const queries = [
     exercisesQ,
@@ -103,6 +127,7 @@ export function useTrainingOverview(): {
     settingsQ,
     equipmentQ,
     bodyQ,
+    rmTestsQ,
   ];
 
   const isLoading = queries.some((q) => q.isLoading);
@@ -122,6 +147,7 @@ export function useTrainingOverview(): {
     const settings = settingsQ.data ?? null;
     const ownedKeys = equipmentQ.data ?? [];
     const body = bodyQ.data;
+    const rmTests = rmTestsQ.data ?? [];
 
     const today = todayISO();
     const freqTarget = settings?.weekly_frequency_target || 3;
@@ -151,6 +177,7 @@ export function useTrainingOverview(): {
 
     // Aktuelle Phase aus der Platzierung.
     let phaseFocus: { focus?: string } | null = null;
+    let testWeek: TestWeekView | null = null;
     let journeyView: TrainingOverview["journey"] = {
       title: "Freies Training",
       subtitle: "Keine aktive Journey – der Coach gibt nichts vor",
@@ -169,6 +196,22 @@ export function useTrainingOverview(): {
       const placement = ph.placement;
       const currentPhase = ph.phase;
       phaseFocus = ph.phaseFocus;
+
+      // Reine Testwoche: keine Vorgabe, dafuer die Frist und die Liste der
+      // Hauptuebungen. Beides ist nur Anzeige - die Woche endet am Sonntag,
+      // egal was noch offen ist (#240).
+      if (ph.testWeek) {
+        const rows = testWeekExercises(
+          exercises,
+          rmTests.map((t) => ({ exerciseId: t.exercise_id, date: t.date })),
+          today,
+        );
+        testWeek = {
+          untilLabel: longDateDE(sundayOfWeek(today)),
+          stand: testWeekStand(rows),
+          exercises: rows,
+        };
+      }
 
       const wp = weekProgress(
         toPlacementSessions(sessions),
@@ -334,6 +377,7 @@ export function useTrainingOverview(): {
     return {
       date: longDateDE(today),
       journey: journeyView,
+      testWeek,
       hero,
       others,
       libraryFallbackHint: selection.libraryFallback,
@@ -354,6 +398,7 @@ export function useTrainingOverview(): {
     settingsQ.data,
     equipmentQ.data,
     bodyQ.data,
+    rmTestsQ.data,
   ]);
 
   return { isLoading, isError, error, data };
