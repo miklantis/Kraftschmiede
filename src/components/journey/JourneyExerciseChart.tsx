@@ -51,8 +51,14 @@ export const JOURNEY_SERIES_VAR: Record<JourneySeriesKey, string> = {
 };
 
 const MARGIN = { t: 10, r: 12, b: 22, l: 12 };
-const PER_POINT = 34; // Mindestbreite je Einheit; darunter scrollt der Chart.
-const PER_WEEK = 22; // Mindestbreite je Kalenderwoche der Zeitspanne.
+// Massgebend ist die WOCHE: fuenf Wochen sollen auf einem Handy in ein Bild
+// passen (Kachel-Chartbreite dort rund 300 px), alles darueber scrollt seitlich.
+// Auf dem Desktop ist die Spalte breiter, dort sind entsprechend mehr Wochen
+// auf einmal zu sehen. PER_POINT ist nur die Untergrenze je Einheit, damit
+// mehrere Einheiten derselben Woche (Hypertrophie) nicht kleben – klein genug,
+// dass sie das Fuenf-Wochen-Fenster nicht sprengen.
+const PER_WEEK = 60;
+const PER_POINT = 20;
 const PAD_Y = 10; // Luft ueber und unter den Extremwerten.
 
 export interface JourneyExerciseChartProps {
@@ -269,9 +275,9 @@ export function JourneyExerciseChart({
     [dates, series, marks, unit, n],
   );
 
-  // Mindestbreite: Platz fuer jede Einheit, aber auch fuer die Zeitspanne,
-  // damit Pausen als Luecke sichtbar bleiben. Reicht der Platz nicht, scrollt
-  // der Chart seitlich – auch auf dem Desktop in der Zwei-Drittel-Spalte.
+  // Mindestbreite: Platz fuer die Zeitspanne (Wochen), mindestens aber fuer
+  // jede einzelne Einheit. Reicht der Platz nicht, scrollt der Chart seitlich –
+  // auch auf dem Desktop in der Zwei-Drittel-Spalte.
   const slots = timeSlots(dates);
   const spanWeeks = slots ? slots[slots.length - 1] / 7 : 0;
   return (
@@ -280,6 +286,10 @@ export function JourneyExerciseChart({
       margin={MARGIN}
       minInnerWidth={Math.max(n * PER_POINT, Math.round(spanWeeks * PER_WEEK))}
       draw={draw}
+      // Beim Oeffnen am rechten Ende stehen: interessant ist, wo die Uebung
+      // gerade steht, nicht wo die Journey angefangen hat. Passt alles ins
+      // Bild, gibt es nichts zu scrollen.
+      focusFraction={1}
       ariaLabel="Verlauf in dieser Journey"
     />
   );
