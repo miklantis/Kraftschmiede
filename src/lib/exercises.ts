@@ -49,6 +49,36 @@ export function exerciseRowSub(e: ExerciseRow): string {
   return tierLabel(e.tier);
 }
 
+// Die vier Uebungsgruppen der App (V1-Reihenfolge). Eigene Kennung plus
+// Ueberschrift, damit ausser der Uebungsliste auch andere Ansichten (Journey-
+// Seite) dieselbe Einteilung nutzen koennen, ohne sie nachzubauen.
+export type ExerciseGroupKey = "main" | "accessory" | "core" | "bodyweight";
+
+export const EXERCISE_GROUP_ORDER: readonly ExerciseGroupKey[] = [
+  "main",
+  "accessory",
+  "core",
+  "bodyweight",
+];
+
+export const EXERCISE_GROUP_TITLE: Record<ExerciseGroupKey, string> = {
+  main: "Hauptübungen",
+  accessory: "Assistenz",
+  core: "Core",
+  bodyweight: "Körpergewicht",
+};
+
+// Gruppe einer Uebung. Reihenfolge der Pruefungen ist bedeutsam: das Profil
+// sticht die Stufe (eine Core-Uebung mit tier "accessory" bleibt Core).
+export function exerciseGroupKey(
+  e: Pick<ExerciseRow, "profile" | "tier">,
+): ExerciseGroupKey {
+  if (e.profile === "bodyweight") return "bodyweight";
+  if (e.profile === "core") return "core";
+  if (e.tier === "accessory") return "accessory";
+  return "main";
+}
+
 // Gruppiert den Uebungskatalog in die V1-Reihenfolge. Reihenfolge innerhalb
 // einer Gruppe bleibt wie geliefert (der Hook sortiert nach position). Leere
 // Gruppen fallen weg. Zuordnung 1:1 aus V1 exListData.
@@ -57,34 +87,22 @@ export function groupExercises(
   unit: string,
   statuses?: Record<string, CoachState>,
 ): ExerciseGroup[] {
-  const main: ExerciseRow[] = [];
-  const assist: ExerciseRow[] = [];
-  const core: ExerciseRow[] = [];
-  const bw: ExerciseRow[] = [];
+  const buckets: Record<ExerciseGroupKey, ExerciseRow[]> = {
+    main: [],
+    accessory: [],
+    core: [],
+    bodyweight: [],
+  };
 
-  for (const e of exercises) {
-    if (e.profile === "bodyweight") bw.push(e);
-    else if (e.profile === "core") core.push(e);
-    else if (e.tier === "accessory") assist.push(e);
-    else main.push(e);
-  }
+  for (const e of exercises) buckets[exerciseGroupKey(e)].push(e);
 
-  const order: Array<[string, ExerciseRow[]]> = [
-    ["Hauptübungen", main],
-    ["Assistenz", assist],
-    ["Core", core],
-    ["Körpergewicht", bw],
-  ];
-
-  return order
-    .filter(([, list]) => list.length > 0)
-    .map(([title, list]) => ({
-      title,
-      items: list.map((e) => ({
-        id: e.id,
-        name: e.name,
-        meta: exerciseRowMeta(e, unit),
-        coachState: statuses?.[e.id],
-      })),
-    }));
+  return EXERCISE_GROUP_ORDER.filter((k) => buckets[k].length > 0).map((k) => ({
+    title: EXERCISE_GROUP_TITLE[k],
+    items: buckets[k].map((e) => ({
+      id: e.id,
+      name: e.name,
+      meta: exerciseRowMeta(e, unit),
+      coachState: statuses?.[e.id],
+    })),
+  }));
 }

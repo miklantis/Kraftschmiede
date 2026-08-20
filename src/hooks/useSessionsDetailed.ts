@@ -57,6 +57,8 @@ export function useSessionsDetailed() {
         id: row.id,
         date: row.date,
         phaseId: row.phase_id,
+        journeyId: row.journey_id,
+        journeyWeek: row.week,
         type: row.type,
         templateId: row.template_id,
         skillId: row.skill_id,

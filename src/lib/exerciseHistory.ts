@@ -31,6 +31,12 @@ export interface ExHistoryEntry {
   record1RM: number | null;
   dev: boolean; // Abweichung (mind. ein angepasster Satz)
   sets: ExHistorySet[];
+  // Journey-Stempel der Einheit (sessions.journey_id) und ihre eingefrorene
+  // globale Journey-Woche (sessions.week). Durchgereicht, damit Ansichten den
+  // Verlauf auf eine Journey eingrenzen koennen, ohne ihn ueber das Datum zu
+  // raten. null = frei trainiert bzw. nicht mitgeliefert.
+  journeyId: string | null;
+  journeyWeek: number | null;
   // Skill-Einheiten (ueber die Skill-Definition zugeordnet): kein Gewicht/1RM/
   // Score. metric + target steuern die Anzeige im Verlauf (Chips + "Ziel X").
   skill?: boolean;
@@ -108,6 +114,8 @@ export function buildExerciseHistory(
 
       out.push({
         date: s.date,
+        journeyId: s.journeyId ?? null,
+        journeyWeek: s.journeyWeek ?? null,
         topW,
         reps,
         vol,
@@ -149,6 +157,8 @@ export function buildExerciseHistory(
         const anyMiss = done.some((x) => x.met === false);
         out.push({
           date: s.date,
+          journeyId: s.journeyId ?? null,
+          journeyWeek: s.journeyWeek ?? null,
           topW: 0,
           reps: sumReps,
           vol: isDur ? topSec : sumReps,
@@ -173,6 +183,20 @@ export function buildExerciseHistory(
 
   out.sort((a, b) => dateMs(a.date) - dateMs(b.date));
   return out;
+}
+
+// Die Einheiten EINER Journey. Massgeblich ist der Journey-Stempel der Einheit
+// (sessions.journey_id), nicht ihr Datum: nur so zaehlt eine Einheit genau zu
+// der Journey, in der sie tatsaechlich gelaufen ist – auch wenn Journeys
+// spaeter umbenannt, verschoben oder abgeschlossen werden. Skill-Einheiten
+// tragen keinen Stempel und bleiben damit bewusst aussen vor.
+// Der Journey-Bezug kommt als Parameter herein (nicht "die aktive Journey"),
+// damit die Rueckschau abgeschlossener Journeys denselben Baustein nutzen kann.
+export function filterJourneySessions(
+  sessions: readonly HistorySessionInput[],
+  journeyId: string,
+): HistorySessionInput[] {
+  return sessions.filter((s) => s.journeyId === journeyId);
 }
 
 // Bester einzelner Arbeitssatz ueber den ganzen Verlauf (hoechstes Gewicht,

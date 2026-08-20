@@ -8,6 +8,7 @@ import { PeriodizationChart } from "@/components/journey/PeriodizationChart";
 import { PhaseList } from "@/components/journey/PhaseList";
 import { JourneyEmpty } from "@/components/journey/JourneyEmpty";
 import { JourneyWorkoutsSection } from "@/components/journey/JourneyWorkoutsSection";
+import { JourneyExercisesSection } from "@/components/journey/JourneyExercisesSection";
 import { ArchivedJourneyList } from "@/components/journey/ArchivedJourneyList";
 import { useJourneyView } from "@/hooks/useJourneyView";
 
@@ -91,6 +92,7 @@ function JourneyPage(): React.ReactElement {
           description="Kopiert die laufende Journey als schlankes JSON: Phasen, bisherige Einheiten mit Sätzen und Zuordnung sowie Körperwerte seit dem Start."
         />
         <JourneyWorkoutsSection />
+        <JourneyExercisesSection />
         {archiveSection}
       </PageReveal>
     </div>
