@@ -93,6 +93,27 @@ export function PeriodizationChart({
         .attr("stop-color", NEUTRAL)
         .attr("stop-opacity", 0.7);
 
+      // Testwochen-Band: derselbe Verlauf, aber in der Intensitaets-Farbe. Damit
+      // ist eine reine Testwoche im Hintergrund als blauer Streifen erkennbar.
+      const testGid = "jtest" + rid;
+      const testGrad = defs
+        .append("linearGradient")
+        .attr("id", testGid)
+        .attr("x1", 0)
+        .attr("y1", 0)
+        .attr("x2", 0)
+        .attr("y2", 1);
+      testGrad
+        .append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", INT)
+        .attr("stop-opacity", 0.06);
+      testGrad
+        .append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", INT)
+        .attr("stop-opacity", 0.26);
+
       const g = svg
         .append("g")
         .attr("transform", `translate(${dims.margin.l},${dims.margin.t})`);
@@ -122,6 +143,20 @@ export function PeriodizationChart({
             .attr("stroke", GRID)
             .attr("stroke-dasharray", "2 3");
       });
+      // Reine Testwochen (Planwoche ohne Arbeitssaetze) blau hinterlegen - je
+      // Woche ein Streifen ueber die volle Plothoehe, hinter allen Kurven.
+      weeks.forEach((d) => {
+        if (!d.test) return;
+        const x0 = Math.max(0, x(d.g - 0.5));
+        const x1 = Math.min(iw, x(d.g + 0.5));
+        g.append("rect")
+          .attr("x", x0)
+          .attr("y", 0)
+          .attr("width", Math.max(0, x1 - x0))
+          .attr("height", ih)
+          .attr("fill", `url(#${testGid})`);
+      });
+
       g.append("line")
         .attr("x1", 0)
         .attr("y1", ih)
@@ -129,15 +164,15 @@ export function PeriodizationChart({
         .attr("y2", ih)
         .attr("stroke", GRID);
 
-      // Wochennummern (1-basiert); Deload-Wochen orange + fett.
+      // Wochennummern (1-basiert); Deload-Wochen orange, Testwochen blau, beide fett.
       weeks.forEach((d) => {
         g.append("text")
           .attr("x", x(d.g))
           .attr("y", ih + 14)
           .attr("text-anchor", "middle")
-          .attr("fill", d.deload ? WARN : SUB)
+          .attr("fill", d.deload ? WARN : d.test ? INT : SUB)
           .attr("font-size", 11)
-          .attr("font-weight", d.deload ? 700 : 600)
+          .attr("font-weight", d.deload || d.test ? 700 : 600)
           .attr("font-family", CHART_MONO)
           .text(d.g + 1);
       });
