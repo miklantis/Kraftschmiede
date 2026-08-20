@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { isBlockComplete, liveEntryToSetEntry, liveWorkWeight } from "../livePreview";
+import {
+  isBlockComplete,
+  liveEntryToSetEntry,
+  liveWorkWeight,
+  previewProvisional,
+  type LiveCoachPreview,
+} from "../livePreview";
 import { suggestWithBar, coachStatusFromSuggestion } from "../coach";
 import type { CoachBuildExercise, CoachState } from "../coach";
 import type { LiveEntry, LiveSet, LiveWarmupSet } from "../liveSession";
@@ -221,5 +227,41 @@ describe("Vorschau auf die Coach-Entscheidung", () => {
       repTarget: null,
     });
     expect(suggestion.decision).toBe("carry");
+  });
+});
+
+// Issue #268, Schritt 2: der Zwischenstand-Marker haengt nur noch an der Zeile,
+// die noch wandern kann - nicht mehr ueber dem ganzen Block.
+describe("previewProvisional – was noch wandern kann", () => {
+  const status = {
+    state: "hold" as CoachState,
+    decision: "hold" as const,
+    weight: 50,
+    targetReps: 4,
+    reason: { code: "plan-held" as const },
+    note: "",
+  };
+  const preview = (over: Partial<LiveCoachPreview> = {}): LiveCoachPreview => ({
+    status,
+    scope: "week",
+    outlook: { weight: 52.5, targetReps: 3 },
+    provisional: true,
+    ...over,
+  });
+
+  it("offene Saetze in der Doppelprogression: der Vorschlag wandert", () => {
+    expect(previewProvisional(preview({ scope: "next", outlook: null }))).toBe(true);
+  });
+
+  it("offene Saetze in der Kraftphase: nur der Ausblick wandert", () => {
+    expect(previewProvisional(preview())).toBe(true);
+  });
+
+  it("ohne Ausblick steht in der Kraftphase alles fest", () => {
+    expect(previewProvisional(preview({ outlook: null }))).toBe(false);
+  });
+
+  it("bei vollstaendigem Block wandert nichts mehr", () => {
+    expect(previewProvisional(preview({ provisional: false }))).toBe(false);
   });
 });

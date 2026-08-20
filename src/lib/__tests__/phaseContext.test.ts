@@ -113,6 +113,7 @@ describe("derivePhaseContext", () => {
       phase: null,
       planWeek: null,
       prevPlanWeek: null,
+      nextPlanWeek: null,
       firstPlanWeek: null,
       deload: false,
       anchorPhaseId: null,

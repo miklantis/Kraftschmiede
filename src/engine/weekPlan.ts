@@ -226,3 +226,16 @@ export function weekPlanForWeek(
   if (w < sorted[0]!.week) return sorted[0]!;
   return sorted[sorted.length - 1]!;
 }
+
+/** Zeile der FOLGENDEN Phasenwoche; null, wenn der Plan dort endet.
+ *  Bewusst ohne das Halten von weekPlanForWeek: in der letzten Phasenwoche gibt
+ *  es keine naechste Woche mehr, und die gehaltene letzte Zeile waere ein
+ *  Ausblick auf eine Woche, die real nicht mehr kommt (Issue #268, Schritt 2). */
+export function nextWeekPlanWeek(
+  plan: WeekPlan | null | undefined,
+  weekInPhase: number,
+): WeekPlanWeek | null {
+  if (!plan || plan.length === 0) return null;
+  const w = Math.round(weekInPhase) + 1;
+  return plan.find((row) => row.week === w) ?? null;
+}

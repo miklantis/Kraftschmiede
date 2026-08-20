@@ -21,14 +21,31 @@
 // beantwortet also durchgehend "was kaeme heraus, wenn ich jetzt beende".
 
 import type { SetEntry, EngineSet } from "@/engine/types";
-import type { CoachStatus } from "./coach";
+import type { CoachScope } from "@/engine";
+import type { CoachStatus, PlanOutlook } from "./coach";
 import type { LiveEntry, LiveSet } from "./liveSession";
 
-/** Coach-Vorschau eines Uebungsblocks. `provisional` heisst: es stehen noch
- *  offene Arbeitssaetze im Block, der Stand kann also noch wandern. */
+/** Coach-Vorschau eines Uebungsblocks. */
 export interface LiveCoachPreview {
+  /** Die Zahlen, die vorn stehen: im Wochenplan die Vorgabe dieser Woche, sonst
+   *  der Vorschlag fuer die naechste Einheit - was von beidem, sagt `scope`. */
   status: CoachStatus;
+  /** Fuer welchen Zeitraum die Zahlen in `status` gelten (#268, Schritt 2). */
+  scope: CoachScope;
+  /** Ausblick auf die naechste Woche; null ausserhalb des Wochenplans, in der
+   *  letzten Phasenwoche und in der Entlastungswoche. */
+  outlook: PlanOutlook | null;
+  /** `provisional` heisst: es stehen noch offene Arbeitssaetze im Block, der
+   *  Stand kann also noch wandern. Betrifft nur die Zeile, die wandern KANN -
+   *  die Wochenvorgabe steht fest, egal wie die Einheit laeuft. */
   provisional: boolean;
+}
+
+/** Traegt die Vorschau ueberhaupt eine Zeile, die noch wandern kann? In der
+ *  Kraftphase ist das nur der Ausblick: fehlt er (letzte Phasenwoche,
+ *  Entlastung), steht alles Angezeigte fest, auch bei offenen Saetzen. */
+export function previewProvisional(preview: LiveCoachPreview): boolean {
+  return preview.provisional && (preview.scope === "next" || preview.outlook != null);
 }
 
 // Ein Live-Arbeitssatz in die Engine-Satzform. Gegenstueck zu toEngineSet in

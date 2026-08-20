@@ -11,6 +11,7 @@ import {
   hasLoadPlanFocus,
   hasTestFocus,
   journeyPlacement,
+  nextWeekPlanWeek,
   phaseRepBand,
   planGovernsLoad,
   weekDemandsSession,
@@ -102,6 +103,9 @@ export interface PhaseContext {
   planWeek: WeekPlanWeek | null;
   // Zeile der Vorwoche – Massstab, an dem die letzte Einheit gemessen wird.
   prevPlanWeek: WeekPlanWeek | null;
+  // Zeile der Folgewoche – Grundlage des Ausblicks auf der Uebungskarte. In der
+  // letzten Phasenwoche null: dort kommt keine naechste Woche mehr (#268).
+  nextPlanWeek: WeekPlanWeek | null;
   // Erste Zeile des Plans – Bezug des Startgewichts beim Phaseneintritt.
   firstPlanWeek: WeekPlanWeek | null;
   // Entlastet die laufende Planwoche (Testphase), statt zu steigern? Dann
@@ -136,6 +140,7 @@ export function derivePhaseContext(
   let phase: PhaseRow | null = null;
   let planWeek: WeekPlanWeek | null = null;
   let prevPlanWeek: WeekPlanWeek | null = null;
+  let nextPlanWeek: WeekPlanWeek | null = null;
   let firstPlanWeek: WeekPlanWeek | null = null;
   let deload = false;
   let anchorPhaseId: string | null = null;
@@ -187,6 +192,7 @@ export function derivePhaseContext(
       if (planGovernsLoad(phase.focus) && phase.week_plan && weekDemandsSession(week)) {
         planWeek = week;
         prevPlanWeek = weekPlanForWeek(phase.week_plan, placement.weekInPhase - 1);
+        nextPlanWeek = nextWeekPlanWeek(phase.week_plan, placement.weekInPhase);
         firstPlanWeek = phase.week_plan[0] ?? null;
         deload = hasTestFocus(phase.focus);
         // Bezugsphase des Ankers: in der Rampe die Phase selbst, in der
@@ -223,6 +229,7 @@ export function derivePhaseContext(
     phase,
     planWeek,
     prevPlanWeek,
+    nextPlanWeek,
     firstPlanWeek,
     deload,
     anchorPhaseId,

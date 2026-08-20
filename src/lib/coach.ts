@@ -10,6 +10,8 @@ import {
   generateWarmup,
   volumeForWeek,
   planWeekLoad,
+  anchorAfterSession,
+  weekDemandsSession,
   scoreForRir,
 } from "@/engine";
 import type {
@@ -18,6 +20,7 @@ import type {
   SuggestExercise,
   CoachReason,
   CoachReasonCode,
+  CoachScope,
   PlanLoadReason,
   RampLoad,
   WeekPlanWeek,
@@ -322,6 +325,9 @@ export interface PlanContext {
   week: WeekPlanWeek;
   /** Zeile der Vorwoche – Massstab fuer die Bewertung der letzten Einheit. */
   prevWeek: WeekPlanWeek;
+  /** Zeile der Folgewoche – Grundlage des Ausblicks (planOutlook). null in der
+   *  letzten Phasenwoche: dort kommt keine naechste Woche mehr. */
+  nextWeek: WeekPlanWeek | null;
   /** Ziel-Wiederholungen der ersten Planwoche (Bezug des Startgewichts). */
   startReps: number;
   /** Anker der Phase (reference_weight, an diese Phase gebunden); null = die
@@ -346,6 +352,17 @@ export function planGovernsExercise(
   plan: PlanContext | null | undefined,
 ): boolean {
   return !!plan && exo.profile === "strength" && exo.tier === "main";
+}
+
+/** Fuer welchen Zeitraum die Coach-Zahlen dieser Uebung gelten: gibt der
+ *  Wochenplan die Vorgabe, gilt sie die ganze Journey-Woche ("week"), sonst
+ *  bezieht sie sich auf die naechste Einheit ("next"). Die eine Stelle, an der
+ *  diese Zuordnung faellt - Trainingskarte und Uebungsseite lesen sie beide. */
+export function coachScopeFor(
+  exo: { profile: string; tier: string },
+  plan: PlanContext | null | undefined,
+): CoachScope {
+  return planGovernsExercise(exo, plan) ? "week" : "next";
 }
 
 /** Satzzahl je Uebung: der Plan setzt sie fest, sonst bleibt es bei der
@@ -406,6 +423,65 @@ export function planSuggestion(
     decision: load.reason === "raised" ? "increase" : "hold",
     reason: { code: PLAN_CODES[load.reason], diff: load.diff },
   };
+}
+
+/** Ausblick auf die naechste Planwoche: Gewicht und Wiederholungen, die dort
+ *  vorgegeben werden, wenn die gewertete Einheit die letzte dieser Woche bleibt.
+ *
+ *  Eigene Aussage neben der Wochenvorgabe (Issue #268, Schritt 2). Vorher trug
+ *  die Karte beides in einer Zeile: das Gewicht der naechsten Woche neben den
+ *  Wiederholungen der laufenden - ein Paar, das real nie vorkommt. Getrennt
+ *  gerechnet stimmen beide Zeilen wieder mit dem ueberein, was tatsaechlich auf
+ *  der Hantel landet.
+ *
+ *  Keine neue Regel: dieselbe Anker-Fortschreibung wie beim Beenden
+ *  (anchorAfterSession) und dieselbe Wochenrechnung (planWeekLoad), nur eine
+ *  Woche weiter gestellt. */
+export interface PlanOutlook {
+  weight: number;
+  targetReps: number;
+}
+
+export interface PlanOutlookInput {
+  /** Vorgabe der laufenden Woche - das Gewicht, das auf den Saetzen liegt. */
+  weekWeight: number;
+  /** Hoechstes tatsaechlich bewegtes Arbeitsgewicht der gewerteten Einheit;
+   *  null, wenn noch nichts steht. Zieht den Anker nach unten nach. */
+  workedWeight: number | null;
+  /** Die gewertete Einheit: die letzte dieser Uebung in der laufenden Woche. */
+  judged: SetEntry | null;
+}
+
+/** null, wo es keinen Ausblick gibt: ausserhalb des Wochenplans, in der letzten
+ *  Phasenwoche und in der Entlastungswoche (sie laeuft in die Testwoche und
+ *  nicht in den naechsten Schritt der Rampe). */
+export function planOutlook(
+  exo: CoachBuildExercise,
+  ctx: SuggestBuildCtx,
+  input: PlanOutlookInput,
+): PlanOutlook | null {
+  const plan = ctx.plan;
+  if (!planGovernsExercise(exo, plan)) return null;
+  const p = plan!;
+  const next = p.nextWeek;
+  if (p.deload || !weekDemandsSession(next)) return null;
+  const load = planWeekLoad({
+    // Anker nach dieser Einheit - genau die Fortschreibung, die beim Beenden
+    // in den Katalog geht.
+    anchor: anchorAfterSession(input.weekWeight, input.workedWeight),
+    currentWeekEntry: null,
+    previousWeekEntry: input.judged,
+    // Bewertet wird die laufende Woche, also gilt deren Ziel-Anstrengung.
+    previousTargetScore: scoreForRir(p.week.rir),
+    est1RM: p.rm,
+    fallbackWeight: exo.workWeight,
+    startReps: p.startReps,
+    loadPct: next!.loadPct,
+    step: ctx.weightStep ?? 2.5,
+    deload: false,
+    opts: { bar: ctx.bar, plates: ctx.plates, dumbbells: ctx.dumbbells },
+  });
+  return { weight: load.weight, targetReps: next!.repsMax ?? next!.reps };
 }
 
 // Gewichts-/Wdh.-Vorschlag. Core/Bodyweight -> coreCarry; sonst Doppelprogression
