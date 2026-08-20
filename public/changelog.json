@@ -1,12 +1,19 @@
 {
   "versions": [
     {
-      "version": "1.44.1",
+      "version": "1.44.2",
       "date": "2026-08-20",
       "changes": [
         "In der Kraftphase lässt sich der Coach-Hinweis einer Hauptübung jetzt schon antippen, bevor du den ersten Satz abhakst - dort steht, was diese Woche gilt und warum.",
         "Der Ausblick \"Nächste Woche\" kommt weiterhin erst dazu, sobald der erste Satz steht - vorher gibt es nichts zu bewerten.",
         "Übungen, die nach Wiederholungen und Gewicht steigen (Hypertrophie, Kraftausdauer und Zusatzübungen), zeigen ihren Hinweis wie bisher ab dem ersten abgehakten Satz."
+      ]
+    },
+    {
+      "version": "1.44.1",
+      "date": "2026-08-20",
+      "changes": [
+        "Behoben: Der neue Ausblick \"Nächste Woche\" zeigte bei Langhantel-Übungen ein Gewicht aus der Kurzhantel-Ablage (z. B. 30 kg nach einer Woche mit 52,5 kg). Er rechnet jetzt wieder mit Stange und Scheiben."
       ]
     },
     {

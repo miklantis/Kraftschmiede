@@ -484,6 +484,31 @@ describe("planOutlook – Ausblick auf die naechste Woche", () => {
   it("gibt es fuer Zusatzuebungen nicht", () => {
     expect(planOutlook(CORE, ctx(plan()), heute)).toBeNull();
   });
+
+  // #279: loadableDown fragt die Kurzhantel-Stufen zuerst ab. Eine mitgegebene
+  // Liste hat die Langhantel auf die schwerste Kurzhantel gerundet - aus 55 kg
+  // wurden 30.
+  it("rundet die Langhantel auf die Scheiben-Stufe, nicht auf die Kurzhantel", () => {
+    const mitKurzhanteln = {
+      ...ctx(plan()),
+      dumbbells: [5, 7.5, 10, 12.5, 15, 17.5, 20, 22.5, 25, 30],
+    };
+    expect(planOutlook(STRENGTH, mitKurzhanteln, heute)?.weight).toBe(45);
+  });
+
+  it("rundet Kurzhantel-Uebungen weiter auf die vorhandene Stufe", () => {
+    const kurzhantel: CoachBuildExercise = {
+      ...STRENGTH,
+      equipment: "dumbbell",
+      barId: null,
+    };
+    const r = planOutlook(
+      kurzhantel,
+      { ...ctx(plan({ anchor: 20 })), bar: undefined, dumbbells: [10, 15, 20, 25] },
+      { weekWeight: 20, workedWeight: 20, judged: sauber },
+    );
+    expect(r?.weight).toBe(20);
+  });
 });
 
 describe("coachScopeFor – welche Logik gerade gilt", () => {
