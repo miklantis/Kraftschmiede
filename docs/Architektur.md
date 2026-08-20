@@ -354,34 +354,35 @@ betroffene Tabelle beim Wiederherstellen leer.
   Handgriff je Methode und zwei Gesichtern: `supabase<Bereich>Store` im Betrieb
   (Fehlerprüfung an genau einer Stelle, `must`) und `createMemory<Bereich>Store()` für
   Tests (protokolliert statt zu schreiben). Der Write-Baustein hält die reine Abfolge
-  „Absicht → Handgriffe" samt Feld-Abbildung und kennt Supabase nicht; der Hook trägt
-  nur noch Absicht und Auffrischung. Dadurch ist jeder umgestellte Schreibpfad ohne
-  echte Datenbank prüfbar (`src/lib/__tests__/<bereich>Write.test.ts`). Umgestellt:
-  Verlauf (`historyStore`/`historyWrite`), Zeiträume (`zeitraumStore`/`zeitraumWrite`),
-  Messungen samt Mess-Meilensteinen (`compositionStore`/`compositionWrite`, ein Store für
-  beide Tabellen, weil fachlich derselbe Bereich), Übungskatalog samt
-  Übungs-Meilensteinen und 1RM-Tests (`exerciseStore`/`exerciseWrite`, ein Store für
-  `exercise_milestones`, `rm_tests` und `exercises`, weil der 1RM-Test in einem Zug Test
-  und Katalog schreibt), Journey samt Phasen, Workout-Zuordnung und Workout-Vorlagen
-  (`journeyStore`/`journeyWrite`, ein Store für `journeys`, `phases`,
-  `journey_workouts`, `templates`, `template_exercises` und die Referenzgewichte in
-  `exercises`, weil der Journey-Start Referenzgewichte einfriert und der Wechsel
-  Zuordnungen übernimmt), Ausstattung samt Einstellungen
-  (`ausstattungStore`/`ausstattungWrite`, ein Store für `inventory_plates`,
-  `inventory_kettlebells`, `inventory_dumbbells`, `inventory_equipment` und `settings`,
-  weil beides in derselben Ansicht gepflegt wird) sowie die kurzen Erfassungen am
-  eigenen Verlauf (`erfassungStore`/`erfassungWrite`, ein Store für `body_log`, das
-  Anlegen/Löschen einzelner `sessions` außerhalb des geführten Ablaufs und die manuellen
-  Eingriffe in `skill_progress`; der geführte Schreibpfad bleibt im `historyStore`)
-  sowie das Wiederherstellen einer Sicherung (`restoreStore`/`restoreWrite`, ein Store
-  mit drei Handgriffen – Tabelle leeren, Zeilen einfügen, Einzelzeile ersetzen –, die
-  Reihenfolgen kommen unverändert aus dem Bestandsregister). Damit ist der heikelste
-  Schreibpfad der App (erst den kompletten Bestand löschen, dann neu einfügen) erstmals
-  ohne echte Datenbank geprüft.
-  Bei den registrierten (pausierbaren) Mutationen tauscht die Naht ausschließlich den
-  Rumpf der `mutationFn`: Mutations-Kennung, Nutzlast-Felder und Registrier-Reihenfolge
-  bleiben unverändert, damit offline pausierte Schreibvorgänge einen App-Neustart
-  weiterhin überleben (ADR-0009).
+  „Absicht → Handgriffe" samt Feld-Abbildung und kennt Supabase nicht; der Hook trägt nur
+  noch Absicht und Auffrischung. Dadurch ist jeder umgestellte Schreibpfad ohne echte
+  Datenbank prüfbar (`src/lib/__tests__/<bereich>Write.test.ts`). Warum die Naht je
+  Bereich statt je Tabelle verläuft und wonach ein Store mehrere Tabellen bedienen darf:
+  ADR-0019. Bei den registrierten (pausierbaren) Mutationen tauscht die Naht
+  ausschließlich den Rumpf der `mutationFn`: Mutations-Kennung, Nutzlast-Felder und
+  Registrier-Reihenfolge bleiben unverändert, damit offline pausierte Schreibvorgänge
+  einen App-Neustart weiterhin überleben (ADR-0009). Umgestellt sind:
+  - **Verlauf** (`historyStore`/`historyWrite`) – der geführte Schreibpfad einer Einheit
+  - **Zeiträume** (`zeitraumStore`/`zeitraumWrite`)
+  - **Messungen** samt Mess-Meilensteinen (`compositionStore`/`compositionWrite`), ein
+    Store für beide Tabellen, weil fachlich derselbe Bereich
+  - **Übungskatalog** samt Übungs-Meilensteinen und 1RM-Tests
+    (`exerciseStore`/`exerciseWrite`): `exercises`, `exercise_milestones`, `rm_tests`
+  - **Journey** samt Phasen, Workout-Zuordnung und Workout-Vorlagen
+    (`journeyStore`/`journeyWrite`): `journeys`, `phases`, `journey_workouts`,
+    `templates`, `template_exercises` und die Referenzgewichte in `exercises`
+  - **Ausstattung** samt Einstellungen (`ausstattungStore`/`ausstattungWrite`):
+    `inventory_plates`, `inventory_kettlebells`, `inventory_dumbbells`,
+    `inventory_equipment`, `settings`
+  - **Erfassungen** am eigenen Verlauf (`erfassungStore`/`erfassungWrite`): `body_log`,
+    das Anlegen/Löschen einzelner `sessions` außerhalb des geführten Ablaufs und die
+    manuellen Eingriffe in `skill_progress`; der geführte Schreibpfad bleibt im
+    `historyStore`
+  - **Wiederherstellen einer Sicherung** (`restoreStore`/`restoreWrite`): drei Handgriffe
+    – Tabelle leeren, Zeilen einfügen, Einzelzeile ersetzen –, die Reihenfolgen kommen
+    unverändert aus dem Bestandsregister. Damit ist der heikelste Schreibpfad der App
+    (erst den kompletten Bestand löschen, dann neu einfügen) erstmals ohne echte
+    Datenbank geprüft.
 - **Naht zur Leseseite** (`src/lib/tabelleLesen.ts`) – das Gegenstück zu den
   Schreib-Stores, aber eines für alle Bereiche statt eines je Bereich, weil das Lesen
   überall dieselbe Form hat. Ein `LeseAbfrage`-Wert beschreibt Tabelle, Spaltenauswahl,
@@ -414,33 +415,30 @@ betroffene Tabelle beim Wiederherstellen leer.
 
 - **Live-Training: der Store hält, `lib/live*` entscheidet.** Der geräte-lokale Store
   `src/hooks/useLiveSession.ts` hält den Zustand der laufenden Einheit, sichert ihn im
-  Gerätespeicher und löst die Seiteneffekte aus (Ton, Pause, Uhr). Entschieden und
-  umgeformt wird ausschließlich in reinen Funktionen ohne React-/DOM-/DB-Bezug, jede mit
-  eigenen Vitest-Tests: `liveFlow` (nächstes To-do, Pausen-Typ, Fortschritt – das
-  nächste To-do wird nicht stur linear gesucht, sondern kennt mit `focusEi` die Übung,
-  an der gerade gearbeitet wird, damit ein Einstieg mitten in der Einheit Timer und
-  Markierung richtig führt; der Merker liegt in der Einheit, wird im Store beim
-  Abhaken/Werteintragen gesetzt und fällt von selbst auf die lineare Reihenfolge
-  zurück, sobald die Übung durch ist),
-  `liveEntries` (Sätze und Aufwärmsätze je Übung samt der Regeln „Gewicht weicht ab →
-  Vermerk", „Bewertung 5 → gescheitert", Klemmen im 1RM-Test), `liveRest`
-  (Pausen-Rechnung, Zeit kommt als Parameter herein), `liveAutoRest` (Entscheidung nach
-  einem abgehakten Satz: keine / abbrechen / starten), `liveWarmup` (allgemeines
-  Aufwärmen), `liveSkillEdit` (Ändern der Skill-Übungen; der Aufbau liegt getrennt in
-  `skillLiveBuild`), `durationTimer` (Stand des Dauer-Timers zu einem Zeitpunkt:
-  Vorbereitung, Zielzeit, Extra-Runden und Multiplikator – die Zeit kommt als Parameter
-  herein, gezeichnet wird in `DurationTimerOverlay`) und `liveStart` (die drei Startwege
-  Kraft / Skill / 1RM-Test als Fabriken, Kennung und Startzeit kommen herein). Der Store enthält selbst keine
+  Gerätespeicher und löst die Seiteneffekte aus (Ton, Pause, Uhr). Er enthält selbst keine
   Datenumformung mehr; bewusst dort geblieben sind nur `cyclePlateMode` (Anzeige, keine
-  Fachregel) und die Skill-Uhr, die nur festhält, welche Uhr gerade läuft.
-  Der Store ist dabei bewusst **ein** Modul geblieben statt in mehrere Stores zerlegt zu
-  werden: Sicherung und Abgleich zwischen offenen Tabs hängen an einem einzigen
-  Speicher-Schlüssel, und Start, 1RM-Test-Start und Beenden setzen Einheit *und* die
-  flüchtigen Felder (Pause, Scheiben-Anzeige, Skill-Uhr, Popup-Zustände – gemeinsam in
-  `TRANSIENT_RESET`) in einem Zug. Getrennte Stores würden daraus zwei Benachrichtigungen
-  machen und damit einen sichtbaren Zwischenstand erzeugen (Panel schon weg,
-  Pausenleiste noch da). Ein Testgewinn wäre davon ohnehin nicht zu erwarten: Hooks und
-  Stores sind ungetestet, solange keine Test-Bibliothek für React installiert ist.
+  Fachregel) und die Skill-Uhr, die nur festhält, welche Uhr gerade läuft. Warum er **ein**
+  Modul geblieben ist statt in mehrere Stores zerlegt zu werden: ADR-0020. Entschieden und
+  umgeformt wird ausschließlich in reinen Funktionen ohne React-/DOM-/DB-Bezug, jede mit
+  eigenen Vitest-Tests:
+  - `liveFlow` – nächstes To-do, Pausen-Typ, Fortschritt. Das nächste To-do wird nicht
+    stur linear gesucht: mit `focusEi` kennt die Funktion die Übung, an der gerade
+    gearbeitet wird, damit ein Einstieg mitten in der Einheit Timer und Markierung richtig
+    führt. Der Merker liegt in der Einheit, wird im Store beim Abhaken/Werteintragen
+    gesetzt und fällt von selbst auf die lineare Reihenfolge zurück, sobald die Übung
+    durch ist.
+  - `liveEntries` – Sätze und Aufwärmsätze je Übung samt der Regeln „Gewicht weicht ab →
+    Vermerk", „Bewertung 5 → gescheitert", Klemmen im 1RM-Test
+  - `liveRest` – Pausen-Rechnung, die Zeit kommt als Parameter herein
+  - `liveAutoRest` – Entscheidung nach einem abgehakten Satz: keine / abbrechen / starten
+  - `liveWarmup` – allgemeines Aufwärmen
+  - `liveSkillEdit` – Ändern der Skill-Übungen; der Aufbau liegt getrennt in
+    `skillLiveBuild`
+  - `durationTimer` – Stand des Dauer-Timers zu einem Zeitpunkt: Vorbereitung, Zielzeit,
+    Extra-Runden und Multiplikator. Die Zeit kommt als Parameter herein, gezeichnet wird
+    in `DurationTimerOverlay`
+  - `liveStart` – die drei Startwege Kraft / Skill / 1RM-Test als Fabriken, Kennung und
+    Startzeit kommen herein
 
 ### 4.5 UI und Sprache
 
