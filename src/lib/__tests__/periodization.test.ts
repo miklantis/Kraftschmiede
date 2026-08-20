@@ -187,6 +187,20 @@ describe("buildPeriodization", () => {
       ]);
     });
 
+    it("markiert nur die reine Testwoche als Testwoche", () => {
+      const d = buildPeriodization(kraftUndTest, 1);
+      // Nur die letzte Woche plant keine Einheit - sie wird in der Kurve blau
+      // hinterlegt (Issue #273).
+      expect(d.weeks.map((w) => w.test)).toEqual([
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+      ]);
+    });
+
     it("rechnet Phasen ohne Plan daneben unveraendert", () => {
       const gemischt: JourneyPhaseInput[] = [
         phase({ name: "Aufbau", weeks: 2, setsStart: 2, setsEnd: 5 }),

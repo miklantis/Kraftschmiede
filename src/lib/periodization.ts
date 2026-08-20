@@ -1,4 +1,4 @@
-import { volumeForWeek, weekPlanForWeek } from "@/engine";
+import { volumeForWeek, weekDemandsSession, weekPlanForWeek } from "@/engine";
 import type { WeekPlanWeek } from "@/engine";
 import type { JourneyPhaseInput } from "@/lib/journey";
 import { isNeutralLoad, loadPercent } from "@/lib/loadFactor";
@@ -24,6 +24,8 @@ export interface PeriodWeek {
   vol: number;
   intens: number;
   deload: boolean;
+  /** Reine Testwoche: Planzeile ohne Arbeitssaetze (nur der 1RM-Versuch). */
+  test: boolean;
 }
 
 // Eine Phase als Band ueber ihre Wochenspanne (start/end 0-basiert, inklusive).
@@ -124,6 +126,9 @@ export function buildPeriodization(
         deload: row
           ? row.loadPct < 1
           : !!(p.deloadWeek && wi === p.deloadWeek - 1),
+        // Reine Testwoche: der Plan verlangt keine Einheit. Nur so entsteht die
+        // blaue Hinterlegung in der Kurve.
+        test: row != null && !weekDemandsSession(row),
       });
       vMin = Math.min(vMin, vol);
       vMax = Math.max(vMax, vol);

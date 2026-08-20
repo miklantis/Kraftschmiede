@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.43.1",
+      "date": "2026-08-20",
+      "changes": [
+        "Die Testwoche ist in der Journey-Kurve jetzt zart blau hinterlegt und ihre Wochennummer blau hervorgehoben. Damit siehst du auf einen Blick, dass in dieser Woche nicht trainiert, sondern getestet wird.",
+        "Betrifft nur die Darstellung - Plan, Wochen und Zahlen bleiben unverändert. Auch in der Vorschau beim Vorlagen-Wähler ist die Testwoche so markiert."
+      ]
+    },
+    {
       "version": "1.43.0",
       "date": "2026-08-20",
       "changes": [
@@ -803,7 +811,7 @@
       "version": "1.15.0",
       "date": "2026-08-07",
       "changes": [
-        "Koerpermessungen koennen jetzt zusaetzlich die Wasserwerte ECW (extrazellulaer) und ICW (intrazellulaer) tragen. Sind sie fuer eine Messung vorhanden, erscheinen sie in der Mess-Liste als eigene Chips. Aeltere Messungen ohne diese Werte bleiben unveraendert."
+        "Koerpermessungen koennen jetzt zusaetzlich die Wasserwerte ECW (extrazellulaer) und ICW (intrazellulaer) tragen. Sind sie fuer eine Messung vorhanden, erscheinen sie in der Mess-Liste als eigene Chips. Aeltere Messungen ohne diese Werte bleiben unverändert."
       ]
     },
     {
