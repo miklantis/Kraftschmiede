@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.45.3",
+      "date": "2026-08-20",
+      "changes": [
+        "Der Verlauf in den Journey-Kacheln wird auf dem Handy nicht mehr zusammengequetscht: Ein Bild zeigt jetzt rund fünf Wochen, alles Weitere erreichst du durch seitliches Wischen. Auf dem Desktop sind es entsprechend der breiteren Spalte mehr Wochen.",
+        "Beim Öffnen steht der Verlauf am rechten Ende, also bei der jüngsten Einheit - dort, wo die Übung gerade steht."
+      ]
+    },
+    {
       "version": "1.45.2",
       "date": "2026-08-20",
       "changes": [
