@@ -1,6 +1,10 @@
 import { useMemo } from "react";
 import { weekProgress, skillAdvice, type Exercise } from "@/engine";
-import { derivePhaseContext, toPlacementSessions } from "@/lib/phaseContext";
+import {
+  derivePhaseContext,
+  toPlacementPhases,
+  toPlacementSessions,
+} from "@/lib/phaseContext";
 import {
   buildSuitabilityCtx,
   rankWorkouts,
@@ -21,7 +25,6 @@ import { useSkills, useSkillProgress } from "./useSkills";
 import { useSettings } from "./useSettings";
 import { useOwnedEquipmentKeys } from "./useInventory";
 import { useLatestBody } from "./useBody";
-import { useTestDates } from "./useTestDates";
 
 // Anzeigefertiges Modell der Trainings-Uebersicht. Reine Daten – die Komponenten
 // kennen weder Supabase noch die Engine.
@@ -88,7 +91,6 @@ export function useTrainingOverview(): {
   const settingsQ = useSettings();
   const equipmentQ = useOwnedEquipmentKeys();
   const bodyQ = useLatestBody();
-  const testDates = useTestDates();
 
   const queries = [
     exercisesQ,
@@ -163,7 +165,6 @@ export function useTrainingOverview(): {
         sessions,
         freqTarget,
         today,
-        testDates,
       );
       const placement = ph.placement;
       const currentPhase = ph.phase;
@@ -174,7 +175,7 @@ export function useTrainingOverview(): {
         journey.id,
         freqTarget,
         today,
-        testDates,
+        toPlacementPhases(journey.phases),
       );
       const weekInPhase = placement?.weekInPhase ?? "?";
       const phaseWeeks = currentPhase?.weeks ?? "?";
@@ -353,7 +354,6 @@ export function useTrainingOverview(): {
     settingsQ.data,
     equipmentQ.data,
     bodyQ.data,
-    testDates,
   ]);
 
   return { isLoading, isError, error, data };

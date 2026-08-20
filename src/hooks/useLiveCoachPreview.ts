@@ -23,7 +23,6 @@ import { useSessionsDetailed } from "./useSessionsDetailed";
 import { useActiveJourney } from "./useJourney";
 import { useSettings } from "./useSettings";
 import { useBars, usePlates, useDumbbells } from "./useInventory";
-import { useTestDates } from "./useTestDates";
 
 // Coach-Vorschau waehrend der laufenden Kraft-Einheit (#190): was der Coach aus
 // dem bisher Geleisteten eines Uebungsblocks machen wuerde - steigern, halten,
@@ -68,7 +67,6 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
   const barsQ = useBars();
   const platesQ = usePlates();
   const dumbbellsQ = useDumbbells();
-  const testDates = useTestDates();
 
   const workout = session?.kind === "workout" ? session : null;
 
@@ -103,7 +101,6 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
       sessionsQ.data ?? [],
       freqTarget,
       todayISO(),
-      testDates,
     );
     const hasPhase = ph.volumePhase != null;
     const freeMode = ph.journeyId === null;
@@ -196,7 +193,6 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
     barsQ.data,
     platesQ.data,
     dumbbellsQ.data,
-    testDates,
   ]);
 
   return { byEntry };

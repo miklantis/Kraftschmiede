@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "version": "1.40.0",
+      "date": "2026-08-20",
+      "changes": [
+        "Die Journey schließt sich jetzt von selbst ab: Sind alle geplanten Wochen erfüllt und vorbei, wandert sie ins Archiv und du bekommst die Meldung \"Journey abgeschlossen\" - egal, auf welcher Seite du die App gerade öffnest.",
+        "Die Testwoche verlangt dabei nichts. Sie gilt als erledigt, sobald sie um ist - ob und wie viel du getestet hast, prüft niemand. Am Montag darauf ist die Journey durchlaufen.",
+        "Endet eine Journey ohne Testwoche, muss die letzte Woche wie gewohnt über ihre Einheiten voll werden. Fehlt etwas, wartet die Journey wie bisher.",
+        "Im Archiv steht als Enddatum der Sonntag der letzten geplanten Woche - nicht der Tag, an dem die App es bemerkt. Zwei Wochen Urlaub lassen die Journey damit nicht länger aussehen, als sie war.",
+        "Bisher hing der Abschluss am Beenden einer Einheit. In der Testwoche gibt es aber keine geplante Einheit mehr, die Journey wäre dort liegen geblieben."
+      ]
+    },
+    {
       "version": "1.39.0",
       "date": "2026-08-19",
       "changes": [

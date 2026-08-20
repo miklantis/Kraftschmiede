@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useJourneyCompletion } from "@/hooks/useJourneyCompletion";
 import { useLiveSession } from "@/hooks/useLiveSession";
 import { useSettings } from "@/hooks/useSettings";
 import { useWakeLock } from "@/hooks/useWakeLock";
@@ -16,6 +17,11 @@ export function LiveLayer(): React.ReactElement {
   const live = useLiveSession();
   const active = live.session != null;
   const collapsed = live.collapsed;
+
+  // Journey-Abschluss ueber den Kalender: die Pruefung haengt hier, weil diese
+  // Schicht auf jeder Seite gemountet ist - sonst haenge es davon ab, welche
+  // Seite zuerst geoeffnet wird. Das Popup gehoert zur selben Schicht.
+  useJourneyCompletion();
 
   // Bildschirm wachhalten, solange eine Einheit laeuft - aber nur, wenn der
   // Schalter in den Einstellungen an ist (Standard aus) und das Geraet die API

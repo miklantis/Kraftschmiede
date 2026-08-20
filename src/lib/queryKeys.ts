@@ -150,14 +150,20 @@ export const queryKeys = {
 /** Was nach welchem Schreib-Ereignis veraltet ist. Reine Werte – die Schreiber
  *  lesen hier nur nach, welche Wurzeln aufzufrischen sind. */
 export const INVALIDATE = {
-  /** Kraft-Einheit beendet: Verlauf, Katalog (Arbeitsgewicht/1RM) und – bei
-   *  abgeschlossener Journey – Journey plus Archiv. */
+  /** Kraft-Einheit beendet: Verlauf und Katalog (Arbeitsgewicht/1RM). Die
+   *  Journey bleibt unberuehrt – abgeschlossen wird sie ueber den Kalender,
+   *  nicht ueber die Einheit (siehe journeyDone). */
   finishStrength: [
     QUERY_ROOTS.sessions,
     QUERY_ROOTS.sessionsDetailed,
     QUERY_ROOTS.exercises,
+  ],
+  /** Journey durchlaufen: sie wandert ins Archiv, und mit ihr enden die
+   *  eingefrorenen Referenzgewichte im Katalog. */
+  journeyDone: [
     QUERY_ROOTS.activeJourney,
     QUERY_ROOTS.archivedJourneys,
+    QUERY_ROOTS.exercises,
   ],
   /** Skill-Einheit beendet: Verlauf und Skill-Fortschritt. */
   finishSkill: [

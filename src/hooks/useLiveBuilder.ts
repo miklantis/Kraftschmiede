@@ -8,7 +8,11 @@ import type {
 } from "@/lib/liveBuild";
 import { todayISO } from "@/lib/format";
 import { buildLastEntries, buildPrevEntries, buildWeekEntries } from "@/lib/lastEntries";
-import { derivePhaseContext, toPlacementSessions } from "@/lib/phaseContext";
+import {
+  derivePhaseContext,
+  toPlacementPhases,
+  toPlacementSessions,
+} from "@/lib/phaseContext";
 import { journeyWeekLookup } from "@/engine";
 import type { PlanSource } from "@/lib/planContext";
 import { buildPlanNote, type PlanNote } from "@/lib/planNote";
@@ -20,7 +24,6 @@ import { useActiveJourney } from "./useJourney";
 import { useSettings } from "./useSettings";
 import { useBars, usePlates, useDumbbells } from "./useInventory";
 import { useLatestBody } from "./useBody";
-import { useTestDates } from "./useTestDates";
 
 // Stellt die laufende Einheit aus einer Vorlage zusammen (Phase 11, Lieferung 2).
 // Buendelt die Daten-Hooks, formt sie in die reine Build-Eingabe und ruft den
@@ -54,7 +57,6 @@ export function useLiveBuilder(): UseLiveBuilder {
   const platesQ = usePlates();
   const dumbbellsQ = useDumbbells();
   const bodyQ = useLatestBody();
-  const testDates = useTestDates();
 
   const ready =
     exercisesQ.data != null &&
@@ -120,7 +122,6 @@ export function useLiveBuilder(): UseLiveBuilder {
       sessionsQ.data ?? [],
       freqTarget,
       todayISO(),
-      testDates,
     );
 
     // Wochenplan-Stand der laufenden Phase: welche Planwoche gilt und welche
@@ -131,7 +132,7 @@ export function useLiveBuilder(): UseLiveBuilder {
             toPlacementSessions(sessionsQ.data ?? []),
             ph.journeyId ?? "",
             freqTarget,
-            testDates,
+            toPlacementPhases(journeyQ.data?.phases ?? []),
           );
           const current = ph.placement?.globalWeek ?? 1;
           return {
@@ -197,7 +198,6 @@ export function useLiveBuilder(): UseLiveBuilder {
     settingsQ.data,
     journeyQ.data,
     sessionsQ.data,
-    testDates,
   ]);
 
   const templates = templatesQ.data;

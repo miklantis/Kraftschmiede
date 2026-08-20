@@ -8,10 +8,11 @@ import {
   subscribeJourneyDone,
 } from "@/lib/journeyDone";
 
-// Meldung nach der Einheit, die die letzte Journey-Woche vollmacht: die Journey
-// ist durchlaufen und archiviert. Von hier fuehren zwei Wege - direkt in die
-// naechste Journey oder bewusst ins freie Training. Sitzt in der global
-// gemounteten Live-Schicht, weil das Ende-Popup beim Speichern verschwindet.
+// Meldung, sobald die Journey durchlaufen und archiviert ist: alle geplanten
+// Wochen sind erfuellt und vorbei. Angestossen wird sie von useJourneyCompletion
+// nach erfolgreichem Archivieren (#240). Von hier fuehren zwei Wege - direkt in
+// die naechste Journey oder bewusst ins freie Training. Sitzt in der global
+// gemounteten Live-Schicht, damit sie auf jeder Seite erscheinen kann.
 export function JourneyDoneModal(): React.ReactElement {
   const navigate = useNavigate();
   const name = useSyncExternalStore(
@@ -36,7 +37,7 @@ export function JourneyDoneModal(): React.ReactElement {
           {name ?? ""}
         </div>
         <div className="mt-1.5 text-[14px] leading-[1.55] text-muted-foreground">
-          Die letzte geplante Woche ist voll – die Journey ist durchlaufen und
+          Alle geplanten Wochen sind vorbei – die Journey ist durchlaufen und
           liegt jetzt im Archiv. Du kannst direkt die nächste starten oder erst
           einmal frei weitertrainieren.
         </div>

@@ -9,7 +9,11 @@ import {
 import { activeRepTarget, phaseEntryOverride } from "@/lib/liveBuild";
 import { planContextFor, type PlanSource } from "@/lib/planContext";
 import { buildLastEntries, buildPrevEntries, buildWeekEntries } from "@/lib/lastEntries";
-import { derivePhaseContext, toPlacementSessions } from "@/lib/phaseContext";
+import {
+  derivePhaseContext,
+  toPlacementPhases,
+  toPlacementSessions,
+} from "@/lib/phaseContext";
 import { journeyWeekLookup } from "@/engine";
 import { todayISO } from "@/lib/format";
 import { useExercises } from "./useExercises";
@@ -18,7 +22,6 @@ import { useSessionsDetailed } from "./useSessionsDetailed";
 import { useActiveJourney } from "./useJourney";
 import { useSettings } from "./useSettings";
 import { useBars, usePlates, useDumbbells } from "./useInventory";
-import { useTestDates } from "./useTestDates";
 
 // Coach-Status je Uebung fuer die Uebungsseite (Liste + Detail): was der Coach
 // fuer die naechste Einheit dieser Uebung entscheiden wuerde - steigern, halten,
@@ -50,7 +53,6 @@ export function useCoachStatuses(): UseCoachStatuses {
   const barsQ = useBars();
   const platesQ = usePlates();
   const dumbbellsQ = useDumbbells();
-  const testDates = useTestDates();
 
   const ready =
     exercisesQ.data != null &&
@@ -90,7 +92,6 @@ export function useCoachStatuses(): UseCoachStatuses {
       sessionsQ.data ?? [],
       freqTarget,
       todayISO(),
-      testDates,
     );
     const hasPhase = ph.volumePhase != null;
     // Ohne aktive Journey trainiert der Nutzer frei: der Coach gibt nichts vor,
@@ -104,7 +105,7 @@ export function useCoachStatuses(): UseCoachStatuses {
             toPlacementSessions(sessionsQ.data ?? []),
             ph.journeyId ?? "",
             freqTarget,
-            testDates,
+            toPlacementPhases(journeyQ.data?.phases ?? []),
           );
           const current = ph.placement?.globalWeek ?? 1;
           return {
@@ -199,7 +200,6 @@ export function useCoachStatuses(): UseCoachStatuses {
     barsQ.data,
     platesQ.data,
     dumbbellsQ.data,
-    testDates,
   ]);
 
   return { isLoading, ready, byExercise };
