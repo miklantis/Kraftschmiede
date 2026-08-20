@@ -5,7 +5,8 @@ import { fmtNum } from "@/lib/format";
 import type { LiveEntry } from "@/lib/liveSession";
 import type { ActiveSet } from "@/lib/liveFlow";
 import { isActive } from "@/lib/liveFlow";
-import type { LiveCoachPreview } from "@/lib/livePreview";
+import { previewProvisional, type LiveCoachPreview } from "@/lib/livePreview";
+import { coachLineLabel, coachOutlookLabel } from "@/lib/coachText";
 import type { LiveBarChoice } from "@/hooks/useLiveSession";
 import { PlateChips } from "./PlateChips";
 import { LiveNumberInput } from "./LiveNumberInput";
@@ -97,6 +98,10 @@ export function ExerciseLiveCard({
   // die beim Antippen aufklappt (bewusst kein Popup - im Bodenblatt der
   // Live-Ansicht ist eine aufklappende Zeile ruhiger und immer sichtbar).
   const [showCoach, setShowCoach] = useState(false);
+  // Zwischenstand betrifft nur die Zeile, die noch wandern kann: in der
+  // Kraftphase den Ausblick, sonst den Vorschlag selbst. Steht nichts
+  // Wanderndes auf der Karte, bleibt auch das Coach-Zeichen fest (#268).
+  const coachOffen = coach ? previewProvisional(coach) : false;
 
   // Fusszeile: „+ Satz“ / „– Satz“. Traegt die Karte eine Notiz (onNote gesetzt),
   // sitzt der „+ Notiz“-Knopf in derselben Zeile rechts daneben und das Feld
@@ -160,13 +165,13 @@ export function ExerciseLiveCard({
             aria-label={
               "Coach: " +
               coachStateLabel(coach.status.state) +
-              (coach.provisional ? " (Zwischenstand)" : "") +
+              (coachOffen ? " (Zwischenstand)" : "") +
               " – Vorschlag anzeigen"
             }
             title={coachStateLabel(coach.status.state)}
             className="flex-none"
           >
-            <CoachStatusDot state={coach.status.state} provisional={coach.provisional} />
+            <CoachStatusDot state={coach.status.state} provisional={coachOffen} />
           </button>
         )}
         {!editMode && isBar && bars.length > 0 && (
@@ -206,18 +211,19 @@ export function ExerciseLiveCard({
 
       {coach && showCoach && (
         <div className="border-b border-border bg-muted/50 px-4 py-2.5">
-          {coach.provisional && (
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Stand, wenn du jetzt beendest
-            </div>
-          )}
-          <div className="mt-0.5 text-[13px] font-semibold text-foreground">
-            Beim nächsten Mal: {fmtNum(coach.status.weight)} {unit} ·{" "}
-            {coach.status.targetReps} Wdh.
+          <div className="text-[13px] font-semibold text-foreground">
+            {coachLineLabel(coach.scope, coach.provisional)}:{" "}
+            {fmtNum(coach.status.weight)} {unit} · {coach.status.targetReps} Wdh.
           </div>
           {coach.status.note && (
             <div className="mt-0.5 text-[12px] leading-snug text-muted-foreground">
               {coach.status.note}
+            </div>
+          )}
+          {coach.outlook && (
+            <div className="mt-1.5 text-[12px] font-semibold text-muted-foreground">
+              {coachOutlookLabel(coach.provisional)}:{" "}
+              {fmtNum(coach.outlook.weight)} {unit} · {coach.outlook.targetReps} Wdh.
             </div>
           )}
         </div>

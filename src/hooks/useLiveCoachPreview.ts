@@ -1,14 +1,15 @@
 import { useMemo } from "react";
 import {
   suggestWithBar,
+  coachScopeFor,
   coachStatusFromSuggestion,
+  planOutlook,
   type CoachBuildExercise,
-  type PlanContext,
 } from "@/lib/coach";
 import { activeRepTarget } from "@/lib/liveBuild";
 import { buildLastEntries } from "@/lib/lastEntries";
 import { derivePhaseContext } from "@/lib/phaseContext";
-import { planAnchor } from "@/lib/planContext";
+import { buildPlanSource, planContextFor } from "@/lib/planContext";
 import {
   isBlockComplete,
   liveEntryToSetEntry,
@@ -42,6 +43,14 @@ import { useBars, usePlates, useDumbbells } from "./useInventory";
 // useCoachStatuses): ob nach dieser Einheit ein Phasenwechsel ansteht, ist
 // waehrend des Trainings noch nicht entschieden - das Override wuerde ein
 // Gewicht anzeigen, das so nicht zwingend eintritt.
+//
+// In einer Phase mit Wochenplan zerfaellt die Vorschau in zwei Aussagen
+// (#268, Schritt 2): die Vorgabe DIESER Woche steht fest und wird wie beim
+// Aufbau der Einheit aus dem gespeicherten Stand gerechnet; was daraus fuer die
+// NAECHSTE Woche wird, ist der Ausblick und haengt am Verlauf der Einheit.
+// Vorher lief beides durch eine Rechnung, die die laufende Einheit als Vorwoche
+// wertete - angezeigt wurde damit das Gewicht der naechsten Woche neben den
+// Wiederholungen der laufenden, ein Paar, das real nie vorkommt.
 
 interface CoachBar {
   id: string;
@@ -103,6 +112,14 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
       freqTarget,
       todayISO(),
     );
+    // Wochenplan-Stand der laufenden Phase - dieselbe Quelle wie der Live-Aufbau.
+    const planSource = buildPlanSource(
+      ph,
+      sessionsQ.data ?? [],
+      detailedQ.data ?? [],
+      journeyQ.data?.phases ?? [],
+      freqTarget,
+    );
     const hasPhase = ph.volumePhase != null;
     const freeMode = ph.journeyId === null;
     const exMap = new Map((exercisesQ.data ?? []).map((e) => [e.id, e]));
@@ -115,6 +132,17 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
       const workWeight = liveWorkWeight(entry);
       if (!lastEntry || workWeight == null) return;
 
+      // Wochenplan-Bezug wie beim Aufbau der Einheit: aus dem gespeicherten
+      // Stand, nicht aus den Saetzen, die gerade laufen.
+      const plan = planContextFor(planSource, {
+        id: e.id,
+        referenceWeight: e.reference_weight,
+        referencePhaseId: e.reference_phase_id,
+        planStartWeight: e.plan_start_weight,
+        rm: e.rm,
+      });
+      const scope = coachScopeFor({ profile: e.profile, tier: e.tier }, plan);
+
       const exo: CoachBuildExercise = {
         key: e.key,
         profile: e.profile,
@@ -124,42 +152,18 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
           e.rep_range_min != null && e.rep_range_max != null
             ? [e.rep_range_min, e.rep_range_max]
             : null,
-        // Das im Block tatsaechlich bewegte Gewicht statt des Katalogstands -
-        // dieselbe Groesse, die beim Beenden in den Katalog geschrieben wird.
-        workWeight,
+        // Die Doppelprogression rechnet aus dem im Block tatsaechlich bewegten
+        // Gewicht - dieselbe Groesse, die beim Beenden in den Katalog geht. Der
+        // Wochenplan bleibt beim Katalogstand: seine Vorgabe steht vor der
+        // Einheit fest und darf nicht mit ihr wandern.
+        workWeight: scope === "week" ? e.work_weight : workWeight,
         targetScore: e.target_score,
         barId: e.bar_id,
         referenceWeight: e.reference_weight,
         referencePhaseId: e.reference_phase_id,
         planStartWeight: e.plan_start_weight,
       };
-      // Wochenplan-Vorschau: gewertet wird die laufende Einheit, als waere sie
-      // die Vorwoche - die Frage ist ja „was macht der Coach daraus". Anker ist
-      // der Phasenanker, solange die Uebung in dieser Phase schon beendet
-      // wurde; sonst das gerade bewegte Gewicht. In der Entlastung gibt es
-      // keinen Rueckfall auf das bewegte Gewicht: die Entlastung wuerde sonst
-      // von der schon entlasteten Last noch einmal heruntergerechnet.
-      const anchor = planAnchor(ph.anchorPhaseId, ph.deload, {
-        id: e.id,
-        referenceWeight: e.reference_weight,
-        referencePhaseId: e.reference_phase_id,
-        planStartWeight: e.plan_start_weight,
-        rm: e.rm,
-      });
-      const plan: PlanContext | null =
-        ph.planWeek && ph.firstPlanWeek
-          ? {
-              week: ph.planWeek,
-              prevWeek: ph.planWeek,
-              startReps: ph.firstPlanWeek.reps,
-              anchor: anchor ?? (ph.deload ? null : workWeight),
-              deload: ph.deload,
-              currentWeekEntry: null,
-              previousWeekEntry: lastEntry,
-              rm: e.rm,
-            }
-          : null;
-      const { suggestion } = suggestWithBar(exo, {
+      const { suggestion, bar } = suggestWithBar(exo, {
         phaseFocus: ph.phaseFocus,
         lastEntry,
         prevEntry: prevEntryByExercise[e.id] ?? null,
@@ -179,6 +183,26 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
         // Vordaten liegen hier immer vor - mindestens ein Satz ist abgehakt,
         // sonst waeren wir oben ausgestiegen.
         status: coachStatusFromSuggestion(suggestion, true, unit),
+        scope,
+        // Ausblick: was aus dieser Woche wird, wenn die laufende Einheit die
+        // letzte dieser Uebung in der Woche bleibt.
+        outlook: planOutlook(
+          exo,
+          {
+            phase: ph.phaseFocus,
+            lastEntry,
+            weightStep,
+            bar: bar ? { weight: bar.weight } : undefined,
+            plates,
+            dumbbells,
+            plan,
+          },
+          {
+            weekWeight: suggestion.weight,
+            workedWeight: workWeight,
+            judged: lastEntry,
+          },
+        ),
         provisional: !isBlockComplete(entry),
       };
     });

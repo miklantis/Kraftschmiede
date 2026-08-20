@@ -8,6 +8,7 @@ import {
   hasWeekPlanFocus,
   parseWeekPlan,
   repLadder,
+  nextWeekPlanWeek,
   weekDemandsSession,
   weekPlanForWeek,
   weekPlanSchema,
@@ -146,6 +147,27 @@ describe("weekPlanForWeek – geltende Woche", () => {
   it("ohne Plan gibt es keine Vorgabe", () => {
     expect(weekPlanForWeek(null, 1)).toBeNull();
     expect(weekPlanForWeek([], 1)).toBeNull();
+  });
+});
+
+// Der Ausblick auf die naechste Woche darf nicht halten wie weekPlanForWeek:
+// in der letzten Phasenwoche kommt keine naechste Woche mehr (#268, Schritt 2).
+describe("nextWeekPlanWeek – Zeile der Folgewoche", () => {
+  const plan = buildStrengthWeekPlan(5); // 5,5,4,3,2
+
+  it("gibt die naechste Zeile heraus", () => {
+    expect(nextWeekPlanWeek(plan, 1)!.week).toBe(2);
+    expect(nextWeekPlanWeek(plan, 3)).toMatchObject({ week: 4, reps: 3 });
+  });
+  it("endet in der letzten Phasenwoche", () => {
+    expect(nextWeekPlanWeek(plan, 5)).toBeNull();
+  });
+  it("haelt nicht hinter dem Plan", () => {
+    expect(nextWeekPlanWeek(plan, 99)).toBeNull();
+  });
+  it("ohne Plan gibt es keinen Ausblick", () => {
+    expect(nextWeekPlanWeek(null, 1)).toBeNull();
+    expect(nextWeekPlanWeek([], 1)).toBeNull();
   });
 });
 

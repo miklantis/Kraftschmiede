@@ -60,3 +60,18 @@ export interface CoachReason {
   /** Oberes Ende des Wiederholungsbandes ("bei 12 geht das Gewicht hoch"). */
   bandTop?: number;
 }
+
+/** Zeitraum, fuer den eine Coach-Entscheidung gilt (Issue #268, Schritt 2).
+ *
+ *  "week"  – Vorgabe der laufenden Journey-Woche. Der Wochenplan der Kraft- und
+ *            Schnellkraftphase legt sie fuer die ganze Woche fest; kommt die
+ *            Uebung darin noch einmal dran, liegt dasselbe Gewicht drauf.
+ *  "next"  – Vorschlag fuer die naechste Einheit dieser Uebung. Die
+ *            Doppelprogression kann auch innerhalb einer Woche steigen oder
+ *            senken.
+ *
+ *  Beide kommen in derselben Einheit nebeneinander vor: Hauptuebung nach Plan,
+ *  Zusatzuebung nach Coach. Ohne diese Unterscheidung trugen beide Logiken
+ *  dieselbe Beschriftung, und aus der Anzeige liess sich nicht ablesen, welche
+ *  gerade gilt. */
+export type CoachScope = "week" | "next";

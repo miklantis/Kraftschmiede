@@ -102,6 +102,8 @@ import {
   plannedSets,
   pickBarForTarget,
   planSuggestion,
+  planOutlook,
+  coachScopeFor,
   type CoachBuildExercise,
   type CoachSuggestion,
   type PlanContext,
@@ -337,6 +339,7 @@ describe("planSuggestion – Kennung des Wochenplans", () => {
   const plan = (o: Partial<PlanContext> = {}): PlanContext => ({
     week: week(),
     prevWeek: week({ week: 1, reps: 5 }),
+    nextWeek: null,
     startReps: 5,
     anchor: 40,
     currentWeekEntry: null,
@@ -384,6 +387,120 @@ describe("planSuggestion – Kennung des Wochenplans", () => {
 
   it("Zusatzuebung bleibt bei der Doppelprogression", () => {
     expect(planSuggestion(CORE, ctx(plan()))).toBeNull();
+  });
+});
+
+// Issue #268, Schritt 2: Wochenvorgabe und Ausblick sind zwei getrennte
+// Aussagen. Vorher trug die Karte das Gewicht der naechsten Woche neben den
+// Wiederholungen der laufenden - ein Paar, das real nie vorkommt.
+describe("planOutlook – Ausblick auf die naechste Woche", () => {
+  const week = (o: Partial<WeekPlanWeek> = {}): WeekPlanWeek => ({
+    week: 2,
+    sets: 4,
+    reps: 4,
+    repsMax: null,
+    rir: 2,
+    loadPct: 1,
+    note: "",
+    ...o,
+  });
+  // Die laufende Einheit, sauber durchgezogen: 4 Saetze zu 4 Wdh. auf 42,5.
+  const sauber: SetEntry = {
+    sets: [1, 2, 3, 4].map(() => ({
+      type: "work" as const,
+      weight: 42.5,
+      reps: 4,
+      targetReps: 4,
+      targetWeight: 42.5,
+      score: 3,
+      done: true,
+    })),
+  };
+  // Dieselbe Einheit, aber ein Satz zu kurz.
+  const verfehlt: SetEntry = {
+    sets: sauber.sets!.map((st, i) => (i === 3 ? { ...st, reps: 2 } : st)),
+  };
+  const plan = (o: Partial<PlanContext> = {}): PlanContext => ({
+    week: week(),
+    prevWeek: week({ week: 1, reps: 5 }),
+    nextWeek: week({ week: 3, reps: 3 }),
+    startReps: 5,
+    anchor: 42.5,
+    currentWeekEntry: null,
+    previousWeekEntry: null,
+    rm: null,
+    ...o,
+  });
+  const ctx = (p: PlanContext): Parameters<typeof planOutlook>[1] => ({
+    phase: null,
+    lastEntry: null,
+    weightStep: 2.5,
+    bar: { weight: 20 },
+    plates: [1.25, 2.5, 5, 10, 15, 20],
+    plan: p,
+  });
+  const heute = { weekWeight: 42.5, workedWeight: 42.5, judged: sauber };
+
+  it("nimmt die Wiederholungen der Folgewoche, nicht die der laufenden", () => {
+    const r = planOutlook(STRENGTH, ctx(plan()), heute);
+    expect(r?.targetReps).toBe(3);
+  });
+
+  it("steigert, wenn die gewertete Einheit sauber war", () => {
+    expect(planOutlook(STRENGTH, ctx(plan()), heute)?.weight).toBe(45);
+  });
+
+  it("haelt das Gewicht, wenn ein Satz zu kurz kam", () => {
+    const r = planOutlook(STRENGTH, ctx(plan()), { ...heute, judged: verfehlt });
+    expect(r?.weight).toBe(42.5);
+  });
+
+  it("zieht den Anker nach unten, wenn im Training reduziert wurde", () => {
+    // 42,5 vorgegeben, real nur 40 bewegt: naechste Woche steht 40 an, nicht 42,5.
+    const reduziert: SetEntry = {
+      sets: sauber.sets!.map((st) => ({ ...st, weight: 40 })),
+    };
+    const r = planOutlook(STRENGTH, ctx(plan()), {
+      weekWeight: 42.5,
+      workedWeight: 40,
+      judged: reduziert,
+    });
+    expect(r?.weight).toBe(40);
+  });
+
+  it("entfaellt in der letzten Phasenwoche", () => {
+    expect(planOutlook(STRENGTH, ctx(plan({ nextWeek: null })), heute)).toBeNull();
+  });
+
+  it("entfaellt in der Entlastungswoche", () => {
+    expect(planOutlook(STRENGTH, ctx(plan({ deload: true })), heute)).toBeNull();
+  });
+
+  it("entfaellt vor einer Woche ohne Einheit (reine Testwoche)", () => {
+    const testwoche = week({ week: 3, sets: 0, reps: 1 });
+    expect(planOutlook(STRENGTH, ctx(plan({ nextWeek: testwoche })), heute)).toBeNull();
+  });
+
+  it("gibt es fuer Zusatzuebungen nicht", () => {
+    expect(planOutlook(CORE, ctx(plan()), heute)).toBeNull();
+  });
+});
+
+describe("coachScopeFor – welche Logik gerade gilt", () => {
+  const plan = {
+    week: {
+      week: 2, sets: 4, reps: 4, repsMax: null, rir: 2, loadPct: 1, note: "",
+    },
+  } as unknown as PlanContext;
+
+  it("Hauptuebung im Wochenplan spricht ueber die Woche", () => {
+    expect(coachScopeFor(STRENGTH, plan)).toBe("week");
+  });
+  it("Zusatzuebung spricht ueber die naechste Einheit", () => {
+    expect(coachScopeFor(CORE, plan)).toBe("next");
+  });
+  it("ohne Wochenplan spricht alles ueber die naechste Einheit", () => {
+    expect(coachScopeFor(STRENGTH, null)).toBe("next");
   });
 });
 

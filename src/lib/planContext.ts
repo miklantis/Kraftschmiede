@@ -7,8 +7,18 @@
 // Coach-Vorschau waehrend der Einheit fuellen dieselbe Quelle und bekommen
 // damit denselben Vorschlag. Reine Ableitung ohne DB-/DOM-Bezug.
 
+import { journeyWeekLookup } from "@/engine";
 import type { SetEntry, WeekPlanWeek } from "@/engine";
 import type { PlanContext } from "./coach";
+import { buildWeekEntries } from "./lastEntries";
+import type { HistorySessionInput } from "./history";
+import {
+  toPlacementPhases,
+  toPlacementSessions,
+  type PhaseContext,
+  type PhaseForPlacement,
+  type SessionForPhase,
+} from "./phaseContext";
 
 /** Der Wochenplan-Stand der laufenden Phase, unabhaengig von der Uebung. */
 export interface PlanSource {
@@ -16,6 +26,9 @@ export interface PlanSource {
   week: WeekPlanWeek | null;
   /** Zeile der Vorwoche (Massstab der Bewertung); null = kein Plan. */
   prevWeek: WeekPlanWeek | null;
+  /** Zeile der Folgewoche (Grundlage des Ausblicks); null in der letzten
+   *  Phasenwoche - dort kommt keine naechste Woche mehr (#268, Schritt 2). */
+  nextWeek: WeekPlanWeek | null;
   /** Ziel-Wiederholungen der ersten Planwoche (Bezug des Startgewichts). */
   startReps: number | null;
   /** Phase, an die der Anker gebunden sein muss - in der Rampe die laufende
@@ -68,11 +81,53 @@ export function planContextFor(
   return {
     week: source.week,
     prevWeek: source.prevWeek,
+    nextWeek: source.nextWeek,
     startReps: source.startReps,
     anchor: planAnchor(source.anchorPhaseId, source.deload, exercise),
     deload: source.deload,
     currentWeekEntry: source.currentWeekEntryByExercise[exercise.id] ?? null,
     previousWeekEntry: source.previousWeekEntryByExercise[exercise.id] ?? null,
     rm: exercise.rm,
+  };
+}
+
+/** Wochenplan-Stand der laufenden Phase aus Journey und Verlauf. Stand vorher
+ *  wortgleich in jedem Aufrufer (Live-Aufbau, Uebungs-Statusanzeige,
+ *  Coach-Vorschau); mit der Coach-Vorschau als drittem waere daraus eine dritte
+ *  Kopie geworden. null, wenn die laufende Phase keinen Wochenplan fuehrt. */
+export function buildPlanSource(
+  phase: PhaseContext,
+  sessions: ReadonlyArray<SessionForPhase>,
+  detailed: HistorySessionInput[],
+  phases: ReadonlyArray<PhaseForPlacement>,
+  freqTarget: number,
+): PlanSource | null {
+  if (!phase.planWeek) return null;
+  const weekOf = journeyWeekLookup(
+    toPlacementSessions(sessions),
+    phase.journeyId ?? "",
+    freqTarget,
+    toPlacementPhases(phases),
+  );
+  const current = phase.placement?.globalWeek ?? 1;
+  return {
+    week: phase.planWeek,
+    prevWeek: phase.prevPlanWeek,
+    nextWeek: phase.nextPlanWeek,
+    startReps: phase.firstPlanWeek?.reps ?? null,
+    anchorPhaseId: phase.anchorPhaseId,
+    deload: phase.deload,
+    currentWeekEntryByExercise: buildWeekEntries(
+      detailed,
+      weekOf,
+      current,
+      phase.phaseId,
+    ),
+    previousWeekEntryByExercise: buildWeekEntries(
+      detailed,
+      weekOf,
+      current - 1,
+      phase.phaseId,
+    ),
   };
 }

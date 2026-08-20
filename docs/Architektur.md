@@ -207,6 +207,20 @@ betroffene Tabelle beim Wiederherstellen leer.
   bei Kurzhanteln und krummen Scheiben weicht sie von der eingestellten Schrittweite ab;
   ergibt sich keine Differenz, bleibt derselbe Satz ohne Zahl. Dass es zu jeder Kennung
   genau einen Satz gibt, sichert ein Test über `COACH_REASON_CODES`.
+- **Wochenvorgabe und Ausblick sind zwei getrennte Aussagen.** „Beim nächsten Mal"
+  bedeutet je nach Logik etwas anderes: in Kraft- und Schnellkraftphasen gilt die Vorgabe
+  die ganze Journey-Woche, in der Doppelprogression nur bis zur nächsten Einheit. Welche
+  gerade greift, sagt `CoachScope` (`engine/coachReason.ts`, gesetzt über `coachScopeFor`);
+  die Beschriftung dazu kommt aus `lib/coachText.ts` („Diese Woche" / „Beim nächsten
+  Mal"), unterschiedliche Beschriftungen auf verschiedenen Karten derselben Einheit sind
+  gewollt. Der Blick auf die Folgewoche ist eine eigene Rechnung (`planOutlook` in
+  `lib/coach.ts`: Anker nach dieser Einheit über `anchorAfterSession`, dann `planWeekLoad`
+  auf der Zeile der Folgewoche); er entfällt in der letzten Phasenwoche und in der
+  Entlastungswoche. Damit verschwindet auch ein Anzeigefehler: vorher wertete die
+  Vorschau die laufende Einheit als Vorwoche und zeigte das Gewicht der nächsten Woche
+  neben den Wiederholungen der laufenden – ein Paar, das real nie vorkommt. Der
+  Zwischenstand-Marker („Stand jetzt") hängt seither nur an der Zeile, die noch wandern
+  kann (`previewProvisional` in `lib/livePreview.ts`).
 - **Phasen-Repband schlägt Übungs-Repband.** Läuft eine Journey, rechnet der Coach bei
   Kraftübungen mit dem Wiederholungsband der aktiven Phase (ersatzweise aus deren Fokus
   abgeleitet); das Band aus dem Übungskatalog ruht solange. Core- und
@@ -281,8 +295,9 @@ betroffene Tabelle beim Wiederherstellen leer.
   gebundener Anker zählt, sonst tritt die Übung gerade ein. Die Wochen-Buchhaltung
   (welche Einheit liegt in dieser, welche in der vorigen Journey-Woche derselben Phase)
   liegt in `lib/lastEntries.ts` (`buildWeekEntries`) und `engine/journey.ts`
-  (`journeyWeekLookup`), zusammengesetzt in `lib/planContext.ts`. Warum zwei Wege statt
-  einer Regel: ADR-0018.
+  (`journeyWeekLookup`), zusammengesetzt in `lib/planContext.ts` (`buildPlanSource` –
+  eine Quelle für Live-Aufbau, Übungs-Statusanzeige und Coach-Vorschau). Warum zwei Wege
+  statt einer Regel: ADR-0018.
 - **Die Testphase entlastet erst, dann testet sie.** Bauregel an einer Stelle
   (`engine/weekPlan.ts`, `buildTestPhaseWeekPlan`): die letzte Woche einer Testphase ist
   die reine Testwoche, jede Woche davor ist Entlastung. Die Entlastungswoche läuft

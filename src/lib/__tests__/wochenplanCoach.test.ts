@@ -65,6 +65,7 @@ function planSource(over: Partial<PlanSource> = {}): PlanSource {
   return {
     week: PLAN[2]!,
     prevWeek: PLAN[1]!,
+    nextWeek: PLAN[3]!,
     startReps: PLAN[0]!.reps,
     anchorPhaseId: PHASE,
     deload: false,
@@ -343,6 +344,7 @@ describe("Entlastungswoche der Testphase – Entlastungsziele", () => {
     return {
       week: COMBO[0]!,
       prevWeek: COMBO[0]!,
+      nextWeek: COMBO[1]!,
       startReps: COMBO[0]!.reps,
       anchorPhaseId: PHASE,
       deload: true,

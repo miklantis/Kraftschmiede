@@ -6,7 +6,7 @@
 import { describe, it, expect } from "vitest";
 import { COACH_REASON_CODES } from "@/engine";
 import type { CoachReasonCode } from "@/engine";
-import { coachNote } from "../coachText";
+import { coachNote, coachLineLabel, coachOutlookLabel } from "../coachText";
 
 // Fachwoerter und Altlasten, die im sichtbaren Text nichts zu suchen haben.
 const VERBOTEN = [
@@ -110,5 +110,32 @@ describe("coachNote – Zahlen im Satz", () => {
     expect(coachNote({ code: "band-top", diff: 2.5, bandTop: 12 }, "kg")).toBe(
       "12 Wiederholungen geschafft – 2,5 kg mehr, die Wiederholungen fangen wieder unten an.",
     );
+  });
+});
+
+// Issue #268, Schritt 2: die Beschriftung sagt, welche Logik gerade gilt.
+describe("Beschriftung der Coach-Zeilen", () => {
+  it("nennt in der Kraftphase die Woche, sonst das naechste Mal", () => {
+    expect(coachLineLabel("week", false)).toBe("Diese Woche");
+    expect(coachLineLabel("next", false)).toBe("Beim nächsten Mal");
+  });
+
+  it("haengt den Zwischenstand nur an die Zeile, die noch wandern kann", () => {
+    // Die Wochenvorgabe steht fest, egal wie die Einheit laeuft.
+    expect(coachLineLabel("week", true)).toBe("Diese Woche");
+    expect(coachLineLabel("next", true)).toBe("Beim nächsten Mal (Stand jetzt)");
+    expect(coachOutlookLabel(true)).toBe("Nächste Woche (Stand jetzt)");
+    expect(coachOutlookLabel(false)).toBe("Nächste Woche");
+  });
+
+  it("schreibt Umlaute aus", () => {
+    const alle = [
+      coachLineLabel("week", true),
+      coachLineLabel("next", true),
+      coachOutlookLabel(true),
+      coachOutlookLabel(false),
+    ].join(" ");
+    expect(alle).not.toContain("naechste");
+    expect(alle).not.toContain("Naechste");
   });
 });

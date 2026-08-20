@@ -7,14 +7,9 @@ import type {
   LiveBuildResult,
 } from "@/lib/liveBuild";
 import { todayISO } from "@/lib/format";
-import { buildLastEntries, buildPrevEntries, buildWeekEntries } from "@/lib/lastEntries";
-import {
-  derivePhaseContext,
-  toPlacementPhases,
-  toPlacementSessions,
-} from "@/lib/phaseContext";
-import { journeyWeekLookup } from "@/engine";
-import type { PlanSource } from "@/lib/planContext";
+import { buildLastEntries, buildPrevEntries } from "@/lib/lastEntries";
+import { derivePhaseContext } from "@/lib/phaseContext";
+import { buildPlanSource } from "@/lib/planContext";
 import { buildPlanNote, type PlanNote } from "@/lib/planNote";
 import { useExercises } from "./useExercises";
 import { useTemplates } from "./useTemplates";
@@ -126,36 +121,13 @@ export function useLiveBuilder(): UseLiveBuilder {
 
     // Wochenplan-Stand der laufenden Phase: welche Planwoche gilt und welche
     // Einheiten liegen in dieser bzw. der vorigen Journey-Woche (#225).
-    const planSource: PlanSource | null = ph.planWeek
-      ? (() => {
-          const weekOf = journeyWeekLookup(
-            toPlacementSessions(sessionsQ.data ?? []),
-            ph.journeyId ?? "",
-            freqTarget,
-            toPlacementPhases(journeyQ.data?.phases ?? []),
-          );
-          const current = ph.placement?.globalWeek ?? 1;
-          return {
-            week: ph.planWeek,
-            prevWeek: ph.prevPlanWeek,
-            startReps: ph.firstPlanWeek?.reps ?? null,
-            anchorPhaseId: ph.anchorPhaseId,
-            deload: ph.deload,
-            currentWeekEntryByExercise: buildWeekEntries(
-              detailedQ.data ?? [],
-              weekOf,
-              current,
-              ph.phaseId,
-            ),
-            previousWeekEntryByExercise: buildWeekEntries(
-              detailedQ.data ?? [],
-              weekOf,
-              current - 1,
-              ph.phaseId,
-            ),
-          };
-        })()
-      : null;
+    const planSource = buildPlanSource(
+      ph,
+      sessionsQ.data ?? [],
+      detailedQ.data ?? [],
+      journeyQ.data?.phases ?? [],
+      freqTarget,
+    );
 
     // Hinweistext der laufenden Planwoche fuer den Trainingsbildschirm: er wird
     // beim Start auf die Einheit eingefroren, wie der Lastfaktor-Hinweis (#225,

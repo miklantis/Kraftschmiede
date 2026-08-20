@@ -7,14 +7,9 @@ import {
   type CoachStatus,
 } from "@/lib/coach";
 import { activeRepTarget, phaseEntryOverride } from "@/lib/liveBuild";
-import { planContextFor, type PlanSource } from "@/lib/planContext";
-import { buildLastEntries, buildPrevEntries, buildWeekEntries } from "@/lib/lastEntries";
-import {
-  derivePhaseContext,
-  toPlacementPhases,
-  toPlacementSessions,
-} from "@/lib/phaseContext";
-import { journeyWeekLookup } from "@/engine";
+import { buildPlanSource, planContextFor } from "@/lib/planContext";
+import { buildLastEntries, buildPrevEntries } from "@/lib/lastEntries";
+import { derivePhaseContext } from "@/lib/phaseContext";
 import { todayISO } from "@/lib/format";
 import { useExercises } from "./useExercises";
 import { useSessions } from "./useSessions";
@@ -100,36 +95,13 @@ export function useCoachStatuses(): UseCoachStatuses {
     const freeMode = ph.journeyId === null;
 
     // Wochenplan-Stand der laufenden Phase - dieselbe Quelle wie der Live-Aufbau.
-    const planSource: PlanSource | null = ph.planWeek
-      ? (() => {
-          const weekOf = journeyWeekLookup(
-            toPlacementSessions(sessionsQ.data ?? []),
-            ph.journeyId ?? "",
-            freqTarget,
-            toPlacementPhases(journeyQ.data?.phases ?? []),
-          );
-          const current = ph.placement?.globalWeek ?? 1;
-          return {
-            week: ph.planWeek,
-            prevWeek: ph.prevPlanWeek,
-            startReps: ph.firstPlanWeek?.reps ?? null,
-            anchorPhaseId: ph.anchorPhaseId,
-            deload: ph.deload,
-            currentWeekEntryByExercise: buildWeekEntries(
-              detailedQ.data ?? [],
-              weekOf,
-              current,
-              ph.phaseId,
-            ),
-            previousWeekEntryByExercise: buildWeekEntries(
-              detailedQ.data ?? [],
-              weekOf,
-              current - 1,
-              ph.phaseId,
-            ),
-          };
-        })()
-      : null;
+    const planSource = buildPlanSource(
+      ph,
+      sessionsQ.data ?? [],
+      detailedQ.data ?? [],
+      journeyQ.data?.phases ?? [],
+      freqTarget,
+    );
 
     for (const e of exercisesQ.data ?? []) {
       const exo: CoachBuildExercise = {

@@ -16,7 +16,7 @@
 //
 // Reine Textbildung ohne DB-/DOM-Bezug, gleiche Schicht wie `lib/planNote.ts`.
 
-import type { CoachReason } from "@/engine";
+import type { CoachReason, CoachScope } from "@/engine";
 import { fmtKg } from "@/lib/format";
 
 /** Ab wann eine Differenz als echte Differenz zaehlt (Rundungsrauschen). */
@@ -134,4 +134,27 @@ export function coachNote(
 ): string {
   if (!reason) return "";
   return noteFor(reason, unit);
+}
+
+// ---- Beschriftung der Zeilen ------------------------------------------------
+//
+// Die Beschriftung folgt der Logik, die gerade gilt (Issue #268, Schritt 2).
+// Vorher stand ueber beiden Logiken dasselbe "Beim naechsten Mal", und aus der
+// Anzeige liess sich nicht ablesen, welche greift: in der Kraftphase gilt die
+// Vorgabe die ganze Woche, in der Doppelprogression nur bis zur naechsten
+// Einheit. Unterschiedliche Beschriftungen auf verschiedenen Karten derselben
+// Einheit sind gewollt - so werden die beiden Logiken zum ersten Mal sichtbar.
+
+/** Beschriftung der Zahlen-Zeile. Die Wochenvorgabe der Kraftphase steht fest,
+ *  egal wie die Einheit laeuft - sie traegt darum nie den Zwischenstand-Zusatz;
+ *  der Vorschlag fuer die naechste Einheit wandert mit jedem abgehakten Satz. */
+export function coachLineLabel(scope: CoachScope, provisional: boolean): string {
+  if (scope === "week") return "Diese Woche";
+  return provisional ? "Beim nächsten Mal (Stand jetzt)" : "Beim nächsten Mal";
+}
+
+/** Beschriftung der Ausblick-Zeile. Sie haengt am Verlauf der Einheit und traegt
+ *  darum den Zwischenstand-Zusatz, solange Arbeitssaetze offen sind. */
+export function coachOutlookLabel(provisional: boolean): string {
+  return provisional ? "Nächste Woche (Stand jetzt)" : "Nächste Woche";
 }
