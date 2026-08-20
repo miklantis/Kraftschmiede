@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.44.4",
+      "date": "2026-08-20",
+      "changes": [
+        "Die Journey-Seite hat einen neuen Abschnitt \"Übungen in dieser Journey\": Unter den Workouts stehen alle Übungen der zugewiesenen Workouts - gruppiert wie auf der Übungsseite (Hauptübungen, Assistenz, Core, Körpergewicht).",
+        "Je Übung steht dort, wie viele Einheiten sie in dieser Journey schon hatte; eine Übung ohne Einheit hält ihren Platz mit dem Hinweis \"noch keine Einheit\".",
+        "Schaltest du oben ein Workout an oder ab, zieht die Liste sofort mit - auch offline. Ein Tippen auf eine Zeile führt wie gewohnt zur Übung."
+      ]
+    },
+    {
       "version": "1.44.3",
       "date": "2026-08-20",
       "changes": [

@@ -8,6 +8,7 @@ import {
   exLineSeries,
   exVolumeSeries,
   recordSeries,
+  filterJourneySessions,
   type ExHistoryEntry,
 } from "@/lib/exerciseHistory";
 import type { HistorySessionInput, HistoryExercise } from "@/lib/history";
@@ -15,10 +16,13 @@ import type { HistorySessionInput, HistoryExercise } from "@/lib/history";
 function session(
   date: string,
   exercises: HistoryExercise[],
+  stamp: { journeyId?: string | null; journeyWeek?: number | null } = {},
 ): HistorySessionInput {
   return {
     id: "s-" + date,
     date,
+    journeyId: stamp.journeyId ?? null,
+    journeyWeek: stamp.journeyWeek ?? null,
     type: "strength",
     templateId: null,
     skillId: null,
@@ -406,6 +410,8 @@ describe("recordSeries – 1RM-Rekord-Treppe", () => {
   // Einheit). record1RM=null => Einheit ohne tauglichen Satz.
   const rEntry = (date: string, record1RM: number | null): ExHistoryEntry => ({
     date,
+    journeyId: null,
+    journeyWeek: null,
     topW: 0,
     reps: 0,
     vol: 0,
@@ -471,5 +477,32 @@ describe("recordSeries – 1RM-Rekord-Treppe", () => {
 
   it("ohne Kandidaten und ohne gespeicherten Rekord: keine Punkte", () => {
     expect(recordSeries([rEntry("2026-01-01", null)], [], null)).toHaveLength(0);
+  });
+});
+
+describe("Journey-Stempel im Verlauf", () => {
+  const j1 = "journey-1";
+  const j2 = "journey-2";
+  const sessions: HistorySessionInput[] = [
+    session("2026-01-05", [strengthEx("ex1", [{ kind: "work", weight: 80, reps: 5 }])], { journeyId: j1, journeyWeek: 1 }),
+    session("2026-01-12", [strengthEx("ex1", [{ kind: "work", weight: 82.5, reps: 5 }])], { journeyId: j1, journeyWeek: 2 }),
+    session("2026-02-02", [strengthEx("ex1", [{ kind: "work", weight: 85, reps: 5 }])], { journeyId: j2, journeyWeek: 1 }),
+    session("2026-02-09", [strengthEx("ex1", [{ kind: "work", weight: 87.5, reps: 5 }])]),
+  ];
+
+  it("reicht Journey und eingefrorene Woche in jeden Eintrag durch", () => {
+    const h = buildExerciseHistory("ex1", sessions);
+    expect(h.map((e) => e.journeyId)).toEqual([j1, j1, j2, null]);
+    expect(h.map((e) => e.journeyWeek)).toEqual([1, 2, 1, null]);
+  });
+
+  it("filtert die Einheiten ueber den Stempel, nicht ueber das Datum", () => {
+    const only = filterJourneySessions(sessions, j1);
+    expect(only.map((s) => s.date)).toEqual(["2026-01-05", "2026-01-12"]);
+    expect(buildExerciseHistory("ex1", only)).toHaveLength(2);
+  });
+
+  it("laesst frei trainierte Einheiten aussen vor", () => {
+    expect(filterJourneySessions(sessions, "unbekannt")).toEqual([]);
   });
 });

@@ -53,6 +53,15 @@ export interface HistorySessionInput {
    *  nicht braucht – der Wochenplan des Coaches schon (Einheiten der laufenden
    *  Phase von denen davor trennen). */
   phaseId?: string | null;
+  /** Journey, in der die Einheit lag (sessions.journey_id). Der Stempel der
+   *  Einheit ist die einzige Quelle dafuer, zu welcher Journey sie zaehlt –
+   *  nicht nachtraeglich ueber das Datum geraten. null = frei trainiert.
+   *  Optional, weil aeltere Aufrufer ihn nicht mitliefern. */
+  journeyId?: string | null;
+  /** Eingefrorene globale Journey-Woche der Einheit (sessions.week). Sie sagt,
+   *  in welcher Woche der Journey die Einheit lag, auch wenn spaeter Phasen
+   *  verschoben werden. Optional wie journeyId. */
+  journeyWeek?: number | null;
   type: "strength" | "yoga" | "skill";
   templateId: string | null;
   skillId: string | null;
