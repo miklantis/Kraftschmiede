@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "version": "1.42.0",
+      "date": "2026-08-20",
+      "changes": [
+        "Ein Journey-Wechsel passiert nicht mehr mit einem einzigen Klick: Läuft bereits eine Journey, öffnet die Auswahl einer anderen Vorlage erst einen Dialog. Dort steht, wo du gerade stehst - Woche, Phase und Startdatum - und dass die laufende Journey ins Archiv wandert.",
+        "Bestätigt wird der Wechsel, indem du den Namen der laufenden Journey zeichengenau abtippst. Vorher bleibt der Knopf gesperrt; kopieren und einfügen geht nicht.",
+        "Läuft noch eine Einheit, ist der Wechsel gesperrt - erst beenden oder verwerfen, sonst hinge sie zwischen zwei Journeys.",
+        "Auf den Vorlagenkarten heißt der Knopf jetzt \"Zu dieser Journey wechseln\" statt \"Diese Journey starten\", solange eine Journey läuft, und oben auf der Seite steht ein Hinweis darauf. Man sieht damit vor dem Klick, was passiert.",
+        "Die Frage \"Workouts übernehmen?\" bleibt unverändert dort, wo sie war: nach dem Wechsel."
+      ]
+    },
+    {
       "version": "1.41.0",
       "date": "2026-08-20",
       "changes": [
