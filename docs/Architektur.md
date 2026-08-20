@@ -185,6 +185,8 @@ betroffene Tabelle beim Wiederherstellen leer.
 
 ## 4. Architektur-Leitplanken
 
+### 4.1 Engine und Coach
+
 - **Engine bleibt rein.** Die reinen Rechenfunktionen (1RM, Plate-Loader,
   Aufwärm-Generator, Doppelprogression, Suitability, Volumen/Deload, Skill-Advice) sind
   in TypeScript umgesetzt – mitsamt Unit-Tests. Da sie reine Funktionen sind (Daten rein,
@@ -192,15 +194,6 @@ betroffene Tabelle beim Wiederherstellen leer.
   Glue-/Coach-Schicht greift darauf zu.
 - **Coach als eigenes, testbares Modul** (`coach.ts`): nimmt Zustand explizit herein,
   gibt Entscheidungen heraus – gleiche Form wie die Engine. Kein DOM-Bezug.
-- **Journey-Standort an einer Stelle.** „Wo stehe ich gerade?" beantwortet
-  `derivePhaseContext` (`lib/phaseContext.ts`): es nimmt die Session- und Phasen-Zeilen
-  herein, bringt sie selbst auf die Engine-Form (`toPlacementSessions`,
-  `toPlacementPhases`), ruft `journeyPlacement` und liefert Platzierung, laufende Phase,
-  Fokus, Repband, Volumen-Phase, Woche und Lastfaktor. Trainingsbildschirm, Journey-Seite,
-  Übungs-Statusanzeige, Live-Aufbau und das „Übung anpassen"-Popup setzen sich daraus
-  zusammen, ohne selbst zu platzieren. Ausnahme: der Coach-Export liest aus einem
-  Export-JSON statt aus Hooks und behält seine eigene Zeilenform – die Regeln (Band,
-  Lastfaktor) teilt er trotzdem.
 - **Phasen-Repband schlägt Übungs-Repband.** Läuft eine Journey, rechnet der Coach bei
   Kraftübungen mit dem Wiederholungsband der aktiven Phase (ersatzweise aus deren Fokus
   abgeleitet); das Band aus dem Übungskatalog ruht solange. Core- und
@@ -237,6 +230,18 @@ betroffene Tabelle beim Wiederherstellen leer.
   Intensitätslinie), Trainingsbildschirm (`phaseContext.loadNote`, eingefroren auf die
   laufende Einheit), Rückschau und Coach-Export genutzt. Journeys mit Lastfaktor 1
   überall sehen unverändert aus – keine zusätzliche Zeile, kein Hinweis.
+
+### 4.2 Journey, Phasen und Wochenplan
+
+- **Journey-Standort an einer Stelle.** „Wo stehe ich gerade?" beantwortet
+  `derivePhaseContext` (`lib/phaseContext.ts`): es nimmt die Session- und Phasen-Zeilen
+  herein, bringt sie selbst auf die Engine-Form (`toPlacementSessions`,
+  `toPlacementPhases`), ruft `journeyPlacement` und liefert Platzierung, laufende Phase,
+  Fokus, Repband, Volumen-Phase, Woche und Lastfaktor. Trainingsbildschirm, Journey-Seite,
+  Übungs-Statusanzeige, Live-Aufbau und das „Übung anpassen"-Popup setzen sich daraus
+  zusammen, ohne selbst zu platzieren. Ausnahme: der Coach-Export liest aus einem
+  Export-JSON statt aus Hooks und behält seine eigene Zeilenform – die Regeln (Band,
+  Lastfaktor) teilt er trotzdem.
 - **Wochenplan der Phase liegt an der Phase.** Kraft-, Schnellkraft- und Testphasen
   tragen ihren Wochenplan als jsonb an der Phase (`week_plan`): je Woche Sätze,
   Wiederholungen, Ziel-Anstrengung (RIR), Anteil am Arbeitsgewicht und ein kurzer
@@ -342,6 +347,9 @@ betroffene Tabelle beim Wiederherstellen leer.
   `deload_week`. Dadurch steigt der Kraftblock sichtbar an, die Entlastungswoche bricht
   ein und die Testwoche steht ohne Volumen auf höchster Intensität. Phasen ohne Plan rechnen unverändert über Repband und Satz-Rampe; der
   Chart-Baustein selbst bleibt unangetastet (reiner Datenteil).
+
+### 4.3 Datenzugriff und Schreibwege
+
 - **Datenzugriff gekapselt** in Query-/Mutation-Hooks je Entität (z. B.
   `useSessions`, `useExercises`). Komponenten kennen kein Supabase direkt.
 - **Naht zur Datenbank je Schreibbereich** (`src/lib/<bereich>Store.ts` +
@@ -404,6 +412,9 @@ betroffene Tabelle beim Wiederherstellen leer.
   haben bewusst keinen eigenen Schlüssel: sie rechnen im Speicher aus den Hooks und
   ziehen automatisch nach, sobald eine ihrer Quellen aufgefrischt wird. Die Wurzelnamen
   sind zugleich der Vertrag mit dem Offline-Cache und werden nicht umbenannt.
+
+### 4.4 Live-Training
+
 - **Live-Training: der Store hält, `lib/live*` entscheidet.** Der geräte-lokale Store
   `src/hooks/useLiveSession.ts` hält den Zustand der laufenden Einheit, sichert ihn im
   Gerätespeicher und löst die Seiteneffekte aus (Ton, Pause, Uhr). Entschieden und
@@ -433,6 +444,9 @@ betroffene Tabelle beim Wiederherstellen leer.
   machen und damit einen sichtbaren Zwischenstand erzeugen (Panel schon weg,
   Pausenleiste noch da). Ein Testgewinn wäre davon ohnehin nicht zu erwarten: Hooks und
   Stores sind ungetestet, solange keine Test-Bibliothek für React installiert ist.
+
+### 4.5 UI und Sprache
+
 - **Wiederverwendbare Primitives** in `src/components/ui` (Modal, DataTable, Sheet,
   MuscleMap, Chart). Genau das Ziel: einmal bauen, überall nutzen.
 - **shadcn/ui als Fundament, nicht als Optik.** shadcn liefert die unsichtbare Mechanik
