@@ -14,12 +14,14 @@ import { SkillTitle } from "@/components/skills/SkillTitle";
 import { JourneyStrip } from "@/components/training/JourneyStrip";
 import { UpdateBanner } from "@/components/training/UpdateBanner";
 import { RecommendedWorkout } from "@/components/training/RecommendedWorkout";
+import { TestWeekPanel } from "@/components/training/TestWeekPanel";
 import { YogaEntryModal } from "@/components/training/YogaEntryModal";
 import { HistorySection } from "@/components/history/HistorySection";
 import { useTrainingOverview } from "@/hooks/useTrainingOverview";
 import { useLiveSession } from "@/hooks/useLiveSession";
 import { useLiveBuilder } from "@/hooks/useLiveBuilder";
 import { useSkillLiveBuilder } from "@/hooks/useSkillLiveBuilder";
+import { useStartRmTest } from "@/hooks/useStartRmTest";
 
 // Startroute = Training (wie V1). Reine Uebersichts-/Empfehlungsseite: zeigt an
 // und fuehrt hin. Workout- und Skill-Start oeffnen das Live-Start-Popup; die
@@ -34,6 +36,7 @@ function TrainingPage(): React.ReactElement {
   const { openStartWorkout, openStartSkill } = useLiveSession();
   const builder = useLiveBuilder();
   const skillBuilder = useSkillLiveBuilder();
+  const rmTest = useStartRmTest();
   const [note, setNote] = useState<string | null>(null);
   const [yogaOpen, setYogaOpen] = useState(false);
 
@@ -97,6 +100,16 @@ function TrainingPage(): React.ReactElement {
 
   const trainingColumn = (
     <>
+      {/* Testwoche: steht vor der Empfehlung, weil sie die Woche erklaert -
+          verstellt sie aber nicht, trainieren bleibt erlaubt. */}
+      {data.testWeek && (
+        <TestWeekPanel
+          view={data.testWeek}
+          onStart={rmTest.startById}
+          blocked={rmTest.blocked}
+        />
+      )}
+
       <Section eyebrow="Heute empfohlen">
         {data.hero ? (
           <RecommendedWorkout

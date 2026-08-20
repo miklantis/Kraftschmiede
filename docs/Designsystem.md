@@ -234,7 +234,7 @@ oben auf:
 
 - `auth` – Anmelde-/Einladungs-Screens; `AuthCard` ist der gemeinsame Karten-Rahmen (Lockup + weiße Karte), den Login- und Einladungs-Screen teilen
 - `shell` – Rahmen der App (Navigation, Sidebar, Seitengerüst)
-- `training` – Trainingsübersicht und Empfehlung
+- `training` – Trainingsübersicht und Empfehlung; darunter `TestWeekPanel` (Hinweis auf die laufende Testwoche samt Frist und Liste der Hauptübungen mit direktem 1RM-Test-Start)
 - `live` – Live-Session (Kraft und Skill) während des Trainings
 - `journey` – Journey / Periodisierung
 - `skills` – Skill-Fortschritt

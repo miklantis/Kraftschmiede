@@ -1,6 +1,16 @@
 {
   "versions": [
     {
+      "version": "1.41.0",
+      "date": "2026-08-20",
+      "changes": [
+        "In der Testwoche steht auf dem Trainingsbildschirm jetzt oben, dass sie läuft und bis wann: \"Testwoche - bis Sonntag, 23. August\". Die Frist läuft damit nicht mehr still ab.",
+        "Darunter stehen deine Hauptübungen als Liste - ein Tippen startet den 1RM-Test direkt, ohne Umweg über die Übungsseite. Was du in dieser Woche schon getestet hast, ist abgehakt, daneben der Stand (\"2 von 5 getestet\").",
+        "Bei vier bis fünf Hauptübungen entfällt damit das Durchklicken jeder einzelnen Übungsseite und das Mitzählen im Kopf.",
+        "Die Liste entscheidet nichts: Die Woche endet am Sonntag, egal was darauf noch offen ist. Trainieren bleibt in der Testwoche erlaubt - die Empfehlung und alle Workouts stehen unverändert darunter."
+      ]
+    },
+    {
       "version": "1.40.0",
       "date": "2026-08-20",
       "changes": [

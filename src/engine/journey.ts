@@ -124,6 +124,15 @@ export function isoWeekKey(dateStr: string): string {
   return isoWeekKeyOf(new Date(dateStr + "T00:00:00"));
 }
 
+/** Sonntag der Kalenderwoche, in der dateStr liegt ("YYYY-MM-DD"). Die Frist der
+ *  laufenden Woche - in der reinen Testwoche der Tag, an dem die Journey
+ *  durchlaeuft, ob getestet wurde oder nicht (#240). */
+export function sundayOfWeek(dateStr: string): string {
+  const d = mondayOf(dateStr);
+  d.setDate(d.getDate() + 6);
+  return isoDateOf(d);
+}
+
 function isoWeekKeyOf(d: Date): string {
   const t = new Date(d.valueOf());
   const day = (d.getDay() + 6) % 7; // Mo=0 .. So=6

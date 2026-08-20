@@ -116,6 +116,7 @@ describe("derivePhaseContext", () => {
       firstPlanWeek: null,
       deload: false,
       anchorPhaseId: null,
+      testWeek: false,
     });
   });
 
@@ -181,6 +182,7 @@ describe("derivePhaseContext – Testphase", () => {
     const ctx = derivePhaseContext(journeyWith(phases), sessions, 3, "2026-08-12");
     expect(ctx.phaseId).toBe(TEST);
     expect(ctx.deload).toBe(true);
+    expect(ctx.testWeek).toBe(false);
     expect(ctx.planWeek).toMatchObject({ sets: 2, reps: 3, repsMax: 5, loadPct: 0.6 });
   });
 
@@ -205,10 +207,34 @@ describe("derivePhaseContext – Testphase", () => {
     expect(ctx.anchorPhaseId).toBeNull();
   });
 
+  // Schritt 3 (#240/#246): die reine Testwoche meldet sich als solche, damit
+  // der Trainingsbildschirm dort Frist und Testliste zeigen kann.
+  it("meldet die reine Testwoche als Testwoche", () => {
+    const ctx = derivePhaseContext(
+      journeyWith(phases),
+      sessionsUpTo(woche1, woche2),
+      3,
+      "2026-08-19",
+    );
+    expect(ctx.testWeek).toBe(true);
+  });
+
+  it("meldet keine Testwoche mehr, sobald die Journey durchlaufen ist", () => {
+    const ctx = derivePhaseContext(
+      journeyWith(phases),
+      sessionsUpTo(woche1, woche2),
+      3,
+      "2026-08-26",
+    );
+    expect(ctx.placement?.done).toBe(true);
+    expect(ctx.testWeek).toBe(false);
+  });
+
   it("bleibt in der Kraftphase bei der eigenen Phase als Anker", () => {
     const ctx = derivePhaseContext(journeyWith(phases), [], 3, "2026-08-05");
     expect(ctx.phaseId).toBe(KRAFT);
     expect(ctx.deload).toBe(false);
+    expect(ctx.testWeek).toBe(false);
     expect(ctx.anchorPhaseId).toBe(KRAFT);
   });
 

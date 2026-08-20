@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useLiveSession } from "./useLiveSession";
 import { useBars, usePlates, useDumbbells } from "./useInventory";
+import { useExercises } from "./useExercises";
 import { useSettings } from "./useSettings";
 import { buildTestSets, testWeight } from "@/lib/rmTest";
 import { fmtWeight } from "@/lib/format";
@@ -32,6 +33,9 @@ function toLiveSet(reps: number, weight: number): LiveSet {
 
 export function useStartRmTest(): {
   start: (exercise: ExerciseRow) => void;
+  /** Start ueber die Uebungs-Id, fuer Aufrufer ohne die ganze Zeile (z. B. die
+   *  Testliste auf dem Trainingsbildschirm). Unbekannte Id tut nichts. */
+  startById: (exerciseId: string) => void;
   /** Laeuft bereits eine Einheit? Dann ist der Start gesperrt. */
   blocked: boolean;
 } {
@@ -39,6 +43,7 @@ export function useStartRmTest(): {
   const barsQ = useBars();
   const platesQ = usePlates();
   const dumbbellsQ = useDumbbells();
+  const exercisesQ = useExercises();
   const settingsQ = useSettings();
   const startRmTest = live.startRmTest;
   const blocked = live.session != null;
@@ -85,5 +90,15 @@ export function useStartRmTest(): {
     [bars, plateRows, dumbbellRows, step, unit, startRmTest],
   );
 
-  return { start, blocked };
+  const exercises = exercisesQ.data;
+  const startById = useCallback(
+    (exerciseId: string): void => {
+      const ex = (exercises ?? []).find((e) => e.id === exerciseId);
+      if (!ex) return;
+      start(ex);
+    },
+    [exercises, start],
+  );
+
+  return { start, startById, blocked };
 }

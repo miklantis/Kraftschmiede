@@ -111,6 +111,11 @@ export interface PhaseContext {
   // der Rampe die laufende Phase selbst, in der Entlastung die vorangegangene
   // Kraftphase (dort liegt das Startgewicht X). null = kein Plan-Bezug.
   anchorPhaseId: string | null;
+  // Laeuft gerade die reine Testwoche am Ende einer Testphase? Sie plant keine
+  // Einheit und erfuellt sich selbst - der Trainingsbildschirm zeigt dort statt
+  // einer Vorgabe den Hinweis auf die Frist und die Testliste (#240). Nach dem
+  // Durchlaufen der Journey ist das Feld falsch: dann ist nichts mehr offen.
+  testWeek: boolean;
 }
 
 export function derivePhaseContext(
@@ -134,6 +139,7 @@ export function derivePhaseContext(
   let firstPlanWeek: WeekPlanWeek | null = null;
   let deload = false;
   let anchorPhaseId: string | null = null;
+  let testWeek = false;
 
   if (journey) {
     journeyId = journey.id;
@@ -170,6 +176,14 @@ export function derivePhaseContext(
       // deshalb gar nichts vor: der ganze Plan-Block bleibt leer, und der Coach
       // rechnet dort wie in einer Phase ohne Plan (#240).
       const week = weekPlanForWeek(phase.week_plan ?? null, placement.weekInPhase);
+      // Die reine Testwoche: Testphase, Plan vorhanden, Woche verlangt nichts -
+      // und die Journey laeuft noch. Ist sie durchlaufen, steht der Abschluss
+      // an und nicht mehr die Frist.
+      testWeek =
+        hasTestFocus(phase.focus) &&
+        phase.week_plan != null &&
+        !weekDemandsSession(week) &&
+        !placement.done;
       if (planGovernsLoad(phase.focus) && phase.week_plan && weekDemandsSession(week)) {
         planWeek = week;
         prevPlanWeek = weekPlanForWeek(phase.week_plan, placement.weekInPhase - 1);
@@ -212,5 +226,6 @@ export function derivePhaseContext(
     firstPlanWeek,
     deload,
     anchorPhaseId,
+    testWeek,
   };
 }
