@@ -277,7 +277,7 @@ betroffene Tabelle beim Wiederherstellen leer.
   vor: `derivePhaseContext` lässt den ganzen Plan-Block leer, der Coach rechnet dort wie
   in einer Phase ohne Plan. Trainieren ist erlaubt, aber nicht eingeplant; der 1RM-Test
   läuft unverändert von der Übungsseite. Ein neuer Phasentyp entsteht dafür nicht – die
-  Testphase bleibt `test`, nur mit zwei Wochen (Issue #240, Schritt 1).
+  Testphase bleibt `test`, nur mit zwei Wochen (ADR-0017, Issue #240, Schritt 1).
 - **Die Testwoche erklärt sich auf dem Trainingsbildschirm selbst.** Statt der Lücke, die
   eine Woche ohne Plan sonst hinterlässt, steht dort der Hinweis, dass die Testwoche läuft
   und bis wann (`sundayOfWeek` in `engine/journey.ts`), darunter die Hauptübungen mit
@@ -300,7 +300,7 @@ betroffene Tabelle beim Wiederherstellen leer.
   der ersten Einheit der Journey) statt über eine Menge von Wochenschlüsseln. Dafür
   gehören die Wochenpläne zur Platzierung: die Phasen kommen als `PhaseLike` samt
   `weekPlan` herein (`toPlacementPhases`), überall gleich, damit Übungsseite, Live-Aufbau
-  und Journey dieselbe Woche zeigen (Issue #240, Schritt 2).
+  und Journey dieselbe Woche zeigen (ADR-0017, Issue #240, Schritt 2).
 - **Die Journey ist durchlaufen, wenn alle geplanten Wochen erfüllt und vorbei sind.**
   Nicht mehr beim Beenden einer Einheit – zwei Regeln für dieselbe Frage wären die Quelle
   künftiger Abweichungen zwischen Anzeige und Abschluss. Ausgewertet wird das vorhandene
@@ -313,7 +313,8 @@ betroffene Tabelle beim Wiederherstellen leer.
   `end_date` steht der Sonntag der letzten geplanten Woche im Archiv (`journeyEndDate`),
   nicht der Tag des Merkens; sonst hinge die Dauer davon ab, wann die App zufällig
   geöffnet wurde. Das Popup „Journey abgeschlossen" kommt erst nach erfolgreichem
-  Archivieren.
+  Archivieren. Begründung samt Konsequenzen in ADR-0017; ADR-0014 gilt für den Abschluss
+  nicht mehr, sein Teil „ohne Journey gibt der Coach nichts vor" unverändert weiter.
 - **Der Wochenplan ist dort sichtbar, wo er wirkt.** Auf dem Trainingsbildschirm steht
   der Hinweis der laufenden Planwoche (Phase und Woche, Sätze/Wiederholungen/RIR, was
   den nächsten Gewichtsschritt auslöst, dazu der Cluster-Hinweis) – gebaut an einer

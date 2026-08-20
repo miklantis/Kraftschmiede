@@ -1,7 +1,11 @@
 # ADR-0014 – Journey-Abschluss an der Einheit, freies Training ohne Vorgabe
 
-**Status:** akzeptiert
+**Status:** teilweise ersetzt durch [ADR-0017](./0017-journey-abschluss-ueber-den-kalender.md)
 **Datum:** 2026-08-08
+
+> Der Abschluss an der Einheit gilt nicht mehr – die Journey ist durchlaufen, wenn alle
+> geplanten Wochen erfüllt und vorbei sind (ADR-0017). „Ohne Journey gibt der Coach nichts
+> vor" gilt unverändert weiter.
 
 ## Kontext
 
