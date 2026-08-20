@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { BackLink } from "@/components/ui/back-link";
 import { PageReveal } from "@/components/ui/page-reveal";
 import { Overlay } from "@/components/ui/overlay";
 import { Button } from "@/components/ui/button";
+import { TypeToConfirm } from "@/components/ui/type-to-confirm";
 import {
   TemplateCard,
   type TemplateCardModel,
@@ -17,6 +18,15 @@ import { useActiveJourney } from "@/hooks/useJourney";
 import { useJourneyActions } from "@/hooks/useJourneyActions";
 import { useTemplates } from "@/hooks/useTemplates";
 import { useExercises } from "@/hooks/useExercises";
+import { useSessions } from "@/hooks/useSessions";
+import { useSettings } from "@/hooks/useSettings";
+import { useLiveSession } from "@/hooks/useLiveSession";
+import { derivePhaseContext } from "@/lib/phaseContext";
+import {
+  buildJourneySwitchStand,
+  journeySwitchBlockReason,
+} from "@/lib/journeySwitch";
+import { todayISO } from "@/lib/format";
 import {
   buildTemplatePhaseViews,
   totalWeeks,
@@ -33,6 +43,13 @@ import {
 // Vorlagen-Waehler: Zurueck-Knopf, optional Namensfeld der aktiven Journey,
 // dann die Vorlagen als Karten. Eine Vorlage waehlen legt eine neue aktive
 // Journey an und fuehrt zurueck ins Training (wie V1). Optik aus V1 (jr-pick).
+//
+// Laeuft bereits eine Journey, ist der Klick auf eine Karte kein Start mehr,
+// sondern ein Wechsel - und der endet die laufende Journey unwiderruflich.
+// Darum liegt davor der Bestaetigungs-Dialog (TypeToConfirm, Issue #257): er
+// zeigt den Stand der laufenden Journey und verlangt, ihren Namen abzutippen.
+// Ohne aktive Journey (erste Journey oder direkt nach dem Abschluss) gibt es
+// nichts zu verlieren - dort startet der Klick weiterhin direkt.
 export const Route = createFileRoute("/journey_/waehlen")({
   component: JourneyPickerPage,
 });
@@ -47,6 +64,9 @@ function JourneyPickerPage(): React.ReactElement {
   const actions = useJourneyActions();
   const workoutsQ = useTemplates();
   const exercisesQ = useExercises();
+  const sessionsQ = useSessions();
+  const settingsQ = useSettings();
+  const live = useLiveSession();
 
   // Uebernahme-Angebot beim Journey-Wechsel: nach dem Anlegen der neuen Journey
   // gehalten, solange das Ja/Nein-Overlay offen ist.
@@ -55,10 +75,42 @@ function JourneyPickerPage(): React.ReactElement {
     copyableIds: string[];
   } | null>(null);
   const [finishing, setFinishing] = useState(false);
+  // Vorlage, deren Wechsel gerade bestaetigt werden soll (null = kein Dialog).
+  const [switchTo, setSwitchTo] = useState<JourneyTemplateWithPhases | null>(
+    null,
+  );
 
   const active = journeyQ.data ?? null;
   const hasActive = active !== null;
   const title = hasActive ? "Vorlage wechseln" : "Journey wählen";
+
+  // Stand der laufenden Journey fuer den Wechsel-Dialog: Woche, Phase und
+  // Startdatum kommen aus derselben Stelle wie ueberall (derivePhaseContext).
+  const stand = useMemo(() => {
+    if (active === null) return null;
+    const ctx = derivePhaseContext(
+      active,
+      sessionsQ.data ?? [],
+      settingsQ.data?.weekly_frequency_target || 3,
+      todayISO(),
+    );
+    return buildJourneySwitchStand({
+      name: active.name,
+      globalWeek: ctx.placement?.globalWeek ?? 1,
+      totalWeeks: totalWeeks(active.phases),
+      phaseName: ctx.phase?.name ?? null,
+      startDate: active.start_date,
+    });
+  }, [active, sessionsQ.data, settingsQ.data]);
+
+  // Eine noch nicht beendete Einheit sperrt den Wechsel.
+  const blockReason = journeySwitchBlockReason(live.session);
+
+  const errorText =
+    actions.error == null
+      ? null
+      : "Aktion fehlgeschlagen" +
+        (actions.error instanceof Error ? ": " + actions.error.message : ".");
 
   const goHome = (): void => {
     void navigate({ to: "/" });
@@ -79,10 +131,15 @@ function JourneyPickerPage(): React.ReactElement {
     );
   };
 
+  // Legt die neue Journey an und fuehrt den bisherigen Ablauf unveraendert
+  // weiter. Der Bestaetigungs-Dialog schliesst erst, wenn das Anlegen durch
+  // ist - schlaegt es fehl (z. B. kein Netz), bleibt er offen und zeigt den
+  // Fehler, statt still zu verschwinden.
   const start = (template: JourneyTemplateWithPhases): void => {
     void actions
       .createFromTemplate(template)
       .then(async ({ newJourneyId, previousJourneyId }) => {
+        setSwitchTo(null);
         if (previousJourneyId === null) {
           goHome();
           return;
@@ -97,8 +154,20 @@ function JourneyPickerPage(): React.ReactElement {
         setOffer({ newJourneyId, copyableIds });
       })
       .catch(() => {
-        // Fehler beim Anlegen wird ueber actions.error angezeigt.
+        // Fehler wird ueber actions.error angezeigt - auf der Seite und im
+        // offen bleibenden Dialog.
       });
+  };
+
+  // Klick auf eine Vorlagenkarte: ohne aktive Journey gibt es nichts zu
+  // verlieren und es startet direkt. Sonst immer erst der Dialog - auch bei
+  // einer Journey, die gerade erst gestartet wurde.
+  const pick = (template: JourneyTemplateWithPhases): void => {
+    if (!hasActive) {
+      start(template);
+      return;
+    }
+    setSwitchTo(template);
   };
 
   const adopt = (): void => {
@@ -120,7 +189,12 @@ function JourneyPickerPage(): React.ReactElement {
 
   const back = <BackLink to="/journey" label="Journey" />;
 
-  if (templatesQ.isLoading || journeyQ.isLoading) {
+  if (
+    templatesQ.isLoading ||
+    journeyQ.isLoading ||
+    sessionsQ.isLoading ||
+    settingsQ.isLoading
+  ) {
     return (
       <div>
         {back}
@@ -202,13 +276,16 @@ function JourneyPickerPage(): React.ReactElement {
         {INTRO}
       </p>
 
-      {actions.error != null && (
-        <p className="mb-4 text-sm text-danger">
-          Aktion fehlgeschlagen
-          {actions.error instanceof Error
-            ? ": " + actions.error.message
-            : "."}
-        </p>
+      {hasActive && (
+        <div className="mb-6 rounded-[14px] border border-primary/30 bg-primary/10 px-4 py-3 text-[13px] leading-[1.55] text-foreground min-[960px]:mb-7">
+          Gerade läuft die Journey <strong className="font-semibold">{active.name}</strong>.
+          Eine andere Vorlage zu wählen beendet sie – sie wandert ins Archiv und
+          kann nicht fortgesetzt werden.
+        </div>
+      )}
+
+      {errorText !== null && (
+        <p className="mb-4 text-sm text-danger">{errorText}</p>
       )}
 
       <PageReveal>
@@ -220,11 +297,51 @@ function JourneyPickerPage(): React.ReactElement {
               periodization={periodization}
               phases={phases}
               busy={actions.isCreating}
-              onStart={() => start(template)}
+              switching={hasActive}
+              onStart={() => pick(template)}
             />
           ))}
         </div>
       </PageReveal>
+
+      {stand !== null && (
+        <TypeToConfirm
+          open={switchTo !== null}
+          onClose={() => setSwitchTo(null)}
+          title="Journey wechseln?"
+          word={stand.name}
+          confirmLabel="Journey wechseln"
+          onConfirm={() => {
+            if (switchTo !== null) start(switchTo);
+          }}
+          busy={actions.isCreating}
+          blockedReason={blockReason}
+          error={errorText}
+        >
+          <div className="mb-4 rounded-[14px] bg-muted px-4 py-3">
+            <div className="text-[15px] font-bold text-foreground">
+              {stand.name}
+            </div>
+            <div className="mt-1 text-[13px] leading-[1.5] text-muted-foreground">
+              {stand.week}
+              {stand.phase !== null && <> · {stand.phase}</>}
+            </div>
+            {stand.start !== null && (
+              <div className="text-[13px] leading-[1.5] text-muted-foreground">
+                {stand.start}
+              </div>
+            )}
+          </div>
+          <p className="mb-4 text-[14px] leading-[1.55] text-muted-foreground">
+            Sie wandert ins Archiv und kann nicht fortgesetzt werden. Stattdessen
+            startet{" "}
+            <strong className="font-semibold text-foreground">
+              {switchTo?.name ?? ""}
+            </strong>{" "}
+            in Woche 1.
+          </p>
+        </TypeToConfirm>
+      )}
 
       <Overlay
         open={offer !== null}

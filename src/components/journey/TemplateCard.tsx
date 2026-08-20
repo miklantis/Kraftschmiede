@@ -21,17 +21,24 @@ export interface TemplateCardModel {
 // Baender, ohne "jetzt"-Marker), einen aufklappbaren Phasen-Ablauf wie auf der
 // Journey-Seite und den Startknopf. Die aktive Vorlage zeigt einen
 // ruhenden Status statt eines Knopfs. Optik aus V1 (jr-tpl).
+//
+// `switching` sagt, dass bereits eine Journey laeuft: dann heisst der Knopf
+// "Zu dieser Journey wechseln" statt "Diese Journey starten" - man sieht vor
+// dem Klick, dass hier etwas endet (Issue #257).
 export function TemplateCard({
   model,
   periodization,
   phases,
   busy,
+  switching,
   onStart,
 }: {
   model: TemplateCardModel;
   periodization: PeriodizationData;
   phases: PhaseView[];
   busy: boolean;
+  /** Laeuft bereits eine Journey? Aendert nur den Knopftext. */
+  switching: boolean;
   onStart: () => void;
 }): React.ReactElement {
   // Zugeklappt, damit die Liste scanbar bleibt; der Ablauf wird je Vorlage
@@ -96,7 +103,11 @@ export function TemplateCard({
             : "bg-primary text-primary-foreground hover:brightness-105 disabled:opacity-60")
         }
       >
-        {model.active ? "✓ Aktive Journey" : "Diese Journey starten"}
+        {model.active
+          ? "✓ Aktive Journey"
+          : switching
+            ? "Zu dieser Journey wechseln"
+            : "Diese Journey starten"}
       </button>
     </div>
   );

@@ -186,6 +186,7 @@ Doku nur als Beispiel im Text stehen – samt Farben, die es in der App gar nich
 | **BackLink** | Einheitlicher Zurück-Link oben links auf Unterseiten, überall gleich (Grün, Chevron). |
 | **Prose** | Ruhiger Erklär-/Lauftext direkt auf dem Hintergrund (ohne Karte/Rahmen): einleitender Absatz auf einer Seite, z. B. „Was ist eine Skill?" oder die Übungs-Beschreibung. |
 | **Overlay** | Popup-Fundament für alle modalen Dialoge: Desktop zentriertes Fenster, Mobile Bodenblatt von unten. Darauf setzt u. a. das bereichsübergreifend genutzte „Was ist neu"-Popup `WhatsNewSheet` (Trainingsseite + Einstellungen) auf. |
+| **TypeToConfirm** | Bestätigungs-Dialog für Handgriffe, die nicht aus Versehen passieren dürfen (auf `Overlay` aufgesetzt): Titel, Erklärung, ein abzutippendes Wort, Knopftext und Aktion kommen vom Aufrufer. Der Bestätigen-Knopf bleibt gesperrt, bis das Wort zeichengenau getippt ist (Groß-/Kleinschreibung und Umlaute inklusive, ohne Trimmen – Vergleich in `lib/typedConfirm`). Der ganze Dialog ist nicht markierbar, nur das Tippfeld selbst, damit Kopieren-Einfügen die Hürde nicht aushebelt; das Feld schaltet Autokorrektur, Auto-Großschreibung und Rechtschreibprüfung ab. Abbrechen/Schließen setzt es zurück. Ein `blockedReason` hält den Knopf gesperrt und steht als Hinweis im Dialog, ein `error` bleibt im offenen Dialog stehen. **Verbindlich für alle unwiderruflichen Handgriffe** dieser Art; erstmals beim Journey-Wechsel. |
 
 ### Eingabe & Bedienelemente
 
