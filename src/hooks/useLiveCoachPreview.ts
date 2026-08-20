@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { workSets } from "@/engine";
 import {
   suggestWithBar,
   coachScopeFor,
@@ -14,6 +15,7 @@ import {
   isBlockComplete,
   liveEntryToSetEntry,
   liveWorkWeight,
+  previewWorkWeight,
   type LiveCoachPreview,
 } from "@/lib/livePreview";
 import { todayISO } from "@/lib/format";
@@ -51,6 +53,11 @@ import { useBars, usePlates, useDumbbells } from "./useInventory";
 // Vorher lief beides durch eine Rechnung, die die laufende Einheit als Vorwoche
 // wertete - angezeigt wurde damit das Gewicht der naechsten Woche neben den
 // Wiederholungen der laufenden, ein Paar, das real nie vorkommt.
+//
+// Genau diese Trennung entscheidet auch, wann es ueberhaupt etwas zu zeigen gibt
+// (#268, Schritt 3): die Wochenvorgabe braucht keinen abgehakten Satz und steht
+// darum von Beginn der Einheit an, der Ausblick kommt erst dazu, wenn der erste
+// Satz steht. Ausserhalb des Wochenplans bleibt es beim ersten abgehakten Satz.
 
 interface CoachBar {
   id: string;
@@ -61,8 +68,10 @@ interface CoachBar {
 export interface UseLiveCoachPreview {
   /** Coach-Vorschau je Uebungsblock, adressiert ueber den Entry-Index (ei).
    *  Nach Index und nicht nach Uebungs-ID, weil dieselbe Uebung theoretisch
-   *  zweimal in einer Einheit stehen kann. Bloecke ohne abgehakten Satz und
-   *  nicht progressiv gerechnete Uebungen ("carry") fehlen im Ergebnis. */
+   *  zweimal in einer Einheit stehen kann. Nicht progressiv gerechnete Uebungen
+   *  ("carry") fehlen im Ergebnis, ebenso Bloecke ohne abgehakten Satz -
+   *  ausser bei Hauptuebungen im Wochenplan: deren Wochenvorgabe steht von
+   *  Beginn der Einheit an. */
   byEntry: Record<number, LiveCoachPreview>;
 }
 
@@ -127,10 +136,11 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
     workout.entries.forEach((entry, ei) => {
       const e = exMap.get(entry.exerciseId);
       if (!e) return;
-      // Kein Tor auf den vollstaendigen Block: ein abgehakter Satz genuegt.
-      const lastEntry = liveEntryToSetEntry(entry);
-      const workWeight = liveWorkWeight(entry);
-      if (!lastEntry || workWeight == null) return;
+      // Was diese Einheit bisher hergibt: die abgehakten Arbeitssaetze und das
+      // darin hoechste Gewicht. Kein Tor auf den vollstaendigen Block - ein
+      // abgehakter Satz genuegt, und im Wochenplan geht es auch ohne.
+      const judged = liveEntryToSetEntry(entry);
+      const workedWeight = liveWorkWeight(entry);
 
       // Wochenplan-Bezug wie beim Aufbau der Einheit: aus dem gespeicherten
       // Stand, nicht aus den Saetzen, die gerade laufen.
@@ -142,6 +152,10 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
         rm: e.rm,
       });
       const scope = coachScopeFor({ profile: e.profile, tier: e.tier }, plan);
+      // Grundlage der Rechnung; null heisst: die Doppelprogression hat ohne
+      // abgehakten Satz nichts zu bewerten, die Karte bleibt ohne Coach-Zeichen.
+      const workWeight = previewWorkWeight(scope, e.work_weight, workedWeight);
+      if (workWeight == null) return;
 
       const exo: CoachBuildExercise = {
         key: e.key,
@@ -152,21 +166,18 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
           e.rep_range_min != null && e.rep_range_max != null
             ? [e.rep_range_min, e.rep_range_max]
             : null,
-        // Die Doppelprogression rechnet aus dem im Block tatsaechlich bewegten
-        // Gewicht - dieselbe Groesse, die beim Beenden in den Katalog geht. Der
-        // Wochenplan bleibt beim Katalogstand: seine Vorgabe steht vor der
-        // Einheit fest und darf nicht mit ihr wandern.
-        workWeight: scope === "week" ? e.work_weight : workWeight,
+        workWeight,
         targetScore: e.target_score,
         barId: e.bar_id,
         referenceWeight: e.reference_weight,
         referencePhaseId: e.reference_phase_id,
         planStartWeight: e.plan_start_weight,
       };
+      const prevEntry = prevEntryByExercise[e.id] ?? null;
       const { suggestion, bar } = suggestWithBar(exo, {
         phaseFocus: ph.phaseFocus,
-        lastEntry,
-        prevEntry: prevEntryByExercise[e.id] ?? null,
+        lastEntry: judged,
+        prevEntry,
         weightStep,
         bars,
         plates,
@@ -180,29 +191,38 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
       // progressiv - dort gibt es nichts zu bewerten, also auch kein Icon.
       if (suggestion.decision === "carry") return;
       out[ei] = {
-        // Vordaten liegen hier immer vor - mindestens ein Satz ist abgehakt,
-        // sonst waeren wir oben ausgestiegen.
-        status: coachStatusFromSuggestion(suggestion, true, unit),
+        // Vordaten: was heute schon abgehakt ist, sonst der zuletzt
+        // gespeicherte Eintrag der Uebung. Ohne beides bleibt es beim
+        // Startzustand - dieselbe Lesart wie auf der Uebungsseite
+        // (useCoachStatuses), damit dort und hier dasselbe Zeichen steht.
+        status: coachStatusFromSuggestion(
+          suggestion,
+          judged != null || workSets(prevEntry).length > 0,
+          unit,
+        ),
         scope,
         // Ausblick: was aus dieser Woche wird, wenn die laufende Einheit die
-        // letzte dieser Uebung in der Woche bleibt.
-        outlook: planOutlook(
-          exo,
-          {
-            phase: ph.phaseFocus,
-            lastEntry,
-            weightStep,
-            bar: bar ? { weight: bar.weight } : undefined,
-            plates,
-            dumbbells,
-            plan,
-          },
-          {
-            weekWeight: suggestion.weight,
-            workedWeight: workWeight,
-            judged: lastEntry,
-          },
-        ),
+        // letzte dieser Uebung in der Woche bleibt. Ohne abgehakten Satz gibt es
+        // nichts zu bewerten - dann bleibt es bei der Wochenvorgabe allein.
+        outlook: judged
+          ? planOutlook(
+              exo,
+              {
+                phase: ph.phaseFocus,
+                lastEntry: judged,
+                weightStep,
+                bar: bar ? { weight: bar.weight } : undefined,
+                plates,
+                dumbbells,
+                plan,
+              },
+              {
+                weekWeight: suggestion.weight,
+                workedWeight,
+                judged,
+              },
+            )
+          : null,
         provisional: !isBlockComplete(entry),
       };
     });

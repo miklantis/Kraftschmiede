@@ -79,10 +79,11 @@ export function ExerciseLiveCard({
    *  Karte gar keine Notiz - so bleibt der Verlaufs-Bearbeiten-Modus vorerst
    *  unveraendert (Schritt 3 haengt ihn an). */
   onNote?: (note: string) => void;
-  /** Coach-Vorschau fuer diesen Block (#191): was der Coach beim naechsten Mal
-   *  vorschlagen wuerde, gerechnet ab dem ersten abgehakten Satz. Fehlt sie,
-   *  zeigt die Karte gar kein Coach-Zeichen - so bleiben Verlauf-Bearbeiten und
-   *  1RM-Test unveraendert. */
+  /** Coach-Vorschau fuer diesen Block (#191): was diese Woche gilt bzw. was der
+   *  Coach beim naechsten Mal vorschlagen wuerde. Im Wochenplan steht sie von
+   *  Beginn der Einheit an, sonst ab dem ersten abgehakten Satz (#268). Fehlt
+   *  sie, zeigt die Karte gar kein Coach-Zeichen - so bleiben Verlauf-Bearbeiten
+   *  und 1RM-Test unveraendert. */
   coach?: LiveCoachPreview;
   /** Bearbeiten-Modus (Verlauf): Stange/Scheiben/Haken/Aufwaermsaetze aus,
    *  Werte + RIR + „+/- Satz“ bleiben. Default false = unveraenderter Live-Look. */

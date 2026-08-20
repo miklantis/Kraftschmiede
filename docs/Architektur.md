@@ -221,6 +221,16 @@ betroffene Tabelle beim Wiederherstellen leer.
   neben den Wiederholungen der laufenden – ein Paar, das real nie vorkommt. Der
   Zwischenstand-Marker („Stand jetzt") hängt seither nur an der Zeile, die noch wandern
   kann (`previewProvisional` in `lib/livePreview.ts`).
+- **Die Wochenvorgabe steht vor der Einheit, der Ausblick erst danach.** Wovon die
+  Coach-Vorschau rechnet, entscheidet `previewWorkWeight` (`lib/livePreview.ts`) am
+  `CoachScope`: im Wochenplan der Katalogstand – die Vorgabe der Woche ist vor dem ersten
+  Satz entschieden und liegt als Zielgewicht auf den Sätzen –, sonst das im Block
+  tatsächlich bewegte Gewicht. Damit trägt eine Hauptübung im Wochenplan ihren
+  Coach-Block von Beginn der Einheit an; ohne Wochenplan bleibt es beim ersten
+  abgehakten Satz (`useLiveCoachPreview`). Der Ausblick auf die Folgewoche kommt in
+  beiden Fällen erst mit dem ersten abgehakten Satz. Das Coach-Zeichen setzt damit keine
+  Bewertung der laufenden Einheit mehr voraus: ohne jede Vordaten steht es wie auf der
+  Übungsseite im Zustand „Start".
 - **Phasen-Repband schlägt Übungs-Repband.** Läuft eine Journey, rechnet der Coach bei
   Kraftübungen mit dem Wiederholungsband der aktiven Phase (ersatzweise aus deren Fokus
   abgeleitet); das Band aus dem Übungskatalog ruht solange. Core- und
