@@ -4,6 +4,7 @@
 // Wird das Wiederholungsziel zweimal in Folge am selben Gewicht verfehlt, geht
 // es einen Schritt zurueck (Rueckwaertsregel, ADR-0015).
 
+import type { CoachReason, CoachReasonCode } from "./coachReason";
 import { avg } from "./math";
 import { nearestLoadable, nearestDumbbell } from "./plates";
 import { metTarget, workSets } from "./target";
@@ -51,7 +52,8 @@ export interface SuggestResult {
   weight: number;
   targetReps: number;
   decision: SuggestDecision;
-  note: string;
+  /** Kennung samt Zahlen; den Satz baut lib/coachText.ts (Issue #268). */
+  reason: CoachReason;
 }
 
 const DEFAULT_PLATES = [1.25, 2.5, 5, 10, 15, 20, 25];
@@ -143,6 +145,27 @@ export function suggestWeight(
       ? nearestDumbbell(x, o.dumbbells, !!down)
       : nearestLoadable(x, bar.weight, plates, !!down);
 
+  // Ergebnis samt Kennung. Die Differenz zum heutigen Gewicht W entsteht immer
+  // hier - so traegt jeder Vorschlag die tatsaechliche Differenz und nicht die
+  // eingestellte Schrittweite: bei Kurzhanteln und krummen Scheiben weicht sie
+  // ab. Den Satz dazu baut lib/coachText.ts (Issue #268).
+  const result = (
+    weight: number,
+    targetReps: number,
+    decision: SuggestDecision,
+    code: CoachReasonCode,
+    band?: number,
+  ): SuggestResult => ({
+    weight,
+    targetReps,
+    decision,
+    reason: {
+      code,
+      diff: Math.round((weight - W) * 100) / 100,
+      bandTop: band,
+    },
+  });
+
   // Rampenlast der Journey, auf eine ladbare Stufe abgerundet.
   const ramp =
     o.ramp && o.ramp.weight > 0
@@ -163,30 +186,24 @@ export function suggestWeight(
     if (!ramp.cap) {
       // Abschlussphase: nur Untergrenze, und nur wenn nicht gerade gesenkt wird.
       if (reacting || res.weight >= ramp.weight - 1e-9) return res;
-      return {
-        weight: ramp.weight,
-        targetReps: res.targetReps,
-        decision: "increase",
-        note: "Abschlussphase – zurueck auf das Referenzgewicht",
-      };
+      return result(ramp.weight, res.targetReps, "increase", "ramp-restore");
     }
     if (res.weight > ramp.weight + 1e-9) {
-      return {
-        weight: ramp.weight,
-        targetReps: capReps ?? res.targetReps,
-        decision: reacting ? res.decision : "hold",
-        note: reacting
-          ? res.note
-          : "Lastfaktor der Phase – Gewicht bleibt gedeckelt",
-      };
+      // Reagiert der Vorschlag gerade nach unten, deckelt die Rampe nur: die
+      // Begruendung bleibt seine, nur die Differenz wird auf das gedeckelte
+      // Gewicht neu gerechnet.
+      return reacting
+        ? result(
+            ramp.weight,
+            capReps ?? res.targetReps,
+            res.decision,
+            res.reason.code,
+            res.reason.bandTop,
+          )
+        : result(ramp.weight, capReps ?? res.targetReps, "hold", "ramp-cap");
     }
     if (!reacting && res.weight < ramp.weight - 1e-9) {
-      return {
-        weight: ramp.weight,
-        targetReps: res.targetReps,
-        decision: "increase",
-        note: "Lastfaktor der Phase – Gewicht auf die Phasenlast angehoben",
-      };
+      return result(ramp.weight, res.targetReps, "increase", "ramp-raise");
     }
     return res;
   };
@@ -197,35 +214,22 @@ export function suggestWeight(
     const okScore = wsR.length ? avg(wsR.map((s) => s.score || 3)) <= 3 : true;
     const techOk = !wsR.some((s) => s.painFlag);
     if (wsR.length && okScore && techOk) {
-      return withRamp({
-        weight: ld(W + step, true),
-        targetReps: range[0],
-        decision: "increase",
-        note: "Wiedereinstieg: vorsichtig +Schritt, abgerundet",
-      });
+      return withRamp(
+        result(ld(W + step, true), range[0], "increase", "reentry-up"),
+      );
     }
     // Gehalten wird hier wegen zu hoher Anstrengung oder Schmerz (ohne Vordaten
     // dagegen nur mangels Grundlage): im ersten Fall darf eine Rampe nicht
     // hochziehen, sondern nur deckeln.
     return withRamp(
-      {
-        weight: ld(W, true),
-        targetReps: range[0],
-        decision: "hold",
-        note: "Wiedereinstieg: Gewicht halten",
-      },
+      result(ld(W, true), range[0], "hold", "reentry-hold"),
       wsR.length > 0,
     );
   }
 
   const ws = workSets(lastEntry);
   if (!ws.length) {
-    return withRamp({
-      weight: ld(W, false),
-      targetReps: range[1],
-      decision: "hold",
-      note: "keine Vordaten – Startgewicht halten",
-    });
+    return withRamp(result(ld(W, false), range[1], "hold", "no-data"));
   }
 
   const allMet = ws.every((s) => metTarget(s) === true);
@@ -254,26 +258,13 @@ export function suggestWeight(
   const repeatedMiss =
     !allMetTol && missedBefore(o.prevEntry, range, topWorkWeight(ws));
   const backOff = (): SuggestResult =>
-    withRamp(
-      {
-        weight: ld(W - step, true),
-        targetReps: range[1],
-        decision: "decrease",
-        note: "zweimal am Ziel vorbei – ein Schritt zurueck",
-      },
-      true,
-    );
+    withRamp(result(ld(W - step, true), range[1], "decrease", "back-off"), true);
 
   // ueber Ziel-Score / Versagen / Last-Reduktion -> halten oder senken
   if (anyFailed || anyReduced || avgScore > tScore + 0.5) {
     if (avgScore >= 4.5 || anyReduced) {
       return withRamp(
-        {
-          weight: ld(W - step, true),
-          targetReps: range[1],
-          decision: "decrease",
-          note: "Versagen/Reduktion oder zu hart – Gewicht senken",
-        },
+        result(ld(W - step, true), range[1], "decrease", "too-hard"),
         true,
       );
     }
@@ -283,14 +274,12 @@ export function suggestWeight(
     // es war schon der zweite Fehlversuch am selben Gewicht.
     if (repeatedMiss) return backOff();
     return withRamp(
-      {
-        weight: ld(W, false),
-        targetReps: allMet ? clampReps(minReps) : range[1],
-        decision: "hold",
-        note: allMet
-          ? "hart – Gewicht und Wiederholungen halten"
-          : "hart/verfehlt – Gewicht halten",
-      },
+      result(
+        ld(W, false),
+        allMet ? clampReps(minReps) : range[1],
+        "hold",
+        allMet ? "hold-hard" : "hold-missed",
+      ),
       true,
     );
   }
@@ -313,15 +302,13 @@ export function suggestWeight(
       // dieser Stelle keine Zusatzbedingung "war leichter als vorgesehen"
       // (siehe docs/adr/0015-coach-progressionsregeln.md).
       return withRamp(
-        {
-          weight: ld(W + step, false),
-          targetReps: range[0],
-          decision: "increase",
-          note:
-            minReps >= range[1]
-              ? "Repband oben erreicht – Gewicht +Schritt, Reps zuruecksetzen"
-              : "Repband oben erreicht, spaete Saetze abgefallen – Gewicht +Schritt",
-        },
+        result(
+          ld(W + step, false),
+          range[0],
+          "increase",
+          minReps >= range[1] ? "band-top" : "band-top-partial",
+          range[1],
+        ),
         false,
         range[1],
       );
@@ -329,26 +316,36 @@ export function suggestWeight(
     // sonst zuerst Wiederholungen steigern, ausgehend vom schwaechsten Satz:
     // ein starker erster Satz soll das Ziel nicht hochziehen, wenn die
     // spaeteren Saetze schon abgefallen sind.
-    return withRamp({
-      weight: ld(W, false),
-      targetReps: clampReps(minReps + 1),
-      decision: "increase-reps",
-      note: "leichter als Ziel – Wiederholungen steigern (Gewicht gleich)",
-    });
+    return withRamp(
+      result(
+        ld(W, false),
+        clampReps(minReps + 1),
+        "increase-reps",
+        "reps-up",
+        range[1],
+      ),
+    );
   }
 
   // Rest: zu hart trotz erfuelltem Ziel, oder Ziel nicht erfuellt.
-  // Erfuellt (aber hart) -> Wiederholungen bleiben stehen, bis es leichter
-  // wird. Verfehlt -> das obere Bandende bleibt das Ziel, also nochmal
-  // versuchen; beim zweiten Fehlversuch am selben Gewicht greift stattdessen
-  // die Rueckwaertsregel.
+  // Streng erfuellt (aber hart) -> Wiederholungen bleiben stehen, bis es
+  // leichter wird. Nur mit Ermuedungstoleranz erfuellt -> das obere Bandende
+  // bleibt das Ziel, das Gewicht wartet darauf. Verfehlt -> dasselbe Gewicht
+  // nochmal; beim zweiten Fehlversuch am selben Gewicht greift stattdessen die
+  // Rueckwaertsregel.
   if (repeatedMiss) return backOff();
-  return withRamp({
-    weight: ld(W, false),
-    targetReps: allMet ? clampReps(minReps) : range[1],
-    decision: "hold",
-    note: allMet
-      ? "im Ziel, aber hart – Gewicht und Wiederholungen halten"
-      : "im Ziel – Gewicht halten, Repband ausreizen",
-  });
+  const holdCode: CoachReasonCode = allMet
+    ? "hold-hard"
+    : allMetTol
+      ? "hold-target"
+      : "hold-missed";
+  return withRamp(
+    result(
+      ld(W, false),
+      allMet ? clampReps(minReps) : range[1],
+      "hold",
+      holdCode,
+      holdCode === "hold-target" ? range[1] : undefined,
+    ),
+  );
 }

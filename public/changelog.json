@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.43.3",
+      "date": "2026-08-20",
+      "changes": [
+        "Die Begründungen des Coaches sind neu formuliert: ein Satz ohne Fachwörter, ohne Vorspann wie \"Wochenplan –\", dafür mit der echten Zahl (\"2,5 kg mehr\" statt \"ein Schritt hoch\").",
+        "Steigen die Wiederholungen statt des Gewichts, steht jetzt dabei, ab wann das Gewicht hochgeht (\"bei 12 geht das Gewicht hoch\") - das sieht nicht mehr nach Stillstand aus.",
+        "Trainingsbildschirm und Übungsseite ziehen ihre Texte ab sofort aus derselben Quelle und sprechen damit überall gleich."
+      ]
+    },
+    {
       "version": "1.43.2",
       "date": "2026-08-20",
       "changes": [

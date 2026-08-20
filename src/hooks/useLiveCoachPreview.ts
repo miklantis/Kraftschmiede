@@ -94,6 +94,7 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
     // DAVOR - die laufende Einheit ist ab jetzt die letzte.
     const prevEntryByExercise = buildLastEntries(detailedQ.data ?? []);
     const weightStep = settingsQ.data?.weight_step ?? null;
+    const unit = settingsQ.data?.unit ?? "kg";
     const freqTarget = settingsQ.data?.weekly_frequency_target || 3;
 
     const ph = derivePhaseContext(
@@ -177,7 +178,7 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
       out[ei] = {
         // Vordaten liegen hier immer vor - mindestens ein Satz ist abgehakt,
         // sonst waeren wir oben ausgestiegen.
-        status: coachStatusFromSuggestion(suggestion, true),
+        status: coachStatusFromSuggestion(suggestion, true, unit),
         provisional: !isBlockComplete(entry),
       };
     });

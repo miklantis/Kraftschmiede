@@ -96,7 +96,7 @@ describe("suggestWeight – Doppelprogression", () => {
     expect(r.decision).toBe("increase");
     expect(r.weight).toBe(62.5);
     expect(r.targetReps).toBe(8);
-    expect(r.note).toContain("abgefallen");
+    expect(r.reason.code).toBe("band-top-partial");
   });
 
   it("zwei Saetze, letzter eine darunter => keine Toleranz, Gewicht haelt", () => {
@@ -339,5 +339,116 @@ describe("suggestWeight – Kurzhantel-Stufen", () => {
     );
     expect(r.decision).toBe("decrease");
     expect(r.weight).toBe(10);
+  });
+});
+
+// Issue #268, Schritt 1: die Rechnung liefert eine Kennung samt Zahlen, den
+// Satz baut lib/coachText.ts. Geprueft wird, dass jeder Zweig die richtige
+// Kennung traegt und die Differenz die tatsaechliche ist.
+describe("suggestWeight – Kennung und Zahlen fuer den Text", () => {
+  it("keine Vordaten", () => {
+    expect(suggestWeight(EX, null).reason.code).toBe("no-data");
+  });
+
+  it("Bandende voll erreicht: Kennung, Differenz und Bandende", () => {
+    const r = suggestWeight(
+      EX,
+      entry([work({ reps: 12, score: 2 }), work({ reps: 12, score: 2 })]),
+    );
+    expect(r.reason).toEqual({ code: "band-top", diff: 2.5, bandTop: 12 });
+  });
+
+  it("Bandende mit abgefallenen spaeten Saetzen", () => {
+    const r = suggestWeight(
+      EX,
+      entry([
+        work({ reps: 12, targetReps: 12 }),
+        work({ reps: 12, targetReps: 12 }),
+        work({ reps: 12, targetReps: 12 }),
+        work({ reps: 11, targetReps: 12 }),
+        work({ reps: 10, targetReps: 12 }),
+      ]),
+    );
+    expect(r.reason.code).toBe("band-top-partial");
+  });
+
+  it("Wiederholungen steigern: Bandende als Zwischenziel, keine Differenz", () => {
+    const r = suggestWeight(
+      EX,
+      entry([work({ reps: 9, score: 2 }), work({ reps: 9, score: 2 })]),
+    );
+    expect(r.reason).toEqual({ code: "reps-up", diff: 0, bandTop: 12 });
+  });
+
+  it("Versagen: Senkung mit negativer Differenz", () => {
+    const r = suggestWeight(
+      EX,
+      entry([work({ score: 5, failed: true }), work({ score: 5, failed: true })]),
+    );
+    expect(r.reason.code).toBe("too-hard");
+    expect(r.reason.diff).toBe(-2.5);
+  });
+
+  it("zweimal am selben Gewicht verfehlt: Rueckwaertsregel", () => {
+    const miss = entry([work({ reps: 10, targetReps: 12 }), work({ reps: 9, targetReps: 12 })]);
+    const r = suggestWeight(EX, miss, { prevEntry: miss });
+    expect(r.reason.code).toBe("back-off");
+    expect(r.reason.diff).toBe(-2.5);
+  });
+
+  it("sauber, aber anstrengend: Gewicht und Wiederholungen halten", () => {
+    const r = suggestWeight(EX, entry([work({ reps: 8, score: 4 }), work({ reps: 8, score: 4 })]));
+    expect(r.reason.code).toBe("hold-hard");
+  });
+
+  it("Ziel verfehlt: dasselbe Gewicht noch einmal", () => {
+    const r = suggestWeight(
+      EX,
+      entry([work({ reps: 6, targetReps: 8 }), work({ reps: 6, targetReps: 8 })]),
+    );
+    expect(r.reason.code).toBe("hold-missed");
+  });
+
+  it("nur mit Ermuedungstoleranz erfuellt: Gewicht wartet auf das Bandende", () => {
+    // dritter Satz eine Wiederholung unter Ziel (Toleranz), dabei etwas haerter
+    // als vorgesehen -> Ziel erreicht, aber noch nicht oben
+    const r = suggestWeight(
+      EX,
+      entry([
+        work({ reps: 8, score: 3 }),
+        work({ reps: 8, score: 3 }),
+        work({ reps: 7, score: 4 }),
+      ]),
+    );
+    expect(r.decision).toBe("hold");
+    expect(r.reason).toEqual({ code: "hold-target", diff: 0, bandTop: 12 });
+  });
+
+  it("Wiedereinstieg: eigene Kennungen fuer steigern und halten", () => {
+    const ok = suggestWeight(EX, entry([work({ score: 3 })]), { reentry: true });
+    expect(ok.reason.code).toBe("reentry-up");
+    const hart = suggestWeight(EX, entry([work({ score: 5 })]), { reentry: true });
+    expect(hart.reason.code).toBe("reentry-hold");
+  });
+
+  it("Differenz ist die echte Differenz, nicht die Schrittweite", () => {
+    // Kurzhantel: von 14 kg fuehrt der 2,5er Schritt auf die Stufe 16 -> 2 kg
+    const DBS = [8, 10, 12, 14, 16, 18, 20];
+    const dbe = { workWeight: 14, repRange: [8, 12] as [number, number], targetScore: 3 };
+    const s = (o: Partial<EngineSet>): EngineSet => ({
+      type: "work",
+      weight: 14,
+      reps: 8,
+      done: true,
+      targetReps: 8,
+      targetWeight: 14,
+      score: 3,
+      ...o,
+    });
+    const r = suggestWeight(dbe, entry([s({ reps: 12, score: 2 }), s({ reps: 12, score: 2 })]), {
+      dumbbells: DBS,
+    });
+    expect(r.weight).toBe(16);
+    expect(r.reason.diff).toBe(2);
   });
 });

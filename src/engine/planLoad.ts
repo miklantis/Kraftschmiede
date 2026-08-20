@@ -139,6 +139,10 @@ export interface PlanWeekLoadInput {
 export interface PlanWeekLoad {
   weight: number;
   reason: PlanLoadReason;
+  /** Tatsaechliche Differenz zur Vorwoche in kg; 0, wenn das Gewicht steht.
+   *  Bewusst die echte Differenz und nicht die eingestellte Schrittweite: die
+   *  Rundung auf eine ladbare Stufe kann sie verschieben (Issue #268). */
+  diff: number;
 }
 
 /** Gewicht der laufenden Journey-Woche nach dem Wochenplan. */
@@ -161,30 +165,39 @@ export function planWeekLoad(input: PlanWeekLoadInput): PlanWeekLoad {
   // beim zweiten Mal noch einmal heruntergerechnet).
   if (input.deload) {
     const same = topTargetWeight(input.currentWeekEntry);
-    if (same != null) return { weight: same, reason: "same-week" };
+    if (same != null) return { weight: same, reason: "same-week", diff: 0 };
     const base =
       input.anchor != null && input.anchor > 0 ? input.anchor : startWeight();
-    return { weight: scale(base), reason: "deload" };
+    return { weight: scale(base), reason: "deload", diff: 0 };
   }
 
   // Kein Anker an dieser Phase: die Uebung tritt gerade ein -> Startgewicht.
   if (input.anchor == null || !(input.anchor > 0)) {
-    return { weight: scale(startWeight()), reason: "start" };
+    return { weight: scale(startWeight()), reason: "start", diff: 0 };
   }
 
   // Schon in dieser Woche trainiert: dieselbe Vorgabe noch einmal. Bewusst die
   // damals vorgegebene Last, nicht die tatsaechlich bewegte - eine im Training
   // reduzierte Last zieht erst die naechste Woche nach.
   const sameWeek = topTargetWeight(input.currentWeekEntry);
-  if (sameWeek != null) return { weight: sameWeek, reason: "same-week" };
+  if (sameWeek != null) return { weight: sameWeek, reason: "same-week", diff: 0 };
 
+  const held = scale(input.anchor);
   const raise =
     input.previousWeekEntry != null &&
     planWeekMet(input.previousWeekEntry, input.previousTargetScore);
   if (raise) {
-    return { weight: scale(input.anchor + step), reason: "raised" };
+    // Differenz gegen die Vorwoche, nicht gegen die Schrittweite: beide Werte
+    // sind auf eine ladbare Stufe gerundet, dazwischen kann etwas anderes als
+    // ein voller Schritt liegen.
+    const raised = scale(input.anchor + step);
+    return {
+      weight: raised,
+      reason: "raised",
+      diff: Math.round((raised - held) * 100) / 100,
+    };
   }
-  return { weight: scale(input.anchor), reason: "held" };
+  return { weight: held, reason: "held", diff: 0 };
 }
 
 /** Anker nach einer beendeten Einheit: die Vorgabe, aber nie hoeher als das
