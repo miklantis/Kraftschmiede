@@ -38,7 +38,9 @@ Jedes ADR folgt demselben Aufbau:
 - [ADR-0014 – Journey-Abschluss an der Einheit, freies Training ohne Vorgabe](./0014-journey-abschluss-und-freies-training.md)
   – *teilweise ersetzt durch ADR-0017*
 - [ADR-0015 – Progressionsregeln des Coaches, einheitlich über alle Phasen](./0015-coach-progressionsregeln.md)
+  – *ersetzt durch ADR-0018*
 - [ADR-0017 – Journey-Abschluss über den Kalender](./0017-journey-abschluss-ueber-den-kalender.md)
+- [ADR-0018 – Steuerung je Phasentyp: Wochenplan oder Coach](./0018-steuerung-je-phasentyp.md)
 
 ## Vergebene und gesperrte Nummern
 
@@ -52,4 +54,4 @@ zweideutig.
   so.
 - **0016 – gesperrt, nicht neu vergeben.** Vergeben an „Lastrampe der Phase" und mit
   #218/#219 wieder zurückgenommen; die Datei ist gelöscht, steht aber in der Git-Historie.
-- **0018 – reserviert** für #232 (Steuerung je Phasentyp, löst ADR-0015 ab).
+- **0018 – vergeben** an „Steuerung je Phasentyp" (#232), löst ADR-0015 ab.

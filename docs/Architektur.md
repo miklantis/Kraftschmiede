@@ -213,8 +213,8 @@ betroffene Tabelle beim Wiederherstellen leer.
   falsche für maßgeblich gehalten wird.
 - **Der Coach senkt bei zweimal verfehltem Ziel.** Wird das Wiederholungsziel in zwei
   aufeinanderfolgenden Einheiten am selben Gewicht verfehlt, geht die Last einen Schritt
-  zurück statt das obere Bandende erneut vorzugeben (Regel 6 in
-  `docs/adr/0015-coach-progressionsregeln.md`). Dafür bekommt `suggestWeight` neben dem
+  zurück statt das obere Bandende erneut vorzugeben (Regel 6 der Doppelprogression,
+  ADR-0018; in Phasen mit Wochenplan ruht sie). Dafür bekommt `suggestWeight` neben dem
   letzten auch den vorletzten Eintrag der Übung (`buildPrevEntries` in
   `lib/lastEntries.ts`); weicht das Gewicht der beiden Einheiten ab, beginnt die Zählung
   neu. Die Schrittweite jedes Gewichtssprungs kommt aus den Einstellungen
@@ -245,10 +245,15 @@ betroffene Tabelle beim Wiederherstellen leer.
   die Quelle der Wahrheit für die Form, die DB-Schemas verweisen nur darauf. Weil der
   Plan an der Phase hängt, wandert er beim Journey-Start ohne eigene Kopierlogik mit.
   Phasen ohne Plan (null) laufen unverändert über die Doppelprogression des Coaches.
-- **Wochenplan schlägt Doppelprogression – an genau einer Stelle.** Trägt die laufende
-  Phase einen Wochenplan und ist die Übung eine Hauptübung mit Profil `strength`, gibt
-  der Plan Sätze, Wiederholungen und Ziel-Anstrengung vor; das Repband der Phase ruht
-  dann, ebenso Toleranz und Rückwärtsregel aus ADR-0015. Der Umschalter sitzt in
+- **Die Phase gibt die Wochenstruktur vor, der Coach nur das Gewicht.** Zwei Wege statt
+  einer Regel (ADR-0018): Kraft-, Schnellkraft- und Testphasen laufen nach dem Wochenplan,
+  Hypertrophie, Kraftausdauer, Wiedereinstieg und Erhaltung weiter nach der
+  Doppelprogression des Coaches. Welche Fokusse einen Plan bekommen, entscheidet
+  `buildWeekPlan`; ob er in der laufenden Woche die Last steuert, `planGovernsLoad` in
+  `derivePhaseContext`. Trägt die laufende Phase einen Wochenplan
+  und ist die Übung eine Hauptübung mit Profil `strength`, gibt der Plan Sätze,
+  Wiederholungen und Ziel-Anstrengung vor; das Repband der Phase ruht dann, ebenso
+  Toleranz und Rückwärtsregel der Doppelprogression. Der Umschalter sitzt in
   `suggestForExercise` (`lib/coach.ts`, `planSuggestion`), die Gewichtsregel selbst in
   `engine/planLoad.ts`: Startgewicht beim Phaseneintritt aus dem geschätzten 1RM
   (Planwiederholungen der ersten Woche + 2 Reserve, abgerundet), danach je Journey-Woche

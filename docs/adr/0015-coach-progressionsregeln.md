@@ -1,7 +1,12 @@
 # ADR-0015 – Progressionsregeln des Coaches, einheitlich über alle Phasen
 
-**Status:** akzeptiert
+**Status:** ersetzt durch [ADR-0018](./0018-steuerung-je-phasentyp.md)
 **Datum:** 2026-08-17
+
+> „Eine Progressionsregel für alle Phasen" gilt nicht mehr: Kraft-, Schnellkraft- und
+> Testphasen laufen nach dem Wochenplan der Phase, alle übrigen weiter nach der
+> Doppelprogression von hier (ADR-0018). Die Regeln selbst stehen unverändert – dieser Text
+> bleibt ihre Herleitung.
 
 ## Kontext
 
