@@ -33,6 +33,18 @@ describe("buildPlanNote", () => {
     expect(note(5)!.targets).toBe("4 Sätze × 2 Wiederholungen · Ziel RIR 1");
   });
 
+  // Issue #268, Schritt 4: Der Steigerungs-Satz traegt die Regel allein - er
+  // nennt die gewertete Einheit und was "sauber" heisst. Vorher stand dort nur
+  // "Schaffst du alle Saetze sauber": Wer eine Uebung zweimal pro Woche
+  // trainiert, konnte nicht wissen, dass nur die letzte Einheit zaehlt.
+  it("nennt die gewertete Einheit und was sauber heisst", () => {
+    const p = note(3)!.progress;
+    expect(p).toContain("letzte Einheit");
+    expect(p).toContain("4 Wiederholungen");
+    expect(p).toContain("Ziel RIR 2");
+    expect(p).toContain("2,5 kg hoch");
+  });
+
   it("kuendigt in der letzten Woche keinen Schritt mehr an", () => {
     expect(note(5)!.progress).not.toContain("nächste Woche");
     expect(note(5)!.progress).toContain("Letzte Woche der Phase");

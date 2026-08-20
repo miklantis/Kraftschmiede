@@ -15,6 +15,7 @@ import { MilestonesSection } from "@/components/exercise/MilestonesSection";
 import { RmSection } from "@/components/exercise/RmSection";
 import { useExerciseDetail } from "@/hooks/useExerciseDetail";
 import { profileLabel, equipmentLabel, tierLabel } from "@/lib/labels";
+import { coachLineLabel, coachOutlookLabel } from "@/lib/coachText";
 import { fmtWeight } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +25,12 @@ import { cn } from "@/lib/utils";
 // Rahmen-Button rechts in der Coach-Card: mobil oben (an der Statuszeile), ab
 // 960px vertikal zentriert. Oeffnet das Popup.
 // Der Anheften-Umschalter sitzt im Kopf der Chartkarte.
+//
+// Der Coach-Kasten spricht dieselbe Sprache wie die Uebungskarte im Training
+// (#268, Schritt 4): "Diese Woche" bei Hauptuebungen im Wochenplan, sonst "Beim
+// naechsten Mal", und darunter denselben Ausblick auf die naechste Woche. Ein
+// Zwischenstand-Zusatz entfaellt hier - ausserhalb der Einheit wandert nichts
+// mehr.
 //
 // Die Verlaufsliste steckt in ExerciseHistoryList: juengste Einheiten zuerst,
 // Nachladen ueber den dezenten Pfeil, und je Einheit lassen sich die einzelnen
@@ -108,16 +115,29 @@ function ExerciseDetailPage(): React.ReactElement {
             {coach && (
               <>
                 <div className="flex flex-wrap items-center gap-2.5">
-                  <CoachStatusPill state={coach.state} />
-                  {coach.state !== "carry" && (
-                    <span className="font-mono text-[15px] font-semibold text-foreground tabular-nums">
-                      {fmtWeight(coach.weight, unit)} × {coach.targetReps}
+                  <CoachStatusPill state={coach.status.state} />
+                  {coach.status.state !== "carry" && (
+                    <span className="text-[15px] font-semibold text-foreground">
+                      {coachLineLabel(coach.scope, false)}:{" "}
+                      <span className="font-mono tabular-nums">
+                        {fmtWeight(coach.status.weight, unit)} ×{" "}
+                        {coach.status.targetReps}
+                      </span>
                     </span>
                   )}
                 </div>
                 <p className="mt-2.5 text-[14px] leading-snug text-muted-foreground">
-                  {coach.note}
+                  {coach.status.note}
                 </p>
+                {coach.outlook && (
+                  <p className="mt-1.5 text-[14px] font-semibold text-muted-foreground">
+                    {coachOutlookLabel(false)}:{" "}
+                    <span className="font-mono tabular-nums">
+                      {fmtWeight(coach.outlook.weight, unit)} ×{" "}
+                      {coach.outlook.targetReps}
+                    </span>
+                  </p>
+                )}
               </>
             )}
             {stats.length > 0 && (

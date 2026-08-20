@@ -15,7 +15,8 @@ export interface PlanNote {
   title: string;
   /** "4 Sätze × 4 Wiederholungen · Ziel RIR 1". */
   targets: string;
-  /** Was diese Woche entscheidet ("Schaffst du alle, geht es …"). */
+  /** Woran die Steigerung haengt: welche Einheit gewertet wird und was
+   *  "sauber" heisst (Issue #268, Schritt 4). */
   progress: string;
   /** Umgang mit schweren Saetzen; null in der Entlastungswoche. */
   hint: string | null;
@@ -48,6 +49,27 @@ const CLUSTER_HINT =
 
 const DELOAD_PROGRESS =
   "Locker bleiben: Diese Woche ist die Entlastung vor der Testwoche.";
+
+// Die Steigerungs-Regel steht genau einmal, und zwar hier (Issue #268,
+// Schritt 4). Vorher hiess es nur "Schaffst du alle Saetze sauber, geht es
+// naechste Woche 2,5 kg hoch" - beide Bedingungen blieben offen:
+//
+//   - Gewertet wird nur die LETZTE Einheit dieser Uebung in der Woche. Wer
+//     zweimal pro Woche trainiert, dessen schwache zweite Einheit kassiert die
+//     saubere erste; davon stand nichts da.
+//   - "Sauber" heisst: alle Saetze mit den vorgegebenen Wiederholungen und
+//     nicht haerter als die Ziel-Anstrengung der Woche.
+//
+// Die Uebungskarten wiederholen diesen Vorbehalt bewusst nicht - sie zeigen
+// Wochenvorgabe und Ausblick, die Regel dahinter steht hier oben.
+function progressText(week: WeekPlanWeek, step: number, unit: string): string {
+  return (
+    "Über die Steigerung entscheidet die letzte Einheit einer Übung in der " +
+    `Woche: Schaffst du dort alle Sätze mit ${repsText(week)} und nicht ` +
+    `härter als Ziel RIR ${week.rir}, geht es nächste Woche ` +
+    `${fmtKg(step)} ${unit} hoch.`
+  );
+}
 
 function repsText(week: WeekPlanWeek): string {
   const reps =
@@ -87,8 +109,7 @@ export function buildPlanNote(input: PlanNoteInput | null): PlanNote | null {
   const progress = input.deload
     ? DELOAD_PROGRESS
     : cur < weeks
-      ? `Schaffst du alle Sätze sauber, geht es nächste Woche ` +
-        `${fmtKg(step)} ${input.unit} hoch.`
+      ? progressText(week, step, input.unit)
       : "Letzte Woche der Phase: höher geht es hier nicht mehr, " +
         "hol dir die Wiederholungen.";
 

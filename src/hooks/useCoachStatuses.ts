@@ -2,9 +2,12 @@ import { useMemo } from "react";
 import { workSets } from "@/engine";
 import {
   suggestWithBar,
+  coachScopeFor,
   coachStatusFromSuggestion,
+  entryWorkWeight,
+  planOutlook,
   type CoachBuildExercise,
-  type CoachStatus,
+  type CoachView,
 } from "@/lib/coach";
 import { activeRepTarget, phaseEntryOverride } from "@/lib/liveBuild";
 import { buildPlanSource, planContextFor } from "@/lib/planContext";
@@ -26,6 +29,15 @@ import { useBars, usePlates, useDumbbells } from "./useInventory";
 // gemeinsame Coach-Naht suggestWithBar - so ist der Status deckungsgleich mit dem
 // Vorschlag, den eine gestartete Einheit zeigen wuerde. Reine Anzeige, kein
 // Schreibvorgang.
+//
+// Geliefert wird dieselbe Anzeigeform wie im Training (CoachView, #268,
+// Schritt 4): Zahlen, Geltungsbereich und Ausblick. Vorher trug die
+// Uebungsseite nur die Zahlen - eine Uebung ausserhalb des Trainings
+// nachgeschlagen sagte damit weniger als dieselbe Uebung auf der Hantel.
+// Bewertet wird hier die letzte gespeicherte Einheit der laufenden
+// Journey-Woche; im Training ist es die laufende. Steht diese Woche noch
+// nichts, gibt es nichts zu bewerten und damit keinen Ausblick - dieselbe Regel
+// wie auf der Karte vor dem ersten abgehakten Satz.
 
 interface CoachBar {
   id: string;
@@ -36,7 +48,7 @@ interface CoachBar {
 export interface UseCoachStatuses {
   isLoading: boolean;
   ready: boolean;
-  byExercise: Record<string, CoachStatus>;
+  byExercise: Record<string, CoachView>;
 }
 
 export function useCoachStatuses(): UseCoachStatuses {
@@ -65,8 +77,8 @@ export function useCoachStatuses(): UseCoachStatuses {
     platesQ.isLoading ||
     dumbbellsQ.isLoading;
 
-  const byExercise = useMemo<Record<string, CoachStatus>>(() => {
-    const out: Record<string, CoachStatus> = {};
+  const byExercise = useMemo<Record<string, CoachView>>(() => {
+    const out: Record<string, CoachView> = {};
     if (!ready) return out;
 
     const bars: CoachBar[] = (barsQ.data ?? []).map((b) => ({
@@ -157,11 +169,39 @@ export function useCoachStatuses(): UseCoachStatuses {
         loadFactor: ph.loadFactor,
         suggestion,
       });
-      out[e.id] = coachStatusFromSuggestion(
-        { ...suggestion, weight: entry.weight, targetReps: entry.targetReps },
-        hadPriorData,
-        unit,
-      );
+      // Die gewertete Einheit der laufenden Woche - dieselbe Rolle, die im
+      // Training die abgehakten Saetze spielen. Fehlt sie, bleibt es bei der
+      // Wochenvorgabe ohne Ausblick.
+      const judged = plan?.currentWeekEntry ?? null;
+      out[e.id] = {
+        status: coachStatusFromSuggestion(
+          { ...suggestion, weight: entry.weight, targetReps: entry.targetReps },
+          hadPriorData,
+          unit,
+        ),
+        scope: coachScopeFor(exo, plan),
+        outlook: judged
+          ? planOutlook(
+              exo,
+              {
+                phase: ph.phaseFocus,
+                lastEntry: judged,
+                weightStep,
+                bar: bar ? { weight: bar.weight } : undefined,
+                plates,
+                dumbbells,
+                plan,
+              },
+              {
+                // Vorgabe der Woche, nicht der Phasenwechsel-Einstieg: der
+                // Ausblick rechnet auf dem Wochenplan weiter.
+                weekWeight: suggestion.weight,
+                workedWeight: entryWorkWeight(judged),
+                judged,
+              },
+            )
+          : null,
+      };
     }
     return out;
   }, [
