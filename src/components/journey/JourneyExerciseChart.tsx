@@ -36,11 +36,18 @@ import {
 
 // Farbe je Serie (CSS-Variablen des Themes). Legende und Schalterreihe lesen
 // dieselbe Zuordnung, damit Linie und Chip nie auseinanderlaufen.
+//
+// Score und Trend nehmen bewusst Toene, die auf der Journey-Seite schon eine
+// Bedeutung tragen: --warning ist der Deload-Ton der Periodisierungskurve
+// (Score = Anstrengung), --intensity ihr Teal fuer die Intensitaet (Trend =
+// wohin die Leistung laeuft). Die Kachel wird damit farblich Teil der Seite,
+// statt eine eigene Palette aufzumachen; die frueheren Toene aus der
+// Kategorie-Palette (--tone-amber, --tone-purple) waren dafuer zu schwer.
 export const JOURNEY_SERIES_VAR: Record<JourneySeriesKey, string> = {
   weight: "--primary",
   reps: "--tone-blue",
-  score: "--tone-amber",
-  trend: "--tone-purple",
+  score: "--warning",
+  trend: "--intensity",
 };
 
 const MARGIN = { t: 10, r: 12, b: 22, l: 12 };

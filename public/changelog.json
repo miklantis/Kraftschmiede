@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.45.2",
+      "date": "2026-08-20",
+      "changes": [
+        "Die Linien in den Journey-Kacheln haben weichere Farben bekommen: Der Score läuft jetzt im Deload-Ton der Periodisierungskurve, der Trend in deren Teal für die Intensität.",
+        "Damit gehören die Kacheln farblich zur Journey-Seite, statt eine eigene Palette aufzumachen; Gewicht (Grün) und Wiederholungen (Blau) bleiben wie gehabt."
+      ]
+    },
+    {
       "version": "1.45.1",
       "date": "2026-08-20",
       "changes": [
