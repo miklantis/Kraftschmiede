@@ -7,12 +7,14 @@ daraus (Konsequenzen).
 
 Eine Entscheidung wird nie gelöscht. Wird sie später ersetzt, bleibt das alte ADR
 stehen und bekommt den Status „ersetzt durch ADR-XXXX". So bleibt nachvollziehbar,
-warum etwas einmal so war.
+warum etwas einmal so war. Fällt nur ein Teil einer Entscheidung, steht dort
+„teilweise ersetzt durch ADR-XXXX", dazu ein Satz, was fällt und was weiter gilt.
 
 Jedes ADR folgt demselben Aufbau:
 
 - **Titel und Nummer** (z. B. `0001-offline-first.md`)
-- **Status** – akzeptiert / ersetzt durch ADR-XXXX / verworfen
+- **Status** – akzeptiert / ersetzt durch ADR-XXXX / teilweise ersetzt durch ADR-XXXX /
+  verworfen
 - **Datum**
 - **Kontext** – welches Problem stand an
 - **Entscheidung** – was wurde gewählt
@@ -34,4 +36,20 @@ Jedes ADR folgt demselben Aufbau:
 - [ADR-0012 – Update-Übernahme über controllerchange](./0012-update-uebernahme-controllerchange.md)
 - [ADR-0013 – Deploy-Concurrency mit cancel-in-progress](./0013-deploy-concurrency.md)
 - [ADR-0014 – Journey-Abschluss an der Einheit, freies Training ohne Vorgabe](./0014-journey-abschluss-und-freies-training.md)
+  – *teilweise ersetzt durch ADR-0017*
 - [ADR-0015 – Progressionsregeln des Coaches, einheitlich über alle Phasen](./0015-coach-progressionsregeln.md)
+- [ADR-0017 – Journey-Abschluss über den Kalender](./0017-journey-abschluss-ueber-den-kalender.md)
+
+## Vergebene und gesperrte Nummern
+
+Eine Nummer wird nie wiederverwendet – auch dann nicht, wenn die Entscheidung
+zurückgenommen wurde und die Datei nicht mehr im Ordner liegt. Sie steht weiter in der
+Git-Historie, und ein zweites ADR mit derselben Nummer macht jeden Verweis darauf
+zweideutig.
+
+- **0011 – doppelt vergeben.** `0011-keine-haptik-ios.md` und
+  `0011-messungen-von-hand-statt-import.md` tragen beide dieselbe Nummer. Altlast, bleibt
+  so.
+- **0016 – gesperrt, nicht neu vergeben.** Vergeben an „Lastrampe der Phase" und mit
+  #218/#219 wieder zurückgenommen; die Datei ist gelöscht, steht aber in der Git-Historie.
+- **0018 – reserviert** für #232 (Steuerung je Phasentyp, löst ADR-0015 ab).
