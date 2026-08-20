@@ -2,9 +2,10 @@ import { useMemo } from "react";
 import {
   buildJourneyExerciseGroups,
   journeyExerciseIds,
-  type JourneyExerciseChart,
+  type JourneyExerciseData,
   type JourneyExerciseGroup,
 } from "@/lib/journeyExercises";
+import { buildJourneyStats } from "@/lib/journeyStats";
 import {
   buildExerciseHistory,
   filterJourneySessions,
@@ -14,6 +15,7 @@ import type { WorkoutExerciseInfo, WorkoutInput } from "@/lib/workouts";
 import { useExercises } from "./useExercises";
 import { useTemplates } from "./useTemplates";
 import { useActiveJourney } from "./useJourney";
+import { useCoachStatuses } from "./useCoachStatuses";
 import { useJourneyWorkouts } from "./useJourneyWorkouts";
 import { useSessionsDetailed } from "./useSessionsDetailed";
 import { useSettings } from "./useSettings";
@@ -51,6 +53,11 @@ export function useJourneyExercises(
   const assignedQ = useJourneyWorkouts(journeyId);
   const sessionsQ = useSessionsDetailed();
   const settingsQ = useSettings();
+  // Coach-Stand je Uebung – dieselbe Quelle wie Uebungsliste und Uebungsseite,
+  // damit in der Kachel nichts anderes steht als beim Nachschlagen. Er blockiert
+  // die Kacheln nicht: sie stehen, sobald der Verlauf da ist, der Block fuellt
+  // sich nach.
+  const coachStatuses = useCoachStatuses();
 
   const queries = [exercisesQ, templatesQ, assignedQ, sessionsQ, settingsQ];
   const isLoading = queries.some((q) => q.isLoading);
@@ -84,6 +91,8 @@ export function useJourneyExercises(
     return out;
   }, [journey, journeyId]);
 
+  const coachByExercise = coachStatuses.byExercise;
+
   const groups = useMemo<JourneyExerciseGroup[]>(() => {
     if (!ready || journeyId === null) return [];
 
@@ -106,26 +115,32 @@ export function useJourneyExercises(
       journeyId,
     );
     const byId = new Map((exercisesQ.data ?? []).map((e) => [e.id, e]));
-    const charts: Record<string, JourneyExerciseChart | undefined> = {};
+    const data: Record<string, JourneyExerciseData | undefined> = {};
     for (const id of ids) {
       const exercise = byId.get(id);
       if (!exercise) continue;
       const history = buildExerciseHistory(id, journeySessions, rmFormula);
-      charts[id] = {
-        dates: history.map((e) => e.date),
-        series: buildJourneySeries(
-          history,
-          exercise.profile,
-          exercise.metric,
-        ),
-        marks: journeyPhaseMarks(history, phaseNames),
+      data[id] = {
+        chart: {
+          dates: history.map((e) => e.date),
+          series: buildJourneySeries(
+            history,
+            exercise.profile,
+            exercise.metric,
+          ),
+          marks: journeyPhaseMarks(history, phaseNames),
+        },
+        // Statistikzeile aus derselben journey-gefilterten Liste: bestes Set,
+        // Veraenderung seit Journey-Start, Einheiten in dieser Journey.
+        stats: buildJourneyStats(history),
+        coach: coachByExercise[id] ?? null,
       };
     }
 
     return buildJourneyExerciseGroups(
       exercisesQ.data ?? [],
       new Set(ids),
-      charts,
+      data,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -137,6 +152,7 @@ export function useJourneyExercises(
     sessionsQ.data,
     rmFormula,
     phaseNames,
+    coachByExercise,
   ]);
 
   return {

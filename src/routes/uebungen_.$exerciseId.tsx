@@ -5,9 +5,9 @@ import { PageHeader } from "@/components/ui/page-header";
 import { BackLink } from "@/components/ui/back-link";
 import { Prose } from "@/components/ui/prose";
 import { Section } from "@/components/ui/section";
-import { CoachStatusPill } from "@/components/ui/coach-status-pill";
 import { MuscleMap } from "@/components/ui/muscle-map";
 import { PageReveal } from "@/components/ui/page-reveal";
+import { CoachBlock } from "@/components/exercise/CoachBlock";
 import { ExerciseChartCard } from "@/components/exercise/ExerciseChartCard";
 import { ExerciseHistoryList } from "@/components/exercise/ExerciseHistoryList";
 import { ExerciseEditModal } from "@/components/exercise/ExerciseEditModal";
@@ -15,9 +15,6 @@ import { MilestonesSection } from "@/components/exercise/MilestonesSection";
 import { RmSection } from "@/components/exercise/RmSection";
 import { useExerciseDetail } from "@/hooks/useExerciseDetail";
 import { profileLabel, equipmentLabel, tierLabel } from "@/lib/labels";
-import { coachLineLabel, coachOutlookLabel } from "@/lib/coachText";
-import { fmtWeight } from "@/lib/format";
-import { cn } from "@/lib/utils";
 
 // Uebungs-Detail. Eigenstaendige Vollseite (entschachtelt mit _), ersetzt die
 // Liste wie in V1. Zeigt Kopf, Statistik-Reihe, Verlaufsdiagramm, die Muscle-Map
@@ -111,58 +108,12 @@ function ExerciseDetailPage(): React.ReactElement {
       {(coach || stats.length > 0) && (
         <Section eyebrow="Coach" className="mb-5 min-[960px]:mb-6">
           <div className="flex items-start justify-between gap-4 rounded-[18px] bg-card p-4 shadow-card min-[960px]:items-center min-[960px]:gap-5 min-[960px]:p-5">
-            <div className="min-w-0 flex-1">
-            {coach && (
-              <>
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <CoachStatusPill state={coach.status.state} />
-                  {coach.status.state !== "carry" && (
-                    <span className="text-[15px] font-semibold text-foreground">
-                      {coachLineLabel(coach.scope, false)}:{" "}
-                      <span className="font-mono tabular-nums">
-                        {fmtWeight(coach.status.weight, unit)} ×{" "}
-                        {coach.status.targetReps}
-                      </span>
-                    </span>
-                  )}
-                </div>
-                <p className="mt-2.5 text-[14px] leading-snug text-muted-foreground">
-                  {coach.status.note}
-                </p>
-                {coach.outlook && (
-                  <p className="mt-1.5 text-[14px] font-semibold text-muted-foreground">
-                    {coachOutlookLabel(false)}:{" "}
-                    <span className="font-mono tabular-nums">
-                      {fmtWeight(coach.outlook.weight, unit)} ×{" "}
-                      {coach.outlook.targetReps}
-                    </span>
-                  </p>
-                )}
-              </>
-            )}
-            {stats.length > 0 && (
-              <div
-                className={cn(
-                  "flex flex-wrap items-baseline gap-x-[22px] gap-y-2 text-[15px] text-muted-foreground",
-                  coach && "mt-3.5 border-t border-border pt-3.5",
-                )}
-              >
-                {stats.map((c, i) => (
-                  <span key={i}>
-                    <span
-                      className={cn(
-                        "font-semibold tabular-nums",
-                        c.accent ? "text-primary" : "text-foreground",
-                      )}
-                    >
-                      {c.value}
-                    </span>{" "}
-                    {c.label}
-                  </span>
-                ))}
-              </div>
-            )}
-            </div>
+            <CoachBlock
+              coach={coach}
+              stats={stats}
+              unit={unit}
+              className="flex-1"
+            />
             <button
               type="button"
               aria-label="Übung anpassen"

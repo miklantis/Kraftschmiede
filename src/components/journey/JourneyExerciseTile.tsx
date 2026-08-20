@@ -1,23 +1,35 @@
 import { useMemo } from "react";
 import { ChevronRight } from "lucide-react";
 import { JourneyExerciseChart } from "./JourneyExerciseChart";
+import { CoachBlock } from "@/components/exercise/CoachBlock";
 import type { JourneyExerciseChart as JourneyChartData } from "@/lib/journeyExercises";
+import type { JourneyStat } from "@/lib/journeyStats";
+import type { CoachView } from "@/lib/coach";
 import type { JourneySeriesKey } from "@/lib/journeyChart";
 
 // Kachel einer Uebung im Abschnitt "Uebungen in dieser Journey": oben der Name
-// (antippbar zur Detailseite), darunter der Verlauf dieser Uebung in dieser
-// Journey. Volle Breite, einspaltig; auf dem Desktop nimmt der Chart die linken
-// zwei Drittel – das rechte Drittel bleibt in diesem Schritt leer und traegt
-// spaeter den Coach-Block (#286).
+// (antippbar zur Detailseite), links der Verlauf dieser Uebung in dieser
+// Journey, rechts der Coach-Block – links wo die Uebung herkommt, rechts wo sie
+// gerade steht. Volle Breite, einspaltig; auf dem Desktop zwei Drittel Chart /
+// ein Drittel Coach, mobil Chart oben und Coach darunter.
+//
+// Der Coach-Block ist derselbe wie auf der Uebungs-Detailseite (CoachBlock),
+// nur ohne "Anpassen"-Knopf: die Journey-Seite ist Anzeige. Seine
+// Statistikzeile rechnet auf die Journey (bestes Set in dieser Journey,
+// Veraenderung seit Journey-Start, Einheiten in dieser Journey).
 export function JourneyExerciseTile({
   name,
   chart,
+  stats,
+  coach,
   activeKeys,
   unit,
   onOpen,
 }: {
   name: string;
   chart: JourneyChartData;
+  stats: readonly JourneyStat[];
+  coach: CoachView | null;
   /** Eingeschaltete Serien (Schalterreihe im Abschnittskopf). */
   activeKeys: readonly JourneySeriesKey[];
   unit: string;
@@ -52,8 +64,12 @@ export function JourneyExerciseTile({
             unit={unit}
           />
         </div>
-        {/* Rechte Spalte: Coach-Block folgt in Schritt 3. */}
-        <div className="min-w-0" />
+        <CoachBlock
+          coach={coach}
+          stats={stats}
+          unit={unit}
+          className="border-t border-border pt-3 min-[960px]:border-t-0 min-[960px]:pt-1"
+        />
       </div>
     </div>
   );

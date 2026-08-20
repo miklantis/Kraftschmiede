@@ -21,6 +21,8 @@ import {
   type WorkoutInput,
 } from "./workouts";
 import type { JourneyChartSeries, JourneyPhaseMark } from "./journeyChart";
+import type { JourneyStat } from "./journeyStats";
+import type { CoachView } from "./coach";
 
 // Alles, was die Kachel einer Uebung zum Zeichnen braucht: die Zeitachse (ein
 // Eintrag je absolvierter Einheit, aelteste zuerst), die Serien und die
@@ -29,6 +31,16 @@ export interface JourneyExerciseChart {
   dates: string[];
   series: JourneyChartSeries[];
   marks: JourneyPhaseMark[];
+}
+
+// Die volle Kachel einer Uebung: links der Verlauf, rechts der Coach-Block mit
+// seiner Statistikzeile. Nur Uebungen mit mindestens einer Einheit in dieser
+// Journey haben sie.
+export interface JourneyExerciseData {
+  chart: JourneyExerciseChart;
+  stats: JourneyStat[];
+  /** Coach-Stand dieser Uebung; null, solange er nicht berechnet ist. */
+  coach: CoachView | null;
 }
 
 // Eine Zeile des Abschnitts: die Uebung und wie oft sie in dieser Journey
@@ -40,6 +52,8 @@ export interface JourneyExerciseRow {
   name: string;
   sessionCount: number;
   chart: JourneyExerciseChart | null;
+  stats: JourneyStat[];
+  coach: CoachView | null;
 }
 
 export interface JourneyExerciseGroup {
@@ -85,7 +99,7 @@ export function journeyExerciseIds(
 export function buildJourneyExerciseGroups(
   exercises: readonly ExerciseRow[],
   exerciseIds: ReadonlySet<string>,
-  charts: Readonly<Record<string, JourneyExerciseChart | undefined>>,
+  data: Readonly<Record<string, JourneyExerciseData | undefined>>,
 ): JourneyExerciseGroup[] {
   const buckets: Record<ExerciseGroupKey, JourneyExerciseRow[]> = {
     main: [],
@@ -96,13 +110,15 @@ export function buildJourneyExerciseGroups(
 
   for (const e of exercises) {
     if (!exerciseIds.has(e.id)) continue;
-    const chart = charts[e.id];
-    const hasEntries = chart != null && chart.dates.length > 0;
+    const d = data[e.id];
+    const hasEntries = d != null && d.chart.dates.length > 0;
     buckets[exerciseGroupKey(e)].push({
       id: e.id,
       name: e.name,
-      sessionCount: hasEntries ? chart.dates.length : 0,
-      chart: hasEntries ? chart : null,
+      sessionCount: hasEntries ? d.chart.dates.length : 0,
+      chart: hasEntries ? d.chart : null,
+      stats: hasEntries ? d.stats : [],
+      coach: hasEntries ? d.coach : null,
     });
   }
 
