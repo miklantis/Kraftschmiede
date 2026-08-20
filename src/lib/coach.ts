@@ -479,7 +479,14 @@ export function planOutlook(
     loadPct: next!.loadPct,
     step: ctx.weightStep ?? 2.5,
     deload: false,
-    opts: { bar: ctx.bar, plates: ctx.plates, dumbbells: ctx.dumbbells },
+    // Kurzhantel-Stufen nur bei Kurzhantel-Uebungen: loadableDown fragt sie
+    // zuerst ab und laesst Stange und Scheiben dann liegen - eine Langhantel
+    // wuerde damit auf die schwerste vorhandene Kurzhantel gerundet (#279).
+    opts: {
+      bar: ctx.bar,
+      plates: ctx.plates,
+      dumbbells: exo.equipment === "dumbbell" ? ctx.dumbbells : undefined,
+    },
   });
   return { weight: load.weight, targetReps: next!.repsMax ?? next!.reps };
 }
