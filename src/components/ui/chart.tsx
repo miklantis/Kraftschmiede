@@ -197,6 +197,90 @@ export function appendTooltip(g: ChartG, o: TooltipOptions): void {
     .text(o.text);
 }
 
+export interface ListTooltipRow {
+  text: string;
+  /** Farbpunkt vor der Zeile (z. B. die Serienfarbe). Ohne Farbe kein Punkt. */
+  color?: string;
+}
+
+export interface ListTooltipOptions {
+  cx: number;
+  innerWidth: number;
+  /** Oberkante des Kastens (Standard 0 = oben im Zeichenbereich). */
+  top?: number;
+  title?: string;
+  rows: readonly ListTooltipRow[];
+  bg: string;
+  fg?: string;
+  fontFamily?: string;
+  fontSize?: number;
+}
+
+// Mehrzeiliger Tooltip: eine Ueberschrift (z. B. das Datum) und darunter je
+// Zeile ein Wert, optional mit Farbpunkt. Gegenstueck zu appendTooltip, das
+// genau eine Zeile traegt – sobald mehrere Serien gleichzeitig im Chart
+// stehen, muss ein Punkt auf der Zeitachse alle ihre Werte zeigen koennen.
+// Der Kasten bleibt innerhalb der Zeichenbreite (an den Raendern gekippt).
+export function appendListTooltip(g: ChartG, o: ListTooltipOptions): void {
+  const fs = o.fontSize ?? 12;
+  const fg = o.fg ?? "#fff";
+  const font = o.fontFamily ?? CHART_MONO;
+  const lineH = fs + 5;
+  const padX = 10;
+  const padY = 8;
+  const dotGap = o.rows.some((r) => r.color) ? 12 : 0;
+
+  const texts = [...(o.title ? [o.title] : []), ...o.rows.map((r) => r.text)];
+  const longest = texts.reduce((m, t) => Math.max(m, t.length), 0);
+  const w = Math.min(
+    Math.max(70, longest * fs * 0.62 + padX * 2 + dotGap),
+    Math.max(70, o.innerWidth),
+  );
+  const h = padY * 2 + texts.length * lineH - 5;
+  const left = Math.max(0, Math.min(o.innerWidth - w, o.cx - w / 2));
+  const top = o.top ?? 0;
+
+  g.append("rect")
+    .attr("x", left)
+    .attr("y", top)
+    .attr("width", w)
+    .attr("height", h)
+    .attr("rx", 9)
+    .attr("fill", o.bg)
+    .attr("opacity", 0.94);
+
+  let y = top + padY + fs - 2;
+  if (o.title) {
+    g.append("text")
+      .attr("x", left + padX)
+      .attr("y", y)
+      .attr("fill", fg)
+      .attr("opacity", 0.7)
+      .attr("font-family", font)
+      .attr("font-size", fs - 1)
+      .text(o.title);
+    y += lineH;
+  }
+  for (const r of o.rows) {
+    if (r.color) {
+      g.append("circle")
+        .attr("cx", left + padX + 3)
+        .attr("cy", y - fs / 2 + 1)
+        .attr("r", 3)
+        .attr("fill", r.color);
+    }
+    g.append("text")
+      .attr("x", left + padX + dotGap)
+      .attr("y", y)
+      .attr("fill", fg)
+      .attr("font-family", font)
+      .attr("font-size", fs)
+      .attr("font-weight", 600)
+      .text(r.text);
+    y += lineH;
+  }
+}
+
 // Misst die Breite eines Elements und haelt sie bei Groessenaenderung aktuell.
 function useElementWidth(ref: RefObject<HTMLElement | null>): number {
   const [w, setW] = useState(0);

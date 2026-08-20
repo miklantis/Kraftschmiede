@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "version": "1.44.5",
+      "date": "2026-08-20",
+      "changes": [
+        "Aus den Übungszeilen auf der Journey-Seite sind Kacheln mit Verlauf geworden: Für jede Übung siehst du auf einen Blick, was in dieser Journey passiert ist - Gewicht, Wiederholungen je Arbeitssatz, Score und Leistungstrend als vier Linien nebeneinander.",
+        "Jede Linie ist auf ihre eigene Spanne gestreckt, damit sie sich vergleichen lassen; die genauen Zahlen stehen im Tooltip, wenn du eine Einheit antippst.",
+        "Phasenwechsel sind als senkrechte Trennlinie mit Phasennamen eingezeichnet - so ist zu sehen, wann der Coach den Anker neu gesetzt hat.",
+        "Über den Kacheln lassen sich die vier Linien einzeln an- und abschalten; die Auswahl merkt sich das Gerät. Lange Verläufe scrollen seitlich, statt die Punkte zusammenzuquetschen.",
+        "Bei Core- und Körpergewichts-Übungen erscheinen nur die Linien, die es dort gibt (Wiederholungen bzw. Haltezeit und Score)."
+      ]
+    },
+    {
       "version": "1.44.4",
       "date": "2026-08-20",
       "changes": [
