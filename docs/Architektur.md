@@ -193,10 +193,10 @@ betroffene Tabelle beim Wiederherstellen leer.
 - **Coach als eigenes, testbares Modul** (`coach.ts`): nimmt Zustand explizit herein,
   gibt Entscheidungen heraus – gleiche Form wie die Engine. Kein DOM-Bezug.
 - **Journey-Standort an einer Stelle.** „Wo stehe ich gerade?" beantwortet
-  `derivePhaseContext` (`lib/phaseContext.ts`): es nimmt die Session-Zeilen herein,
-  bringt sie selbst auf die Engine-Form (`toPlacementSessions`), ruft
-  `journeyPlacement` und liefert Platzierung, laufende Phase, Fokus, Repband,
-  Volumen-Phase, Woche und Lastfaktor. Trainingsbildschirm, Journey-Seite,
+  `derivePhaseContext` (`lib/phaseContext.ts`): es nimmt die Session- und Phasen-Zeilen
+  herein, bringt sie selbst auf die Engine-Form (`toPlacementSessions`,
+  `toPlacementPhases`), ruft `journeyPlacement` und liefert Platzierung, laufende Phase,
+  Fokus, Repband, Volumen-Phase, Woche und Lastfaktor. Trainingsbildschirm, Journey-Seite,
   Übungs-Statusanzeige, Live-Aufbau und das „Übung anpassen"-Popup setzen sich daraus
   zusammen, ohne selbst zu platzieren. Ausnahme: der Coach-Export liest aus einem
   Export-JSON statt aus Hooks und behält seine eigene Zeilenform – die Regeln (Band,
@@ -278,14 +278,30 @@ betroffene Tabelle beim Wiederherstellen leer.
   in einer Phase ohne Plan. Trainieren ist erlaubt, aber nicht eingeplant; der 1RM-Test
   läuft unverändert von der Übungsseite. Ein neuer Phasentyp entsteht dafür nicht – die
   Testphase bleibt `test`, nur mit zwei Wochen (Issue #240, Schritt 1).
-- **Eine Woche mit 1RM-Test ist erfüllt.** Die Testwoche plant gar keine Einheit, das
-  Wochenziel sind drei – ohne Ausnahme bliebe die Journey dort hängen. Deshalb gilt in `engine/journey.ts` an einer Stelle
-  (`fulfilledWeekKeys`): liegt in einer Kalenderwoche ein abgeschlossener 1RM-Test, ist
-  sie erfüllt, unabhängig von der Einheitenzahl. Gezählt werden nur Tests ab der ersten
-  Einheit der Journey (ein älterer Test darf sie nicht rückwirkend vorrücken); die
-  Einheitenzahl der Anzeige bleibt die tatsächliche. Die Testdaten kommen als
-  `testDates` aus `rm_tests` (`useTestDates`) und werden überall gleich hereingereicht,
-  damit Uebungsseite, Live-Aufbau und Journey dieselbe Woche zeigen.
+- **Eine Woche, die nichts verlangt, erfüllt sich selbst.** Eine Journey-Woche gilt
+  normal als erfüllt, wenn genug zählende Einheiten in ihr liegen. Genau eine Ausnahme,
+  an genau einer Stelle in `engine/journey.ts` (`fulfilledWeeks`): plant die Woche gar
+  keine Einheit – das ist die reine Testwoche mit `sets: 0` –, ist sie ohne Zutun
+  erfüllt. Die Einheitenzahl der Anzeige bleibt dabei die tatsächliche. Weil diese
+  Ausnahme an der Journey-Wochennummer hängt, die sich ihrerseits aus den erfüllten
+  Wochen davor ergibt, rechnet die Engine Kalenderwoche für Kalenderwoche vorwärts (ab
+  der ersten Einheit der Journey) statt über eine Menge von Wochenschlüsseln. Dafür
+  gehören die Wochenpläne zur Platzierung: die Phasen kommen als `PhaseLike` samt
+  `weekPlan` herein (`toPlacementPhases`), überall gleich, damit Übungsseite, Live-Aufbau
+  und Journey dieselbe Woche zeigen (Issue #240, Schritt 2).
+- **Die Journey ist durchlaufen, wenn alle geplanten Wochen erfüllt und vorbei sind.**
+  Nicht mehr beim Beenden einer Einheit – zwei Regeln für dieselbe Frage wären die Quelle
+  künftiger Abweichungen zwischen Anzeige und Abschluss. Ausgewertet wird das vorhandene
+  Signal `placement.done`; geprüft wird bei jedem App-Start und auf jeder Seite, weil der
+  Hook (`useJourneyCompletion`) in der global gemounteten Live-Schicht hängt. Der
+  Schreibvorgang (`writeArchiveJourney`: archivieren, Referenzgewichte räumen) ist
+  bewusst einfach und nicht offline-gepuffert: der Abschluss ist keine Dateneingabe,
+  sondern eine Schlussfolgerung aus vorhandenen Daten – schlägt er fehl, ist die
+  Bedingung beim nächsten Öffnen unverändert wahr und der Vorgang heilt sich selbst. Als
+  `end_date` steht der Sonntag der letzten geplanten Woche im Archiv (`journeyEndDate`),
+  nicht der Tag des Merkens; sonst hinge die Dauer davon ab, wann die App zufällig
+  geöffnet wurde. Das Popup „Journey abgeschlossen" kommt erst nach erfolgreichem
+  Archivieren.
 - **Der Wochenplan ist dort sichtbar, wo er wirkt.** Auf dem Trainingsbildschirm steht
   der Hinweis der laufenden Planwoche (Phase und Woche, Sätze/Wiederholungen/RIR, was
   den nächsten Gewichtsschritt auslöst, dazu der Cluster-Hinweis) – gebaut an einer

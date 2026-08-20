@@ -123,15 +123,11 @@ describe("INVALIDATE", () => {
       // writeJourneyStart / writeJourneyRename: Journey ab- und anlegen,
       // Phasen kopieren, Referenzgewichte einfrieren bzw. wegraeumen.
       journeyChange: ["journeys", "journey_phases", "exercises"],
-      // writeFinishStrength: Einheit samt Uebungen und Saetzen anlegen, Katalog
-      // fortschreiben, ggf. die Journey archivieren.
-      finishStrength: [
-        "sessions",
-        "session_exercises",
-        "sets",
-        "exercises",
-        "journeys",
-      ],
+      // writeFinishStrength: Einheit samt Uebungen und Saetzen anlegen und
+      // den Katalog fortschreiben. Die Journey bleibt unberuehrt.
+      finishStrength: ["sessions", "session_exercises", "sets", "exercises"],
+      // writeArchiveJourney: Journey ins Archiv legen, Referenzgewichte raeumen.
+      journeyDone: ["journeys", "exercises"],
       // writeEditSession: Einheit-Felder, Arbeitssaetze ersetzen, tested_1rm
       // setzen, Katalog nachziehen.
       editSession: ["sessions", "sets", "session_exercises", "exercises"],
@@ -155,8 +151,11 @@ describe("INVALIDATE", () => {
       "sessions",
       "sessions-detailed",
       "exercises",
+    ]);
+    expect(INVALIDATE.journeyDone).toEqual([
       "activeJourney",
       "archivedJourneys",
+      "exercises",
     ]);
     expect(INVALIDATE.journeyChange).toEqual([
       "activeJourney",

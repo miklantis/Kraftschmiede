@@ -1,5 +1,6 @@
-// Schreib-Baustein des Verlaufs: die drei Schreib-Folgen (Kraft beenden, Skill
-// beenden, Einheit bearbeiten) als duenne Sequenzen ueber der Naht HistoryStore.
+// Schreib-Baustein des Verlaufs: die Schreib-Folgen (Kraft beenden, Skill
+// beenden, Einheit bearbeiten, Journey abschliessen) als duenne Sequenzen ueber
+// der Naht HistoryStore.
 // Reihenfolge, Bedingungen (leere Listen ueberspringen) und die Katalog-Patch-
 // Regel liegen hier an einem Ort; das eigentliche Schreiben und Fehlerwerfen
 // macht der uebergebene Speicher. Damit sind die drei Folgen mit einem Speicher
@@ -53,18 +54,30 @@ export async function writeFinishStrength(
   for (const p of payload.exercisePatches) {
     await store.updateExercise(p.id, exercisePatchToRecord(p));
   }
-  // Journey-Abschluss haengt bewusst an derselben Folge: eine offline pausierte
-  // Einheit archiviert die Journey erst, wenn sie tatsaechlich geschrieben ist.
-  if (payload.journeyArchive) {
-    await store.archiveJourney(
-      payload.journeyArchive.journeyId,
-      payload.journeyArchive.endDate,
-    );
-    // Mit der Journey endet auch ihr Bezugspunkt: eingefrorene
-    // Referenzgewichte wegraeumen, damit die naechste Journey wieder aus der
-    // letzten Leistung rechnet.
-    await store.clearReferenceWeights();
-  }
+}
+
+/** Journey abschliessen: ins Archiv legen und die eingefrorenen
+ *  Referenzgewichte wegraeumen - mit der Journey endet ihr Bezugspunkt, die
+ *  naechste rechnet wieder aus der letzten Leistung.
+ *
+ *  Eigene, bewusst einfache Folge ohne Offline-Puffer (#240): der Abschluss ist
+ *  keine Dateneingabe, sondern eine Schlussfolgerung aus Daten, die schon da
+ *  sind. Schlaegt er fehl, ist die Bedingung beim naechsten Oeffnen unveraendert
+ *  wahr und die Folge laeuft erneut - sie schreibt dabei dieselben Werte und
+ *  bleibt deshalb folgenlos. */
+export async function writeArchiveJourney(
+  store: HistoryStore,
+  payload: JourneyArchivePayload,
+): Promise<void> {
+  await store.archiveJourney(payload.journeyId, payload.endDate);
+  await store.clearReferenceWeights();
+}
+
+/** Was der Abschluss braucht: welche Journey, und mit welchem Enddatum sie im
+ *  Archiv steht (der Sonntag ihrer letzten geplanten Woche). */
+export interface JourneyArchivePayload {
+  journeyId: string;
+  endDate: string;
 }
 
 /** Skill-Einheit beenden: Einfuegen wie bei Kraft, danach Skill-Fortschritt

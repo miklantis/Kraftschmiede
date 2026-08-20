@@ -1,8 +1,9 @@
 // Winziger geraete-lokaler Store fuer die Abschluss-Meldung einer Journey.
 // Gleiche Bauform wie der Live-Store (useSyncExternalStore, kein TanStack-Query):
-// das Beenden der Einheit setzt hier den Namen der durchlaufenen Journey, die
-// global gemountete Live-Schicht zeigt daraufhin das Popup. Bewusst fluechtig -
-// die Meldung gehoert zum Moment des Abschlusses, nicht in den Speicher.
+// der Abschluss ueber den Kalender (useJourneyCompletion) setzt hier nach
+// erfolgreichem Archivieren den Namen der durchlaufenen Journey, die global
+// gemountete Live-Schicht zeigt daraufhin das Popup. Bewusst fluechtig - die
+// Meldung gehoert zum Moment des Abschlusses, nicht in den Speicher.
 
 let doneName: string | null = null;
 const listeners = new Set<() => void>();

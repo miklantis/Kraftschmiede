@@ -16,7 +16,13 @@ import {
   weekDemandsSession,
   weekPlanForWeek,
 } from "@/engine";
-import type { JourneySession, Placement, WeekPlanWeek } from "@/engine";
+import type {
+  JourneySession,
+  PhaseLike,
+  Placement,
+  WeekPlan,
+  WeekPlanWeek,
+} from "@/engine";
 import type { VolumePhase } from "@/engine/types";
 import { loadFactorNote, usesLoadFactor } from "@/lib/loadFactor";
 import type { JourneyRow, PhaseRow } from "@/schemas";
@@ -31,6 +37,13 @@ export interface SessionForPhase {
   journey_id: string | null;
 }
 
+// Die Phasen-Felder, die die Platzierung braucht (Teilmenge von PhaseRow).
+export interface PhaseForPlacement {
+  id: string;
+  weeks: number;
+  week_plan: WeekPlan | null;
+}
+
 /** DB-Zeilen (snake_case) auf die Engine-Form der Platzierung bringen. Eine
  *  Stelle statt in jedem Aufrufer. */
 export function toPlacementSessions(
@@ -41,6 +54,19 @@ export function toPlacementSessions(
     status: s.status,
     type: s.type,
     journeyId: s.journey_id,
+  }));
+}
+
+/** Phasen-Zeilen (snake_case) auf die Engine-Form bringen. Der Wochenplan
+ *  gehoert dazu: nur er sagt, ob eine Woche ueberhaupt eine Einheit verlangt -
+ *  und genau daran haengt, ob die reine Testwoche sich selbst erfuellt (#240). */
+export function toPlacementPhases(
+  phases: ReadonlyArray<PhaseForPlacement>,
+): PhaseLike[] {
+  return phases.map((p) => ({
+    id: p.id,
+    weeks: p.weeks,
+    weekPlan: p.week_plan ?? null,
   }));
 }
 
@@ -92,9 +118,6 @@ export function derivePhaseContext(
   sessions: ReadonlyArray<SessionForPhase>,
   freqTarget: number,
   today: string,
-  // Datum jedes 1RM-Tests: eine Woche mit Test gilt als erfuellt (Kombiwoche,
-  // #229). Ohne Angabe rechnet die Platzierung nur ueber die Einheiten.
-  testDates?: readonly string[],
 ): PhaseContext {
   let phaseFocus: { focus?: string } | null = null;
   let phaseRepTarget: [number, number] | null = null;
@@ -115,11 +138,10 @@ export function derivePhaseContext(
   if (journey) {
     journeyId = journey.id;
     placement = journeyPlacement(
-      { id: journey.id, phases: journey.phases },
+      { id: journey.id, phases: toPlacementPhases(journey.phases) },
       toPlacementSessions(sessions),
       freqTarget,
       today,
-      testDates,
     );
     phase = journey.phases[placement.phaseIndex] ?? null;
     if (phase) {

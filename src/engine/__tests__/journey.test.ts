@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   isoWeekKey,
   isoWeekNumOf,
+  journeyEndDate,
   journeyPlacement,
   journeyWeekForDate,
   journeyWeekLookup,
@@ -10,9 +11,10 @@ import {
   repTargetForFocus,
   phaseRepBand,
   totalJourneyWeeks,
-  completesJourney,
   type JourneySession,
+  type PhaseLike,
 } from "../journey";
+import { buildStrengthWeekPlan, buildTestPhaseWeekPlan } from "../weekPlan";
 
 // Hilfsfunktion: zaehlende Krafteinheit an einem Datum.
 function s(
@@ -22,6 +24,11 @@ function s(
   status = "done",
 ): JourneySession {
   return { date, status, type, journeyId };
+}
+
+// Phase ohne Wochenplan: sie verlangt in jeder Woche das normale Pensum.
+function ph(id: string, weeks: number): PhaseLike {
+  return { id, weeks, weekPlan: null };
 }
 
 describe("isoWeekKey", () => {
@@ -43,11 +50,7 @@ describe("isoWeekNumOf", () => {
 });
 
 describe("phasePlacement", () => {
-  const phases = [
-    { id: "p1", weeks: 2 },
-    { id: "p2", weeks: 5 },
-    { id: "p3", weeks: 1 },
-  ];
+  const phases = [ph("p1", 2), ph("p2", 5), ph("p3", 1)];
 
   it("Woche 1 liegt in der ersten Phase", () => {
     expect(phasePlacement(phases, 1)).toEqual({
@@ -85,7 +88,7 @@ describe("journeyWeekForDate", () => {
 
   it("ohne erfuellte Wochen davor ist die Journey-Woche 1", () => {
     const sessions = [s("2026-01-05"), s("2026-01-06")]; // nur 2 in dieser KW
-    expect(journeyWeekForDate("2026-01-05", sessions, "j1", freq)).toBe(1);
+    expect(journeyWeekForDate("2026-01-05", sessions, "j1", freq, [])).toBe(1);
   });
 
   it("eine erfuellte Vorwoche schiebt die Nummer auf 2", () => {
@@ -97,7 +100,7 @@ describe("journeyWeekForDate", () => {
       // laufende KW02
       s("2026-01-05"),
     ];
-    expect(journeyWeekForDate("2026-01-05", sessions, "j1", freq)).toBe(2);
+    expect(journeyWeekForDate("2026-01-05", sessions, "j1", freq, [])).toBe(2);
   });
 
   it("Yoga und fremde Journeys zaehlen nicht", () => {
@@ -107,7 +110,7 @@ describe("journeyWeekForDate", () => {
       s("2025-12-31"),
     ];
     // nur 1 zaehlende Einheit in KW01 -> nicht erfuellt -> bleibt Woche 1
-    expect(journeyWeekForDate("2026-01-05", sessions, "j1", freq)).toBe(1);
+    expect(journeyWeekForDate("2026-01-05", sessions, "j1", freq, [])).toBe(1);
   });
 });
 
@@ -115,10 +118,7 @@ describe("journeyPlacement", () => {
   it("verbindet globale Woche mit der Phasenkarte", () => {
     const journey = {
       id: "j1",
-      phases: [
-        { id: "p1", weeks: 2 },
-        { id: "p2", weeks: 4 },
-      ],
+      phases: [ph("p1", 2), ph("p2", 4)],
     };
     // 2 erfuellte Vorwochen -> globale Woche 3 -> zweite Phase, Woche 1
     const sessions = [
@@ -140,7 +140,7 @@ describe("journeyPlacement", () => {
 describe("weekProgress", () => {
   it("zaehlt Einheiten der laufenden KW und meldet Erfuellung", () => {
     const sessions = [s("2026-01-05"), s("2026-01-06"), s("2026-01-07")];
-    const wp = weekProgress(sessions, "j1", 3, "2026-01-05");
+    const wp = weekProgress(sessions, "j1", 3, "2026-01-05", []);
     expect(wp.units).toBe(3);
     expect(wp.target).toBe(3);
     expect(wp.fulfilled).toBe(true);
@@ -148,7 +148,7 @@ describe("weekProgress", () => {
 
   it("unter dem Ziel ist nicht erfuellt", () => {
     const sessions = [s("2026-01-05")];
-    const wp = weekProgress(sessions, "j1", 3, "2026-01-05");
+    const wp = weekProgress(sessions, "j1", 3, "2026-01-05", []);
     expect(wp.units).toBe(1);
     expect(wp.fulfilled).toBe(false);
   });
@@ -185,65 +185,9 @@ describe("phaseRepBand", () => {
   });
 });
 
-describe("completesJourney", () => {
-  // Journey ueber 2 Wochen, Frequenzziel 2.
-  const j = { id: "j1", phases: [{ id: "p1", weeks: 2 }] };
-
+describe("totalJourneyWeeks", () => {
   it("summiert die Phasenwochen", () => {
-    expect(
-      totalJourneyWeeks([
-        { id: "a", weeks: 3 },
-        { id: "b", weeks: 4 },
-      ]),
-    ).toBe(7);
-  });
-
-  it("schliesst nicht ab, solange fruehere Wochen laufen", () => {
-    // KW02: erste Journey-Woche, zweite Einheit -> Woche 1 von 2.
-    const before: JourneySession[] = [s("2026-01-05")];
-    expect(completesJourney(j, before, 2, "2026-01-06")).toBe(false);
-  });
-
-  it("schliesst nicht ab, wenn das Wochen-Pensum noch fehlt", () => {
-    // KW02 erfuellt (2 Einheiten) -> die Einheit in KW03 ist Woche 2, aber
-    // allein erfuellt sie das Pensum von 2 noch nicht.
-    const before: JourneySession[] = [s("2026-01-05"), s("2026-01-07")];
-    expect(completesJourney(j, before, 2, "2026-01-12")).toBe(false);
-  });
-
-  it("schliesst mit der Einheit ab, die die letzte Woche vollmacht", () => {
-    const before: JourneySession[] = [
-      s("2026-01-05"),
-      s("2026-01-07"),
-      s("2026-01-12"),
-    ];
-    expect(completesJourney(j, before, 2, "2026-01-14")).toBe(true);
-  });
-
-  it("holt eine laengst ueberfaellige Journey nach", () => {
-    // Vier erfuellte Wochen bei nur zwei geplanten -> naechste erfuellte Woche
-    // schliesst ab (Woche >= Gesamtwochen).
-    const before: JourneySession[] = [
-      s("2026-01-05"),
-      s("2026-01-07"),
-      s("2026-01-12"),
-      s("2026-01-14"),
-      s("2026-01-19"),
-      s("2026-01-21"),
-      s("2026-01-26"),
-    ];
-    expect(completesJourney(j, before, 2, "2026-01-28")).toBe(true);
-  });
-
-  it("ignoriert Einheiten anderer Journeys", () => {
-    const before: JourneySession[] = [s("2026-01-05", "j2"), s("2026-01-07", "j2")];
-    expect(completesJourney(j, before, 2, "2026-01-08")).toBe(false);
-  });
-
-  it("ohne Phasen kein Abschluss", () => {
-    expect(completesJourney({ id: "j1", phases: [] }, [], 2, "2026-01-05")).toBe(
-      false,
-    );
+    expect(totalJourneyWeeks([ph("a", 3), ph("b", 4)])).toBe(7);
   });
 });
 
@@ -259,65 +203,127 @@ describe("journeyWeekLookup", () => {
       s("2026-01-07"),
       s("2026-01-12"),
     ];
-    const weekOf = journeyWeekLookup(sessions, "j1", freq);
+    const weekOf = journeyWeekLookup(sessions, "j1", freq, []);
     for (const d of ["2025-12-29", "2026-01-06", "2026-01-13", "2026-01-20"]) {
-      expect(weekOf(d)).toBe(journeyWeekForDate(d, sessions, "j1", freq));
+      expect(weekOf(d)).toBe(journeyWeekForDate(d, sessions, "j1", freq, []));
     }
   });
 });
 
-// Kombiwoche (#229): eine Kalenderwoche mit abgeschlossenem 1RM-Test gilt als
-// erfuellt, unabhaengig von der Einheitenzahl.
-describe("Wochenerfuellung durch einen 1RM-Test", () => {
+// Abschluss ueber den Kalender (#240): alle geplanten Wochen erfuellt und vorbei.
+// Die reine Testwoche erfuellt sich dabei von selbst - sie verlangt nichts.
+describe("Journey-Abschluss ueber den Kalender", () => {
   const freq = 3;
 
-  it("erfuellt die Woche mit Test trotz zu weniger Einheiten", () => {
-    const sessions = [
-      // KW01 regulaer erfuellt
-      s("2025-12-29"),
-      s("2025-12-30"),
-      s("2025-12-31"),
-      // KW02 nur die Entlastungseinheit
-      s("2026-01-05"),
-    ];
-    // ohne Test bleibt KW03 die Journey-Woche 2, mit Test rueckt sie auf 3
-    expect(journeyWeekForDate("2026-01-12", sessions, "j1", freq)).toBe(2);
+  // Kraftphase (2 Wochen) + Testphase (Entlastung, dann reine Testwoche).
+  // Zusammen vier geplante Wochen.
+  const mitTestwoche = {
+    id: "j1",
+    phases: [
+      { id: "kraft", weeks: 2, weekPlan: buildStrengthWeekPlan(2) },
+      { id: "test", weeks: 2, weekPlan: buildTestPhaseWeekPlan(2) },
+    ],
+  };
+  // Dieselben vier Wochen, aber ohne Testphase: jede Woche verlangt Einheiten.
+  const ohneTestwoche = {
+    id: "j1",
+    phases: [
+      { id: "kraft", weeks: 2, weekPlan: buildStrengthWeekPlan(2) },
+      { id: "kraft2", weeks: 2, weekPlan: buildStrengthWeekPlan(2) },
+    ],
+  };
+
+  // KW01 bis KW03 regulaer erfuellt: Journey-Woche 1, 2 und die
+  // Entlastungswoche. KW04 (19.-25.01.) ist damit die reine Testwoche.
+  const bisEntlastung = [
+    s("2025-12-29"),
+    s("2025-12-30"),
+    s("2025-12-31"),
+    s("2026-01-05"),
+    s("2026-01-06"),
+    s("2026-01-07"),
+    s("2026-01-12"),
+    s("2026-01-13"),
+    s("2026-01-14"),
+  ];
+
+  it("in der Testwoche steht die Journey noch auf ihrer letzten Woche", () => {
+    const p = journeyPlacement(mitTestwoche, bisEntlastung, freq, "2026-01-22");
+    expect(p.globalWeek).toBe(4);
+    expect(p.done).toBe(false);
     expect(
-      journeyWeekForDate("2026-01-12", sessions, "j1", freq, ["2026-01-09"]),
-    ).toBe(3);
+      journeyEndDate(mitTestwoche, bisEntlastung, freq, "2026-01-22"),
+    ).toBeNull();
   });
 
-  it("meldet die laufende Woche mit Test als erfuellt, ohne Einheiten zu erfinden", () => {
-    const sessions = [s("2026-01-05")];
-    const wp = weekProgress(sessions, "j1", freq, "2026-01-05", ["2026-01-09"]);
-    expect(wp.units).toBe(1);
-    expect(wp.fulfilled).toBe(true);
+  it("schliesst am Wochenwechsel ab, ohne dass getestet wurde", () => {
+    // In der Testwoche liegt keine einzige Einheit und kein 1RM-Test.
+    const p = journeyPlacement(mitTestwoche, bisEntlastung, freq, "2026-01-26");
+    expect(p.globalWeek).toBe(5);
+    expect(p.done).toBe(true);
   });
 
-  it("zaehlt Tests von vor der Journey nicht", () => {
-    const sessions = [s("2026-01-05"), s("2026-01-06"), s("2026-01-07")];
-    // Test aus der KW davor: die Journey darf nicht rueckwirkend vorruecken
-    expect(
-      journeyWeekForDate("2026-01-12", sessions, "j1", freq, ["2025-12-30"]),
-    ).toBe(2);
-  });
-
-  it("schliesst die Journey ab, wenn in der letzten Woche ein Test liegt", () => {
-    const j = { id: "j1", phases: [{ id: "p1", weeks: 2 }] };
-    // KW01 erfuellt -> die Einheit in KW02 liegt in der letzten Journey-Woche
-    const before = [s("2025-12-29"), s("2025-12-30")];
-    expect(completesJourney(j, before, 2, "2026-01-06")).toBe(false);
-    expect(completesJourney(j, before, 2, "2026-01-06", ["2026-01-05"])).toBe(
-      true,
+  it("nimmt als Enddatum den Sonntag der Testwoche", () => {
+    expect(journeyEndDate(mitTestwoche, bisEntlastung, freq, "2026-01-26")).toBe(
+      "2026-01-25",
     );
   });
 
-  it("liefert dieselben Wochennummern wie die Nachschlage-Funktion", () => {
-    const sessions = [s("2025-12-29"), s("2025-12-30"), s("2025-12-31"), s("2026-01-05")];
-    const tests = ["2026-01-09"];
-    const weekOf = journeyWeekLookup(sessions, "j1", freq, tests);
-    for (const d of ["2025-12-30", "2026-01-06", "2026-01-13"]) {
-      expect(weekOf(d)).toBe(journeyWeekForDate(d, sessions, "j1", freq, tests));
-    }
+  it("haelt das Enddatum, auch wenn die App erst Wochen spaeter aufgeht", () => {
+    expect(journeyEndDate(mitTestwoche, bisEntlastung, freq, "2026-02-16")).toBe(
+      "2026-01-25",
+    );
+  });
+
+  it("die Testwoche gilt als erfuellt, ohne Einheiten zu erfinden", () => {
+    const wp = weekProgress(
+      bisEntlastung,
+      "j1",
+      freq,
+      "2026-01-22",
+      mitTestwoche.phases,
+    );
+    expect(wp.units).toBe(0);
+    expect(wp.fulfilled).toBe(true);
+    expect(wp.journeyWeek).toBe(4);
+  });
+
+  it("ohne Testwoche wartet die Journey auf die erfuellte letzte Woche", () => {
+    // Vierte Woche nur halb gefuellt: die Journey bleibt stehen.
+    const halb = [...bisEntlastung, s("2026-01-19")];
+    expect(
+      journeyPlacement(ohneTestwoche, halb, freq, "2026-01-26").done,
+    ).toBe(false);
+    expect(journeyEndDate(ohneTestwoche, halb, freq, "2026-01-26")).toBeNull();
+
+    const voll = [...bisEntlastung, s("2026-01-19"), s("2026-01-20"), s("2026-01-21")];
+    expect(journeyPlacement(ohneTestwoche, voll, freq, "2026-01-26").done).toBe(
+      true,
+    );
+    expect(journeyEndDate(ohneTestwoche, voll, freq, "2026-01-26")).toBe(
+      "2026-01-25",
+    );
+  });
+
+  it("eine Pause vor der Testwoche schiebt sie mit", () => {
+    // Nur die ersten beiden Wochen erfuellt, danach drei leere Wochen: die
+    // Entlastungswoche steht noch aus, die Journey rueckt nicht vor.
+    const nurZwei = bisEntlastung.slice(0, 6);
+    const p = journeyPlacement(mitTestwoche, nurZwei, freq, "2026-02-02");
+    expect(p.globalWeek).toBe(3);
+    expect(p.done).toBe(false);
+  });
+
+  it("ohne geplante Wochen gibt es kein Enddatum", () => {
+    expect(
+      journeyEndDate({ id: "j1", phases: [] }, bisEntlastung, freq, "2026-01-26"),
+    ).toBeNull();
+  });
+
+  it("ignoriert Einheiten anderer Journeys", () => {
+    const fremd = bisEntlastung.map((x) => ({ ...x, journeyId: "j2" }));
+    expect(journeyPlacement(mitTestwoche, fremd, freq, "2026-01-26").done).toBe(
+      false,
+    );
   });
 });

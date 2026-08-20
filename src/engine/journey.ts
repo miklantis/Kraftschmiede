@@ -1,19 +1,27 @@
 // Journey-Platzierung: leitet aus dem Trainingsverlauf ab, in welcher Phase und
-// Woche die aktive Journey gerade steht, und wie weit die laufende Kalenderwoche
-// erfuellt ist. Reine Funktionen ohne DB-/DOM-Bezug; der Aufrufer reicht Sessions,
-// Phasen, Frequenzziel und das Bezugsdatum herein (1:1 aus V1 portiert).
+// Woche die aktive Journey gerade steht, wie weit die laufende Kalenderwoche
+// erfuellt ist und ob die Journey durchlaufen ist. Reine Funktionen ohne
+// DB-/DOM-Bezug; der Aufrufer reicht Sessions, Phasen, Frequenzziel und das
+// Bezugsdatum herein.
 //
 // Grundidee: eine Journey-Woche gilt als erfuellt, wenn in ihr mindestens
 // freqTarget zaehlende Einheiten liegen. Phase und Woche-in-Phase werden daraus
 // abgeleitet, nicht von Hand gesetzt. Keine Pausenlogik: eine Woche ohne genug
 // Einheiten zaehlt einfach nicht und schiebt nichts.
 //
-// Eine Ausnahme: liegt in der Woche ein abgeschlossener 1RM-Test, ist sie
-// erfuellt - unabhaengig von der Einheitenzahl. Die Testwoche der Testphase
-// plant keine Einheit, die Journey wuerde dort sonst haengen bleiben (#229).
-// Die Testdaten reicht der Aufrufer als testDates herein (aus rm_tests); ohne
-// sie rechnet alles wie bisher. Mit dem Abschluss ueber den Kalender (#240,
-// Schritt 2) faellt diese Ausnahme wieder weg.
+// Genau eine Ausnahme, und sie steht an genau einer Stelle (#240): eine
+// Journey-Woche, die gar keine Einheit verlangt, erfuellt sich selbst. Das ist
+// die reine Testwoche am Ende einer Testphase - sie plant nichts (sets 0 im
+// Wochenplan), also kann sie an nichts haengen bleiben. Damit ist die Journey
+// durchlaufen, sobald alle geplanten Wochen erfuellt und vorbei sind; ob
+// tatsaechlich getestet wurde, prueft niemand.
+//
+// Weil diese Ausnahme an der Journey-Wochennummer haengt, die sich ihrerseits
+// aus den erfuellten Wochen davor ergibt, laeuft die Rechnung Kalenderwoche fuer
+// Kalenderwoche vorwaerts (fulfilledWeeks) statt ueber eine Menge von
+// Wochenschluesseln.
+
+import { weekDemandsSession, weekPlanForWeek, type WeekPlan } from "./weekPlan";
 
 // Minimal benoetigte Session-Form. Die datenbeschaffende Schicht mappt die
 // snake_case-DB-Zeilen (journey_id) auf diese Engine-Form (journeyId).
@@ -24,10 +32,15 @@ export interface JourneySession {
   journeyId: string | null;
 }
 
-// Phase, soweit die Platzierung sie braucht (Id + Wochenzahl).
+// Phase, soweit die Platzierung sie braucht: Id, Wochenzahl und Wochenplan.
+// Der Plan gehoert dazu, weil nur er sagt, ob eine Woche ueberhaupt eine Einheit
+// verlangt (reine Testwoche = 0 Saetze). Bewusst ein eigenes Feld statt der
+// DB-Spalte week_plan: so faellt beim Typecheck auf, wenn ein Aufrufer die
+// Phasen nicht ueber toPlacementPhases hereinreicht.
 export interface PhaseLike {
   id: string;
   weeks: number;
+  weekPlan: WeekPlan | null;
 }
 
 export interface JourneyLike {
@@ -90,10 +103,28 @@ function pad2(n: number): string {
   return n < 10 ? "0" + n : String(n);
 }
 
+// Datum "YYYY-MM-DD" aus einem Date (lokale Zeitzone, wie ueberall in der App).
+function isoDateOf(d: Date): string {
+  return (
+    d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate())
+  );
+}
+
+// Montag der ISO-Woche, in der dateStr liegt. Startpunkt der Wochen-fuer-Wochen-
+// Rechnung; von hier aus geht es in Schritten von sieben Tagen weiter.
+function mondayOf(dateStr: string): Date {
+  const d = new Date(dateStr + "T00:00:00");
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return d;
+}
+
 // ISO-8601-Wochenschluessel "YYYY-Www" zu einem Datum "YYYY-MM-DD". Feste Breite,
 // daher entspricht der lexikografische Vergleich der chronologischen Reihenfolge.
 export function isoWeekKey(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
+  return isoWeekKeyOf(new Date(dateStr + "T00:00:00"));
+}
+
+function isoWeekKeyOf(d: Date): string {
   const t = new Date(d.valueOf());
   const day = (d.getDay() + 6) % 7; // Mo=0 .. So=6
   t.setDate(t.getDate() - day + 3); // Donnerstag der ISO-Woche
@@ -130,54 +161,97 @@ function countingSessions(
   );
 }
 
-// Wochen mit einem abgeschlossenen 1RM-Test. Sie gelten als erfuellt, egal wie
-// viele Einheiten in ihnen liegen: die Testwoche der Testphase plant gar keine
-// Einheit, das Wochenziel sind drei - ohne diese Regel bliebe die Journey dort
-// haengen (#229).
-//
-// Gezaehlt werden nur Tests ab der ersten Einheit der Journey. Ein Test von
-// davor gehoert nicht zu ihr und wuerde die Journey sonst rueckwirkend
-// vorruecken.
-function testWeekKeys(
-  sessions: JourneySession[],
-  journeyId: string,
-  testDates: readonly string[] | undefined,
-): Record<string, true> {
-  const out: Record<string, true> = {};
-  if (!testDates || testDates.length === 0) return out;
-  const counting = countingSessions(sessions, journeyId);
-  if (!counting.length) return out;
-  let firstKey = isoWeekKey(counting[0].date);
-  for (const s of counting) {
-    const k = isoWeekKey(s.date);
-    if (k < firstKey) firstKey = k;
-  }
-  for (const d of testDates) {
-    if (!d) continue;
-    const k = isoWeekKey(d);
-    if (k >= firstKey) out[k] = true;
-  }
-  return out;
+// Verlangt diese Journey-Woche ueberhaupt eine Einheit? Verneinen kann das nur
+// eine Phase mit Wochenplan, und dort nur die reine Testwoche (0 Saetze). Ohne
+// Plan - und jenseits der letzten geplanten Woche - gilt das gewohnte
+// Wochenziel.
+function weekDemandsWork(
+  phases: readonly PhaseLike[],
+  journeyWeek: number,
+): boolean {
+  const p = phasePlacement(phases, journeyWeek);
+  if (p.done) return true;
+  const phase = phases[p.phaseIndex];
+  if (!phase || !phase.weekPlan) return true;
+  return weekDemandsSession(weekPlanForWeek(phase.weekPlan, p.weekInPhase));
 }
 
-// Set-artiges Objekt der erfuellten Wochenschluessel: >= freqTarget Einheiten
-// oder ein 1RM-Test in der Woche (Testwoche, s. testWeekKeys).
-function fulfilledWeekKeys(
+/** Erfuellte Kalenderwochen einer Journey, Woche fuer Woche vorwaerts gerechnet. */
+interface FulfilledWeeks {
+  /** Anzahl erfuellter Wochen STRIKT VOR dieser Kalenderwoche. */
+  before(key: string): number;
+  /** Ist diese Kalenderwoche erfuellt? */
+  has(key: string): boolean;
+  /** Sonntag der n-ten erfuellten Woche (1-basiert); "" wenn es sie nicht gibt.
+   *  Setzt voraus, dass bis dorthin schon gerechnet wurde (before/has). */
+  sundayOf(n: number): string;
+}
+
+// Zwei Wege, wie eine Kalenderwoche erfuellt wird: genug zaehlende Einheiten
+// (>= freqTarget) oder die Journey-Woche verlangt gar keine Einheit. Der zweite
+// Weg haengt an der Journey-Wochennummer, die sich aus den erfuellten Wochen
+// davor ergibt - deshalb wird ab der ersten Einheit der Journey Woche fuer Woche
+// vorwaerts gegangen, statt eine Menge von Schluesseln zu bilden.
+//
+// Der Zeiger geht nur vorwaerts und bewertet jede Woche genau einmal; spaetere
+// Abfragen setzen dort auf, wo die letzte aufgehoert hat. Ohne eine einzige
+// zaehlende Einheit gibt es keinen Anfang: die Journey steht dann auf Woche 1.
+function fulfilledWeeks(
   sessions: JourneySession[],
   journeyId: string,
   freqTarget: number,
-  testDates?: readonly string[],
-): Record<string, true> {
+  phases: readonly PhaseLike[],
+): FulfilledWeeks {
+  const target = Math.max(1, freqTarget || 1);
   const counts: Record<string, number> = {};
-  countingSessions(sessions, journeyId).forEach((s) => {
+  let firstDate = "";
+  for (const s of countingSessions(sessions, journeyId)) {
     const k = isoWeekKey(s.date);
     counts[k] = (counts[k] || 0) + 1;
-  });
-  const out: Record<string, true> = testWeekKeys(sessions, journeyId, testDates);
-  Object.keys(counts).forEach((k) => {
-    if (counts[k] >= freqTarget) out[k] = true;
-  });
-  return out;
+    if (!firstDate || s.date < firstDate) firstDate = s.date;
+  }
+
+  const keys: string[] = []; // erfuellte Wochenschluessel, aufsteigend
+  const mondays: string[] = []; // Montag je erfuellter Woche, gleiche Ordnung
+  const seen: Record<string, true> = {};
+  const cursor = firstDate ? mondayOf(firstDate) : null;
+
+  function walk(limit: string, inclusive: boolean): void {
+    if (!cursor) return;
+    for (;;) {
+      const key = isoWeekKeyOf(cursor);
+      if (inclusive ? key > limit : key >= limit) return;
+      if (!weekDemandsWork(phases, keys.length + 1) || (counts[key] || 0) >= target) {
+        keys.push(key);
+        mondays.push(isoDateOf(cursor));
+        seen[key] = true;
+      }
+      cursor.setDate(cursor.getDate() + 7);
+    }
+  }
+
+  return {
+    before(key: string): number {
+      walk(key, false);
+      let n = 0;
+      for (const k of keys) {
+        if (k < key) n++;
+        else break;
+      }
+      return n;
+    },
+    has(key: string): boolean {
+      walk(key, true);
+      return seen[key] === true;
+    },
+    sundayOf(n: number): string {
+      const monday = mondays[n - 1];
+      if (!monday) return "";
+      const d = new Date(monday + "T00:00:00");
+      d.setDate(d.getDate() + 6);
+      return isoDateOf(d);
+    },
+  };
 }
 
 // Journey-Wochennummer (1-basiert) der Kalenderwoche, in der dateStr liegt:
@@ -188,15 +262,13 @@ export function journeyWeekForDate(
   sessions: JourneySession[],
   journeyId: string,
   freqTarget: number,
-  testDates?: readonly string[],
+  phases: readonly PhaseLike[],
 ): number {
-  const key = isoWeekKey(dateStr);
-  const ful = fulfilledWeekKeys(sessions, journeyId, freqTarget, testDates);
-  let before = 0;
-  Object.keys(ful).forEach((k) => {
-    if (k < key) before++;
-  });
-  return before + 1;
+  return (
+    fulfilledWeeks(sessions, journeyId, freqTarget, phases).before(
+      isoWeekKey(dateStr),
+    ) + 1
+  );
 }
 
 /** Nachschlage-Funktion Datum -> Journey-Wochennummer. Gleiche Rechnung wie
@@ -207,26 +279,16 @@ export function journeyWeekLookup(
   sessions: JourneySession[],
   journeyId: string,
   freqTarget: number,
-  testDates?: readonly string[],
+  phases: readonly PhaseLike[],
 ): (dateStr: string) => number {
-  const keys = Object.keys(
-    fulfilledWeekKeys(sessions, journeyId, freqTarget, testDates),
-  ).sort();
-  return (dateStr: string): number => {
-    const key = isoWeekKey(dateStr);
-    let before = 0;
-    for (const k of keys) {
-      if (k < key) before++;
-      else break;
-    }
-    return before + 1;
-  };
+  const weeks = fulfilledWeeks(sessions, journeyId, freqTarget, phases);
+  return (dateStr: string): number => weeks.before(isoWeekKey(dateStr)) + 1;
 }
 
 // Mapping globale Wochennummer -> Phase + Woche-in-Phase. globalWeek groesser als
 // die Summe aller Phasenwochen => done:true (Journey durchlaufen).
 export function phasePlacement(
-  phases: PhaseLike[],
+  phases: readonly PhaseLike[],
   globalWeek: number,
 ): Omit<Placement, "globalWeek"> {
   const ps = phases || [];
@@ -259,43 +321,39 @@ export function journeyPlacement(
   sessions: JourneySession[],
   freqTarget: number,
   today: string,
-  testDates?: readonly string[],
 ): Placement {
-  const gw = journeyWeekForDate(today, sessions, journey.id, freqTarget, testDates);
-  const p = phasePlacement(journey.phases || [], gw);
+  const phases = journey.phases || [];
+  const gw = journeyWeekForDate(today, sessions, journey.id, freqTarget, phases);
+  const p = phasePlacement(phases, gw);
   return { ...p, globalWeek: gw };
 }
 
 // Summe aller Phasenwochen einer Journey = geplante Gesamtdauer in Wochen.
-export function totalJourneyWeeks(phases: PhaseLike[]): number {
+export function totalJourneyWeeks(phases: readonly PhaseLike[]): number {
   return (phases || []).reduce((sum, p) => sum + (p.weeks || 0), 0);
 }
 
-// Schliesst die neue Einheit die Journey ab? Wahr, wenn die Einheit in der
-// letzten geplanten Journey-Woche (oder darueber hinaus) liegt UND mit ihr das
-// Wochen-Pensum dieser Kalenderwoche erfuellt ist.
-//
-// `sessionsBefore` enthaelt den Verlauf OHNE die gerade beendete Einheit; deren
-// Datum kommt als `date`. Die Journey-Wochennummer zaehlt nur Wochen STRIKT VOR
-// der laufenden, ist also unabhaengig davon, ob die neue Einheit schon
-// mitgezaehlt wird. Das ">= Gesamtwochen" faengt zugleich Journeys ab, die
-// laengst ueberfaellig sind: sie schliessen mit der naechsten erfuellten Woche.
-export function completesJourney(
+/** Enddatum einer durchlaufenen Journey: der Sonntag ihrer letzten geplanten
+ *  Woche. null, solange sie nicht durchlaufen ist - und ebenso, wenn sie gar
+ *  keine Wochen plant (dann gibt es nichts abzuschliessen).
+ *
+ *  Bewusst nicht der Tag, an dem die App den Abschluss bemerkt: sonst haengt die
+ *  Dauer im Archiv davon ab, wann die App zufaellig geoeffnet wurde - zwei
+ *  Wochen Urlaub liessen die Journey zwei Wochen laenger aussehen, als sie war
+ *  (#240). Weil nur Wochen STRIKT VOR dem Bezugsdatum zaehlen, liegt das
+ *  Enddatum immer in der Vergangenheit. */
+export function journeyEndDate(
   journey: JourneyLike,
-  sessionsBefore: JourneySession[],
+  sessions: JourneySession[],
   freqTarget: number,
-  date: string,
-  testDates?: readonly string[],
-): boolean {
-  const total = totalJourneyWeeks(journey.phases || []);
-  if (total <= 0) return false;
-  const target = Math.max(1, freqTarget || 1);
-  const week = journeyWeekForDate(date, sessionsBefore, journey.id, target, testDates);
-  if (week < total) return false;
-  const wp = weekProgress(sessionsBefore, journey.id, target, date, testDates);
-  // Liegt in der Woche schon ein 1RM-Test, ist sie ohnehin erfuellt - dann
-  // schliesst diese Einheit die Journey ab, auch ohne das volle Pensum.
-  return wp.fulfilled || wp.units + 1 >= target;
+  today: string,
+): string | null {
+  const phases = journey.phases || [];
+  const total = totalJourneyWeeks(phases);
+  if (total <= 0) return null;
+  const weeks = fulfilledWeeks(sessions, journey.id, freqTarget, phases);
+  if (weeks.before(isoWeekKey(today)) < total) return null;
+  return weeks.sundayOf(total) || null;
 }
 
 // Fortschritt der Kalenderwoche, in der dateStr liegt: gezaehlte Einheiten,
@@ -306,7 +364,7 @@ export function weekProgress(
   journeyId: string,
   freqTarget: number,
   dateStr: string,
-  testDates?: readonly string[],
+  phases: readonly PhaseLike[],
 ): WeekProgress {
   const key = isoWeekKey(dateStr);
   let units = 0;
@@ -314,15 +372,15 @@ export function weekProgress(
     if (isoWeekKey(s.date) === key) units++;
   });
   const target = Math.max(1, freqTarget || 1);
-  // Ein 1RM-Test in der Woche erfuellt sie fuer sich - die Einheitenzahl bleibt
-  // aber die tatsaechliche (die Anzeige zaehlt keine Einheit dazu).
-  const hasTest = testWeekKeys(sessions, journeyId, testDates)[key] === true;
+  const weeks = fulfilledWeeks(sessions, journeyId, target, phases);
   return {
     isoKey: key,
     weekNum: isoWeekNumOf(key),
     units,
     target,
-    fulfilled: hasTest || units >= target,
-    journeyWeek: journeyWeekForDate(dateStr, sessions, journeyId, target, testDates),
+    // Eine Woche ohne Vorgabe ist erfuellt, ohne dass etwas passiert - die
+    // Einheitenzahl bleibt dabei die tatsaechliche (nichts wird dazugezaehlt).
+    fulfilled: weeks.has(key),
+    journeyWeek: weeks.before(key) + 1,
   };
 }

@@ -29,9 +29,6 @@ export interface FinishPayload {
   exerciseRows: Array<SessionExerciseInsert & { id: string }>;
   setRows: Array<SetInsert & { id: string }>;
   exercisePatches: ExercisePatch[];
-  /** Gesetzt, wenn diese Einheit die Journey abschliesst: sie wird im selben
-   *  Schreibvorgang archiviert (wichtig fuer offline pausierte Speicherungen). */
-  journeyArchive?: { journeyId: string; endDate: string };
 }
 
 export interface ExercisePatch {
