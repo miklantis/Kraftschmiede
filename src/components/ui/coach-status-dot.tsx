@@ -2,11 +2,15 @@ import { ArrowUp, ArrowDown, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CoachState } from "@/lib/coach";
 
-// Rundes Coach-Zeichen ohne Text: die grobe Tendenz fuer die naechste Einheit
-// (Steigern / Halten / Senken) als reines Symbol. Kleine Schwester der
-// CoachStatusPill - gleiche Bedeutung, gleiche Farbzuordnung, nur ohne Label,
-// damit es neben eine Ueberschrift passt. Genutzt am Uebungsblock der laufenden
-// Einheit (#191), sobald alle Arbeitssaetze abgehakt sind.
+// Rundes Coach-Zeichen ohne Text: die grobe Tendenz (Steigern / Halten /
+// Senken) als reines Symbol. Kleine Schwester der CoachStatusPill - gleiche
+// Bedeutung, gleiche Farbzuordnung, nur ohne Label, damit es neben eine
+// Ueberschrift passt. Genutzt am Uebungsblock der laufenden Einheit (#191).
+//
+// Das Zeichen setzt keine Bewertung der laufenden Einheit voraus (#268,
+// Schritt 3): im Wochenplan beschreibt es die Vorgabe dieser Woche und steht
+// darum schon vor dem ersten abgehakten Satz - ohne jede Vordaten in der Form
+// "Start", die wie "Halten" ruhig bleibt.
 //
 // Akzentgruen nur beim Steigern; Senken bleibt ruhig gedeckt - Senken ist
 // normale Belastungssteuerung, keine Alarmmeldung.

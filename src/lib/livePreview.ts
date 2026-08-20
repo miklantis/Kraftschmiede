@@ -19,6 +19,13 @@
 // und er wird nie vollstaendig. Das deckt sich mit dem Beenden: offene Saetze
 // verfallen dort (liveFinish), gespeichert wird nur das Abgehakte. Die Vorschau
 // beantwortet also durchgehend "was kaeme heraus, wenn ich jetzt beende".
+//
+// Im Wochenplan gilt das nur fuer den Ausblick (#268, Schritt 3). Die Vorgabe
+// DIESER Woche haengt nicht am Verlauf der Einheit - sie ist vor dem ersten Satz
+// entschieden und liegt als Zielgewicht auf den Saetzen. Genau dort entsteht die
+// Frage "warum steht da schon wieder dieselbe Zahl?", also steht sie dort auch
+// schon zur Verfuegung: bei Hauptuebungen im Wochenplan traegt die Karte ihren
+// Coach-Block von Beginn der Einheit an.
 
 import type { SetEntry, EngineSet } from "@/engine/types";
 import type { CoachScope } from "@/engine";
@@ -33,7 +40,8 @@ export interface LiveCoachPreview {
   /** Fuer welchen Zeitraum die Zahlen in `status` gelten (#268, Schritt 2). */
   scope: CoachScope;
   /** Ausblick auf die naechste Woche; null ausserhalb des Wochenplans, in der
-   *  letzten Phasenwoche und in der Entlastungswoche. */
+   *  letzten Phasenwoche, in der Entlastungswoche und solange kein Arbeitssatz
+   *  abgehakt ist (vorher gibt es nichts zu bewerten). */
   outlook: PlanOutlook | null;
   /** `provisional` heisst: es stehen noch offene Arbeitssaetze im Block, der
    *  Stand kann also noch wandern. Betrifft nur die Zeile, die wandern KANN -
@@ -43,9 +51,28 @@ export interface LiveCoachPreview {
 
 /** Traegt die Vorschau ueberhaupt eine Zeile, die noch wandern kann? In der
  *  Kraftphase ist das nur der Ausblick: fehlt er (letzte Phasenwoche,
- *  Entlastung), steht alles Angezeigte fest, auch bei offenen Saetzen. */
+ *  Entlastung, noch kein abgehakter Satz), steht alles Angezeigte fest, auch bei
+ *  offenen Saetzen. */
 export function previewProvisional(preview: LiveCoachPreview): boolean {
   return preview.provisional && (preview.scope === "next" || preview.outlook != null);
+}
+
+/** Womit die Vorschau rechnet - und ob sie ueberhaupt rechnen kann.
+ *
+ *  Im Wochenplan ist es der Katalogstand: die Vorgabe der Woche steht vor der
+ *  Einheit fest und darf nicht mit ihr wandern. Sie braucht darum nichts
+ *  Abgehaktes und steht schon beim ersten Blick auf die Saetze (#268, Schritt 3).
+ *
+ *  Sonst - Doppelprogression, also die Leiter aus Wiederholungen und Gewicht -
+ *  ist es das im Block tatsaechlich bewegte Gewicht, dieselbe Groesse, die beim
+ *  Beenden in den Katalog geht. Ohne abgehakten Satz gibt es dort nichts zu
+ *  bewerten: dann null, und die Karte zeigt wie bisher kein Coach-Zeichen. */
+export function previewWorkWeight(
+  scope: CoachScope,
+  catalogWeight: number,
+  workedWeight: number | null,
+): number | null {
+  return scope === "week" ? catalogWeight : workedWeight;
 }
 
 // Ein Live-Arbeitssatz in die Engine-Satzform. Gegenstueck zu toEngineSet in

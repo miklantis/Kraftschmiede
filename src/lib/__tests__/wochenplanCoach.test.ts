@@ -4,6 +4,8 @@
 import { describe, expect, it } from "vitest";
 import { buildLiveEntries } from "../liveBuild";
 import type { LiveBuildExercise, LiveBuildInput } from "../liveBuild";
+import { suggestWithBar } from "../coach";
+import type { CoachBuildExercise, CoachSuggestion } from "../coach";
 import { planContextFor, type PlanSource } from "../planContext";
 import { katalogPatch } from "../katalogPatch";
 import { buildWeekEntries } from "../lastEntries";
@@ -188,6 +190,50 @@ describe("Kraftphase mit Wochenplan – was unberuehrt bleibt", () => {
   it("bleibt ohne Wochenplan komplett beim bisherigen Verhalten", () => {
     const r = buildLiveEntries(input({ planSource: null }));
     expect(r.entries[0]!.sets[0]!.targetReps).toBe(6);
+  });
+});
+
+// Issue #268, Schritt 3: Die Wochenvorgabe braucht keinen abgehakten Satz. Sie
+// liegt als Zielgewicht auf den Saetzen und wandert nicht mit dem Verlauf der
+// Einheit - nur deshalb kann die Karte ihren Coach-Block von Beginn an zeigen.
+describe("Wochenvorgabe vor dem ersten abgehakten Satz", () => {
+  const source = planSource({
+    previousWeekEntryByExercise: { bench: entry([set(), set(), set(), set()]) },
+  });
+  const plan = planContextFor(source, {
+    id: bench.id,
+    referenceWeight: bench.referenceWeight,
+    referencePhaseId: bench.referencePhaseId,
+    rm: bench.rm,
+  });
+  // Katalogstand statt heute bewegtem Gewicht - genau das gibt previewWorkWeight
+  // der Vorschau im Wochenplan mit.
+  const exo: CoachBuildExercise = bench;
+  const vorschlag = (lastEntry: SetEntry | null): CoachSuggestion =>
+    suggestWithBar(exo, {
+      phaseFocus: { focus: "strength" },
+      lastEntry,
+      prevEntry: null,
+      weightStep: 2.5,
+      bars: [{ weight: 20 }],
+      plates: PLATES,
+      dumbbells: [],
+      repTarget: [4, 6],
+      plan,
+    }).suggestion;
+
+  it("nennt ohne abgehakten Satz die Zahlen, die auf den Saetzen liegen", () => {
+    const gebaut = buildLiveEntries(input({ planSource: source })).entries[0]!;
+    expect(vorschlag(null).weight).toBe(gebaut.sets[0]!.weight);
+    expect(vorschlag(null).targetReps).toBe(gebaut.sets[0]!.targetReps);
+  });
+
+  it("bleibt dieselbe, sobald Saetze abgehakt sind", () => {
+    const heute = entry([
+      set({ weight: 40 }),
+      set({ weight: 40, reps: 2, failed: true }),
+    ]);
+    expect(vorschlag(heute)).toEqual(vorschlag(null));
   });
 });
 

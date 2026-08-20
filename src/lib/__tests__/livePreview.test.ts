@@ -4,6 +4,7 @@ import {
   liveEntryToSetEntry,
   liveWorkWeight,
   previewProvisional,
+  previewWorkWeight,
   type LiveCoachPreview,
 } from "../livePreview";
 import { suggestWithBar, coachStatusFromSuggestion } from "../coach";
@@ -263,5 +264,31 @@ describe("previewProvisional – was noch wandern kann", () => {
 
   it("bei vollstaendigem Block wandert nichts mehr", () => {
     expect(previewProvisional(preview({ provisional: false }))).toBe(false);
+  });
+
+  it("vor dem ersten Satz steht in der Kraftphase alles fest", () => {
+    // Der Ausblick kommt erst mit dem ersten abgehakten Satz (#268, Schritt 3);
+    // bis dahin traegt die Karte nur die feste Wochenvorgabe.
+    expect(previewProvisional(preview({ outlook: null }))).toBe(false);
+  });
+});
+
+// Issue #268, Schritt 3: die Wochenvorgabe braucht nichts Abgehaktes, die
+// Doppelprogression schon.
+describe("previewWorkWeight – Grundlage der Vorschau", () => {
+  it("nimmt im Wochenplan den Katalogstand, auch ohne abgehakten Satz", () => {
+    expect(previewWorkWeight("week", 50, null)).toBe(50);
+  });
+
+  it("laesst den Katalogstand im Wochenplan nicht mit der Einheit wandern", () => {
+    expect(previewWorkWeight("week", 50, 60)).toBe(50);
+  });
+
+  it("rechnet sonst mit dem im Block bewegten Gewicht", () => {
+    expect(previewWorkWeight("next", 50, 60)).toBe(60);
+  });
+
+  it("hat sonst ohne abgehakten Satz keine Grundlage", () => {
+    expect(previewWorkWeight("next", 50, null)).toBeNull();
   });
 });
