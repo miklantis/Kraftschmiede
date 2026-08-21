@@ -24,7 +24,7 @@ statt aus einer festen Liste zu wählen.
 
 Die kurze Antwort auf die Machbarkeit: ja, und das Datenmodell ist näher dran, als
 es von außen aussieht. Der Aufwand steckt nicht in der Rechenlogik, sondern in zwei
-Entscheidungen, die noch niemand getroffen hat (siehe Abschnitt 7 und 9).
+Entscheidungen, die noch niemand getroffen hat (siehe Abschnitt 7 und 10).
 
 ---
 
@@ -142,15 +142,18 @@ Wenn ein Editor entsteht, sind die sieben Typen seine Bausteine. Deshalb hier, w
 jeder von ihnen tut und was an ihm überhaupt einstellbar wäre. Sortiert von leicht
 nach schwer.
 
-| Typ | Wiederholungen | Steuerweg | Sätze | Heute in Vorlage |
-| --- | --- | --- | --- | --- |
-| Kraftausdauer (`endurance`) | 12–18 | Coach | Rampe | nein |
-| Hypertrophie (`hypertrophy`) | 8–12 | Coach | Rampe | ja |
-| Wiedereinstieg (`reentry`) | 5–8 | Coach, vorsichtig | Rampe | ja |
-| Erhaltung (`maintenance`) | Band der Übung | Coach | Rampe | nein |
-| Maximalkraft (`strength`) | Leiter 5→2 | Wochenplan | 4 fest | ja |
-| Intensivierung (`power`) | Leiter, kürzer | Wochenplan | 4 fest | nein |
-| Test/Peak (`test`) | 3–5, dann 1 | Wochenplan | 2, dann 0 | ja |
+| Typ | Wochen | Wiederholungen | Steuerweg | Sätze | Entlastung | In Vorlage |
+| --- | --- | --- | --- | --- | --- | --- |
+| Kraftausdauer (`endurance`) | 3–8 (4) | 12–18 | Coach | Rampe | ab 4 Wochen | nein |
+| Hypertrophie (`hypertrophy`) | 3–8 (5) | 8–12 | Coach | Rampe | ab 4 Wochen | ja |
+| Wiedereinstieg (`reentry`) | 1–4 (2) | 5–8 | Coach, vorsichtig | Rampe | praktisch nie | ja |
+| Erhaltung (`maintenance`) | 1–12 (3) | Band der Übung | Coach | konstant | nein | nein |
+| Maximalkraft (`strength`) | 3–6 (5) | Leiter 5→2 | Wochenplan | 4 fest | nein | ja |
+| Intensivierung (`power`) | 3–4 (3) | Leiter, kürzer | Wochenplan | 4 fest | nein | nein |
+| Test/Peak (`test`) | 1–2 (2) | 3–5, dann 1 | Wochenplan | 2, dann 0 | steckt in der Bauregel | ja |
+
+Die Spalte Wochen liest sich als **Bereich mit üblichem Wert in Klammern**: „3–6 (5)"
+heißt, ein Regler dürfte 3 bis 6 anbieten und stünde beim Anlegen auf 5.
 
 **Kraftausdauer** – Kapazität und Durchhaltevermögen. Doppelprogression im breitesten
 Band des Systems; weil das Band so weit ist, steigt das Gewicht selten. Einstellbar:
@@ -186,6 +189,40 @@ die Leiter auf 5 · 4 · 3 kürzt. Einstellbar: **nur die Wochenzahl.**
 Sätze, plant nichts, erfüllt sich selbst), jede Woche davor ist Entlastung mit 60 %
 vom Startgewicht der Kraftphase. Einstellbar: **nur die Wochenzahl**, und die
 bedeutet hier allein, wie viele Entlastungswochen vor dem Test liegen.
+
+### Woher die Wochengrenzen kommen
+
+Wichtig für jeden späteren Regler: **Von diesen Grenzen ist genau eine technisch
+gesetzt, alle übrigen sind Vorschlag.**
+
+Technisch gesetzt sind die 3 bis 6 Wochen der Plan-Typen. Darunter schneidet
+`repLadder` die Leiter von hinten ab, es fallen also genau die schweren Wochen weg,
+wegen derer die Phase existiert; darüber wiederholt sie die erste Woche, der Anlauf
+wird länger, ohne dass mehr passiert. Test/Peak hat gar keine Leiter: Dort ergibt
+sich 1–2 aus der Bauregel – die letzte Woche ist der Test, jede davor ist
+Entlastung, und mehrere Entlastungswochen hintereinander vor einem Test sind kein
+Anwendungsfall.
+
+Vorschlag sind alle Coach-Typen. Ihre Untergrenze folgt aus dem Motor: Die Satzrampe
+braucht Wochen, um eine Rampe zu sein. Bei einer Woche liefert `rampSets` sofort den
+Endwert, bei zwei Wochen springt sie in einem Schritt von Anfang auf Ende. Erst ab
+drei Wochen entsteht ein Verlauf, und eine Entlastungswoche lohnt erst ab vier – in
+Woche 3 von 3 wäre sie das Ende der Phase, nicht ihre Erholung. Die Obergrenze ist
+eine reine Ermessensfrage: Nach sechs bis acht Wochen im selben Band ist der Ertrag
+klein, aber kaputt geht nichts. Erhaltung ist die Ausnahme in beide Richtungen –
+ohne Rampe und ohne Ziel kann sie eine Woche kurz sein oder ein Vierteljahr lang, sie
+hält nur den Stand.
+
+Wiedereinstieg ist bewusst kurz gehalten (1–4): Er ist eine Brücke, kein Programm.
+Bleibt man länger im vorsichtigen Zweig, verlässt man das Einstiegsniveau nie, weil
+das Ziel dort immer der Bandanfang ist.
+
+Und genau hier bricht die Systematik einmal ein: „Wiederaufbau nach Fasten" fährt
+Wiedereinstieg **und** Hypertrophie mit je einer Woche, also unter jeder
+Coach-Untergrenze. Das ist kein Fehler in der Vorlage, sondern der Beweis, dass dort
+ein anderer Motor läuft – nicht die Satzrampe, sondern der Lastfaktor. Eine harte
+Sperre bei drei Wochen würde diese Vorlage unbaubar machen. Die Gegenprobe dazu steht in
+Abschnitt 8.
 
 Die Wiederholungsleitern der Plan-Typen hängen an der Wochenzahl:
 
@@ -224,7 +261,7 @@ Begründung (ADR-0018), keine Geschmacksfragen.
 trainingslogisch klug zusammengesetzt ist – ob eine Testphase nach einer
 Hypertrophiephase Sinn ergibt, entscheidet der Nutzer. Das ist eine bewusste
 Entscheidung für Verantwortung statt Bevormundung, und sie hat einen Preis: siehe
-den Punkt zum Bezugspunkt der Entlastung in Abschnitt 9.
+den Punkt zum Bezugspunkt der Entlastung in Abschnitt 10.
 
 Damit wäre die Blockdefinition: **Typ wählen → Wochen wählen → gegebenenfalls
 Entlastungswoche → Reihenfolge festlegen → fertig.** Vier Handgriffe je Phase, und
@@ -250,7 +287,111 @@ greift. Alles andere ist Schreiben von Feldern.
 
 ---
 
-## 8. Die zweite Ausbaustufe: die Bündelung auflösen
+## 8. Gegenprobe: „Wiederaufbau nach Fasten" ist mit den sieben Bausteinen nicht baubar
+
+Ein Baukasten taugt nur, wenn sich damit mindestens das nachbauen lässt, was es
+heute schon gibt. „Wiedereinstieg & Aufbau" besteht die Probe: Wiedereinstieg
+2 Wochen, Hypertrophie 5 Wochen mit Entlastung in Woche 4, Maximalkraft 5 Wochen,
+Test 2 Wochen – vier Bausteine, vier Wochenzahlen, eine Entlastungswoche, fertig.
+
+Die zweite Vorlage besteht sie nicht. Ihre vier Phasen sehen so aus:
+
+| Phase | Typ | Wochen | Sätze | Band | Lastfaktor |
+| --- | --- | --- | --- | --- | --- |
+| Tasten | `reentry` | 1 | 2 | 8–10 | 65 % |
+| Reaktivieren | `reentry` | 1 | 3 | 6–10 | 80 % |
+| Anschluss | `hypertrophy` | 1 | 3 → 4 | 6–10 | 95 % |
+| Standort | `test` | 1 | (Plan) | (Plan) | 100 % |
+
+Mit „Typ wählen → Wochen wählen → Entlastungswoche → Reihenfolge" käme davon keine
+einzige Zeile zustande. Es fehlen drei Dinge, und sie fehlen unabhängig
+voneinander:
+
+**1. Der Lastfaktor kommt in der Bedienidee gar nicht vor.** Abschnitt 7 versteckt
+alle Steuerwege bewusst hinter dem Typ – aber der Lastfaktor hängt nicht am Typ,
+sondern an einem eigenen Feld (Abschnitt 5). Er ist der ganze Sinn dieser Vorlage:
+65/80/95/100 ist die Journey. Ohne ihn baut man vier gewöhnliche Coach-Phasen, die
+sofort wieder aufs alte Gewicht ziehen – also genau das Gegenteil.
+
+**2. Jede Phase trägt ein eigenes Wiederholungsband.** Tasten läuft mit 8–10 statt
+mit den 5–8 des Wiedereinstiegs, Anschluss mit 6–10 statt 8–12. Der Baukasten aus
+Abschnitt 7 bietet kein Band an – er nimmt das des Typs. Das ist ein eigenständiger
+Mangel: Auch ohne Lastfaktor gäbe es Fälle, in denen man das Band verschieben will,
+und das Feld ist längst frei und hat Vorrang vor dem Typ (Abschnitt 2).
+
+**3. Einwöchige Phasen unterlaufen jede Coach-Untergrenze.** Nach Abschnitt 6
+bräuchte Hypertrophie drei Wochen, damit die Satzrampe eine Rampe ist. Hier stimmt
+das nicht, weil die Rampe gar nicht der Motor ist – die Woche ist eine Stufe der
+Laststufenleiter, nicht ein Stück Aufbau.
+
+Alle drei zeigen in dieselbe Richtung: Diese Vorlage ist keine Abfolge von
+Trainingsblöcken, sondern **eine einzige Bewegung über vier Wochen** – vom
+gedrosselten Gewicht zurück auf hundert Prozent. Sie in vier Phasen zu zerlegen ist
+heute nur deshalb nötig, weil der Lastfaktor je Phase einen festen Wert hat.
+
+### Welcher Baustein fehlt? Drei Antworten
+
+**Antwort A: ein achter Baustein „Wiederaufbau".** Ein Block, der die ganze Bewegung
+enthält: Wochenzahl, Startanteil, Zielanteil – etwa „4 Wochen, von 65 % auf 100 %".
+Daraus entsteht je Woche eine Stufe; die Wiederholungen steuert der Coach im Band,
+das Gewicht nicht. Wochen: 2–6 (4).
+
+Was dafür spricht: Der Nutzer stellt eine Sache ein statt vier. Vor allem aber
+bekommt die versteckte Nebenwirkung aus Abschnitt 5 endlich einen sichtbaren Ort –
+**dieser eine Baustein** friert beim Start den Stand aller Übungen ein, und das lässt
+sich an ihm hinschreiben. Damit wäre auch die offene Frage aus Abschnitt 10, wo der
+Lastfaktor hingehört, im Sinne der dritten Variante beantwortet: eine eigene Bauart,
+die den Coach-Weg ersetzt, statt ihn stumm zu überlagern.
+
+Was dagegen spricht: Er baut die heutige Vorlage nur *ungefähr* nach. Die Sätze
+liefen als Rampe 2 → 4 statt in vier Einzelwerten, und es gäbe ein Band für die
+ganze Phase statt drei verschiedene. Ob das ein Verlust ist oder nur weniger
+Zufall, wäre zu klären. Außerdem ist es ein neuer Typ, also eine Datenbank-Änderung
+plus Umbau der bestehenden Vorlage.
+
+**Antwort B: der Lastfaktor als Zusatzregler an den Coach-Bausteinen.** Die sieben
+Typen bleiben, jeder Coach-Baustein bekommt zusätzlich „Gewicht vorgeben: x %".
+Fasten wären dann weiterhin vier Blöcke zu einer Woche – exakt wie heute, ohne jede
+Datenbank-Änderung, weil das Feld längst existiert.
+
+Was dagegen spricht: Genau die Streuung, vor der Abschnitt 5 warnt. Eine Einstellung
+an irgendeiner Phase entscheidet über die ganze Journey, und in dieser Variante kann
+sie an jedem beliebigen Block stehen. Der Nutzer müsste außerdem verstehen, was
+„Prozent des Referenzgewichts" heißt – der erste Steuerweg, der nicht mehr hinter dem
+Typ verschwindet. Und die Sperre gegen die Kombination mit dem Plan-Weg (Abschnitt
+10) müsste zusätzlich gebaut werden.
+
+**Antwort C: der Anlauf als Eigenschaft der Journey.** Nicht ein Baustein, sondern
+ein Vorspann vor der Bausteinkette: „Diese Journey startet gedrosselt: 4 Wochen von
+65 % auf 100 %." Die Bausteine dahinter bleiben unberührt.
+
+Was dafür spricht: Es ist die ehrlichste Abbildung dessen, was der Lastfaktor
+technisch tut – er wirkt über die Journey, nicht über die Phase.
+
+Was dagegen spricht: Der Editor enthielte dann zwei verschiedene Arten von Dingen,
+und die heutige Fasten-Vorlage bestünde ausschließlich aus dem Vorspann und keinem
+einzigen Baustein – eine Journey ohne Inhalt.
+
+### Denkstand
+
+A wirkt am stimmigsten, weil es das Problem dort löst, wo es entsteht: Der
+Lastfaktor hört auf, ein unsichtbarer Aufsatz zu sein, und wird ein Baustein, den man
+sieht, hinstellt und wieder wegnimmt. B ist der kleinste Aufwand und die größte
+stille Fallhöhe. C ist die Antwort, falls der Lastfaktor ohnehin auf die
+Journey-Ebene hochgezogen wird.
+
+Unabhängig davon bleibt Punkt 2 offen: Ein frei einstellbares Wiederholungsband
+gehört wahrscheinlich als „erweitert"-Option an jeden Coach-Baustein, ganz gleich,
+welche der drei Antworten gewählt wird.
+
+Offen ist außerdem, ob die Wochengrenzen aus Abschnitt 6 überhaupt Sperren sein
+sollen oder nur Vorgaben, von denen man abweichen darf. Dieselbe Frage in klein:
+Wird ein Wiederaufbau-Baustein gebaut, gelten innerhalb davon die Coach-Untergrenzen
+nicht – dort ist eine Woche eine Stufe, keine halbe Rampe.
+
+---
+
+## 9. Die zweite Ausbaustufe: die Bündelung auflösen
 
 Abschnitt 7 lässt die sieben Typen unangetastet – der Nutzer wählt aus ihnen, das
 System behält sein Wissen. Das reicht für einen Editor völlig aus. Erst wenn jemand
@@ -281,7 +422,7 @@ gespeicherten Wert.
 
 ---
 
-## 9. Offene Fragen und Stolpersteine
+## 10. Offene Fragen und Stolpersteine
 
 Diese Punkte sind der eigentliche Inhalt eines späteren Konzepts.
 
@@ -318,6 +459,8 @@ lassen und die Nebenwirkung sichtbar machen („diese Journey friert deinen Stan
 Start ein"); an die Journey hochziehen und die Phasen nur noch Prozentwerte tragen
 lassen; oder ihn als eigene Bauart der Phase führen, die den Coach-Weg ersetzt statt
 ihn zu überlagern. Vor dieser Frage lässt sich keine Bedienung entwerfen.
+Abschnitt 8 nimmt sie an der Fasten-Vorlage auseinander und neigt zur dritten
+Antwort.
 
 **Was passiert bei einem Lastfaktor ohne Bezugspunkt?** Heute unmöglich, weil das
 Einfrieren automatisch am Journey-Start hängt. Sobald Phasen einzeln editierbar
@@ -337,11 +480,11 @@ drei verschiedene Vorhaben mit verschiedenem Risiko.
 
 ---
 
-## 10. Was hier bewusst nicht steht
+## 11. Was hier bewusst nicht steht
 
 Kein Layout, kein Komponentenschnitt, keine Schrittfolge, keine Migration. Das
 gehört in ein Konzept, und ein Konzept entsteht erst, wenn die Fragen aus
-Abschnitt 9 beantwortet sind – vor allem die nach dem Freiheitsgrad.
+Abschnitt 10 beantwortet sind – vor allem die nach dem Freiheitsgrad.
 
 Auch keine Aussage darüber, ob das überhaupt gebaut werden soll. Die beiden
 bestehenden Vorlagen decken den heutigen Bedarf; von sieben ursprünglichen Vorlagen
@@ -351,8 +494,8 @@ kein Gegenargument, aber es gehört in die Abwägung.
 
 ---
 
-## 11. Nächster Schritt
+## 12. Nächster Schritt
 
-Wenn daraus ein Konzept werden soll: mit Abschnitt 9 anfangen, nicht mit dem
+Wenn daraus ein Konzept werden soll: mit Abschnitt 10 anfangen, nicht mit dem
 Editor. Zuerst der Freiheitsgrad, dann die Frage Vorlage-oder-Journey. Alles Weitere
 folgt daraus.
