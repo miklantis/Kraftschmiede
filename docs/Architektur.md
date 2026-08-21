@@ -71,7 +71,7 @@ Recovery-Fenster, Timer).
 
 - **exercises** – key, name, profile (strength/core/bodyweight), tier (main/accessory),
   equipment, bar_id (FK), description, metric (reps/duration bei Körpergewicht),
-  muscle_groups (grobe Tags als text[]), rep_range_min/max, target_score, work_weight,
+  muscle_groups (grobe Tags als text[]), rep_range_min/max, work_weight,
   reference_weight (nullable, eingefrorenes Arbeitsgewicht zum Start einer
   Lastfaktor-Journey), reference_phase_id (FK auf phases, nullable – zu welcher Phase
   das eingefrorene reference_weight gehört; ohne diesen Bezug lässt sich „Anker dieser
@@ -255,6 +255,17 @@ betroffene Tabelle beim Wiederherstellen leer.
   Übungs-Statusanzeige und Coach-Export – der Export weist beide Bänder getrennt
   aus (`repBand` = Katalog, `activeRepBand` = was gerade gilt), damit von außen nicht das
   falsche für maßgeblich gehalten wird.
+- **Die Ziel-Anstrengung gehört ins System, nicht an die Übung.** Wo ein Wochenplan
+  gilt, kommt sie aus dessen Wochenzeile (RIR); überall sonst gilt systemweit fest
+  Score 3 (RIR 2) – `DEFAULT_TARGET_SCORE` in `engine/score.ts`, umgeschaltet an einer
+  Stelle (`planTargetScore` in `lib/coach.ts`). Die frühere Stellschraube pro Übung
+  (`exercises.target_score`) ist mit Migration 0042 entfernt: Sie hatte keinen
+  Wochenbezug und war in genau den Phasen wirkungslos, in denen am meisten hingeschaut
+  wird. Nicht betroffen ist `sets.target_score` – die Ziel-Anstrengung des einzelnen
+  Satzes. Das „Übung anpassen"-Popup führt seitdem nur noch Stammwerte der Übung
+  (Arbeitsgewicht, Repband) und zeigt die geltende Vorgabe der Journey als gesperrte
+  Zeile an (`lib/exerciseTarget.ts`, dieselbe Weiche `planGovernsExercise` wie der
+  Coach).
 - **Der Coach senkt bei zweimal verfehltem Ziel.** Wird das Wiederholungsziel in zwei
   aufeinanderfolgenden Einheiten am selben Gewicht verfehlt, geht die Last einen Schritt
   zurück statt das obere Bandende erneut vorzugeben. Dafür bekommt `suggestWeight` neben

@@ -19,7 +19,7 @@ const BAR = { weight: 20 };
 // 0.65 -> 37.5, 0.80 -> 47.5, 0.95 -> 55, 1.00 -> 60.
 const REF = 60;
 
-const EX = { workWeight: REF, repRange: [8, 12] as [number, number], targetScore: 3 };
+const EX = { workWeight: REF, repRange: [8, 12] as [number, number] };
 const entry = (sets: EngineSet[]): SetEntry => ({ sets });
 const work = (o: Partial<EngineSet>): EngineSet => ({
   type: "work",
@@ -237,7 +237,6 @@ const squat: LiveBuildExercise = {
   equipment: "barbell",
   repRange: [8, 12],
   workWeight: REF,
-  targetScore: 3,
   barId: "bar1",
   referenceWeight: REF,
   referencePhaseId: null,

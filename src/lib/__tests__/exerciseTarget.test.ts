@@ -18,7 +18,6 @@ describe("lockedTarget", () => {
     const t = lockedTarget(HAUPT, {
       planWeek: WEEK4,
       repBand: [4, 6],
-      targetScore: 3,
     });
     expect(t).not.toBeNull();
     expect(t!.planGoverned).toBe(true);
@@ -32,7 +31,6 @@ describe("lockedTarget", () => {
     const t = lockedTarget(ZUSATZ, {
       planWeek: WEEK4,
       repBand: [4, 6],
-      targetScore: 3,
     });
     expect(t).not.toBeNull();
     expect(t!.planGoverned).toBe(false);
@@ -44,7 +42,6 @@ describe("lockedTarget", () => {
     const t = lockedTarget(HAUPT, {
       planWeek: null,
       repBand: [8, 12],
-      targetScore: 3,
     });
     expect(t!.planGoverned).toBe(false);
     expect(t!.value).toBe("8–12 Wdh · RIR 2");
@@ -52,19 +49,18 @@ describe("lockedTarget", () => {
 
   it("gibt null ohne Vorgabe der Phase", () => {
     expect(
-      lockedTarget(HAUPT, { planWeek: null, repBand: null, targetScore: 3 }),
+      lockedTarget(HAUPT, { planWeek: null, repBand: null }),
     ).toBeNull();
   });
 
   it("laesst Core-/Koerpergewichtsuebungen unberuehrt", () => {
     expect(
-      lockedTarget(CORE, { planWeek: WEEK4, repBand: [4, 6], targetScore: 3 }),
+      lockedTarget(CORE, { planWeek: WEEK4, repBand: [4, 6] }),
     ).toBeNull();
     expect(
       lockedTarget({ profile: "bodyweight", tier: "accessory" }, {
         planWeek: WEEK4,
         repBand: [4, 6],
-        targetScore: 3,
       }),
     ).toBeNull();
   });

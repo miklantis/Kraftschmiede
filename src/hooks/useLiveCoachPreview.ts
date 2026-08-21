@@ -167,7 +167,6 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
             ? [e.rep_range_min, e.rep_range_max]
             : null,
         workWeight,
-        targetScore: e.target_score,
         barId: e.bar_id,
         referenceWeight: e.reference_weight,
         referencePhaseId: e.reference_phase_id,

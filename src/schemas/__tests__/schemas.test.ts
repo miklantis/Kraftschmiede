@@ -29,7 +29,6 @@ describe("Lese-Form (Row) verlangt alle Spalten", () => {
     muscle_groups: ["legs", "glutes"],
     rep_range_min: 5,
     rep_range_max: 8,
-    target_score: 3,
     work_weight: 100,
     reference_weight: null,
     reference_phase_id: null,

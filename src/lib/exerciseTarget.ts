@@ -10,7 +10,7 @@
 //
 // Reine Ableitung ohne DB-/DOM-Bezug.
 
-import { scoreInfo } from "@/engine";
+import { scoreInfo, DEFAULT_TARGET_SCORE } from "@/engine";
 import type { WeekPlanWeek } from "@/engine";
 import { planGovernsExercise } from "./coach";
 import { weekTargets } from "./journey";
@@ -33,8 +33,6 @@ export interface LockedTargetInput {
   planWeek: WeekPlanWeek | null;
   /** Ziel-Repband der laufenden Phase; null = die Phase gibt keins vor. */
   repBand: [number, number] | null;
-  /** Ziel-Anstrengung ausserhalb des Wochenplans als Score der Skala. */
-  targetScore: number;
 }
 
 /** Die Vorgabe, die fuer diese Uebung tatsaechlich gilt; null heisst: es gibt
@@ -55,7 +53,9 @@ export function lockedTarget(
   // Ohne Wochenplan gilt das Band der Phase – aber nur fuer Kraftuebungen,
   // dieselbe Abgrenzung wie beim Coach (activeRepTarget in lib/liveBuild).
   if (exo.profile !== "strength" || !input.repBand) return null;
-  const rir = scoreInfo(input.targetScore)?.rir;
+  // Ausserhalb des Wochenplans ist die Ziel-Anstrengung systemweit fest
+  // (Issue #298) - dieselbe Zahl, mit der der Coach dort rechnet.
+  const rir = scoreInfo(DEFAULT_TARGET_SCORE)?.rir;
   return {
     label: "Repband",
     source: "aus aktiver Phase",

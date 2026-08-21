@@ -214,7 +214,6 @@ describe("writeExerciseEdit", () => {
     const { store, log } = createMemoryExerciseStore();
     await writeExerciseEdit(store, "u1", "ex1", {
       work_weight: 62.5,
-      target_score: 30,
       rep_range_min: 6,
       rep_range_max: 10,
     });
@@ -223,7 +222,6 @@ describe("writeExerciseEdit", () => {
         id: "ex1",
         patch: {
           work_weight: 62.5,
-          target_score: 30,
           rep_range_min: 6,
           rep_range_max: 10,
         },
@@ -235,10 +233,9 @@ describe("writeExerciseEdit", () => {
     const { store, log } = createMemoryExerciseStore();
     await writeExerciseEdit(store, "u1", "ex1", {
       work_weight: 62.5,
-      target_score: 30,
     });
     expect(log.uebungPatches).toEqual([
-      { id: "ex1", patch: { work_weight: 62.5, target_score: 30 } },
+      { id: "ex1", patch: { work_weight: 62.5 } },
     ]);
   });
 
@@ -247,7 +244,6 @@ describe("writeExerciseEdit", () => {
     await expect(
       writeExerciseEdit(store, null, "ex1", {
         work_weight: 62.5,
-        target_score: 30,
       }),
     ).rejects.toThrow("Nicht angemeldet.");
     expect(log.folge).toHaveLength(0);

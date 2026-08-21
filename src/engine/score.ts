@@ -19,6 +19,13 @@ export function scoreInfo(s: number): ScoreInfo | null {
   return SCORE_MAP[s] ?? null;
 }
 
+/** Ziel-Anstrengung ueberall dort, wo kein Wochenplan sie vorgibt: Score 3
+ *  (RIR 2). Fruehere Stellschraube war exercises.target_score - ein Einzelwert
+ *  pro Uebung ohne Wochenbezug, der in genau den Phasen wirkungslos war, in
+ *  denen am meisten hingeschaut wird. Die Ziel-Anstrengung gehoert ins System:
+ *  pro Woche an der Phase (phases.week_plan), sonst hier (Issue #298). */
+export const DEFAULT_TARGET_SCORE = 3;
+
 /** Score der Skala zu einer Ziel-Anstrengung in RIR: RIR 2 -> Score 3,
  *  RIR 1 -> Score 4. Der Wochenplan denkt in RIR, Saetze tragen den Score -
  *  hier steht die Umrechnung, damit sie nicht an mehreren Stellen liegt. */
