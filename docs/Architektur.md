@@ -262,7 +262,12 @@ betroffene Tabelle beim Wiederherstellen leer.
   (`exercises.target_score`) ist mit Migration 0042 entfernt: Sie hatte keinen
   Wochenbezug und war in genau den Phasen wirkungslos, in denen am meisten hingeschaut
   wird. Nicht betroffen ist `sets.target_score` – die Ziel-Anstrengung des einzelnen
-  Satzes. Das „Übung anpassen"-Popup führt seitdem nur noch Stammwerte der Übung
+  Satzes: Beim Abschließen einer Einheit wird dort seit Vorhaben #299 festgehalten,
+  welche Vorgabe beim Aufbau galt (`LiveSet.targetScore` aus `planTargetScore`, quer
+  durch `lib/setResult.ts`). Sie hängt am Satz und bleibt stehen, auch wenn im Training
+  am RIR-Regler gedreht oder die Einheit später korrigiert wird; Aufwärmsätze und Skills
+  tragen keine. Rückwirkend gefüllt wurde nichts – ältere Sätze bleiben leer.
+  Das „Übung anpassen"-Popup führt seit Migration 0042 nur noch Stammwerte der Übung
   (Arbeitsgewicht, Repband) und zeigt die geltende Vorgabe der Journey als gesperrte
   Zeile an (`lib/exerciseTarget.ts`, dieselbe Weiche `planGovernsExercise` wie der
   Coach).

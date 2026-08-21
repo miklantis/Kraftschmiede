@@ -36,6 +36,7 @@ const SESSION: WorkoutSession = {
           reps: 8,
           weight: 60,
           score: 3,
+          targetScore: 3,
           targetReps: 8,
           targetWeight: 60,
           done: false,
@@ -121,6 +122,21 @@ describe("liveSession", () => {
       const s = parseLive(JSON.stringify(obj)).session;
       expect(s !== null && s.kind === "workout" ? s.note : null).toBe("");
       expect(s !== null && s.kind === "workout" ? s.entries[0].note : null).toBe("");
+    });
+
+    // Vorhaben #299: eine Einheit, die vor dem Mitschreiben der Ziel-Anstrengung
+    // gestartet wurde, laeuft weiter - ohne dass eine Vorgabe erfunden wird.
+    it("laesst die Ziel-Anstrengung einer alten laufenden Einheit leer", () => {
+      const obj = JSON.parse(
+        serializeLive({ session: SESSION, collapsed: false }),
+      ) as { session: Record<string, unknown> };
+      const entries = obj.session.entries as Array<Record<string, unknown>>;
+      delete (entries[0].sets as Record<string, unknown>[])[0].targetScore;
+      const s = parseLive(JSON.stringify(obj)).session;
+      const satz = s !== null && s.kind === "workout" ? s.entries[0].sets[0] : null;
+      expect(satz?.targetScore).toBeNull();
+      // Der Regler startet weiter auf dem gespeicherten Wert.
+      expect(satz?.score).toBe(3);
     });
 
     // Issue #225, Schritt 5: der Wochenplan-Hinweis ist auf die Einheit

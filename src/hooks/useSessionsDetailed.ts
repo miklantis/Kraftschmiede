@@ -24,6 +24,7 @@ interface SetRowLite {
   met: boolean | null;
   target_reps: number | null;
   target_weight: number | null;
+  target_score: number | null;
 }
 
 interface SessionExerciseLite {
@@ -48,7 +49,7 @@ export function useSessionsDetailed() {
       >({
         tabelle: "sessions",
         spalten:
-          "*, session_exercises(id, exercise_id, name, metric, position, tested_1rm, note, sets(kind, reps, weight, duration_sec, score, adjusted, adjust_note, done, failed, met, target_reps, target_weight))",
+          "*, session_exercises(id, exercise_id, name, metric, position, tested_1rm, note, sets(kind, reps, weight, duration_sec, score, adjusted, adjust_note, done, failed, met, target_reps, target_weight, target_score))",
         gleich: { status: "done" },
         sortierung: [{ spalte: "date" }],
       });
@@ -87,6 +88,7 @@ export function useSessionsDetailed() {
             met: s.met,
             targetReps: s.target_reps,
             targetWeight: s.target_weight,
+            targetScore: s.target_score,
           })),
         })),
       }));

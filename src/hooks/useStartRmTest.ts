@@ -22,6 +22,8 @@ function toLiveSet(reps: number, weight: number): LiveSet {
     reps,
     weight,
     score: 3,
+    // Der Test gibt keine Ziel-Anstrengung vor - hier wird ausgereizt.
+    targetScore: null,
     targetReps: reps,
     targetWeight: weight,
     done: false,

@@ -11,8 +11,8 @@ describe("deriveWorkSets (Kraft)", () => {
   it("baut Satz-Zeilen, bewertet Ziel erreicht, schaetzt 1RM und nennt das Arbeitsgewicht", () => {
     const r = deriveWorkSets(
       [
-        { reps: 5, weight: 100, score: 4, targetReps: 5, targetWeight: 100, adjusted: false, adjustNote: "" },
-        { reps: 3, weight: 90, score: 3, targetReps: 5, targetWeight: 100, adjusted: false, adjustNote: "" },
+        { reps: 5, weight: 100, score: 4, targetReps: 5, targetWeight: 100, adjusted: false, adjustNote: "", targetScore: 2 },
+        { reps: 3, weight: 90, score: 3, targetReps: 5, targetWeight: 100, adjusted: false, adjustNote: "", targetScore: 2 },
       ],
       { userId: "u", sessionExerciseId: "se", rmFormula: "mean", newId: idGen(), startPosition: 2 },
     );
@@ -28,6 +28,7 @@ describe("deriveWorkSets (Kraft)", () => {
       done: true,
       target_reps: 5,
       target_weight: 100,
+      target_score: 2,
       met: true,
     });
     expect(r.setRows[1]).toMatchObject({ position: 3, reps: 3, weight: 90, met: false });
@@ -52,11 +53,35 @@ describe("deriveWorkSets (Kraft)", () => {
 
   it("default failed=false fliesst in Ziel erreicht", () => {
     const r = deriveWorkSets(
-      [{ reps: 5, weight: 100, score: 5, targetReps: 5, targetWeight: 100, adjusted: false, adjustNote: "" }],
+      [{ reps: 5, weight: 100, score: 5, targetReps: 5, targetWeight: 100, adjusted: false, adjustNote: "", targetScore: 2 }],
       { userId: "u", sessionExerciseId: "se", rmFormula: "mean", newId: idGen() },
     );
     expect(r.setRows[0].met).toBe(true);
     expect(r.setRows[0].failed).toBe(false);
+  });
+});
+
+describe("deriveWorkSets – Ziel-Anstrengung", () => {
+  // Vorhaben #299: was beim Aufbau galt, steht spaeter am Satz - auch wenn im
+  // Training am RIR-Regler gedreht wurde.
+  it("schreibt die geltende Vorgabe mit, unabhaengig vom bewerteten Score", () => {
+    const r = deriveWorkSets(
+      [
+        { reps: 5, weight: 100, score: 4, targetReps: 5, targetWeight: 100, adjusted: false, adjustNote: "", targetScore: 4 },
+        { reps: 5, weight: 100, score: 2, targetReps: 5, targetWeight: 100, adjusted: false, adjustNote: "", targetScore: 4 },
+      ],
+      { userId: "u", sessionExerciseId: "se", rmFormula: "mean", newId: idGen() },
+    );
+    expect(r.setRows.map((x) => x.target_score)).toEqual([4, 4]);
+    expect(r.setRows.map((x) => x.score)).toEqual([4, 2]);
+  });
+
+  it("ohne bekannte Vorgabe bleibt die Spalte leer", () => {
+    const r = deriveWorkSets(
+      [{ reps: 5, weight: 100, score: 3, targetReps: 5, targetWeight: 100, adjusted: false, adjustNote: "", targetScore: null }],
+      { userId: "u", sessionExerciseId: "se", rmFormula: "mean", newId: idGen() },
+    );
+    expect(r.setRows[0].target_score).toBeNull();
   });
 });
 
@@ -89,6 +114,8 @@ describe("deriveSkillSets (Skill)", () => {
       duration_sec: 30,
       target_reps: null,
       target_weight: null,
+      // Skills laufen nicht ueber den Uebungs-Coach.
+      target_score: null,
       met: true,
     });
   });
@@ -97,7 +124,7 @@ describe("deriveSkillSets (Skill)", () => {
 describe("deriveWorkSets – Rekord-Kandidat", () => {
   it("liefert record1RM nur aus Saetzen mit hoechstens 5 Wiederholungen", () => {
     const many = deriveWorkSets(
-      [{ reps: 10, weight: 60, score: 3, targetReps: 10, targetWeight: 60, adjusted: false, adjustNote: "" }],
+      [{ reps: 10, weight: 60, score: 3, targetReps: 10, targetWeight: 60, adjusted: false, adjustNote: "", targetScore: 2 }],
       { userId: "u", sessionExerciseId: "se", rmFormula: "mean", newId: idGen() },
     );
     expect(many.est1RM).not.toBeNull();
@@ -105,8 +132,8 @@ describe("deriveWorkSets – Rekord-Kandidat", () => {
 
     const few = deriveWorkSets(
       [
-        { reps: 10, weight: 60, score: 3, targetReps: 10, targetWeight: 60, adjusted: false, adjustNote: "" },
-        { reps: 4, weight: 80, score: 4, targetReps: 4, targetWeight: 80, adjusted: false, adjustNote: "" },
+        { reps: 10, weight: 60, score: 3, targetReps: 10, targetWeight: 60, adjusted: false, adjustNote: "", targetScore: 2 },
+        { reps: 4, weight: 80, score: 4, targetReps: 4, targetWeight: 80, adjusted: false, adjustNote: "", targetScore: 2 },
       ],
       { userId: "u", sessionExerciseId: "se", rmFormula: "mean", newId: idGen() },
     );

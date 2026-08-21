@@ -7,6 +7,7 @@ function set(over: Partial<WorkoutSession["entries"][0]["sets"][0]> = {}) {
     reps: 5,
     weight: 100,
     score: 3,
+    targetScore: 3,
     targetReps: 5,
     targetWeight: 100,
     done: true,
@@ -99,6 +100,32 @@ describe("buildFinishRows", () => {
     expect(warm).toHaveLength(1);
     expect(work).toHaveLength(1);
     expect(warm[0].weight).toBe(40);
+  });
+
+  // Vorhaben #299: die beim Aufbau geltende Ziel-Anstrengung wandert in die
+  // Historie; Aufwaermsaetze tragen keine.
+  it("schreibt die Ziel-Anstrengung an die Arbeitssaetze, nicht ans Aufwaermen", () => {
+    counter = 0;
+    const rows = buildFinishRows({
+      session: session([
+        entry({
+          warmupSets: [{ reps: 5, weight: 40, done: true }],
+          sets: [set({ done: true, targetScore: 4, score: 2 })],
+        }),
+      ]),
+      userId: "u1",
+      rmFormula: "mean",
+      body: { legs: 0, upper_body: 0, overall: 0, readiness: 3, pain_flag: false, pain_note: "", notes: "" },
+      week: 2,
+      date: "2026-06-23",
+      endedAt: 1_000_000 + 3600_000,
+      newId,
+    });
+    const warm = rows.setRows.filter((r) => r.kind === "warmup");
+    const work = rows.setRows.filter((r) => r.kind === "work");
+    expect(work[0].target_score).toBe(4);
+    expect(work[0].score).toBe(2);
+    expect(warm[0].target_score).toBeNull();
   });
 
   it("rechnet est1RM und naechstes Arbeitsgewicht aus den sauberen Saetzen", () => {

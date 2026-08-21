@@ -292,6 +292,7 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
         reps: wReps,
         weight: wWeight,
         score: targetScore,
+        targetScore,
         targetReps: wReps,
         targetWeight: wWeight,
         done: false,

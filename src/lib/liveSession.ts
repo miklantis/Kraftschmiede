@@ -49,7 +49,11 @@ export type LiveKind = "workout" | "skill" | "rmtest";
 export interface LiveSet {
   reps: number;
   weight: number;
-  score: number; // 1..5, Start = Ziel-Score der Uebung
+  score: number; // 1..5, Start = geltende Ziel-Anstrengung
+  /** Ziel-Anstrengung, die beim Aufbau der Einheit galt. Anders als `score`
+   *  bleibt sie unberuehrt, wenn im Training am RIR-Regler gedreht wird - sie
+   *  wandert beim Beenden in die Historie (#299). null = keine Vorgabe. */
+  targetScore: number | null;
   targetReps: number;
   targetWeight: number;
   done: boolean;
@@ -369,6 +373,9 @@ function parseEntries(v: unknown): LiveEntry[] {
           reps: num(so.reps),
           weight: num(so.weight),
           score: num(so.score, 3),
+          // Fehlt in Einheiten, die vor #299 begonnen wurden - dann keine
+          // Vorgabe, statt eine zu raten.
+          targetScore: typeof so.targetScore === "number" ? so.targetScore : null,
           targetReps: num(so.targetReps),
           targetWeight: num(so.targetWeight),
           done: bool(so.done),

@@ -146,6 +146,7 @@ export function buildFinishRows(ctx: FinishContext): FinishRows {
         adjusted: s.adjusted,
         adjustNote: s.adjustNote,
         failed: s.failed,
+        targetScore: s.targetScore,
       })),
       { userId, sessionExerciseId: seId, rmFormula, newId, startPosition: sp },
     );

@@ -164,6 +164,8 @@ export function appendedSet(entry: LiveEntry): LiveSet {
     reps,
     weight,
     score,
+    // Die Vorgabe der Einheit gilt auch fuer den nachgelegten Satz.
+    targetScore: last ? last.targetScore : null,
     targetReps: reps,
     targetWeight: weight,
     done: false,

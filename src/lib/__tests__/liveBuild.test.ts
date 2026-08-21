@@ -80,9 +80,45 @@ describe("buildLiveEntries", () => {
     expect(sq.sets[0]?.weight).toBe(60);
     expect(sq.sets[0]?.targetReps).toBe(12);
     expect(sq.sets[0]?.score).toBe(3);
+    // Ohne Wochenplan gilt der Systemstandard - und der wird mitgeschrieben.
+    expect(sq.sets[0]?.targetScore).toBe(3);
     // Aufwaermrampe beginnt mit der leeren Stange.
     expect(sq.warmupSets.length).toBeGreaterThan(0);
     expect(sq.warmupSets[0]?.weight).toBe(20);
+  });
+
+  // Vorhaben #299: die Vorgabe der Planwoche haengt am Satz, nicht nur am
+  // Regler - Hauptuebung nach Plan, Core faellt auf den Standard zurueck.
+  it("uebernimmt die Ziel-Anstrengung der Planwoche in die Saetze", () => {
+    const woche = {
+      week: 1,
+      sets: 4,
+      reps: 5,
+      repsMax: null,
+      rir: 1,
+      loadPct: 1,
+      note: "schwer",
+    };
+    const r = buildLiveEntries(
+      input({
+        planSource: {
+          week: woche,
+          prevWeek: woche,
+          nextWeek: null,
+          startReps: 5,
+          anchorPhaseId: "ph1",
+          deload: false,
+          currentWeekEntryByExercise: {},
+          previousWeekEntryByExercise: {},
+        },
+      }),
+    );
+    const sq = r.entries.find((e) => e.exerciseId === "squat")!;
+    // RIR 1 entspricht Score 4.
+    expect(sq.sets[0]?.targetScore).toBe(4);
+    expect(sq.sets).toHaveLength(4);
+    const pl = r.entries.find((e) => e.exerciseId === "plank")!;
+    expect(pl.sets[0]?.targetScore).toBe(3);
   });
 
   it("baut Core fix mit 3 Saetzen, ohne Stange und ohne Aufwaermen", () => {
