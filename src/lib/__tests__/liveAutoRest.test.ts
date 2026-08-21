@@ -14,6 +14,7 @@ function set(done: boolean): LiveSet {
     reps: 8,
     weight: 60,
     score: 3,
+    targetScore: 3,
     targetReps: 8,
     targetWeight: 60,
     done,

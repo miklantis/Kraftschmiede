@@ -21,8 +21,8 @@ function ctx(over: Partial<EditContext> = {}): EditContext {
         sessionExerciseId: "se1",
         exerciseId: "ex1",
         sets: [
-          { reps: 5, weight: 100, score: 3, targetReps: 5, targetWeight: 100, adjusted: false, adjustNote: "" },
-          { reps: 5, weight: 100, score: 3, targetReps: 5, targetWeight: 100, adjusted: false, adjustNote: "" },
+          { reps: 5, weight: 100, score: 3, targetReps: 5, targetWeight: 100, adjusted: false, adjustNote: "", targetScore: 3 },
+          { reps: 5, weight: 100, score: 3, targetReps: 5, targetWeight: 100, adjusted: false, adjustNote: "", targetScore: 3 },
         ],
       },
     ],
@@ -46,6 +46,26 @@ describe("buildEditPayload", () => {
     expect(rows[0].weight).toBe(100);
   });
 
+  // Vorhaben #299: eine nachtraegliche Korrektur schreibt die Arbeitssaetze neu -
+  // die damals geltende Ziel-Anstrengung darf dabei nicht verloren gehen.
+  it("nimmt die Ziel-Anstrengung in die neu geschriebenen Saetze mit", () => {
+    const p = buildEditPayload(
+      ctx({
+        exercises: [
+          {
+            sessionExerciseId: "se1",
+            exerciseId: "ex1",
+            sets: [
+              { reps: 5, weight: 100, score: 3, targetReps: 5, targetWeight: 100, adjusted: false, adjustNote: "", targetScore: 4 },
+              { reps: 5, weight: 100, score: 3, targetReps: 5, targetWeight: 100, adjusted: false, adjustNote: "", targetScore: null },
+            ],
+          },
+        ],
+      }),
+    );
+    expect(p.exercises[0].workSetRows.map((r) => r.target_score)).toEqual([4, null]);
+  });
+
   it("reicht Notizen durch und schneidet Leerraum ab", () => {
     const p = buildEditPayload(
       ctx({
@@ -56,7 +76,7 @@ describe("buildEditPayload", () => {
             exerciseId: "ex1",
             note: "  Schulter  ",
             sets: [
-              { reps: 5, weight: 100, score: 3, targetReps: 5, targetWeight: 100, adjusted: false, adjustNote: "" },
+              { reps: 5, weight: 100, score: 3, targetReps: 5, targetWeight: 100, adjusted: false, adjustNote: "", targetScore: 3 },
             ],
           },
         ],
@@ -142,6 +162,7 @@ describe("Korrektur im Verlauf ueber die Live-Satzlogik", () => {
         reps: 5,
         weight: 100,
         score: 3,
+        targetScore: 3,
         targetReps: 5,
         targetWeight: 100,
         done: false,
@@ -314,7 +335,7 @@ describe("buildEditPayload – Rekord-Regel beim 1RM", () => {
             sessionExerciseId: "se1",
             exerciseId: "ex1",
             sets: [
-              { reps: 12, weight: 70, score: 3, targetReps: 12, targetWeight: 70, adjusted: false, adjustNote: "" },
+              { reps: 12, weight: 70, score: 3, targetReps: 12, targetWeight: 70, adjusted: false, adjustNote: "", targetScore: 3 },
             ],
           },
         ],

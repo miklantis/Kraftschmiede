@@ -29,6 +29,9 @@ export interface HistorySet {
   // Geplante Zielwerte (fuer den Coach-Vorschlag der naechsten Einheit).
   targetReps?: number | null;
   targetWeight?: number | null;
+  /** Ziel-Anstrengung, die beim Training galt (#299). Fehlt bei Saetzen aus der
+   *  Zeit davor. */
+  targetScore?: number | null;
 }
 
 export interface HistoryExercise {

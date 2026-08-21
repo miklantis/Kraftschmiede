@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.46.1",
+      "date": "2026-08-21",
+      "changes": [
+        "Jede abgeschlossene Einheit hält ab jetzt je Arbeitssatz fest, welche Ziel-Anstrengung damals galt - in einer Kraftphase die Vorgabe der laufenden Woche, sonst der Systemstandard.",
+        "Damit bleibt im Verlauf nachvollziehbar, ob ein Satz auf RIR 2 oder RIR 1 geplant war, ohne in der Journey zurückrechnen zu müssen. Der Wert bleibt auch stehen, wenn du im Training am RIR-Regler drehst oder die Einheit später korrigierst.",
+        "Sichtbar ändert sich noch nichts: Der Wert wird mitgeschrieben, aber vorerst nirgends angezeigt. Alte Einheiten werden nicht nachträglich gefüllt."
+      ]
+    },
+    {
       "version": "1.46.0",
       "date": "2026-08-21",
       "changes": [

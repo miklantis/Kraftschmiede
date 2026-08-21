@@ -31,6 +31,10 @@ export interface EditDraftSet {
   targetWeight: number;
   adjusted: boolean;
   adjustNote: string;
+  /** Ziel-Anstrengung, die beim Training galt. Wird beim Neuschreiben der
+   *  Arbeitssaetze unveraendert mitgenommen - eine Korrektur soll die Historie
+   *  nicht um diese Angabe bringen (#299). */
+  targetScore: number | null;
 }
 
 /** Eine Uebung des Entwurfs samt ihrer korrigierten Arbeitssaetze. */
@@ -109,6 +113,7 @@ export function buildEditPayload(ctx: EditContext): EditPayload {
         targetWeight: s.targetWeight,
         adjusted: s.adjusted,
         adjustNote: s.adjustNote,
+        targetScore: s.targetScore,
       })),
       { userId, sessionExerciseId: ex.sessionExerciseId, rmFormula, newId },
     );

@@ -87,6 +87,9 @@ function workSetsOf(ex: HistoryExercise): LiveSet[] {
         score: s.score ?? 3,
         targetReps: s.targetReps ?? reps,
         targetWeight: s.targetWeight ?? weight,
+        // Die damals geltende Vorgabe bleibt stehen, auch wenn der Satz
+        // korrigiert wird.
+        targetScore: s.targetScore ?? null,
         // Kein Ablauf im Bearbeiten-Modus: kein Haken, kein aktiver Satz.
         done: false,
         // `failed` wird angezeigt wie gespeichert, aber nie zurueckgeschrieben –

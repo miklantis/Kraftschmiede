@@ -33,6 +33,11 @@ export interface WorkSetInput {
   adjusted: boolean;
   adjustNote: string;
   failed?: boolean;
+  /** Ziel-Anstrengung, die beim Aufbau der Einheit galt (Wochenzeile der Phase,
+   *  sonst Systemstandard). Wandert unveraendert in die Historie, damit spaeter
+   *  nicht aus der Journey zurueckgerechnet werden muss. null = keine Vorgabe
+   *  bekannt (Einheiten, die vor Issue #299 begonnen wurden, und der 1RM-Test). */
+  targetScore: number | null;
 }
 
 /** Ein zu speichernder Skill-Arbeitssatz: nur der Ergebniswert (Wdh bzw. Sek). */
@@ -63,6 +68,7 @@ interface WorkRowFields {
   adjusted: boolean;
   adjustNote: string;
   met: boolean | null;
+  targetScore: number | null;
 }
 
 function workRow(
@@ -84,7 +90,7 @@ function workRow(
     done: true,
     target_reps: f.targetReps,
     target_weight: f.targetWeight,
-    target_score: null,
+    target_score: f.targetScore,
     adjusted: f.adjusted,
     adjust_note: f.adjustNote,
     met: f.met,
@@ -140,6 +146,7 @@ export function deriveWorkSets(
       adjusted: s.adjusted,
       adjustNote: s.adjustNote,
       met: metTarget(toEngineWork(s)),
+      targetScore: s.targetScore,
     }),
   );
   const engineSets = sets.map(toEngineWork);
@@ -184,6 +191,8 @@ export function deriveSkillSets(
       adjusted: false,
       adjustNote: "",
       met: skillSetMet(ctx.metric, ctx.target, { value: s.value, done: true }),
+      // Skills laufen nicht ueber den Uebungs-Coach: keine Ziel-Anstrengung.
+      targetScore: null,
     }),
   );
   return { setRows, nextPosition: start + sets.length };
