@@ -1,4 +1,4 @@
-import type { WeekPlan } from "@/engine";
+import type { WeekPlan, WeekPlanWeek } from "@/engine";
 import { weekDemandsSession } from "@/engine";
 import { focusLabel } from "@/lib/labels";
 import { loadFactorNote, loadPercent, usesLoadFactor } from "@/lib/loadFactor";
@@ -167,6 +167,18 @@ function phaseDetail(p: JourneyPhaseInput, withLoad: boolean): PhaseDetail[] {
   ];
 }
 
+/** Kurzform einer Planwoche: "4 × 4 · RIR 1" - Saetze, Wiederholungen,
+ *  Ziel-Anstrengung. Die Formulierung der Journey-Seite; das Popup "Uebung
+ *  anpassen" zeigt dieselbe Zeile, wenn der Wochenplan die Uebung regiert
+ *  (Issue #297), und beide duerfen nicht auseinanderlaufen. */
+export function weekTargets(w: WeekPlanWeek): string {
+  const reps =
+    w.repsMax != null && w.repsMax !== w.reps
+      ? `${w.reps}–${w.repsMax}`
+      : `${w.reps}`;
+  return `${w.sets} × ${reps} · RIR ${w.rir}`;
+}
+
 // Wochentabelle des Plans: je Woche Saetze, Wiederholungen, Ziel-Anstrengung und
 // das Wochenziel. Der Zustand kommt aus der laufenden Woche der Phase -
 // abgeschlossene Wochen sind abgehakt, die laufende ist markiert.
@@ -175,10 +187,6 @@ function planWeekRows(plan: WeekPlan, weekInPhase: number): PhaseWeekRow[] {
     .slice()
     .sort((a, b) => a.week - b.week)
     .map((w) => {
-      const reps =
-        w.repsMax != null && w.repsMax !== w.reps
-          ? `${w.reps}–${w.repsMax}`
-          : `${w.reps}`;
       const state: Exclude<PhaseState, "preview"> =
         w.week < weekInPhase
           ? "past"
@@ -187,7 +195,7 @@ function planWeekRows(plan: WeekPlan, weekInPhase: number): PhaseWeekRow[] {
             : "future";
       return {
         label: `Woche ${w.week}`,
-        targets: `${w.sets} × ${reps} · RIR ${w.rir}`,
+        targets: weekTargets(w),
         note: w.note,
         state,
         mark: state === "past" ? "✓" : "",

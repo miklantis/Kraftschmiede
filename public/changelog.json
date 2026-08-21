@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.45.4",
+      "date": "2026-08-21",
+      "changes": [
+        "Das Popup \"Übung anpassen\" zeigt jetzt die Vorgabe, die wirklich gilt: Läuft eine Kraft-, Schnellkraft- oder Testphase, steht dort die Vorgabe der laufenden Woche (Sätze, Wiederholungen und Ziel-Anstrengung) statt des Phasenbands - dieselben Zahlen wie auf der Journey-Seite.",
+        "In Phasen ohne Wochenplan steht weiter das Repband der Phase, jetzt zusammen mit der Ziel-Anstrengung.",
+        "Der Hinweis am Arbeitsgewicht sagt in diesen Phasen ehrlich, dass die Journey mit dem Anker vom Phasenstart rechnet und eine Korrektur hier für den Coach erst beim nächsten Phaseneintritt greift."
+      ]
+    },
+    {
       "version": "1.45.3",
       "date": "2026-08-20",
       "changes": [

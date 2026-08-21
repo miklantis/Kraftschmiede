@@ -345,12 +345,19 @@ export interface PlanContext {
   rm: number | null;
 }
 
+/** Was die Weiche vom Plan-Bezug braucht: nur die geltende Wochenzeile. Der
+ *  volle PlanContext passt hier hinein - die Anzeige (Popup "Uebung anpassen")
+ *  kann die Weiche damit stellen, ohne Anker und Verlauf zu beschaffen. */
+export interface PlanGate {
+  week: WeekPlanWeek;
+}
+
 /** Gibt der Wochenplan fuer diese Uebung die Vorgaben? Nur Hauptuebungen mit
  *  Kraftprofil - Zusatzuebungen wie Curl und Pull Over fallen auf ihr eigenes
  *  Band aus dem Uebungskatalog zurueck, Core und Koerpergewicht wie bisher. */
 export function planGovernsExercise(
   exo: { profile: string; tier: string },
-  plan: PlanContext | null | undefined,
+  plan: PlanGate | null | undefined,
 ): boolean {
   return !!plan && exo.profile === "strength" && exo.tier === "main";
 }

@@ -3,15 +3,21 @@ import { Lock, TriangleAlert, Check } from "lucide-react";
 import { Overlay } from "@/components/ui/overlay";
 import { Stepper } from "@/components/ui/stepper";
 import { useUpdateExercise } from "@/hooks/useUpdateExercise";
-import { useActivePhaseRepBand } from "@/hooks/useActivePhaseRepBand";
+import { useActivePhaseTarget } from "@/hooks/useActivePhaseTarget";
 import { useSettings } from "@/hooks/useSettings";
+import { lockedTarget } from "@/lib/exerciseTarget";
 import { fmtScore } from "@/lib/format";
 import type { ExerciseRow } from "@/schemas";
 
 // "Uebung anpassen"-Popup (1:1 wie V1): ueber das generische Overlay. Drei Werte
 // per Stepper – Arbeitsgewicht (nur Gewichtsuebungen), Repband und Ziel-Score.
-// Kommt das Repband aus der aktiven Journey-Phase, ist es gesperrt (blaue Zeile
-// mit Schloss). Bewusst genau diese drei Felder – keine Erweiterung.
+// Bewusst genau diese drei Felder – keine Erweiterung.
+//
+// Gibt die laufende Journey-Phase etwas vor, steht statt des Repbands die
+// gesperrte Zeile mit Schloss – und zwar mit dem, was wirklich gilt (Issue
+// #297): die Wochenzeile des Plans ("4 × 4 · RIR 1"), wenn er die Uebung
+// regiert, sonst das Band der Phase ("4–6 Wdh · RIR 2"). Die Entscheidung faellt
+// in lib/exerciseTarget ueber dieselbe Weiche wie beim Coach.
 
 const SCORE_LABELS: Record<number, string> = {
   1: "sehr leicht",
@@ -59,14 +65,18 @@ export function ExerciseEditModal({
 }): React.ReactElement {
   const { update, isPending } = useUpdateExercise();
   const settingsQ = useSettings();
-  const phaseBand = useActivePhaseRepBand();
+  const phaseTarget = useActivePhaseTarget();
 
   const step = settingsQ.data?.weight_step || 2.5;
   const isWeight = exercise.profile !== "bodyweight";
-  const repLocked = exercise.profile === "strength" && phaseBand !== null;
-  const lockBand: [number, number] = repLocked
-    ? (phaseBand as [number, number])
-    : [exercise.rep_range_min ?? 0, exercise.rep_range_max ?? 0];
+  // Die Vorgabe der Journey; null heisst: es gibt keine, das Repband bleibt
+  // bedienbar.
+  const locked = lockedTarget(exercise, {
+    planWeek: phaseTarget.planWeek,
+    repBand: phaseTarget.repBand,
+    targetScore: exercise.target_score || 3,
+  });
+  const repLocked = locked !== null;
   const repUnit =
     exercise.profile === "bodyweight" && exercise.metric === "duration"
       ? "Sekunden"
@@ -128,6 +138,17 @@ export function ExerciseEditModal({
   };
 
   const scoreLabel = SCORE_LABELS[draft.targetScore] ?? "";
+  // Regiert der Wochenplan die Uebung, haengt die Last am Anker vom Phasenstart:
+  // eine Korrektur hier wirkt fuer den Coach erst beim naechsten Phaseneintritt.
+  // Bedienbar bleibt der Regler trotzdem – sonst liesse sich eine falsche Basis
+  // bis zum Phasenende nicht geradeziehen.
+  const weightHint = locked?.planGoverned
+    ? "Diese Phase rechnet mit dem Anker vom Phasenstart – eine Korrektur hier " +
+      "greift für den Coach erst beim nächsten Phaseneintritt. Steht die Basis " +
+      "falsch, lohnt sie sich trotzdem."
+    : "Läuft normalerweise von allein mit – nach jedem Training wird es auf " +
+      "dein höchstes gefahrenes Arbeitsgewicht gesetzt. Hier nur ändern, wenn " +
+      "du die Basis sofort korrigieren willst.";
 
   return (
     <Overlay open={open} onClose={onClose} title="Übung anpassen">
@@ -153,29 +174,26 @@ export function ExerciseEditModal({
               </span>
             </span>
           </Stepper>
-          <FieldHint>
-            Läuft normalerweise von allein mit – nach jedem Training wird es auf
-            dein höchstes gefahrenes Arbeitsgewicht gesetzt. Hier nur ändern,
-            wenn du die Basis sofort korrigieren willst.
-          </FieldHint>
+          <FieldHint>{weightHint}</FieldHint>
         </>
       )}
 
-      <FieldLabel>Repband</FieldLabel>
-      {repLocked ? (
+      <FieldLabel>{locked ? locked.label : "Repband"}</FieldLabel>
+      {locked ? (
         <>
           <div className="flex items-center justify-between rounded-[14px] bg-muted px-4 py-3">
             <span className="flex items-center gap-2 text-[13px] font-semibold text-muted-foreground">
               <Lock className="size-[14px]" />
-              aus aktiver Phase
+              {locked.source}
             </span>
             <span className="font-mono text-[16px] font-bold tabular-nums text-skill">
-              {lockBand[0]}–{lockBand[1]} Wdh
+              {locked.value}
             </span>
           </div>
           <FieldHint>
-            Kommt aus der aktiven Journey-Phase und lässt sich hier nicht ändern.
-            Gewicht und Ziel-Score kannst du weiter anpassen.
+            {locked.planGoverned
+              ? "Sätze, Wiederholungen und Ziel-Anstrengung kommen aus der laufenden Woche deiner Journey-Phase und lassen sich hier nicht ändern."
+              : "Kommt aus der aktiven Journey-Phase und lässt sich hier nicht ändern."}
           </FieldHint>
         </>
       ) : (
