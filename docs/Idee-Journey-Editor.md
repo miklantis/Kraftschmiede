@@ -4,7 +4,9 @@
 > entschieden, nichts davon ist beauftragt.
 
 Status: Sammelpapier. Entstanden aus der Frage, ob Phasen eines Tages selbst
-zusammengestellt werden könnten, statt nur aus festen Vorlagen zu kommen.
+zusammengestellt werden könnten, statt nur aus festen Vorlagen zu kommen. Eine
+Festlegung ist inzwischen getroffen (Abschnitt 8, achter Baustein „Wiederaufbau"),
+alles Übrige ist weiter offen.
 Grundlage der Bestandsaufnahme: `adr/0018-steuerung-je-phasentyp.md` und
 `Architektur.md`.
 
@@ -136,24 +138,33 @@ Start fällt und danach feststeht.** Ein Baukasten, der Phasen isoliert behandel
 
 ---
 
-## 6. Die sieben Typen als Bausteine
+## 6. Die Bausteine
 
-Wenn ein Editor entsteht, sind die sieben Typen seine Bausteine. Deshalb hier, was
-jeder von ihnen tut und was an ihm überhaupt einstellbar wäre. Sortiert von leicht
-nach schwer.
+Wenn ein Editor entsteht, sind diese Typen seine Bausteine: die sieben heutigen und
+der achte, der in Abschnitt 8 dazukommt. Deshalb hier, was jeder von ihnen tut, wie
+er anfängt und was an ihm überhaupt einstellbar wäre. Sortiert von leicht nach
+schwer.
 
-| Typ | Wochen | Wiederholungen | Steuerweg | Sätze | Entlastung | In Vorlage |
-| --- | --- | --- | --- | --- | --- | --- |
-| Kraftausdauer (`endurance`) | 3–8 (4) | 12–18 | Coach | Rampe | ab 4 Wochen | nein |
-| Hypertrophie (`hypertrophy`) | 3–8 (5) | 8–12 | Coach | Rampe | ab 4 Wochen | ja |
-| Wiedereinstieg (`reentry`) | 1–4 (2) | 5–8 | Coach, vorsichtig | Rampe | praktisch nie | ja |
-| Erhaltung (`maintenance`) | 1–12 (3) | Band der Übung | Coach | konstant | nein | nein |
-| Maximalkraft (`strength`) | 3–6 (5) | Leiter 5→2 | Wochenplan | 4 fest | nein | ja |
-| Intensivierung (`power`) | 3–4 (3) | Leiter, kürzer | Wochenplan | 4 fest | nein | nein |
-| Test/Peak (`test`) | 1–2 (2) | 3–5, dann 1 | Wochenplan | 2, dann 0 | steckt in der Bauregel | ja |
+| Typ | Wochen | Wdh. | Sätze | Entlastung | Steuerweg | Startgewicht | Braucht davor | In Vorlage |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Kraftausdauer (`endurance`) | 3–8 (4) | 12–18 | 2 → 4 | ab Woche 4 | Coach | letztes Arbeitsgewicht | – | nein |
+| Hypertrophie (`hypertrophy`) | 3–8 (5) | 8–12 | 2 → 6 | ab Woche 4 | Coach | letztes Arbeitsgewicht; bei klar anderem Band einmalig neu aus dem 1RM | – | ja |
+| Wiedereinstieg (`reentry`) | 1–4 (2) | 5–8 | 2 → 2 | praktisch nie | Coach, vorsichtig | wie Hypertrophie, aber Bandanfang und abgerundet | – | ja |
+| Erhaltung (`maintenance`) | 1–12 (3) | Band der Übung | 3 → 3 | nein | Coach | letztes Arbeitsgewicht, kein Eintrittssprung | – | nein |
+| Maximalkraft (`strength`) | 3–6 (5) | Leiter 5→2 | 4 → 4 (fest) | nein | Wochenplan | Startgewicht X aus dem 1RM (≈ 81 %), an die Phase gebunden | ein 1RM | ja |
+| Intensivierung (`power`) | 3–4 (3) | Leiter, kürzer | 4 → 4 (fest) | nein | Wochenplan | wie Maximalkraft | ein 1RM | nein |
+| Test/Peak (`test`) | 1–2 (2) | 3–5, dann 1 | 2 → 0 (Bauregel) | in der Bauregel | Wochenplan | 60 % vom X der Kraftphase davor | **eine Kraftphase** | ja |
+| Wiederaufbau (`rebuild`, neu) | 2–6 (4) | frei, üblich 6–10 | 2 → 4 | nein | Vorgabe der Journey | eingefrorener Stand beim Journey-Start × Prozent | **Platz am Anfang** | neu |
 
-Die Spalte Wochen liest sich als **Bereich mit üblichem Wert in Klammern**: „3–6 (5)"
-heißt, ein Regler dürfte 3 bis 6 anbieten und stünde beim Anlegen auf 5.
+Lesehilfe:
+
+- **Wochen** als Bereich mit üblichem Wert in Klammern: „3–6 (5)" heißt, ein Regler
+  dürfte 3 bis 6 anbieten und stünde beim Anlegen auf 5.
+- **Sätze** immer als Rampe von der ersten zur letzten Phasenwoche. Bleibt die
+  Satzzahl konstant, steht links und rechts dieselbe Zahl – das ist keine Ausnahme,
+  sondern derselbe Regler mit gleichem Anfang und Ende (`rampSets`). „fest" heißt,
+  der Wert kommt aus dem Wochenplan und ist gar nicht einstellbar.
+- **Braucht davor** – „–" heißt, der Baustein steht für sich allein.
 
 **Kraftausdauer** – Kapazität und Durchhaltevermögen. Doppelprogression im breitesten
 Band des Systems; weil das Band so weit ist, steigt das Gewicht selten. Einstellbar:
@@ -189,6 +200,53 @@ die Leiter auf 5 · 4 · 3 kürzt. Einstellbar: **nur die Wochenzahl.**
 Sätze, plant nichts, erfüllt sich selbst), jede Woche davor ist Entlastung mit 60 %
 vom Startgewicht der Kraftphase. Einstellbar: **nur die Wochenzahl**, und die
 bedeutet hier allein, wie viele Entlastungswochen vor dem Test liegen.
+
+**Wiederaufbau** – der achte Baustein, heute noch nicht vorhanden (Abschnitt 8).
+Er ersetzt die vier Einzelphasen von „Wiederaufbau nach Fasten" durch eine Bewegung:
+Wochenzahl, Startanteil, Zielanteil, etwa vier Wochen von 65 % auf 100 %. Je Woche
+eine Stufe; die Wiederholungen steuert der Coach im Band, das Gewicht nicht.
+Einstellbar: Wochen, Start- und Zielanteil, Satzrampe, Band.
+
+### Wie ein Baustein anfängt
+
+Die Spalte Startgewicht fasst vier verschiedene Mechanismen zusammen. Für einen
+Editor sind die Unterschiede wichtiger als die Gemeinsamkeiten.
+
+**Coach-Bausteine haben gar keinen Anker.** Sie machen dort weiter, wo die letzte
+Einheit aufgehört hat. Nur einmal, beim Eintritt in die Phase, gibt es einen Sprung:
+Liegt das Band der neuen Phase deutlich neben dem der letzten Einheit und gibt es ein
+sauberes 1RM, wird das Gewicht einmalig daraus neu gerechnet – am leichteren
+Bandende plus Reserve, abgerundet, nach oben auf zwölf Prozent gedeckelt, nach unten
+sofort (`workWeightForPhase`, angewandt in `phaseEntryOverride`). Gespeichert wird
+dabei nichts; ab der zweiten Einheit läuft wieder die Doppelprogression. Erhaltung
+hat kein eigenes Band und springt deshalb nie.
+
+**Plan-Bausteine setzen beim Eintritt ein Startgewicht X.** Beim ersten Mal, dass
+eine Übung in der Phase drankommt, entsteht X aus dem geschätzten 1RM über die
+Wiederholungen der ersten Planwoche plus zwei in Reserve, rund 81 % (`planStartWeight`).
+X wird an der Übung gespeichert und an die Phase gebunden; von dort läuft der Anker
+wöchentlich hoch, wenn die Vorwoche sauber war, und wird nie gesenkt.
+
+**Test/Peak rechnet aus fremdem Bestand:** 60 % vom X der vorangegangenen Kraft-
+oder Intensivierungsphase, gefunden durch Rückwärtssuche in der Journey.
+
+**Der Wiederaufbau-Baustein rechnet von der Journey**, nicht von der Phase: vom
+Stand aller Übungen, der beim Journey-Start eingefroren wurde (Abschnitt 5).
+
+Drei Folgerungen daraus, und alle drei betreffen die Bedienung:
+
+1. **Zwei Kraftblöcke hintereinander bauen nicht aufeinander auf.** Der Anker ist an
+   die Phase gebunden; die zweite Phase findet keinen passenden und holt sich ihr
+   eigenes X aus dem aktuellen 1RM. Was davor trainiert wurde, wirkt nur indirekt –
+   über das 1RM. Kaputt geht dabei nichts, es passiert nur weniger, als man
+   erwartet.
+2. **Test/Peak ist der einzige Baustein mit echter Vorbedingung.** Steht er nicht
+   hinter einer Kraft- oder Intensivierungsphase, verliert die Entlastung stumm ihren
+   Bezug und fällt auf die 1RM-Rechnung zurück. Das ist die erste Stelle, an der ein
+   Editor warnen oder sperren müsste (siehe auch Abschnitt 10).
+3. **Der Wiederaufbau-Baustein gehört an den Anfang.** Er rechnet vom Stand beim
+   Journey-Start. Mitten in eine Journey gesetzt, zöge er auf ein Niveau von vor
+   mehreren Wochen zurück.
 
 ### Woher die Wochengrenzen kommen
 
@@ -243,7 +301,7 @@ ehrliche Bereich für einen Regler.
 
 Der naheliegendste Zuschnitt, und er kommt ohne jede Änderung am Datenmodell aus:
 
-**Der Nutzer wählt einen der sieben Typen. Die Steuerwege bleiben unsichtbar.**
+**Der Nutzer wählt einen der Bausteine. Die Steuerwege bleiben unsichtbar.**
 Plan-Weg, Coach-Weg und Lastfaktor sind Systemwissen – niemand muss verstehen, dass
 eine Kraftphase anders rechnet als eine Hypertrophiephase, um sie zu benutzen. Der
 Typ bringt sein Verhalten mit, so wie heute.
@@ -372,13 +430,23 @@ Was dagegen spricht: Der Editor enthielte dann zwei verschiedene Arten von Dinge
 und die heutige Fasten-Vorlage bestünde ausschließlich aus dem Vorspann und keinem
 einzigen Baustein – eine Journey ohne Inhalt.
 
-### Denkstand
+### Entscheidung: A
 
-A wirkt am stimmigsten, weil es das Problem dort löst, wo es entsteht: Der
-Lastfaktor hört auf, ein unsichtbarer Aufsatz zu sein, und wird ein Baustein, den man
-sieht, hinstellt und wieder wegnimmt. B ist der kleinste Aufwand und die größte
-stille Fallhöhe. C ist die Antwort, falls der Lastfaktor ohnehin auf die
-Journey-Ebene hochgezogen wird.
+**Festgelegt: Es wird der achte Baustein „Wiederaufbau" (`rebuild`).** Er löst das
+Problem dort, wo es entsteht – der Lastfaktor hört auf, ein unsichtbarer Aufsatz zu
+sein, und wird ein Baustein, den man sieht, hinstellt und wieder wegnimmt. Damit ist
+zugleich die Frage aus Abschnitt 10, wo der Lastfaktor hingehört, beantwortet: als
+eigene Bauart, die den Coach-Weg ersetzt, statt ihn stumm zu überlagern. Er steht in
+der Bausteintabelle in Abschnitt 6 bereits mit drin.
+
+B und C bleiben als verworfene Alternativen stehen, damit die Begründung
+nachvollziehbar bleibt: B war der kleinste Aufwand mit der größten stillen Fallhöhe,
+C wäre die Antwort gewesen, falls der Lastfaktor ohnehin auf die Journey-Ebene
+hochgezogen wird.
+
+Was mit der Entscheidung noch nicht entschieden ist: ob der Baustein die heutige
+Fasten-Vorlage ersetzt oder neben ihr steht, und was aus den vier Einzelphasen
+laufender Journeys wird. Das gehört in ein Konzept, nicht in dieses Papier.
 
 Unabhängig davon bleibt Punkt 2 offen: Ein frei einstellbares Wiederholungsband
 gehört wahrscheinlich als „erweitert"-Option an jeden Coach-Baustein, ganz gleich,
@@ -459,8 +527,9 @@ lassen und die Nebenwirkung sichtbar machen („diese Journey friert deinen Stan
 Start ein"); an die Journey hochziehen und die Phasen nur noch Prozentwerte tragen
 lassen; oder ihn als eigene Bauart der Phase führen, die den Coach-Weg ersetzt statt
 ihn zu überlagern. Vor dieser Frage lässt sich keine Bedienung entwerfen.
-Abschnitt 8 nimmt sie an der Fasten-Vorlage auseinander und neigt zur dritten
-Antwort.
+Abschnitt 8 hat sie an der Fasten-Vorlage entschieden: die dritte Antwort, als
+eigener Baustein. Damit ist dieser Punkt erledigt und steht hier nur noch als
+Herleitung.
 
 **Was passiert bei einem Lastfaktor ohne Bezugspunkt?** Heute unmöglich, weil das
 Einfrieren automatisch am Journey-Start hängt. Sobald Phasen einzeln editierbar
