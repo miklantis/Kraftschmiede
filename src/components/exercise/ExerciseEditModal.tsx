@@ -1,25 +1,25 @@
 import { useEffect, useState } from "react";
-import { Lock, TriangleAlert, Check } from "lucide-react";
+import { Lock, Check } from "lucide-react";
 import { Overlay } from "@/components/ui/overlay";
 import { Stepper } from "@/components/ui/stepper";
 import { useUpdateExercise } from "@/hooks/useUpdateExercise";
-import { useActivePhaseRepBand } from "@/hooks/useActivePhaseRepBand";
+import { useActivePhaseTarget } from "@/hooks/useActivePhaseTarget";
 import { useSettings } from "@/hooks/useSettings";
+import { lockedTarget } from "@/lib/exerciseTarget";
 import { fmtScore } from "@/lib/format";
 import type { ExerciseRow } from "@/schemas";
 
-// "Uebung anpassen"-Popup (1:1 wie V1): ueber das generische Overlay. Drei Werte
-// per Stepper – Arbeitsgewicht (nur Gewichtsuebungen), Repband und Ziel-Score.
-// Kommt das Repband aus der aktiven Journey-Phase, ist es gesperrt (blaue Zeile
-// mit Schloss). Bewusst genau diese drei Felder – keine Erweiterung.
-
-const SCORE_LABELS: Record<number, string> = {
-  1: "sehr leicht",
-  2: "leicht",
-  3: "im Ziel · 2 RIR",
-  4: "schwer",
-  5: "Versagen",
-};
+// "Uebung anpassen"-Popup: ueber das generische Overlay. Es zeigt die Stammwerte
+// der Uebung – Arbeitsgewicht (nur Gewichtsuebungen) und Repband – und keine
+// Coach-Stellschraube mehr. Der Ziel-Score ist seit Issue #298 systemweit fest
+// (Score 3 / RIR 2), wo kein Wochenplan gilt; mit ihm faellt auch der Warnkasten
+// weg, der vor einem Eingriff in den Kern warnte.
+//
+// Gibt die laufende Journey-Phase etwas vor, steht statt des Repbands die
+// gesperrte Zeile mit Schloss – und zwar mit dem, was wirklich gilt (Issue
+// #297): die Wochenzeile des Plans ("4 × 4 · RIR 1"), wenn er die Uebung
+// regiert, sonst das Band der Phase ("4–6 Wdh · RIR 2"). Die Entscheidung faellt
+// in lib/exerciseTarget ueber dieselbe Weiche wie beim Coach.
 
 const FEEDBACK_MS = 850;
 
@@ -27,7 +27,6 @@ interface Draft {
   workWeight: number;
   repmin: number;
   repmax: number;
-  targetScore: number;
 }
 
 // Kleiner Eyebrow-Titel ueber einem Abschnitt.
@@ -59,14 +58,17 @@ export function ExerciseEditModal({
 }): React.ReactElement {
   const { update, isPending } = useUpdateExercise();
   const settingsQ = useSettings();
-  const phaseBand = useActivePhaseRepBand();
+  const phaseTarget = useActivePhaseTarget();
 
   const step = settingsQ.data?.weight_step || 2.5;
   const isWeight = exercise.profile !== "bodyweight";
-  const repLocked = exercise.profile === "strength" && phaseBand !== null;
-  const lockBand: [number, number] = repLocked
-    ? (phaseBand as [number, number])
-    : [exercise.rep_range_min ?? 0, exercise.rep_range_max ?? 0];
+  // Die Vorgabe der Journey; null heisst: es gibt keine, das Repband bleibt
+  // bedienbar.
+  const locked = lockedTarget(exercise, {
+    planWeek: phaseTarget.planWeek,
+    repBand: phaseTarget.repBand,
+  });
+  const repLocked = locked !== null;
   const repUnit =
     exercise.profile === "bodyweight" && exercise.metric === "duration"
       ? "Sekunden"
@@ -76,7 +78,6 @@ export function ExerciseEditModal({
     workWeight: exercise.work_weight,
     repmin: exercise.rep_range_min ?? 0,
     repmax: exercise.rep_range_max ?? 0,
-    targetScore: exercise.target_score || 3,
   });
   const [saved, setSaved] = useState(false);
 
@@ -87,7 +88,6 @@ export function ExerciseEditModal({
         workWeight: exercise.work_weight,
         repmin: exercise.rep_range_min ?? 0,
         repmax: exercise.rep_range_max ?? 0,
-        targetScore: exercise.target_score || 3,
       });
       setSaved(false);
     }
@@ -98,11 +98,6 @@ export function ExerciseEditModal({
     setDraft((d) => ({
       ...d,
       workWeight: Math.max(0, Math.round((d.workWeight + delta * step) * 100) / 100),
-    }));
-  const adjScore = (delta: number): void =>
-    setDraft((d) => ({
-      ...d,
-      targetScore: Math.max(1, Math.min(5, d.targetScore + delta)),
     }));
   const adjRepMin = (delta: number): void =>
     setDraft((d) => {
@@ -118,7 +113,6 @@ export function ExerciseEditModal({
   const save = async (): Promise<void> => {
     await update(exercise.id, {
       work_weight: draft.workWeight,
-      target_score: draft.targetScore,
       ...(repLocked
         ? {}
         : { rep_range_min: draft.repmin, rep_range_max: draft.repmax }),
@@ -127,7 +121,17 @@ export function ExerciseEditModal({
     window.setTimeout(onClose, FEEDBACK_MS);
   };
 
-  const scoreLabel = SCORE_LABELS[draft.targetScore] ?? "";
+  // Regiert der Wochenplan die Uebung, haengt die Last am Anker vom Phasenstart:
+  // eine Korrektur hier wirkt fuer den Coach erst beim naechsten Phaseneintritt.
+  // Bedienbar bleibt der Regler trotzdem – sonst liesse sich eine falsche Basis
+  // bis zum Phasenende nicht geradeziehen.
+  const weightHint = locked?.planGoverned
+    ? "Diese Phase rechnet mit dem Anker vom Phasenstart – eine Korrektur hier " +
+      "greift für den Coach erst beim nächsten Phaseneintritt. Steht die Basis " +
+      "falsch, lohnt sie sich trotzdem."
+    : "Läuft normalerweise von allein mit – nach jedem Training wird es auf " +
+      "dein höchstes gefahrenes Arbeitsgewicht gesetzt. Hier nur ändern, wenn " +
+      "du die Basis sofort korrigieren willst.";
 
   return (
     <Overlay open={open} onClose={onClose} title="Übung anpassen">
@@ -153,29 +157,26 @@ export function ExerciseEditModal({
               </span>
             </span>
           </Stepper>
-          <FieldHint>
-            Läuft normalerweise von allein mit – nach jedem Training wird es auf
-            dein höchstes gefahrenes Arbeitsgewicht gesetzt. Hier nur ändern,
-            wenn du die Basis sofort korrigieren willst.
-          </FieldHint>
+          <FieldHint>{weightHint}</FieldHint>
         </>
       )}
 
-      <FieldLabel>Repband</FieldLabel>
-      {repLocked ? (
+      <FieldLabel>{locked ? locked.label : "Repband"}</FieldLabel>
+      {locked ? (
         <>
           <div className="flex items-center justify-between rounded-[14px] bg-muted px-4 py-3">
             <span className="flex items-center gap-2 text-[13px] font-semibold text-muted-foreground">
               <Lock className="size-[14px]" />
-              aus aktiver Phase
+              {locked.source}
             </span>
             <span className="font-mono text-[16px] font-bold tabular-nums text-skill">
-              {lockBand[0]}–{lockBand[1]} Wdh
+              {locked.value}
             </span>
           </div>
           <FieldHint>
-            Kommt aus der aktiven Journey-Phase und lässt sich hier nicht ändern.
-            Gewicht und Ziel-Score kannst du weiter anpassen.
+            {locked.planGoverned
+              ? "Sätze, Wiederholungen und Ziel-Anstrengung kommen aus der laufenden Woche deiner Journey-Phase und lassen sich hier nicht ändern."
+              : "Kommt aus der aktiven Journey-Phase und lässt sich hier nicht ändern."}
           </FieldHint>
         </>
       ) : (
@@ -215,44 +216,6 @@ export function ExerciseEditModal({
           </FieldHint>
         </>
       )}
-
-      <div className="mb-2 flex items-baseline justify-between">
-        <span className="text-[12px] font-semibold tracking-[0.3px] text-muted-foreground">
-          Ziel-Score
-        </span>
-        <span className="text-[12px] font-semibold text-primary">
-          {scoreLabel}
-        </span>
-      </div>
-      <Stepper
-        onDecrement={() => adjScore(-1)}
-        onIncrement={() => adjScore(1)}
-        disabled={saved}
-        className="rounded-[14px] bg-card px-3.5 py-2.5 shadow-card"
-      >
-        <span className="flex items-baseline gap-1.5">
-          <span className="font-mono text-[26px] font-bold tabular-nums text-foreground min-[960px]:text-[28px]">
-            {draft.targetScore}
-          </span>
-          <span className="text-[14px] font-medium text-muted-foreground">
-            / 5
-          </span>
-        </span>
-      </Stepper>
-      <p className="mx-0.5 mt-2 mb-4 text-[12px] leading-[1.5] text-muted-foreground">
-        Wie hart die Arbeitssätze im Schnitt sein sollen (1 sehr leicht … 3 im
-        Ziel / 2 RIR … 5 Versagen). Bleibst du leichter, wird progressiert; wird
-        es härter, hält oder senkt der Coach.
-      </p>
-
-      {/* Warnhinweis nur am Handy (Desktop hat mehr Kontext drumherum, wie V1). */}
-      <div className="mb-[18px] flex items-start gap-2.5 rounded-xl bg-warning/10 px-3.5 py-3 min-[960px]:hidden">
-        <TriangleAlert className="mt-px size-[17px] flex-none text-warning" />
-        <span className="text-[12px] font-medium leading-[1.5] text-warning-foreground">
-          Diese Werte regelt normalerweise der Coach. Änderst du sie hier,
-          greifst du bewusst in den Kern ein.
-        </span>
-      </div>
 
       {saved ? (
         <div className="flex w-full items-center justify-center gap-2 rounded-[13px] bg-primary py-3.5 text-[15px] font-semibold text-primary-foreground">

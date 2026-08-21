@@ -10,7 +10,12 @@ import { planContextFor, type PlanSource } from "../planContext";
 import { katalogPatch } from "../katalogPatch";
 import { buildWeekEntries } from "../lastEntries";
 import type { HistorySessionInput } from "../history";
-import { buildStrengthWeekPlan, buildTestPhaseWeekPlan, scoreForRir } from "@/engine";
+import {
+  buildStrengthWeekPlan,
+  buildTestPhaseWeekPlan,
+  scoreForRir,
+  DEFAULT_TARGET_SCORE,
+} from "@/engine";
 import type { EngineSet, SetEntry } from "@/engine/types";
 
 const PLAN = buildStrengthWeekPlan(5); // 5,5,4,3,2 – RIR 2, letzte zwei RIR 1
@@ -26,7 +31,6 @@ const bench: LiveBuildExercise = {
   equipment: "barbell",
   repRange: [4, 6],
   workWeight: 37.5,
-  targetScore: 3,
   barId: "bar1",
   referenceWeight: 37.5,
   referencePhaseId: PHASE,
@@ -184,7 +188,7 @@ describe("Kraftphase mit Wochenplan – was unberuehrt bleibt", () => {
     const en = r.entries[1]!;
     // Repband der Phase (4-6), nicht die Planwiederholung 4 als feste Zahl
     expect(en.sets[0]!.targetReps).toBe(6);
-    expect(en.sets[0]!.score).toBe(curl.targetScore);
+    expect(en.sets[0]!.score).toBe(DEFAULT_TARGET_SCORE);
   });
 
   it("bleibt ohne Wochenplan komplett beim bisherigen Verhalten", () => {

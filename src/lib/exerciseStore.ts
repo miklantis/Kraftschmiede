@@ -47,7 +47,6 @@ export interface UebungPatch {
   rm_as_of?: string | null;
   rm_stale?: boolean;
   work_weight?: number;
-  target_score?: number;
   rep_range_min?: number;
   rep_range_max?: number;
 }

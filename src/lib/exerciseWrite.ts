@@ -57,11 +57,11 @@ export type RmTestAction =
       restore: { rm: number | null; asOf: string | null } | null;
     };
 
-/** Die im "Uebung anpassen"-Popup gepflegten Felder: Arbeitsgewicht, Ziel-Score
- *  und – nur wenn das Repband dort editierbar war – die Repband-Grenzen. */
+/** Die im "Uebung anpassen"-Popup gepflegten Felder: Arbeitsgewicht und – nur
+ *  wenn das Repband dort editierbar war – die Repband-Grenzen. Der Ziel-Score
+ *  ist seit Issue #298 keine Stellschraube mehr. */
 export interface ExerciseEditValues {
   work_weight: number;
-  target_score: number;
   rep_range_min?: number;
   rep_range_max?: number;
 }

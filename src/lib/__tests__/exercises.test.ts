@@ -22,7 +22,6 @@ function ex(overrides: Partial<ExerciseRow>): ExerciseRow {
     muscle_groups: [],
     rep_range_min: null,
     rep_range_max: null,
-    target_score: 3,
     work_weight: 0,
     reference_weight: null,
     reference_phase_id: null,

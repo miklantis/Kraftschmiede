@@ -78,7 +78,6 @@ export function useLiveBuilder(): UseLiveBuilder {
             ? [e.rep_range_min, e.rep_range_max]
             : null,
         workWeight: e.work_weight,
-        targetScore: e.target_score,
         barId: e.bar_id,
         referenceWeight: e.reference_weight,
         referencePhaseId: e.reference_phase_id,

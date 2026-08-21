@@ -7,13 +7,13 @@
 import type { CoachReason, CoachReasonCode } from "./coachReason";
 import { avg } from "./math";
 import { nearestLoadable, nearestDumbbell } from "./plates";
+import { DEFAULT_TARGET_SCORE } from "./score";
 import { metTarget, workSets } from "./target";
 import type { Bar, EngineSet, SetEntry } from "./types";
 
 export interface SuggestExercise {
   workWeight?: number;
   repRange?: [number, number];
-  targetScore?: number;
   barId?: string;
 }
 
@@ -134,7 +134,9 @@ export function suggestWeight(
   const bar = o.bar ?? { weight: 20 };
   const plates = o.plates ?? DEFAULT_PLATES;
   const range = ex.repRange ?? [8, 12];
-  const tScore = ex.targetScore || 3;
+  // Ziel-Anstrengung ist systemweit fest (Issue #298); wo ein Wochenplan gilt,
+  // rechnet der Coach ohnehin ueber planSuggestion und kommt hier nicht an.
+  const tScore = DEFAULT_TARGET_SCORE;
   const W = ex.workWeight || bar.weight;
   const reentry = !!o.reentry;
   // Schrittweite aus den Einstellungen; unplausible Werte fallen auf 2,5 zurueck.

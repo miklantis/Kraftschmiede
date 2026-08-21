@@ -284,7 +284,7 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
     ).map((w) => ({ reps: w.reps, weight: w.weight, done: false }));
 
     // Ziel-Anstrengung: in einer Phase mit Wochenplan die der Planwoche (RIR),
-    // sonst der Zielscore der Uebung.
+    // sonst der systemweite Standard (Issue #298).
     const targetScore = planTargetScore(exo, plan);
     const sets: LiveSet[] = [];
     for (let k = 0; k < Math.max(1, setN); k++) {

@@ -14,6 +14,7 @@ import {
   weekDemandsSession,
   scoreForRir,
   workSets,
+  DEFAULT_TARGET_SCORE,
 } from "@/engine";
 import type {
   SuitabilityResult,
@@ -180,7 +181,6 @@ export interface CoachBuildExercise {
   equipment: "barbell" | "plate" | "bar" | "band" | "bodyweight" | "dumbbell";
   repRange: [number, number] | null;
   workWeight: number;
-  targetScore: number;
   barId: string | null;
   // Eingefrorenes Arbeitsgewicht vom Start einer Lastfaktor-Journey bzw. Anker
   // einer Phase mit Wochenplan (null, solange keines von beidem laeuft).
@@ -345,12 +345,19 @@ export interface PlanContext {
   rm: number | null;
 }
 
+/** Was die Weiche vom Plan-Bezug braucht: nur die geltende Wochenzeile. Der
+ *  volle PlanContext passt hier hinein - die Anzeige (Popup "Uebung anpassen")
+ *  kann die Weiche damit stellen, ohne Anker und Verlauf zu beschaffen. */
+export interface PlanGate {
+  week: WeekPlanWeek;
+}
+
 /** Gibt der Wochenplan fuer diese Uebung die Vorgaben? Nur Hauptuebungen mit
  *  Kraftprofil - Zusatzuebungen wie Curl und Pull Over fallen auf ihr eigenes
  *  Band aus dem Uebungskatalog zurueck, Core und Koerpergewicht wie bisher. */
 export function planGovernsExercise(
   exo: { profile: string; tier: string },
-  plan: PlanContext | null | undefined,
+  plan: PlanGate | null | undefined,
 ): boolean {
   return !!plan && exo.profile === "strength" && exo.tier === "main";
 }
@@ -377,14 +384,15 @@ export function planSetCount(
 }
 
 /** Ziel-Anstrengung je Satz als Score: der Plan denkt in RIR, die Saetze tragen
- *  den Score. Ohne Plan bleibt es beim Zielscore der Uebung. */
+ *  den Score. Ohne Plan gilt der systemweite Standard (Issue #298) - eine
+ *  Stellschraube je Uebung gibt es nicht mehr. */
 export function planTargetScore(
-  exo: { profile: string; tier: string; targetScore: number },
+  exo: { profile: string; tier: string },
   plan: PlanContext | null | undefined,
 ): number {
   return planGovernsExercise(exo, plan)
     ? scoreForRir(plan!.week.rir)
-    : exo.targetScore;
+    : DEFAULT_TARGET_SCORE;
 }
 
 /** Kennung der Wochenplan-Regel in die Kennung des Textkatalogs. Der Satz dazu
@@ -524,7 +532,6 @@ export function suggestForExercise(
     repRange: ctx.repTarget
       ? [ctx.repTarget[0], ctx.repTarget[1]]
       : (exo.repRange ?? undefined),
-    targetScore: exo.targetScore,
     barId: exo.barId ?? undefined,
   };
   return suggestWeight(exUse, ctx.lastEntry, {

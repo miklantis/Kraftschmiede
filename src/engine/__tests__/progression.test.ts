@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { suggestWeight } from "../progression";
 import type { EngineSet, SetEntry } from "../types";
 
-const EX = { workWeight: 60, repRange: [8, 12] as [number, number], targetScore: 3 };
+const EX = { workWeight: 60, repRange: [8, 12] as [number, number] };
 const entry = (sets: EngineSet[]): SetEntry => ({ sets });
 const work = (o: Partial<EngineSet>): EngineSet => ({
   type: "work",
@@ -53,7 +53,7 @@ describe("suggestWeight – Doppelprogression", () => {
 
   it("Score am Ziel im schmalen Repband => Einzelschritt statt Sprung ans Bandende", () => {
     // Maximalkraft-Fall: Band 4-6, vier Saetze mit 4 Wiederholungen im Ziel.
-    const kraft = { workWeight: 50, repRange: [4, 6] as [number, number], targetScore: 3 };
+    const kraft = { workWeight: 50, repRange: [4, 6] as [number, number] };
     const satz = (): EngineSet => ({
       type: "work",
       weight: 50,
@@ -125,7 +125,7 @@ describe("suggestWeight – Doppelprogression", () => {
   });
 
   it("schmales Band deckelt die Toleranz auf eine Wiederholung", () => {
-    const kraft = { workWeight: 50, repRange: [4, 6] as [number, number], targetScore: 3 };
+    const kraft = { workWeight: 50, repRange: [4, 6] as [number, number] };
     const satz = (reps: number): EngineSet => ({
       type: "work",
       weight: 50,
@@ -300,7 +300,6 @@ describe("suggestWeight – Kurzhantel-Stufen", () => {
   const dbEx = {
     workWeight: 14,
     repRange: [8, 12] as [number, number],
-    targetScore: 3,
   };
   const dbWork = (o: Partial<EngineSet>): EngineSet => ({
     type: "work",
@@ -434,7 +433,7 @@ describe("suggestWeight – Kennung und Zahlen fuer den Text", () => {
   it("Differenz ist die echte Differenz, nicht die Schrittweite", () => {
     // Kurzhantel: von 14 kg fuehrt der 2,5er Schritt auf die Stufe 16 -> 2 kg
     const DBS = [8, 10, 12, 14, 16, 18, 20];
-    const dbe = { workWeight: 14, repRange: [8, 12] as [number, number], targetScore: 3 };
+    const dbe = { workWeight: 14, repRange: [8, 12] as [number, number] };
     const s = (o: Partial<EngineSet>): EngineSet => ({
       type: "work",
       weight: 14,

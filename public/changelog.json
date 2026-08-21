@@ -1,6 +1,24 @@
 {
   "versions": [
     {
+      "version": "1.46.0",
+      "date": "2026-08-21",
+      "changes": [
+        "Der Ziel-Score ist aus dem Popup \"Übung anpassen\" verschwunden. Er hatte keinen Wochenbezug und war in Kraft-, Schnellkraft- und Testphasen ohnehin wirkungslos - dort gibt die Wochenzeile der Phase die Ziel-Anstrengung vor.",
+        "Wo keine Wochenvorgabe gilt, rechnet der Coach jetzt fest mit \"im Ziel\" (Score 3 / RIR 2). Da alle Übungen ohnehin auf diesem Wert standen, ändert sich an den Vorschlägen und am vorbelegten RIR im Training nichts.",
+        "Damit fällt auch der Warnkasten weg: Das Popup enthält keine Coach-Stellschraube mehr, sondern nur noch Stammwerte der Übung - Arbeitsgewicht und Repband."
+      ]
+    },
+    {
+      "version": "1.45.4",
+      "date": "2026-08-21",
+      "changes": [
+        "Das Popup \"Übung anpassen\" zeigt jetzt die Vorgabe, die wirklich gilt: Läuft eine Kraft-, Schnellkraft- oder Testphase, steht dort die Vorgabe der laufenden Woche (Sätze, Wiederholungen und Ziel-Anstrengung) statt des Phasenbands - dieselben Zahlen wie auf der Journey-Seite.",
+        "In Phasen ohne Wochenplan steht weiter das Repband der Phase, jetzt zusammen mit der Ziel-Anstrengung.",
+        "Der Hinweis am Arbeitsgewicht sagt in diesen Phasen ehrlich, dass die Journey mit dem Anker vom Phasenstart rechnet und eine Korrektur hier für den Coach erst beim nächsten Phaseneintritt greift."
+      ]
+    },
+    {
       "version": "1.45.3",
       "date": "2026-08-20",
       "changes": [
