@@ -24,7 +24,7 @@ statt aus einer festen Liste zu wählen.
 
 Die kurze Antwort auf die Machbarkeit: ja, und das Datenmodell ist näher dran, als
 es von außen aussieht. Der Aufwand steckt nicht in der Rechenlogik, sondern in zwei
-Entscheidungen, die noch niemand getroffen hat (siehe Abschnitt 5 und 6).
+Entscheidungen, die noch niemand getroffen hat (siehe Abschnitt 6 und 7).
 
 ---
 
@@ -41,7 +41,7 @@ Werte, nicht abgeleitete:
 | `sets_start` / `sets_end` | ja | Satzrampe über die Phasenwochen |
 | `deload_week` | ja | Woche mit gesenktem Volumen |
 | `rep_target_min` / `max` | ja | **hat Vorrang vor dem Band des Fokus** |
-| `load_factor` | ja | Anteil des Referenzgewichts |
+| `load_factor` | ja | Anteil des Referenzgewichts – ein eigener Steuerweg, siehe Abschnitt 5 |
 | `week_plan` | ja (jsonb) | die Wochentabelle; siehe Abschnitt 4 |
 | `position` | ja | Reihenfolge in der Journey |
 
@@ -66,6 +66,10 @@ gleichzeitig** entscheidet:
    vom Anker, oder der Coach.
 4. **Gilt der vorsichtige Coach-Sonderweg?** Nur bei `reentry` (Steigerung nur bei
    niedriger Anstrengung *und* ohne Schmerzmeldung).
+
+Nicht am Fokus hängt dagegen der Lastfaktor – er ist ein eigenes Feld und ein
+eigener Steuerweg (Abschnitt 5). Wer nur den Fokus auflöst, hat ihn noch nicht
+erfasst.
 
 Diese Bündelung ist praktisch, solange es sieben feste Typen gibt, und steht im Weg,
 sobald jemand eine eigene Phase bauen will. Sie ist zugleich der Grund, warum
@@ -101,7 +105,38 @@ editieren", sondern „Regler stellen".
 
 ---
 
-## 5. Wie sich die Bündelung auflösen ließe
+## 5. Der dritte Steuerweg: der Lastfaktor
+
+Plan-Weg und Coach-Weg sind nicht die ganze Wahrheit. Es gibt einen dritten Weg,
+und er hängt nicht am Fokus, sondern an einem eigenen Feld: dem Lastfaktor.
+
+Trägt eine Phase einen Lastfaktor unter 100 %, steuert **weder der Coach noch ein
+Wochenplan** das Gewicht, sondern die Journey: Referenzgewicht × Faktor, und dieser
+Wert ist Ziel und Deckel zugleich (`rampLoad` in `lib/coach.ts`, angewandt in
+`withRamp`, `engine/progression.ts`). Ein guter Tag hebt ihn nicht an – genau das
+ist der Zweck. Bei 100 % kippt das Verhalten: Dann wirkt der Wert nur noch als
+Untergrenze, damit die Journey wieder am alten Niveau ankommt und der Coach von dort
+normal übernimmt.
+
+Genutzt wird das heute von genau einer Vorlage: „Wiederaufbau nach Fasten", vier
+Phasen zu je einer Woche mit 65 % → 80 % → 95 % → 100 %.
+
+**Die versteckte Nebenwirkung.** Der Lastfaktor braucht einen festen Bezugspunkt,
+und den setzt nicht die Phase, sondern der Journey-Start: Trägt *irgendeine* Phase
+der Vorlage einen Faktor ungleich 100 %, wird beim Start der Journey der aktuelle
+Stand **aller** Übungen als Referenzgewicht eingefroren; trägt keine einen, wird der
+alte Bezugspunkt weggeräumt (`nutztLastfaktor` / `friereReferenzgewichteEin` in
+`lib/journeyWrite.ts`). Ohne eingefrorenen Bezug greift der Lastfaktor gar nicht,
+und der Coach rechnet stumm wie gewohnt weiter.
+
+Für einen Editor ist das der wichtigste Satz dieses Papiers: **Eine Einstellung an
+einer einzelnen Phase löst eine Wirkung auf Journey-Ebene aus, die einmalig beim
+Start fällt und danach feststeht.** Ein Baukasten, der Phasen isoliert behandelt,
+übersieht das – und der Fehler wäre stumm, nicht laut.
+
+---
+
+## 6. Wie sich die Bündelung auflösen ließe
 
 Skizze, nicht Vorschlag. Der Fokus würde zum **Etikett** herabgestuft (Name, Farbe,
 Einordnung in der Periodisierungskurve), und die vier Fragen aus Abschnitt 3 würden
@@ -109,8 +144,12 @@ zu eigenen, sichtbaren Feldern an der Phase. Im Kern drei Schalter:
 
 - **Steuerung:** Coach-Weg oder Plan-Weg
 - **Gewichtsregel:** Coach entscheidet / Rampe aufwärts / fester Anteil vom
-  Startgewicht
+  Startgewicht / Vorgabe der Journey (Lastfaktor, Abschnitt 5)
 - **Vorsichtsmodus:** an oder aus (heute: `reentry`)
+
+Der Lastfaktor ist dabei die unbequemste dieser Gewichtsregeln: Er ist heute schon
+ein freies Feld, also scheinbar der einfachste Baustein – aber er ist der einzige,
+dessen Wirkung nicht in der Phase endet.
 
 Danach wäre eine Phase ein Baukasten: Name frei, Wochen frei, und je nach Steuerweg
 entweder Band plus Satzrampe (Coach-Weg) oder eine Wochentabelle (Plan-Weg). Die
@@ -123,7 +162,7 @@ gespeicherten Wert.
 
 ---
 
-## 6. Offene Fragen und Stolpersteine
+## 7. Offene Fragen und Stolpersteine
 
 Diese Punkte sind der eigentliche Inhalt eines späteren Konzepts.
 
@@ -148,9 +187,24 @@ Trennung: Vorlagen frei editierbar, laufende Journey nur eingeschränkt (kommend
 Phasen ja, laufende und vergangene nein).
 
 **Lastfaktor und Plan-Weg schließen sich heute still aus.** Laut ADR-0018 wirkt der
-Lastfaktor im Plan-Weg nicht; heute kombiniert keine Vorlage beides. Ein Editor
-könnte diese Kombination erstmals erzeugen – dann verlöre der Lastfaktor
-stillschweigend seine Wirkung. Entweder sperren oder auflösen.
+Lastfaktor im Plan-Weg nicht – dort kommt die Last aus dem Plan. Beide zusammen gibt
+es heute faktisch nicht: „Wiederaufbau nach Fasten" hat zwar eine Plan-Phase
+(„Standort", Fokus `test`), die trägt aber Faktor 100 % und plant ohnehin nichts.
+Ein Editor könnte die Kombination erstmals scharf erzeugen – dann verlöre der
+Lastfaktor stillschweigend seine Wirkung. Entweder sperren oder auflösen.
+
+**Wo gehört der Lastfaktor überhaupt hin?** Er steht an der Phase, wirkt aber über
+die Journey (Abschnitt 5). Drei denkbare Antworten, jede mit Folgen: an der Phase
+lassen und die Nebenwirkung sichtbar machen („diese Journey friert deinen Stand beim
+Start ein"); an die Journey hochziehen und die Phasen nur noch Prozentwerte tragen
+lassen; oder ihn als eigene Bauart der Phase führen, die den Coach-Weg ersetzt statt
+ihn zu überlagern. Vor dieser Frage lässt sich keine Bedienung entwerfen.
+
+**Was passiert bei einem Lastfaktor ohne Bezugspunkt?** Heute unmöglich, weil das
+Einfrieren automatisch am Journey-Start hängt. Sobald Phasen einzeln editierbar
+werden – etwa ein Lastfaktor, der einer laufenden Journey nachträglich hinzugefügt
+wird –, entsteht der Fall zum ersten Mal. Ohne eingefrorenes Referenzgewicht wirkt
+der Faktor gar nicht, und zwar ohne jede Meldung.
 
 **Wie viel Freiheit überhaupt?** Zwei Enden derselben Achse: eine frei editierbare
 Wochentabelle (maximal frei, maximal Verantwortung beim Nutzer) oder ein Baukasten
@@ -164,11 +218,11 @@ drei verschiedene Vorhaben mit verschiedenem Risiko.
 
 ---
 
-## 7. Was hier bewusst nicht steht
+## 8. Was hier bewusst nicht steht
 
 Kein Layout, kein Komponentenschnitt, keine Schrittfolge, keine Migration. Das
 gehört in ein Konzept, und ein Konzept entsteht erst, wenn die Fragen aus
-Abschnitt 6 beantwortet sind – vor allem die nach dem Freiheitsgrad.
+Abschnitt 7 beantwortet sind – vor allem die nach dem Freiheitsgrad.
 
 Auch keine Aussage darüber, ob das überhaupt gebaut werden soll. Die beiden
 bestehenden Vorlagen decken den heutigen Bedarf; von sieben ursprünglichen Vorlagen
@@ -178,8 +232,8 @@ kein Gegenargument, aber es gehört in die Abwägung.
 
 ---
 
-## 8. Nächster Schritt
+## 9. Nächster Schritt
 
-Wenn daraus ein Konzept werden soll: mit Abschnitt 6 anfangen, nicht mit dem
+Wenn daraus ein Konzept werden soll: mit Abschnitt 7 anfangen, nicht mit dem
 Editor. Zuerst der Freiheitsgrad, dann die Frage Vorlage-oder-Journey. Alles Weitere
 folgt daraus.
