@@ -9,9 +9,9 @@
 > dabei, statt still ersetzt zu werden.
 >
 > Ebenfalls am 22.08.2026 entschieden: die Leiter der Intensivierung (Abschnitt 8), die
-> Entlastungswoche der Kraftausdauer (Abschnitt 4) und der Name der Testphase
-> (Abschnitt 9). Damit ist von den fachlichen Fragen keine mehr offen; was noch aussteht,
-> steht in Abschnitt 13.
+> Entlastungswoche der Kraftausdauer (Abschnitt 4), der Name der Testphase (Abschnitt 9)
+> und der Umgang mit alten Sicherungen (Abschnitt 11). Damit ist zu Teil 1 nichts mehr zu
+> entscheiden; die aufgeschobenen Punkte in Abschnitt 13 halten nichts auf.
 
 Teil 1 von zwei. Dieses Papier befasst sich **nur mit der Datenstruktur**: Die
 Phasen-Bausteine bekommen eine eigene Definition in der Datenbank, samt ihrer
@@ -761,10 +761,20 @@ die verschwundene Spalte schreiben wollen. Nach dem Deploy ist dieses Fenster zu
 - **Sicherung und Wiederherstellung.** Die neue Tabelle muss in das Bestandsregister
   (`lib/bestandsregister.ts`), sonst fällt sie still aus Export und Wiederherstellung –
   genau der Fehler, gegen den das Register angelegt wurde; ein Test prüft Register gegen
-  Schemas. Und: Eine vor Schritt 4 gezogene Sicherung lässt sich danach nicht mehr
-  einspielen, weil die Zeilen ungefiltert zurückgeschrieben werden und `load_factor` dann
-  keine Spalte mehr ist. Entweder der Wiederherstellungs-Pfad räumt unbekannte Felder ab,
-  oder es wird bewusst gesagt: Sicherungen von vorher sind nicht mehr einspielbar.
+  Schemas. Das ist Pflicht und Teil von Schritt 1.
+
+  Der zweite Teil ist entschieden und **fällt weg**: Eine vor Schritt 4 gezogene Sicherung
+  liesse sich danach nicht mehr einspielen, weil die Zeilen ungefiltert zurückgeschrieben
+  werden und `load_factor` dann keine Spalte mehr ist. **Es gibt keine solchen Sicherungen**
+  (Stand 22.08.2026, vom Nutzer bestätigt), also wird dafür nichts gebaut. Kein
+  Umschreibe-Pfad, kein Sonderfall im Wiederherstellen.
+
+  Zwei Sätze zur Ehrlichkeit dieser Entscheidung: Sie hält nur, solange keine Sicherung
+  existiert. Wird vor dem Umbau doch eine gezogen, ist sie nach Schritt 4 wertlos – dann
+  gleich danach eine neue ziehen. Und grundsätzlich trifft dieses Problem **jede** künftige
+  Schema-Änderung, nicht nur diese: Der Wiederherstellungs-Pfad schreibt zurück, was in der
+  Datei steht, ohne unbekannte Felder abzuräumen. Das robuster zu machen ist eine sinnvolle
+  Pflege – aber eine eigene, mit eigenem Issue, und nicht Teil dieses Vorhabens.
 
 **Zum Zeitpunkt:** Auf ein Fenster ohne laufende Journey muss nicht gewartet werden. Die
 laufende Journey stammt aus der anderen Vorlage und trägt ihre Werte als Kopie; fachlich
@@ -819,12 +829,13 @@ Am 22.08.2026 entschieden und damit **nicht mehr offen** (Begründung jeweils am
 - **Die Entlastungswoche der Kraftausdauer** (Abschnitt 4) – sie bekommt eine, in Woche 3.
 - **Der Name der Testphase** (Abschnitt 9) – überall „Test/Peak", per Migration auch in
   der laufenden Journey.
+- **Sicherungen von vor dem Lastfaktor-Ausbau** (Abschnitt 11) – es gibt keine, also wird
+  dafür nichts gebaut. Den Wiederherstellungs-Pfad allgemein gegen Schema-Änderungen
+  abzuhärten bleibt sinnvoll, gehört aber in ein eigenes Pflege-Vorhaben.
 
-Weiterhin offen:
+Damit ist zu Teil 1 nichts mehr zu entscheiden – gebaut werden kann, sobald es gesagt
+wird. Die folgenden Punkte sind bewusst aufgeschoben und halten nichts auf:
 
-- **Sicherungen von vor dem Lastfaktor-Ausbau** (Abschnitt 11). Entweder der
-  Wiederherstellungs-Pfad räumt unbekannte Felder ab, oder alte Sicherungen sind bewusst
-  nicht mehr einspielbar. Zu entscheiden, bevor Schritt 4 gebaut wird.
 - **Neue Vorlagen aus den Bausteinen.** Nach Teil 1 lassen sich Journeys per Migration
   zusammenstellen. Welche das sein sollen (Kraftausdauer-Block? eine reine
   Erhaltungs-Journey für ruhige Zeiten?), ist noch nicht besprochen und gehört nicht in
