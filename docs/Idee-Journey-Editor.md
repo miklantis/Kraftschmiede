@@ -168,8 +168,9 @@ Wiederholungsband und laufen nur je eine Woche. Sie ist keine Abfolge von Blöck
 sondern eine einzige Bewegung – vom gedrosselten Gewicht zurück auf hundert Prozent.
 
 **Festgelegt: Dafür entsteht ein achter Baustein `rebuild`.** Eingestellt werden
-Wochenzahl, Startanteil und Zielanteil. Je Woche eine Stufe; die Wiederholungen
-steuert der Coach im Band, das Gewicht nicht.
+Wochenzahl, Startanteil und Zielanteil – „3 Wochen, 65 % → 95 %" ist ein Block,
+nicht drei Phasen. Je Woche eine Stufe; die Wiederholungen steuert der Coach im
+Band, das Gewicht nicht.
 
 - **Mindestens drei Wochen.** Zwei Wochen sind kein Verlauf, sondern ein Sprung
   von 65 auf 100 %. Ab drei gibt es eine echte Zwischenstufe – dieselbe
@@ -191,6 +192,12 @@ Die Mechanik dahinter, die ein Konzept kennen muss:
 - Der Baustein läuft über den Coach-Weg. Mit einem Wochenplan zusammen ergibt er
   keinen Sinn – dort käme die Last aus dem Plan – und darf deshalb nicht kombinierbar
   sein.
+- Eine Phase trägt heute **einen** Lastwert; deshalb ist die Vorlage in Einzelphasen
+  zerlegt. Der Baustein braucht zwei (Start und Ziel) und leitet den Wochenwert
+  daraus ab – eine kleine Erweiterung am Datenmodell.
+- **Die Testwoche gehört nicht in den Baustein.** Sie bleibt eine eigene Testphase
+  dahinter, sonst stünde ihre Bauregel an zwei Stellen im System. Der Editor schlägt
+  sie beim Wiederaufbau vor (eine Woche, ohne Entlastung); wegnehmen ist erlaubt.
 
 Damit ist zugleich die Frage beantwortet, wo der Lastfaktor hingehört: nicht als
 unsichtbarer Aufsatz an jeder Phase, sondern als eigene Bauart, die man sieht,
