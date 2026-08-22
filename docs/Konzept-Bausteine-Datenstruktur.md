@@ -7,6 +7,11 @@
 > eingearbeitet – die größte Korrektur betrifft den Steuerweg (Abschnitt 2, „Die Phase
 > trägt ihre Bauart mit"). Wo der erste Entwurf danebenlag, steht das an Ort und Stelle
 > dabei, statt still ersetzt zu werden.
+>
+> Ebenfalls am 22.08.2026 entschieden: die Leiter der Intensivierung (Abschnitt 8), die
+> Entlastungswoche der Kraftausdauer (Abschnitt 4) und der Name der Testphase
+> (Abschnitt 9). Damit ist von den fachlichen Fragen keine mehr offen; was noch aussteht,
+> steht in Abschnitt 13.
 
 Teil 1 von zwei. Dieses Papier befasst sich **nur mit der Datenstruktur**: Die
 Phasen-Bausteine bekommen eine eigene Definition in der Datenbank, samt ihrer
@@ -293,6 +298,8 @@ Woher die Zahlen kommen:
   Vorgabe die Entlastung in Woche 4 – genau dieser Fall. Korrigiert auf Woche 3;
   Hypertrophie liegt mit Woche 4 von 5 schon richtig. Diese Regel gilt auch für verstellte
   Werte und gehört deshalb in die Bau-Funktion, nicht nur in die Vorgaben (Abschnitt 5).
+  **Dass die Kraftausdauer überhaupt eine Entlastungswoche bekommt, ist bestätigt**
+  (22.08.2026) – zur Debatte stand nur ihre Lage, nicht ihr Dasein.
 - **Kraftausdauer, Intensivierung und Erhaltung stehen heute in keiner Vorlage.** Nach
   Teil 1 sind sie als Daten vorhanden und benutzbar – das ist ein Teil des Ziels „alle
   Bausteine im System".
@@ -497,8 +504,8 @@ Die Ziel-Anstrengung folgt derselben Regel wie bisher (RIR 2, in den schwersten 
 RIR 1). Ein Einzelversuch bei RIR 1 ist eine echte Peaking-Woche und bleibt klar vom
 1RM-Test der Testphase unterschieden, der ohne Reserve läuft und gar keine Einheit plant.
 
-Die konkreten Zahlen der neuen Leiter sind der eine Wert in diesem Papier, den ich vor dem
-Bauen noch einmal trainingsfachlich bestätigt haben möchte.
+**Bestätigt am 22.08.2026.** Die Zahlen der neuen Leiter stehen damit fest und sind kein
+offener Punkt mehr.
 
 ---
 
@@ -567,7 +574,9 @@ den Abgleichstest aus Abschnitt 12.
 ### Die Vorlage „Wiederaufbau nach Fasten"
 
 Aus vier Phasen werden zwei: ein Wiederaufbau-Block (3 Wochen, 65 → 95 %) und eine
-Testphase (1 Woche). Drei bewusste Abweichungen von heute:
+Testphase (1 Woche). Beide tragen ihren Baustein-Namen, heißen also „Wiederaufbau" und
+„Test/Peak" – die heutigen Eigennamen „Tasten", „Reaktivieren", „Anschluss" und „Standort"
+entfallen. Drei bewusste Abweichungen von heute:
 
 1. Das Wiederholungsband ist über alle drei Wochen 6–10 statt 8–10 / 6–10 / 6–10.
 2. Die Satzrampe läuft 2 → 4 statt 2 / 3 / 3–4.
@@ -589,11 +598,19 @@ getippt, sondern aus Bausteinen zusammengesetzt. Das ist zugleich der beste verf
 Beweis, dass die Bausteine die heutige Welt vollständig beschreiben.
 
 **Ein Punkt weicht doch ab, und zwar der Name der letzten Phase.** Sie heißt in der
-Datenbank „Übergang / Test", der Baustein heißt „Test/Peak". Daraus folgt eine Festlegung
-für die Bau-Funktion: **Der Baustein-Name ist die Vorgabe für den Phasennamen, nicht der
-Zwang.** Eine Vorlage darf ihre Phase weiterhin eigen benennen; wo sie nichts sagt, steht
-der Baustein-Name. Damit bleibt „Übergang / Test" erhalten, und die Vorlage ist auch im
-Namen unverändert.
+Datenbank „Übergang / Test", der Baustein heißt „Test/Peak". Der Name ist damit das
+einzige Feld, in dem Vorlage und Baustein auseinandergehen – schon heute, denn auf dem
+Trainingsbildschirm steht bereits „Test/Peak", auf der Journey-Seite „Übergang / Test".
+Dieselbe Phase trägt also je nach Bildschirm zwei Namen.
+
+**Entscheidung: Die Phase heißt künftig überall „Test/Peak".** Damit fällt der Widerspruch
+weg, und die Vorlage kommt für diese Phase ohne eigenen Namen aus – der Baustein-Name
+greift. Umbenannt wird in Vorlage **und** laufender Journey (Abschnitt 11, Schritt 3).
+
+Die Möglichkeit, eine Phase abweichend zu benennen, bleibt trotzdem bestehen: **Der
+Baustein-Name ist die Vorgabe für den Phasennamen, nicht der Zwang.** Nach dem Umbau nutzt
+sie keine der beiden Vorlagen mehr – aber eine Journey mit zwei Blöcken desselben
+Bausteins bräuchte sie, und der Editor in Teil 2 ebenfalls.
 
 ---
 
@@ -670,10 +687,12 @@ bekommt keinen zweiten Leser im Anzeigepfad (Abschnitt 2). Weil der Baustein-Nam
 Vorgabe für den Phasennamen ist (Abschnitt 9), steht dort in aller Regel dasselbe Wort wie
 bisher.
 
-**Eine sichtbare Ausnahme:** In der laufenden Journey heißt die letzte Phase „Übergang /
-Test", der Baustein „Test/Peak". Auf dem Trainingsbildschirm stünde künftig „Übergang /
-Test". Das ist die einzige sichtbare Änderung des ganzen Umbaus. Sie ist hinnehmbar – wenn
-nicht, benennt die Nachtrag-Migration die Phase mit um (Abschnitt 13).
+**Die eine sichtbare Änderung des ganzen Umbaus** betrifft genau diese Stelle. Heute trägt
+die letzte Phase der laufenden Journey zwei Namen: „Übergang / Test" auf der Journey-Seite,
+„Test/Peak" auf dem Trainingsbildschirm. Nach dem Umbau steht überall derselbe Name – und
+das soll **„Test/Peak"** sein (entschieden am 22.08.2026). Auf der Journey-Seite ändert
+sich damit ein Wort, auf dem Trainingsbildschirm gar nichts. Umbenannt wird per Migration,
+in Vorlage und laufender Journey gleichermaßen (Abschnitt 11, Schritt 3).
 
 ---
 
@@ -689,8 +708,10 @@ gebaut wird, entstehen daraus ein Vorhaben-Issue und die Schritt-Issues.
    einschließlich der laufenden Journey. Danach lesen `useFinishSession`, `phaseContext`
    und `suitability` den Vermerk statt einer Fokus-Liste. Details unten.
 3. **Die Werte aus dem Code holen.** Bänder, Anzeigenamen und die beiden Steuerweg-Listen
-   verschwinden; die Vorlagen entstehen im Seed aus den Bausteinen. Der Abgleichstest aus
-   Abschnitt 12 entsteht in diesem Schritt und beweist, dass sich nichts verschiebt.
+   verschwinden; die Vorlagen entstehen im Seed aus den Bausteinen. Dazu die Migration,
+   die „Übergang / Test" in Vorlage und laufender Journey auf **„Test/Peak"** umbenennt
+   (Abschnitt 9). Der Abgleichstest aus Abschnitt 12 entsteht in diesem Schritt und
+   beweist, dass sich sonst nichts verschiebt.
 4. **Lastliste statt Lastfaktor.** Migration (`load_plan` neu, `load_factor` weg),
    Schemata, Anzeige, `focusEnum` und `CHECK` um `rebuild` erweitert. Ohne Liste verhält
    sich alles wie heute.
@@ -779,7 +800,8 @@ fehl, sobald eine Seite vergessen wird. Er prüft bei jedem Lauf:
 6. **Keine Verschiebung:** Die Vorlagen, die der neue Seed erzeugt, entsprechen Feld für
    Feld dem, was heute in der Datenbank steht – mit den drei in Abschnitt 9 benannten,
    gewollten Abweichungen der Fasten-Vorlage als einziger Ausnahme. Die Phasennamen zählen
-   mit: „Übergang / Test" muss „Übergang / Test" bleiben.
+   mit – nach der Umbenennung aus Schritt 3 muss die letzte Phase beider Seiten
+   „Test/Peak" heißen, in der Vorlage wie in der laufenden Journey.
 7. **Laufende Journey unberührt:** Die Phasen der laufenden Journey ergeben nach dem
    Umbau dieselben Vorgaben wie vorher – Band, Sätze, Wochenliste, vorsichtige Steigerung
    und Anker-Bezug der Testphase.
@@ -791,14 +813,15 @@ sollte nichts ändern" ein „das ändert nachweislich nichts".
 
 ## 13. Offene Punkte
 
-- **Die Zahlen der Intensivierungs-Leiter** (Abschnitt 8). Fachlich noch zu bestätigen.
-- **Die Entlastungswoche der Kraftausdauer** (Abschnitt 4). Auf Woche 3 von 4 korrigiert,
-  weil die Entlastung nicht die letzte Woche sein darf. Ob eine Kraftausdauer-Phase
-  überhaupt eine braucht, ist fachlich noch zu bestätigen.
-- **Der Name der letzten Phase der laufenden Journey** (Abschnitt 10). Auf dem
-  Trainingsbildschirm stünde künftig „Übergang / Test" statt „Test/Peak". Wenn das stört,
-  benennt die Nachtrag-Migration die Phase in „Test/Peak" um – dann ändert sich gar
-  nichts, dafür weicht die Journey von ihrer Vorlage ab.
+Am 22.08.2026 entschieden und damit **nicht mehr offen** (Begründung jeweils am Ort):
+
+- **Die Leiter der Intensivierung** (Abschnitt 8) – die vorgeschlagenen Zahlen gelten.
+- **Die Entlastungswoche der Kraftausdauer** (Abschnitt 4) – sie bekommt eine, in Woche 3.
+- **Der Name der Testphase** (Abschnitt 9) – überall „Test/Peak", per Migration auch in
+  der laufenden Journey.
+
+Weiterhin offen:
+
 - **Sicherungen von vor dem Lastfaktor-Ausbau** (Abschnitt 11). Entweder der
   Wiederherstellungs-Pfad räumt unbekannte Felder ab, oder alte Sicherungen sind bewusst
   nicht mehr einspielbar. Zu entscheiden, bevor Schritt 4 gebaut wird.
