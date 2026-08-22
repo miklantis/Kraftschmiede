@@ -2,6 +2,11 @@
 
 > Doku-Typ: Konzept. Hält den besprochenen Stand fest, bevor gebaut wird. Noch nicht in
 > Umsetzung.
+>
+> Stand 22.08.2026: gegen Code und Live-Datenbank durchgeprüft. Die Befunde sind
+> eingearbeitet – die größte Korrektur betrifft den Steuerweg (Abschnitt 2, „Die Phase
+> trägt ihre Bauart mit"). Wo der erste Entwurf danebenlag, steht das an Ort und Stelle
+> dabei, statt still ersetzt zu werden.
 
 Teil 1 von zwei. Dieses Papier befasst sich **nur mit der Datenstruktur**: Die
 Phasen-Bausteine bekommen eine eigene Definition in der Datenbank, samt ihrer
@@ -37,7 +42,9 @@ dieses Wort bedeutet, steht verteilt über den Code und keiner davon in der Date
 | Ob ein Wochenplan entsteht und welcher | `buildWeekPlan` in `engine/weekPlan.ts` |
 | Ob der Plan die Last steuert | `WEEK_PLAN_FOCUSES` und `LOAD_PLAN_FOCUSES` in `engine/weekPlan.ts` |
 | Der vorsichtige Zweig des Wiedereinstiegs | `focus === "reentry"` in `lib/coach.ts` |
-| Ob eine Phase überhaupt Hauptübungen braucht | `engine/suitability.ts` |
+| Wie stark schwere Hauptübungen empfohlen werden | `engine/suitability.ts` (eigene Liste `strength`/`power`/`test`) |
+| Ob nach einer Einheit der Phasen-Anker nachgezogen wird | `hooks/useFinishSession.ts` |
+| Ob Testhinweis und Wochentabelle erscheinen | `focus === "test"` in `lib/journey.ts` |
 
 Wochenzahlen, Satzrampen, Entlastungswochen und Lastfaktoren stehen dagegen gar nirgends
 als Eigenschaft des Bausteins – sie sind je Vorlagenphase von Hand in den Seed getippt
@@ -57,6 +64,13 @@ Geprüft gegen die Live-Datenbank, damit der Umbau nicht auf Annahmen steht:
 - Die Vorlage **Wiederaufbau nach Fasten** ist derzeit **nicht in Benutzung**. Ihr Umbau
   (Abschnitt 9) rührt damit keine laufende Journey an. Auf ein Fenster „wenn gerade keine
   Journey läuft" muss nicht gewartet werden.
+- Es gibt genau **eine** Journey überhaupt (die laufende) und **keine einzige** Phase mit
+  einem Lastfaktor ungleich 1,0 – weder in den Vorlagen noch in der Journey. Der Ausbau
+  des Lastfaktors (Abschnitt 7) nimmt damit nachweislich keinem Wert seine Wirkung.
+- **Intensivierung (`power`) kommt nirgends vor** – in keiner Vorlage und in keiner Phase.
+  Die neue Leiter aus Abschnitt 8 kann darum nichts verschieben.
+
+Nachgeprüft am 22.08.2026 gegen die Live-Datenbank; alle Punkte oben bestätigt.
 
 ---
 
@@ -88,7 +102,7 @@ Deshalb gilt: Was in die Tabelle wandert, geht aus dem Code **raus**.
 | --- | --- |
 | Wiederholungsbänder je Baustein | `repTargetForFocus` (`engine/journey.ts`) |
 | Anzeigenamen der Bausteine | `FOCUS_LABELS` (`lib/labels.ts`) |
-| Steuerweg je Baustein | `WEEK_PLAN_FOCUSES`, `LOAD_PLAN_FOCUSES` (`engine/weekPlan.ts`) |
+| Steuerweg je Baustein | `WEEK_PLAN_FOCUSES`, `LOAD_PLAN_FOCUSES` (`engine/weekPlan.ts`) – ersetzt durch den Bauart-Vermerk an der Phase, siehe unten |
 | Wochen, Sätze, Entlastung, Last je Vorlagenphase | die getippten Zahlen in `seed/definitions.ts` |
 
 Zwei Bemerkungen dazu, weil beides einfacher ist, als es klingt:
@@ -96,17 +110,58 @@ Zwei Bemerkungen dazu, weil beides einfacher ist, als es klingt:
 - **Die Wiederholungsbänder im Code sind heute schon totes Kapital.** Jede Vorlagenphase
   trägt ihr Band bereits explizit mit; die Liste im Code ist nur ein Notnagel, der nie
   gezogen wird. Sie ersatzlos zu streichen ändert an keinem einzigen Vorschlag etwas.
-- **Die beiden Listen „läuft über einen Plan" fallen ganz weg.** Die Frage „steuert hier
-  ein Plan die Last?" beantwortet die Phase selbst, weil sie ihre Wochenliste mitträgt.
-  Ein Blick auf die Phase genügt, es braucht keine Liste von Schlüsselwörtern daneben.
+- **Die beiden Listen „läuft über einen Plan" fallen weg – aber nicht ersatzlos.** Ein
+  früherer Entwurf dieses Papiers wollte sie streichen mit der Begründung, die Phase sage
+  ohnehin selbst, ob ein Plan die Last steuert: Wochenplan gesetzt heißt Plan. Beim
+  Abgleich mit dem Code hat sich das als falsch erwiesen, und der Fehler ist lehrreich –
+  siehe den eigenen Abschnitt gleich unten.
 
 Im Code bleiben muss die Zuordnung „welcher Baustein-Schlüssel wird von welcher Bauregel
 bedient" – und die Bauregeln selbst. Das ist Rechnung, keine Einstellung. Wie beides
 zusammengehalten wird, steht in Abschnitt 12.
 
+### Die Phase trägt ihre Bauart mit
+
+Hier steckt eine der beiden großen Korrekturen gegenüber dem ersten Entwurf dieses
+Papiers – die andere steht in Abschnitt 7. Sie ist der Grund, warum die Phasenzeile drei
+Felder mehr bekommt als geplant.
+
+**Ein Wochenplan allein sagt nicht, was er tut.** Zwei ganz verschiedene Phasenarten
+tragen heute einen: Kraft- und Intensivierungsphasen, deren Plan das Gewicht Woche für
+Woche **hochfährt**, und die Testphase, deren Plan bewusst auf 60 % **entlastet** und
+deren letzte Woche gar nichts plant. „Hat einen Wochenplan" trifft auf beide zu.
+
+Zwei Stellen im Code brauchen die Unterscheidung wirklich:
+
+- **Nach jeder beendeten Einheit** wird in einer Kraft-/Intensivierungsphase das erreichte
+  Gewicht als Anker der Phase nachgezogen (`hooks/useFinishSession.ts`). In einer
+  Testphase darf das nicht passieren – dort wird absichtlich leicht trainiert, und dieser
+  Wert würde den Anker verderben.
+- **Die Entlastungswoche der Testphase** rechnet vom Startgewicht der vorangegangenen
+  Kraft-/Intensivierungsphase. Die Suche danach läuft rückwärts durch die Phasen
+  (`lib/phaseContext.ts`); fragte sie nur „hat einen Wochenplan", könnte sie bei einer
+  anderen Testphase landen und mit dem falschen Gewicht rechnen.
+
+**Festlegung: Die Phase bekommt beim Anlegen die Namen ihrer Bauregeln mitgeschrieben** –
+`plan_builder` und `load_builder`, Wort für Wort die Werte des Bausteins. Danach sagt jede
+Phase selbst, wie sie gebaut wurde, und keine Liste von Schlüsselwörtern muss daneben
+gepflegt werden.
+
+Das ist kein Sonderfall, sondern genau die Regel dieses Abschnitts: Was die Phase zur
+Laufzeit braucht, steht an der Phase – so wie der Wochenplan, das Band und die Satzrampe
+auch. Der Vermerk wird einmal beim Anlegen geschrieben und danach nur noch gelesen.
+
+Der geprüfte Gegenentwurf war, die Zuordnung „Schlüssel → Bauregel" im Code zu lassen und
+daraus abzuleiten, welche Bausteine die Last hochfahren. Das hätte ebenfalls funktioniert
+und ohne Eingriff in die laufende Journey ausgekommen. Verworfen, weil die Phase dann für
+diese eine Frage doch wieder nicht aus sich heraus lesbar wäre – und weil der Editor in
+Teil 2 die Bauart ohnehin an der Phase braucht, um beim Ändern der Wochenzahl die richtige
+Liste neu zu bauen. Der Preis ist eine Nachtrag-Migration für die bestehenden Phasen
+(Abschnitt 11, Schritt 2).
+
 ### Bausteine wirken beim Anlegen, nicht beim Rechnen
 
-Der zweite tragende Punkt, weil er den Umfang klein hält:
+Der Punkt, der den Umfang klein hält:
 
 **Die Bausteine-Tabelle wird gelesen, wenn eine Phase entsteht – nicht, wenn der Coach
 rechnet.** Beim Anlegen einer Phase werden die Werte des Bausteins samt der gewählten
@@ -127,13 +182,19 @@ Die Kopie hat drei Folgen, alle erwünscht:
 - **Eine geänderte Baustein-Definition rührt laufende Journeys nicht an.** Wer die
   Vorgabe „Hypertrophie startet mit 5 Wochen" ändert, ändert nichts an einer Journey, die
   gerade läuft.
-- **Der Steuerweg muss zur Laufzeit nicht nachgeschlagen werden.** Er ist an der Phase
-  schon ablesbar: Eine Phase mit Wochenplan läuft über den Plan, eine mit Lastliste über
-  die Vorgabe, alle anderen über den Coach.
+- **Der Steuerweg muss zur Laufzeit nicht nachgeschlagen werden.** Er steht als
+  Bauart-Vermerk an der Phase selbst (siehe oben): `plan_builder` sagt, welche Wochenliste
+  sie gebaut hat, `load_builder`, welche Lastliste – beide leer heißt: der Coach steuert.
 
 In Teil 1 hat die Tabelle damit **genau einen Leser**: die Stelle, an der die Vorlagen
 entstehen. Das ist wenig, aber es ist ein echter – und es ist derselbe Weg, den der
 Editor in Teil 2 benutzen wird.
+
+Damit das so bleibt, gilt für die Anzeigenamen dieselbe Regel: Der Name eines Bausteins
+wird beim Anlegen in den **Phasennamen** geschrieben, statt zur Anzeigezeit aus der
+Tabelle geholt zu werden. Sonst bekäme die Journey-Seite eine neue Datenabhängigkeit und
+die Tabelle einen zweiten Leser im Anzeigepfad – genau das, was dieser Abschnitt vermeiden
+will. Was das für die Anzeige heißt, steht in Abschnitt 10.
 
 ### Bleibt bewusst im Code
 
@@ -144,7 +205,15 @@ Editor in Teil 2 benutzen wird.
 - Der vorsichtige Coach-Zweig. Er ist eine Rechenregel und keine Einstellung – die
   Tabelle sagt nur, **welche** Bausteine ihn bekommen (siehe Abschnitt 5).
 - Die Ankerregel der Testphase (welche Phase das Startgewicht stellt). Sie ist eine
-  Beziehung zwischen Phasen, keine Eigenschaft eines Bausteins.
+  Beziehung zwischen Phasen, keine Eigenschaft eines Bausteins. Gesucht wird die
+  vorangegangene Phase mit einer **hochfahrenden** Wochenliste – ablesbar am
+  Bauart-Vermerk, nicht mehr an einer Fokus-Liste im Code.
+- Die Gewichtung der Workout-Empfehlung (`engine/suitability.ts`). Sie zählt in Kraft-,
+  Intensivierungs- und Testphasen jede schwere Hauptübung extra und behandelt alle übrigen
+  Phasen neutral. Das ist eine Empfehlungsregel, keine Baustein-Eigenschaft – sie liest
+  aber ebenfalls den Bauart-Vermerk statt einer eigenen Fokus-Liste. Der neue Wiederaufbau
+  fällt damit in den neutralen Zweig; das ist gewollt, weil er keine schweren Hauptübungen
+  erzwingen soll.
 
 Damit gilt: **Ein Baustein-Schlüssel ist ein Vertrag mit dem Code.** Neue Zeilen in der
 Tabelle kann sich niemand ausdenken – die Engine wüsste nicht, was sie damit tun soll.
@@ -196,7 +265,7 @@ nichts entscheidet, gehört nicht in die Quelle.
 
 | Baustein (`key`) | Steuerweg | Wochen min/max/Vorgabe | Sätze | Wdh.-Band | Entlastung | Last | vorsichtig |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Kraftausdauer (`endurance`) | coach | 3 / 8 / 4 | 2 → 4 | 12–18 | ja, Woche 4 | – | nein |
+| Kraftausdauer (`endurance`) | coach | 3 / 8 / 4 | 2 → 4 | 12–18 | ja, Woche 3 | – | nein |
 | Hypertrophie (`hypertrophy`) | coach | 3 / 8 / 5 | 2 → 6 | 8–12 | ja, Woche 4 | – | nein |
 | Wiedereinstieg (`reentry`) | coach | 1 / 4 / 2 | 2 → 2 | 5–8 | nein | – | **ja** |
 | Erhaltung (`maintenance`) | coach | 1 / 12 / 3 | 3 → 3 | – (Übung behält ihres) | erlaubt, Vorgabe aus | – | nein |
@@ -218,6 +287,12 @@ Woher die Zahlen kommen:
   (eine 30-Wochen-Kraftphase), nicht ungewöhnliche Wünsche.
 - **`maintenance` hat als einziger Baustein kein Band.** Jede Übung behält ihr eigenes,
   gebremst wird über die niedrige Satzzahl.
+- **Eine Entlastungswoche darf nie die letzte Woche der Phase sein.** Sie soll die Rampe
+  entlasten und danach wieder Anlauf geben; liegt sie am Ende, verpufft sie und die Phase
+  hört auf einer Absenkung auf. Ein früherer Entwurf gab der Kraftausdauer bei vier Wochen
+  Vorgabe die Entlastung in Woche 4 – genau dieser Fall. Korrigiert auf Woche 3;
+  Hypertrophie liegt mit Woche 4 von 5 schon richtig. Diese Regel gilt auch für verstellte
+  Werte und gehört deshalb in die Bau-Funktion, nicht nur in die Vorgaben (Abschnitt 5).
 - **Kraftausdauer, Intensivierung und Erhaltung stehen heute in keiner Vorlage.** Nach
   Teil 1 sind sie als Daten vorhanden und benutzbar – das ist ein Teil des Ziels „alle
   Bausteine im System".
@@ -247,7 +322,10 @@ Vier Festlegungen dahinter, die nicht selbsterklärend sind:
 - **Bänder bekommen einen Korridor.** Das Band *ist* die Identität eines Coach-Bausteins.
   Ohne Grenze ließe sich eine Kraftausdauer-Phase auf 4–6 Wiederholungen stellen – das ist
   dann keine Kraftausdauer mehr, heißt aber weiter so. Der Korridor hält den Baustein bei
-  dem, was sein Name verspricht.
+  dem, was sein Name verspricht. **Ausnahme Erhaltung:** Sie hat keine Vorgabe („die Übung
+  behält ihres"), also auch keinen Korridor. Wird dort doch ein Band gesetzt, ist es
+  ungebremst – hinnehmbar, weil die Erhaltung über die niedrige Satzzahl bremst und kein
+  Versprechen im Namen trägt, das ein Band brechen könnte.
 - **Erhaltung darf eine Entlastungswoche haben**, auch wenn sie im Normalfall keine
   braucht: Bei bis zu zwölf Wochen Laufzeit ist das Verbot zu streng. Vorgabe aus,
   erlaubt ja.
@@ -272,6 +350,18 @@ Wochenliste **neu bauen** muss. Solange Phasen nur per Migration entstehen, pass
 ohnehin; ab Teil 2 muss es an genau einer Stelle passieren. Deshalb entsteht die
 Bau-Funktion („Phase aus Baustein plus Anpassungen") schon in Teil 1 als eine Funktion und
 nicht verteilt.
+
+Die Wochenzahl zieht dabei drei Dinge nach sich, nicht nur eins – alle drei gehören in
+diese eine Funktion:
+
+1. **Die Wochenliste** wird neu gebaut (Kraft, Intensivierung, Test).
+2. **Die Lastliste** wird neu gebaut (Wiederaufbau). Die Stufen verteilen sich zwischen
+   Start und Ziel und hängen damit direkt an der Wochenzahl (Abschnitt 6).
+3. **Die Entlastungswoche wird gekappt**, wenn sie hinter die neue Phasenlänge fällt oder
+   auf deren letzte Woche rutscht. Wird eine Hypertrophie-Phase von fünf auf drei Wochen
+   gestellt, liegt die Vorgabe „Woche 4" draußen; ohne Kappen bliebe eine Entlastung
+   stehen, die nie eintritt. Regel: auf die vorletzte Woche zurücknehmen, und bei Phasen
+   unter drei Wochen ganz entfallen lassen.
 
 ---
 
@@ -329,6 +419,13 @@ gerundet. In der Anzeige werden die Prozentwerte kaufmännisch auf ganze Prozent
   Baustein – und das ist kein Sonderfall, sondern die saubere Trennung: Wochenliste für
   das, was feststeht, Coach für das, was reagieren soll.
 - **Keine Entlastungswoche.** Der Block ist bereits die Entlastung.
+- **Keine Abschlussphase auf 100 %.** Heute endet die Fasten-Vorlage mit einer Phase auf
+  vollem Gewicht; ihr Zweck ist, den Coach von der Vorgabe wieder loszulassen. Die neue
+  Vorlage endet bei 95 % und übergibt direkt an die Testphase, die keine Lastliste trägt –
+  damit rechnet der Coach dort ohnehin wieder frei. Bewusst in Kauf genommen: Der
+  Code-Zweig „zurück auf volle Last" (`ramp-restore`) und der Hinweistext „danach endet die
+  Vorgabe" verlieren ihren einzigen Nutzer. Beides bleibt bestehen und funktionsfähig,
+  weil eine künftige Vorlage wieder auf 100 % enden kann; totgelegt wird nichts.
 - **Gehört an den Anfang der Journey.** Sonst zöge er auf ein Niveau von vor mehreren
   Wochen zurück. Das steht als `placement_hint` in den Daten und wird nicht erzwungen.
 
@@ -423,17 +520,35 @@ verworfen wurden zwei Ideen:
 | --- | --- |
 | `load_factor` | **entfällt** (Abschnitt 7) |
 | `load_plan` | **neu**, jsonb, nullable. Je Phasenwoche eine Zeile mit dem Lastanteil; null = keine Vorgabe |
+| `plan_builder` | **neu**, text, nullable. Nach welcher Bauregel die Wochenliste entstand (`strength_ladder`, `power_ladder`, `test`); null = keine Wochenliste |
+| `load_builder` | **neu**, text, nullable. Nach welcher Bauregel die Lastliste entstand (`rebuild_ramp`); null = keine Lastliste |
+| `careful` | **neu**, bool, Vorgabe false. Steigert der Coach in dieser Phase vorsichtig? |
 
-Beide Tabellen bekommen dasselbe Feld, weil die Phasenzeile beim Journey-Start
+Alle vier Felder bekommen beide Tabellen, weil die Phasenzeile beim Journey-Start
 unverändert mitwandert.
+
+`careful` steht aus demselben Grund an der Phase wie die Bauart: Der Coach liest im
+Training ausschließlich die Phasenzeile (Abschnitt 2). Stünde die Eigenschaft nur am
+Baustein, müsste er sie zur Laufzeit nachschlagen – genau der Datenzugriff, den dieses
+Papier vermeiden will. Der erste Entwurf hat das übersehen, weil er `careful` nur als
+Baustein-Feld geführt hat.
+
+Die beiden Bauart-Felder sind die Umkehrung einer Festlegung des ersten Entwurfs. Der
+wollte sie ausdrücklich **nicht** an der Phase haben, weil der Steuerweg angeblich schon
+ablesbar sei: Wochenplan gesetzt heiße Plan. Beim Abgleich mit dem Code hat sich das als
+falsch erwiesen – Kraft- und Testphasen tragen beide einen Wochenplan und verhalten sich
+gegensätzlich. Die Begründung steht in Abschnitt 2 („Die Phase trägt ihre Bauart mit").
+
+Sie sind **keine** zweite Wahrheit neben `focus`: Der Fokus sagt, *was* die Phase ist, die
+Bauart sagt, *wie* ihre Listen entstanden sind. Beides wird beim Anlegen gemeinsam
+geschrieben und danach nur gelesen – wie der Wochenplan selbst.
 
 Bewusst **kein** neues Feld:
 
 - **Kein `phase_type_id`.** `focus` ist bereits der Schlüssel auf den Baustein. Eine
   zweite Spalte für dieselbe Aussage wäre eine Einladung zum Auseinanderlaufen.
-- **Keine Kopie von `control` oder `plan_builder` an der Phase.** Der Steuerweg ist an der
-  Phase schon ablesbar: Wochenplan gesetzt → Plan, Lastliste gesetzt → Vorgabe, sonst
-  Coach.
+- **Keine Kopie von `control`.** Sie wäre aus den beiden Bauart-Feldern ableitbar: beide
+  leer heißt `coach`.
 - **Keine Kopien der Grenzen** (`weeks_min` und so weiter). Grenzen gelten beim Anlegen,
   nicht danach.
 
@@ -467,10 +582,18 @@ vierte, unbeabsichtigte Abweichung gewesen.
 
 ### Die Vorlage „Wiedereinstieg & Aufbau"
 
-Sie ändert sich **nicht**. Ihre vier Phasen treffen die Vorgabewerte der Bausteine
-punktgenau – sie ist nach dem Umbau Wert für Wert dieselbe, nur nicht mehr getippt,
-sondern aus Bausteinen zusammengesetzt. Das ist zugleich der beste verfügbare Beweis, dass
-die Bausteine die heutige Welt vollständig beschreiben.
+Sie ändert sich in ihren Werten **nicht**. Ihre vier Phasen treffen die Vorgabewerte der
+Bausteine punktgenau – gegen die Live-Datenbank nachgerechnet, Wochen, Sätze, Bänder und
+Entlastung stimmen Feld für Feld. Sie ist nach dem Umbau dieselbe Vorlage, nur nicht mehr
+getippt, sondern aus Bausteinen zusammengesetzt. Das ist zugleich der beste verfügbare
+Beweis, dass die Bausteine die heutige Welt vollständig beschreiben.
+
+**Ein Punkt weicht doch ab, und zwar der Name der letzten Phase.** Sie heißt in der
+Datenbank „Übergang / Test", der Baustein heißt „Test/Peak". Daraus folgt eine Festlegung
+für die Bau-Funktion: **Der Baustein-Name ist die Vorgabe für den Phasennamen, nicht der
+Zwang.** Eine Vorlage darf ihre Phase weiterhin eigen benennen; wo sie nichts sagt, steht
+der Baustein-Name. Damit bleibt „Übergang / Test" erhalten, und die Vorlage ist auch im
+Namen unverändert.
 
 ---
 
@@ -478,11 +601,17 @@ die Bausteine die heutige Welt vollständig beschreiben.
 
 | Stelle | Änderung |
 | --- | --- |
-| `engine/weekPlan.ts` | neue Bauregel `power_ladder`; `WEEK_PLAN_FOCUSES` und `LOAD_PLAN_FOCUSES` entfallen |
+| `engine/weekPlan.ts` | neue Bauregel `power_ladder`; `WEEK_PLAN_FOCUSES` und `LOAD_PLAN_FOCUSES` entfallen, die Frage „fährt der Plan die Last hoch?" beantwortet der Bauart-Vermerk der Phase |
 | `engine/` (neu, klein) | Bauregel der Lastliste (`rebuild_ramp`) – reine Funktion, testbar ohne DB |
 | `engine/` (neu, klein) | „Phase aus Baustein plus Anpassungen bauen" – die eine Stelle, an der eine Phase entsteht |
 | `engine/journey.ts` | `repTargetForFocus` entfällt (das Band steht an der Phase) |
-| `lib/labels.ts` | `FOCUS_LABELS` entfällt (der Name steht am Baustein) |
+| `lib/labels.ts` | `FOCUS_LABELS` entfällt (der Name steht im Phasennamen) |
+| `lib/journey.ts` | Testhinweis und Wochentabelle hängen am Bauart-Vermerk statt an `focus === "test"`; die Wochentabelle bekommt einen zweiten Bauweg aus der Lastliste; das berechnete, aber nirgends angezeigte Feld `focus` der Phasen-Ansicht entfällt |
+| `hooks/useFinishSession.ts` | zieht den Anker nach, wenn die Phase eine **hochfahrende** Wochenliste trägt – ablesbar am Bauart-Vermerk |
+| `engine/suitability.ts` | Phasen-Fit liest den Bauart-Vermerk statt einer eigenen Fokus-Liste |
+| `lib/journeyReview.ts` | Rückblick zeigt bei einer Lastliste die Spanne statt einer Zahl |
+| `lib/coachExport.ts` | Export gibt die Lastliste statt des einzelnen Faktors weiter |
+| `hooks/useTrainingOverview.ts` | Titelzeile nimmt den Phasennamen statt des abgeleiteten Baustein-Namens |
 | `lib/phaseContext.ts` | gibt statt des Lastfaktors den Wert der **laufenden Woche** aus der Lastliste weiter |
 | `lib/coach.ts` | **unverändert**, bis auf: der vorsichtige Zweig hängt an `careful` statt am Wort `reentry` |
 | `lib/journeyWrite.ts` | friert Referenzgewichte ein, wenn die Journey irgendwo eine Lastliste trägt |
@@ -495,51 +624,132 @@ Die Last ist eine Vorgabe an der Phase, keine neue Regel im Coach.
 
 ### Die Anzeige
 
-Der Satz „die bestehenden Bausteine dafür sind da" trägt nicht. Die Last wird heute an
-**vier** Stellen als *eine Zahl pro Phase* gezeigt: in der Detailzeile jeder Phasenkarte
-(auch der vergangenen und der künftigen), im Hinweistext der laufenden Phase, in der
-Vorlagen-Vorschau und in der Periodisierungskurve. Bei einem Block, der von 65 auf 95
-wandert, ist „65 %" für eine künftige Phase schlicht falsch – und in der
+Der Satz „die bestehenden Bausteine dafür sind da" trägt nicht. Ein früherer Entwurf
+zählte vier Stellen, an denen die Last als *eine Zahl pro Phase* erscheint. Nachgezählt im
+Code sind es **sieben**:
+
+1. Detailzeile jeder Phasenkarte auf der Journey-Seite (auch vergangene und künftige)
+2. Hinweistext an der laufenden Phase
+3. Vorlagen-Vorschau (dieselbe Detailzeile, andere Aufbereitung)
+4. Periodisierungskurve
+5. Hinweisband im Trainingsbildschirm
+6. **Journey-Rückblick** beim Abschluss
+7. **Coach-Export**
+
+Die letzten beiden fehlten in der ersten Zählung. Beide zeigen eine abgeschlossene Phase
+als eine Zahl – bei einem Block, der von 65 auf 95 wandert, wäre das schlicht falsch.
+
+Bei einem wandernden Block ist „65 %" für eine künftige Phase ohnehin falsch – und in der
 Vorlagen-Vorschau gibt es überhaupt keine laufende Woche, deren Anteil man zeigen könnte.
 
 Festlegung:
 
-- **Vorlagen-Vorschau und nicht laufende Phasen** zeigen die **Spanne**: „65 → 95 %".
+- **Vorlagen-Vorschau, nicht laufende Phasen, Rückblick und Export** zeigen die
+  **Spanne**: „65 → 95 %".
 - **Die laufende Phase** zeigt den Anteil der laufenden Woche plus die **Wochentabelle**.
-  Die gibt es für Plan-Phasen bereits; sie bekommt für den Wiederaufbau eine Spalte
-  „Last" und markiert wie gewohnt die laufende Woche.
 - **Die Periodisierungskurve** zeichnet den Wochenverlauf aus der Liste, statt einen
   konstanten Wert je Phase zu wiederholen.
+
+**Die Wochentabelle ist mehr Arbeit als „eine Spalte mehr".** Sie entsteht heute
+ausschließlich aus der Wochenliste und ist für Testphasen ausdrücklich abgeschaltet. Der
+Wiederaufbau hat aber gar keine Wochenliste, nur eine Lastliste. Er braucht deshalb einen
+**zweiten Bauweg** derselben Tabelle: je Phasenwoche eine Zeile mit dem Lastanteil, die
+laufende Woche markiert wie gewohnt. Das ist kein großer Eingriff, aber es ist ein eigener
+– und er war im ersten Entwurf nicht eingeplant.
+
+### Der Name der Phase in der Anzeige
+
+Beim Abgleich mit dem Code kam heraus, dass der abgeleitete Baustein-Name deutlich weniger
+benutzt wird als angenommen: Auf der Journey-Seite, in der Vorlagen-Vorschau und im
+Rückblick steht überall der **Phasenname**. Der abgeleitete Name wird zwar berechnet,
+aber nirgends angezeigt – bis auf **eine** Stelle: die Titelzeile des Trainingsbildschirms
+(„Rückkehr 2026 · Maximalkraft").
+
+Deshalb genügt es, diese eine Stelle auf den Phasennamen umzustellen, und die Tabelle
+bekommt keinen zweiten Leser im Anzeigepfad (Abschnitt 2). Weil der Baustein-Name die
+Vorgabe für den Phasennamen ist (Abschnitt 9), steht dort in aller Regel dasselbe Wort wie
+bisher.
+
+**Eine sichtbare Ausnahme:** In der laufenden Journey heißt die letzte Phase „Übergang /
+Test", der Baustein „Test/Peak". Auf dem Trainingsbildschirm stünde künftig „Übergang /
+Test". Das ist die einzige sichtbare Änderung des ganzen Umbaus. Sie ist hinnehmbar – wenn
+nicht, benennt die Nachtrag-Migration die Phase mit um (Abschnitt 13).
 
 ---
 
 ## 11. Vorgeschlagener Schritt-Zuschnitt
 
-Sieben Schritte, jeder für sich auslieferbar und testbar. Erst wenn abgestimmt ist, dass
+Acht Schritte, jeder für sich auslieferbar und testbar. Erst wenn abgestimmt ist, dass
 gebaut wird, entstehen daraus ein Vorhaben-Issue und die Schritt-Issues.
 
 1. **Bausteine-Tabelle anlegen und seeden.** Migration mit Tabelle, `CHECK`s und den acht
    Zeilen; Zod-Schema; Query-Hook. Wirkt noch nirgends – reiner Zubau.
-2. **Die Werte aus dem Code holen.** Bänder, Anzeigenamen und die beiden Steuerweg-Listen
+2. **Bauart an die Phase schreiben.** Migration: `plan_builder`, `load_builder` und
+   `careful` an beiden Phasen-Tabellen, **plus Nachtrag für alle bestehenden Zeilen** –
+   einschließlich der laufenden Journey. Danach lesen `useFinishSession`, `phaseContext`
+   und `suitability` den Vermerk statt einer Fokus-Liste. Details unten.
+3. **Die Werte aus dem Code holen.** Bänder, Anzeigenamen und die beiden Steuerweg-Listen
    verschwinden; die Vorlagen entstehen im Seed aus den Bausteinen. Der Abgleichstest aus
    Abschnitt 12 entsteht in diesem Schritt und beweist, dass sich nichts verschiebt.
-3. **Lastliste statt Lastfaktor.** Migration (`load_plan` neu, `load_factor` weg),
+4. **Lastliste statt Lastfaktor.** Migration (`load_plan` neu, `load_factor` weg),
    Schemata, Anzeige, `focusEnum` und `CHECK` um `rebuild` erweitert. Ohne Liste verhält
    sich alles wie heute.
-4. **Der Wiederaufbau-Baustein.** Bauregel der Lastliste, vorsichtige Steigerung über
-   `careful`, Hinweistexte, Spanne und Wochentabelle in der Anzeige. Danach ist `rebuild`
-   ein funktionierender Baustein.
-5. **Eigene Leiter für die Intensivierung.**
-6. **Vorlage „Wiederaufbau nach Fasten" umstellen.** Migration: vier Phasen werden zwei.
-7. **Doku.** `Architektur.md` (neue Tabelle, neues Feld, entfallenes Feld),
+5. **Der Wiederaufbau-Baustein.** Bauregel der Lastliste, vorsichtige Steigerung über
+   `careful`, Hinweistexte, Spanne und zweiter Bauweg der Wochentabelle in der Anzeige.
+   Danach ist `rebuild` ein funktionierender Baustein.
+6. **Eigene Leiter für die Intensivierung.**
+7. **Vorlage „Wiederaufbau nach Fasten" umstellen.** Migration: vier Phasen werden zwei.
+8. **Doku.** `Architektur.md` (neue Tabelle, neue Felder, entfallenes Feld),
    ADR-Ergänzung zu ADR-0018 um den dritten Steuerweg und die Bestätigung, dass die Last
    als Liste und nicht als Interpolation kommt, dieses Papier auf den gebauten Stand
    ziehen.
 
+### Der Nachtrag für bestehende Phasen (Schritt 2)
+
+Der einzige Schritt, der die laufende Journey wirklich anfasst. Er ist beherrschbar, weil
+die Bauart aus dem heutigen Bestand **mechanisch ableitbar** ist – nichts muss geraten
+werden:
+
+| Bestehende Phase | `plan_builder` | `load_builder` | `careful` |
+| --- | --- | --- | --- |
+| `focus = strength` mit Wochenliste | `strength_ladder` | leer | nein |
+| `focus = power` mit Wochenliste | `power_ladder` | leer | nein |
+| `focus = test` mit Wochenliste | `test` | leer | nein |
+| `focus = reentry` | leer | leer | **ja** |
+| alle übrigen | leer | leer | nein |
+
+Die Regel gilt für `phases` und `journey_template_phases` gleichermaßen, ist idempotent
+und trägt für die laufende Journey genau das ein, was heute im Code steht. Danach eine
+Kontrollabfrage: Jede Phase mit Wochenliste hat einen `plan_builder`, jede ohne hat keinen –
+und jede `reentry`-Phase ist `careful`. Erst wenn die stimmt, geht der Code live, der den
+Vermerk liest.
+
+**Reihenfolge Migration und Deploy:** Bei Schritt 4 (Lastfaktor entfällt) zuerst deployen,
+dann migrieren. Lesen ist unkritisch – die Zeilen werden beim Lesen nicht geprüft, ein
+fehlender Wert fällt auf 1,0 zurück – aber alter Code, der eine Journey startet, würde in
+die verschwundene Spalte schreiben wollen. Nach dem Deploy ist dieses Fenster zu.
+
+### Zwei Nebenwirkungen, die leicht durchrutschen
+
+- **Der gespeicherte Datenbestand im Browser.** Der Query-Cache liegt bis zu sieben Tage
+  in der Browser-Datenbank. Ändert sich die Form der Phasenzeile (Schritte 2 und 4), muss
+  die Cache-Marke in `lib/offline.ts` hochgezählt werden, sonst arbeitet die App nach dem
+  Deploy tagelang mit alten Zeilen weiter – ohne Bauart-Vermerk und mit dem alten
+  Lastfaktor. Das ist der einzige Weg, auf dem dieser Umbau die laufende Journey doch
+  stören kann.
+- **Sicherung und Wiederherstellung.** Die neue Tabelle muss in das Bestandsregister
+  (`lib/bestandsregister.ts`), sonst fällt sie still aus Export und Wiederherstellung –
+  genau der Fehler, gegen den das Register angelegt wurde; ein Test prüft Register gegen
+  Schemas. Und: Eine vor Schritt 4 gezogene Sicherung lässt sich danach nicht mehr
+  einspielen, weil die Zeilen ungefiltert zurückgeschrieben werden und `load_factor` dann
+  keine Spalte mehr ist. Entweder der Wiederherstellungs-Pfad räumt unbekannte Felder ab,
+  oder es wird bewusst gesagt: Sicherungen von vorher sind nicht mehr einspielbar.
+
 **Zum Zeitpunkt:** Auf ein Fenster ohne laufende Journey muss nicht gewartet werden. Die
-laufende Journey stammt aus der anderen Vorlage, trägt ihre Werte als Kopie und wird von
-keinem dieser Schritte berührt. Abgesichert wird das nicht terminlich, sondern durch den
-Test aus Abschnitt 12.
+laufende Journey stammt aus der anderen Vorlage und trägt ihre Werte als Kopie; fachlich
+ändert sich für sie nichts. Angefasst wird sie nur einmal, beim Nachtrag der Bauart
+(Schritt 2), und dort nach einer ableitbaren Regel mit Kontrollabfrage. Abgesichert wird
+das nicht terminlich, sondern durch diese Kontrolle und den Test aus Abschnitt 12.
 
 ---
 
@@ -559,14 +769,22 @@ fehl, sobald eine Seite vergessen wird. Er prüft bei jedem Lauf:
    Bauregel – und umgekehrt. Wer eine Lastliste baut, hat Start- und Zielwerte.
 4. **Grenzen:** Jeder Vorgabewert liegt innerhalb seiner eigenen Grenzen (die
    Vorgabe-Wochenzahl im erlaubten Bereich, das Vorgabeband im Korridor, die
-   Entlastungswoche innerhalb der Phasenlänge).
-5. **Keine Verschiebung:** Die Vorlagen, die der neue Seed erzeugt, entsprechen Feld für
+   Entlastungswoche innerhalb der Phasenlänge und **nie in deren letzter Woche**).
+   Geprüft wird nicht nur die Vorgabe, sondern jede erlaubte Wochenzahl des Bausteins:
+   Eine Hypertrophie-Phase über drei Wochen darf keine Entlastung in Woche 4 behalten
+   (Abschnitt 5).
+5. **Bauart deckt sich mit der Liste:** Jede Phase mit einer Wochenliste trägt einen
+   `plan_builder` und jede ohne trägt keinen; dasselbe für Lastliste und `load_builder`.
+   Das ist die Naht, die der Nachtrag aus Abschnitt 11 schließt – der Test hält sie zu.
+6. **Keine Verschiebung:** Die Vorlagen, die der neue Seed erzeugt, entsprechen Feld für
    Feld dem, was heute in der Datenbank steht – mit den drei in Abschnitt 9 benannten,
-   gewollten Abweichungen der Fasten-Vorlage als einziger Ausnahme.
-6. **Laufende Journey unberührt:** Die Phasen der laufenden Journey ergeben nach dem
-   Umbau dieselben Vorgaben wie vorher.
+   gewollten Abweichungen der Fasten-Vorlage als einziger Ausnahme. Die Phasennamen zählen
+   mit: „Übergang / Test" muss „Übergang / Test" bleiben.
+7. **Laufende Journey unberührt:** Die Phasen der laufenden Journey ergeben nach dem
+   Umbau dieselben Vorgaben wie vorher – Band, Sätze, Wochenliste, vorsichtige Steigerung
+   und Anker-Bezug der Testphase.
 
-Punkt 5 und 6 sind die eigentliche Absicherung dieses Vorhabens: Sie machen aus „das
+Punkt 6 und 7 sind die eigentliche Absicherung dieses Vorhabens: Sie machen aus „das
 sollte nichts ändern" ein „das ändert nachweislich nichts".
 
 ---
@@ -574,6 +792,16 @@ sollte nichts ändern" ein „das ändert nachweislich nichts".
 ## 13. Offene Punkte
 
 - **Die Zahlen der Intensivierungs-Leiter** (Abschnitt 8). Fachlich noch zu bestätigen.
+- **Die Entlastungswoche der Kraftausdauer** (Abschnitt 4). Auf Woche 3 von 4 korrigiert,
+  weil die Entlastung nicht die letzte Woche sein darf. Ob eine Kraftausdauer-Phase
+  überhaupt eine braucht, ist fachlich noch zu bestätigen.
+- **Der Name der letzten Phase der laufenden Journey** (Abschnitt 10). Auf dem
+  Trainingsbildschirm stünde künftig „Übergang / Test" statt „Test/Peak". Wenn das stört,
+  benennt die Nachtrag-Migration die Phase in „Test/Peak" um – dann ändert sich gar
+  nichts, dafür weicht die Journey von ihrer Vorlage ab.
+- **Sicherungen von vor dem Lastfaktor-Ausbau** (Abschnitt 11). Entweder der
+  Wiederherstellungs-Pfad räumt unbekannte Felder ab, oder alte Sicherungen sind bewusst
+  nicht mehr einspielbar. Zu entscheiden, bevor Schritt 4 gebaut wird.
 - **Neue Vorlagen aus den Bausteinen.** Nach Teil 1 lassen sich Journeys per Migration
   zusammenstellen. Welche das sein sollen (Kraftausdauer-Block? eine reine
   Erhaltungs-Journey für ruhige Zeiten?), ist noch nicht besprochen und gehört nicht in
