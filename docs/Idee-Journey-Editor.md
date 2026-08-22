@@ -52,8 +52,8 @@ Die sieben heutigen Typen und der achte, der in Abschnitt 4 festgelegt ist.
 | Erhaltung (`maintenance`) | 1–12 (3) | Band der Übung | 3 → 3 | nein | Coach | letztes Arbeitsgewicht, kein Eintrittssprung | – | nein |
 | Maximalkraft (`strength`) | 3–6 (5) | Leiter 5→2 | 4 → 4 (fest) | nein | Wochenplan | Startgewicht X aus dem 1RM (≈ 81 %), an die Phase gebunden | ein 1RM | ja |
 | Intensivierung (`power`) | 3–4 (3) | Leiter, kürzer | 4 → 4 (fest) | nein | Wochenplan | wie Maximalkraft | ein 1RM | nein |
-| Test/Peak (`test`) | 1–2 (2) | 3–5, dann 1 | 2 → 0 (Bauregel) | in der Bauregel | Wochenplan | 60 % vom X der Kraftphase davor | **eine Kraftphase** | ja |
-| Wiederaufbau (`rebuild`, neu) | 2–6 (4) | frei, üblich 6–10 | 2 → 4 | nein | Vorgabe der Journey | eingefrorener Stand beim Journey-Start × Prozent | **Platz am Anfang** | neu |
+| Test/Peak (`test`) | 1–2 (2) | 3–5, dann 1 | 2 → 0 (Bauregel) | in der Bauregel | Wochenplan | 60 % vom letzten Stand (Reihenfolge unten) | – | ja |
+| Wiederaufbau (`rebuild`, neu) | 3–6 (4) | frei, üblich 6–10 | 2 → 4 | nein | Vorgabe der Journey | eingefrorener Stand beim Journey-Start × Prozent | **Platz am Anfang** | neu |
 
 Lesehilfe:
 
@@ -80,7 +80,9 @@ Was die Tabelle nicht sagt:
   Einstellbar ist an beiden nur die Wochenzahl.
 - **Test/Peak** folgt einer Bauregel: letzte Woche ist die reine Testwoche (null
   Sätze, verlangt keine Einheit, erfüllt sich selbst), jede Woche davor ist
-  Entlastung mit 60 % vom Startgewicht der Kraftphase.
+  Entlastung mit 60 %. Eine Woche heißt also nur Test, zwei heißen Entlastung
+  plus Test – kurze Journeys nehmen eine, längere zwei (Vorgabe 2). Wovon
+  entlastet wird, sagt die Bezugsreihenfolge unten.
 
 ### Wie ein Baustein anfängt
 
@@ -97,8 +99,16 @@ Die Spalte Startgewicht fasst vier verschiedene Mechanismen zusammen:
   Planwoche plus zwei in Reserve (`planStartWeight`). X wird an der Übung gespeichert
   und an die Phase gebunden; der Anker läuft wöchentlich hoch, wenn die Vorwoche
   sauber war, und wird nie gesenkt.
-- **Test/Peak rechnet aus fremdem Bestand:** 60 % vom X der vorangegangenen Kraft-
-  oder Intensivierungsphase.
+- **Test/Peak entlastet vom letzten echten Stand.** Die Entlastungswoche geht
+  eine Reihenfolge durch, bis etwas trägt: (1) X der Kraft- oder
+  Intensivierungsphase davor, (2) sonst der Stand aus der Phase davor,
+  umgerechnet auf die Wiederholungen der Entlastungswoche, (3) sonst das
+  gespeicherte 1RM, (4) sonst das letzte Arbeitsgewicht. Neu ist Stufe 2: Sie
+  steht über dem gespeicherten 1RM, weil das ein nie gesenkter Rekord ist und
+  nach einer Hypertrophiephase oder einer Pause zu schwer wäre. Die Umrechnung
+  ist Pflicht – ein 10er-Gewicht und ein 5er-Gewicht bedeuten nicht dasselbe.
+  Damit darf die zweiwöchige Testphase überall stehen, nicht nur hinter einer
+  Kraftphase.
 - **Wiederaufbau rechnet von der Journey**, nicht von der Phase (Abschnitt 4).
 
 Drei Folgerungen für die Bedienung:
@@ -106,9 +116,9 @@ Drei Folgerungen für die Bedienung:
 1. **Zwei Kraftblöcke hintereinander bauen nicht aufeinander auf.** Der Anker ist an
    die Phase gebunden; der zweite Block holt sich sein eigenes X aus dem aktuellen
    1RM. Was davor trainiert wurde, wirkt nur indirekt über das 1RM.
-2. **Test/Peak ist der einzige Baustein mit echter Vorbedingung.** Ohne Kraftphase
-   davor verliert die Entlastung stumm ihren Bezug und fällt auf die 1RM-Rechnung
-   zurück – hier müsste ein Editor warnen oder sperren.
+2. **Test/Peak braucht keine Vorbedingung mehr.** Mit der Bezugsreihenfolge oben
+   findet die Entlastung hinter jedem Phasentyp einen sinnvollen Bezug; ohne sie
+   fiele sie stumm auf das alte 1RM zurück.
 3. **Der Wiederaufbau-Baustein gehört an den Anfang**, sonst zöge er auf ein Niveau
    von vor mehreren Wochen zurück.
 
@@ -158,8 +168,17 @@ Wiederholungsband und laufen nur je eine Woche. Sie ist keine Abfolge von Blöck
 sondern eine einzige Bewegung – vom gedrosselten Gewicht zurück auf hundert Prozent.
 
 **Festgelegt: Dafür entsteht ein achter Baustein `rebuild`.** Eingestellt werden
-Wochenzahl, Startanteil und Zielanteil, etwa vier Wochen von 65 % auf 100 %. Je Woche
-eine Stufe; die Wiederholungen steuert der Coach im Band, das Gewicht nicht.
+Wochenzahl, Startanteil und Zielanteil. Je Woche eine Stufe; die Wiederholungen
+steuert der Coach im Band, das Gewicht nicht.
+
+- **Mindestens drei Wochen.** Zwei Wochen sind kein Verlauf, sondern ein Sprung
+  von 65 auf 100 %. Ab drei gibt es eine echte Zwischenstufe – dieselbe
+  Begründung wie bei der Satzrampe der Coach-Typen.
+- **Zielanteil 95 %, wenn eine Testphase folgt**, sonst 100 %. Die volle Last
+  trägt dann die Testwoche: Dort wirkt der Faktor nur noch als Untergrenze, man
+  versucht die 100 % und darf darüber hinaus. So ist die heutige Vorlage gebaut
+  (65 / 80 / 95, dann Testwoche bei 100 %) – zugleich die kürzeste sinnvolle
+  Rückkehr: drei Wochen Aufbau plus Testwoche.
 
 Die Mechanik dahinter, die ein Konzept kennen muss:
 
@@ -192,12 +211,9 @@ und was aus den vier Einzelphasen laufender Journeys wird.
   Trainingswochen abgeleitet, nicht aus dem Kalender. Verkürzt man eine laufende
   Phase, springt er – und die Gewichtsanker hängen plötzlich woanders. Vermutliche
   Trennung: kommende Phasen ja, laufende und vergangene nein.
-- **Der Bezugspunkt der Entlastung.** Steckt eine Testphase hinter einer
-  Hypertrophiephase, ist offen, wovon entlastet wird. Braucht eine Regel, bevor
-  Phasen frei zusammensteckbar werden.
-- **Test/Peak: eine oder zwei Wochen?** Zwei ist der Normalfall, eine ist belegt
-  („Wiederaufbau nach Fasten", Migration `0037`). Also Vorgabe 2 mit
-  Abweichungsmöglichkeit, nicht hart auf 2.
+- **Entlastung ohne Vorgängerphase.** Kam die Übung in der Phase davor gar nicht
+  vor, greift Stufe 3 der Bezugsreihenfolge (altes 1RM). Bei Hauptübungen
+  theoretisch, bei Nebenübungen möglich – vorerst so lassen.
 - **Der Wochenplan muss neu gerechnet werden, wenn sich die Wochenzahl ändert.** Heute
   entsteht er genau einmal. Ohne Neuberechnung passt die gespeicherte Leiter nicht
   mehr zur Phasenlänge.
