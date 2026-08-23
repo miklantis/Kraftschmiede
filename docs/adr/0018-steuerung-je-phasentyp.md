@@ -2,6 +2,7 @@
 
 **Status:** akzeptiert
 **Datum:** 2026-08-20
+**Nachtrag:** 2026-08-23 – dritter Weg und Lastliste (siehe unten)
 
 ## Kontext
 
@@ -133,7 +134,8 @@ allein sein Anspruch, überall zu gelten.
 - **Der Lastfaktor der Journey wirkt in Weg 1 nicht.** Die Last kommt aus dem Plan (`anchor`
   plus Schritt, `loadPct`), nicht aus `reference_weight × load_factor`. Heute kombiniert
   keine Vorlage beides – eine Kraftphase mit Lastfaktor ≠ 1 würde ihn stillschweigend
-  verlieren.
+  verlieren. (Den einzelnen Lastfaktor gibt es seit dem Nachtrag unten nicht mehr; für
+  die Lastliste, die ihn ersetzt, gilt dieselbe Rangfolge.)
 - **Eine Einheit folgt nicht mehr durchgehend derselben Logik.** In einer Kraftphase steht
   die Hauptübung nach Plan neben dem Curl nach Doppelprogression. Gewollt – bei
   Zusatzübungen ist das Volumen der Motor –, aber erklärungsbedürftig, wenn zwei Übungen
@@ -142,6 +144,74 @@ allein sein Anspruch, überall zu gelten.
   Vorlagen und laufende Journey ihn per Migration bekommen (`0031`, nachgezogen in `0033`),
   dazu den Phasenbezug des Ankers und das Startgewicht (`0035`). Eine Phase, die dabei
   übersehen wird, fällt still auf Weg 2 zurück.
+
+---
+
+## Nachtrag 23.08.2026 – der dritte Weg und die Lastliste
+
+Mit dem Vorhaben „Bausteine in der Datenbank" (#321) ist ein dritter Steuerweg
+dazugekommen und der einzelne Lastfaktor verschwunden. Die Entscheidung oben gilt
+unverändert weiter – sie war nur nicht vollständig: „Wochenplan oder Coach" beschreibt,
+wer **Sätze und Wiederholungen** vorgibt, und traf damit für die beiden damals
+vorhandenen Fälle auch die Antwort auf die Frage, wer das **Gewicht** vorgibt. Der
+Wiederaufbau trennt die beiden Fragen.
+
+### Weg 3 – der Coach steuert die Wiederholungen, die Phase gibt das Gewicht vor
+
+Der Baustein Wiederaufbau (`rebuild`) trägt keinen Wochenplan (`control = coach`), aber
+eine Lastliste (`load_builder = rebuild_ramp`): je Phasenwoche ein Anteil des beim
+Journey-Start eingefrorenen Referenzgewichts, etwa 65 → 80 → 95 %. Sätze und
+Wiederholungen kommen wie in Weg 2 aus Satzrampe und Band, das Arbeitsgewicht aus der
+Liste (`rampLoad` in `lib/coach.ts`, angewandt in `engine/progression.ts`): unter vollem
+Niveau ist der Wert zugleich Ziel und Obergrenze, bei 100 % nur Untergrenze. Dazu der
+Vermerk `careful`, mit dem der Coach in kleineren Schritten steigert.
+
+Das ist kein Sonderfall von Weg 1, sondern dessen Gegenstück: Weg 1 legt Sätze und
+Wiederholungen fest und überlässt dem Coach das Gewicht, Weg 3 legt das Gewicht fest und
+überlässt dem Coach die Wiederholungen. Für den Wiederaufbau ist genau das der Punkt – das
+Ziel ist ein bekanntes Lastniveau, das planbar wieder erreicht wird, während das Volumen
+dem Befinden folgen darf.
+
+**Entschieden wird das an der Bauart der Phase, nicht am Fokus.** Seit Schritt 2 des
+Vorhabens trägt jede Phase `plan_builder`, `load_builder` und `careful` mit sich. Die
+Fokus-Listen oben gibt es nicht mehr: `WEEK_PLAN_FOCUSES` und `LOAD_PLAN_FOCUSES` sind
+entfallen, `buildWeekPlan` heißt `buildWeekPlanFor` und baut nach Bauregel statt nach
+Fokus, und der fest verdrahtete Zweig `focus === "reentry"` ist dem Vermerk `careful`
+gewichen. Damit gilt die Regel „an einer Stelle und sonst nirgends" weiter, nur steht
+diese Stelle jetzt in den Daten.
+
+### Die Last kommt als Liste, nicht als Formel
+
+`load_factor` – ein Wert für die ganze Phase – ist mit Migration 0046 entfallen, an seine
+Stelle tritt `load_plan` als jsonb an der Phase: eine Zeile je Phasenwoche, Form und
+Bauregel in `engine/loadPlan.ts`. Das ist dieselbe Festlegung wie beim Wochenplan („Liste
+an der Phase statt Interpolation", oben): Die Liste entsteht einmal beim Anlegen der Phase
+und wird danach nur noch gelesen.
+
+Die 2026 zurückgebaute Lastrampe (#218/#219, Nummer 0016 gesperrt) kommt damit
+ausdrücklich **nicht** wieder. Sie interpolierte zwischen Start- und Zielanteil über die
+Phasenwochen, und jede Anzeige musste die Rechnung nachbauen. Die Liste erspart drei
+Dinge, die eine Formel jedes Mal neu lösen muss: die Division durch null bei einer
+Ein-Wochen-Phase, das Weiterlaufen über den Zielwert hinaus bei einer überlangen Phase und
+die doppelte Pflege derselben Rechnung in Coach, Kurve, Rückschau und Export.
+
+### Konsequenzen
+
+- **„Wer bestimmt das Gewicht?" hat jetzt drei Antworten:** der Wochenplan (Weg 1), die
+  Lastliste (Weg 3) oder der Coach aus dem Verlauf (Weg 2). Wer eine Gewichtsvorgabe
+  nachvollziehen will, muss zuerst die Bauart der Phase ansehen.
+- **Trüge eine Phase beides, gewänne der Wochenplan.** `suggestForExercise` fragt zuerst
+  `planSuggestion`; die Lastliste greift nur im Fallback. Heute kombiniert kein Baustein
+  Wochenplan und Lastliste – die Rangfolge steht nur für den Fall, dass es einmal einer
+  täte.
+- **In Weg 3 wirkt das Wiederholungsband weiter**, anders als in Weg 1. Das Band der Phase
+  ist dort keine tote Einstellung, sondern der Motor der Wiederholungen.
+- **Eine verlorene Lastliste fällt still auf Weg 2 zurück** – dieselbe Eigenschaft wie beim
+  Wochenplan: Was nicht zur Form passt, gilt als „keine Vorgabe" (`parseLoadPlan`), und der
+  Coach rechnet wie gewohnt weiter. Das ist gewollt (lieber gewohntes Verhalten als eine
+  halbe Vorgabe), aber es fällt nicht auf.
+
+---
 
 ## Quellen
 

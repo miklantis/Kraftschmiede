@@ -47,7 +47,7 @@ Datenbank (ADR-0002), Skill-Definitionen (ADR-0003).
 ## 3. Datenbank-Schema (umgesetzt)
 
 Angelegt als `supabase/migrations/0001_initial_schema.sql` mit 23 Tabellen; durch spätere
-Migrationen sind es inzwischen 29 (die vollständige Liste führt das Bestandsregister,
+Migrationen sind es inzwischen 30 (die vollständige Liste führt das Bestandsregister,
 siehe 3.4). Jede Tabelle mit `user_id` und Row Level Security (vier Policies select/insert/update/delete
 strikt auf `auth.uid() = user_id`), Zugriff für Rolle `authenticated` freigegeben.
 Definitionen werden beim ersten Start pro Nutzer aus einem Seed befüllt. Tabellen mit
@@ -73,7 +73,7 @@ Recovery-Fenster, Timer).
   equipment, bar_id (FK), description, metric (reps/duration bei Körpergewicht),
   muscle_groups (grobe Tags als text[]), rep_range_min/max, work_weight,
   reference_weight (nullable, eingefrorenes Arbeitsgewicht zum Start einer
-  Lastfaktor-Journey), reference_phase_id (FK auf phases, nullable – zu welcher Phase
+  Journey mit Lastliste), reference_phase_id (FK auf phases, nullable – zu welcher Phase
   das eingefrorene reference_weight gehört; ohne diesen Bezug lässt sich „Anker dieser
   Phase" nicht von „noch kein Anker" unterscheiden), plan_start_weight (nullable –
   Startgewicht X derselben Phase, also der Stand beim Eintritt; Bezug der Entlastung
@@ -84,11 +84,32 @@ Recovery-Fenster, Timer).
 - **templates** – key, name, image, active (Soft-Archiv), position. Namen pro Nutzer
   eindeutig über alle Workouts inkl. archivierter (`templates_unique_user_name`)
 - **template_exercises** – template_id (FK), exercise_id (FK), position
+- **phase_types** – Bausteine einer Journey-Phase, ein Baustein je Zeile: key (identisch
+  mit `phases.focus` – der Vertrag mit dem Code), name, summary, position, control
+  (coach/plan – gibt eine Wochenliste Sätze und Wiederholungen vor oder steuert der
+  Coach), plan_builder und load_builder (Name der Bauregel für Wochen- bzw. Lastliste,
+  nullable), careful (vorsichtige Steigerung des Coaches),
+  weeks_min/weeks_max/weeks_default, sets_start_default/sets_end_default/sets_max und
+  sets_locked, rep_min_default/rep_max_default (nullable – null heißt: die Übung behält
+  ihr eigenes Band) samt Korridor rep_bound_min/rep_bound_max und rep_band_locked,
+  deload_allowed/deload_default, load_start_default/load_end_default (Start- und Ziellast
+  der Lastliste), placement_hint (reiner Hinweistext ohne Wirkung). Acht Zeilen je Nutzer
+  (Migration 0043): Kraftausdauer, Hypertrophie, Wiedereinstieg, Erhaltung, Maximalkraft,
+  Intensivierung, Test/Peak und Wiederaufbau. `CHECK`s halten die Zeile stimmig
+  (Steuerweg und Bauregel gehören zusammen, gesperrte Sätze hat genau wer eine
+  Wochenliste baut, Band paarig und im Korridor, Entlastung nie in der letzten
+  Phasenwoche, Last aufsteigend und höchstens volles Niveau). Was ein Baustein
+  ausdrücklich nicht sagt, ist wie gerechnet wird: `plan_builder`/`load_builder` nennen
+  die Bauregel nur beim Namen, die Rechnung steht in der Engine. Gelesen wird die Tabelle
+  beim Anlegen einer Phase, nicht beim Rechnen (siehe 4.2)
 - **journey_templates** – key, name, tagline, for_whom, summary, position
-- **journey_template_phases** – journey_template_id (FK), name, focus, weeks,
-  sets_start, sets_end, deload_week (nullable), rep_target_min/max, load_factor
-  (Anteil des Referenzgewichts, Default 1.0 = gewohntes Verhalten), week_plan
-  (jsonb, nullable – Wochenplan der Phase, Form in `engine/weekPlan.ts`), position
+- **journey_template_phases** – journey_template_id (FK), name, focus, weeks, sets_start,
+  sets_end, deload_week (nullable), rep_target_min/max, load_plan (jsonb, nullable –
+  Lastliste der Phase: je Phasenwoche der Anteil des Referenzgewichts, Form in
+  `engine/loadPlan.ts`), week_plan (jsonb, nullable – Wochenplan der Phase, Form in
+  `engine/weekPlan.ts`), plan_builder/load_builder/careful (Bauart-Vermerk wie an der
+  Phase, Migration 0044), position. Das frühere Einzelfeld load_factor ist mit Migration
+  0046 entfallen
 - **skills** – key, name, category, image, position
 - **skill_phases** – skill_id (FK), label, description, consecutive_sessions
   (aufeinanderfolgende Erfolge bis Aufstieg), position
@@ -107,9 +128,13 @@ Begründung in ADR-0003.
   Partial Unique Index `journeys_one_active_per_user` auf
   `user_id where active` -> genau eine aktive Journey pro Nutzer (ADR-0004)
 - **phases** – journey_id (FK), name, focus, weeks, sets_start, sets_end, deload_week
-  (nullable), rep_target_min/max, load_factor (Anteil des Referenzgewichts,
-  Default 1.0), week_plan (jsonb, nullable – Kopie des Vorlagen-Wochenplans, wandert
-  beim Journey-Start mit der Phase mit), position
+  (nullable), rep_target_min/max, load_plan (jsonb, nullable – Lastliste der Phase: je
+  Phasenwoche der Anteil des Referenzgewichts; null = keine Vorgabe, dann rechnet der
+  Coach wie gewohnt), week_plan (jsonb, nullable – Kopie des Vorlagen-Wochenplans,
+  wandert beim Journey-Start mit der Phase mit), plan_builder/load_builder/careful
+  (Bauart der Phase: nach welcher Regel Wochen- und Lastliste gebaut wurden und ob der
+  Coach vorsichtig steigert – ein Wochenplan allein sagt nicht, was er tut), position.
+  Das frühere Einzelfeld load_factor ist mit Migration 0046 entfallen
 - **journey_workouts** – ordnet Workouts der Journey zu: journey_id (FK), template_id (FK),
   `unique(user_id, journey_id, template_id)`. Reine Ja/Nein-Menge, bewusst ohne position
   (die Empfehlungsreihenfolge bestimmt der Coach); ON DELETE CASCADE über beide FKs
@@ -208,19 +233,19 @@ betroffene Tabelle beim Wiederherstellen leer.
   ergibt sich keine Differenz, bleibt derselbe Satz ohne Zahl. Dass es zu jeder Kennung
   genau einen Satz gibt, sichert ein Test über `COACH_REASON_CODES`.
 - **Wochenvorgabe und Ausblick sind zwei getrennte Aussagen.** „Beim nächsten Mal"
-  bedeutet je nach Logik etwas anderes: in Kraft- und Schnellkraftphasen gilt die Vorgabe
-  die ganze Journey-Woche, in der Doppelprogression nur bis zur nächsten Einheit. Welche
-  gerade greift, sagt `CoachScope` (`engine/coachReason.ts`, gesetzt über `coachScopeFor`);
-  die Beschriftung dazu kommt aus `lib/coachText.ts` („Diese Woche" / „Beim nächsten
-  Mal"), unterschiedliche Beschriftungen auf verschiedenen Karten derselben Einheit sind
-  gewollt. Der Blick auf die Folgewoche ist eine eigene Rechnung (`planOutlook` in
-  `lib/coach.ts`: Anker nach dieser Einheit über `anchorAfterSession`, dann `planWeekLoad`
-  auf der Zeile der Folgewoche); er entfällt in der letzten Phasenwoche und in der
-  Entlastungswoche. Damit verschwindet auch ein Anzeigefehler: vorher wertete die
-  Vorschau die laufende Einheit als Vorwoche und zeigte das Gewicht der nächsten Woche
-  neben den Wiederholungen der laufenden – ein Paar, das real nie vorkommt. Der
-  Zwischenstand-Marker („Stand jetzt") hängt seither nur an der Zeile, die noch wandern
-  kann (`previewProvisional` in `lib/livePreview.ts`).
+  bedeutet je nach Logik etwas anderes: in Maximalkraft- und Intensivierungsphasen gilt
+  die Vorgabe die ganze Journey-Woche, in der Doppelprogression nur bis zur nächsten
+  Einheit. Welche gerade greift, sagt `CoachScope` (`engine/coachReason.ts`, gesetzt über
+  `coachScopeFor`); die Beschriftung dazu kommt aus `lib/coachText.ts` („Diese Woche" /
+  „Beim nächsten Mal"), unterschiedliche Beschriftungen auf verschiedenen Karten
+  derselben Einheit sind gewollt. Der Blick auf die Folgewoche ist eine eigene Rechnung
+  (`planOutlook` in `lib/coach.ts`: Anker nach dieser Einheit über `anchorAfterSession`,
+  dann `planWeekLoad` auf der Zeile der Folgewoche); er entfällt in der letzten
+  Phasenwoche und in der Entlastungswoche. Damit verschwindet auch ein Anzeigefehler:
+  vorher wertete die Vorschau die laufende Einheit als Vorwoche und zeigte das Gewicht
+  der nächsten Woche neben den Wiederholungen der laufenden – ein Paar, das real nie
+  vorkommt. Der Zwischenstand-Marker („Stand jetzt") hängt seither nur an der Zeile, die
+  noch wandern kann (`previewProvisional` in `lib/livePreview.ts`).
 - **Die Wochenvorgabe steht vor der Einheit, der Ausblick erst danach.** Wovon die
   Coach-Vorschau rechnet, entscheidet `previewWorkWeight` (`lib/livePreview.ts`) am
   `CoachScope`: im Wochenplan der Katalogstand – die Vorgabe der Woche ist vor dem ersten
@@ -279,88 +304,114 @@ betroffene Tabelle beim Wiederherstellen leer.
   neu. Die Schrittweite jedes Gewichtssprungs kommt aus den Einstellungen
   (`weight_step`, Standard 2,5), gerundet wird danach auf eine ladbare Stufe. In Phasen
   mit Wochenplan ruht die Regel (Regel 6 der Doppelprogression, ADR-0018).
-- **Lastfaktor schlägt Doppelprogression.** Arbeitet die laufende Journey mit
-  Lastfaktoren (irgendeine Phase ≠ 1), gibt sie das Arbeitsgewicht vor:
-  `reference_weight × load_factor`, abgerundet auf ladbare Scheiben bzw.
-  Kurzhantelstufen. Unter Lastfaktor 1 ist dieser Wert zugleich Ziel und Obergrenze
-  (der Coach steuert nur noch die Wiederholungen), bei Lastfaktor 1 nur Untergrenze.
-  Nach unten reagiert der Coach unverändert. Die Vorgabe entsteht an einer Stelle
-  (`rampLoad` in `coach.ts`, angewandt in `progression.ts`); der 1RM-Einstieg beim
-  Phasenwechsel ruht solange. Ohne Lastfaktor-Journey ändert sich nichts – auch dann
-  nicht, wenn an den Übungen noch ein altes Referenzgewicht hängt.
-- **Lastfaktor ist überall sichtbar, aber nur wenn er wirkt.** Ob ein Faktor überhaupt
-  wirkt, entscheidet ein Prüfwort an einer Stelle (`isNeutralLoad` in
-  `lib/loadFactor.ts`, samt Rundungstoleranz) – genutzt von Journey-Start,
-  Coach-Rampe und Hinweistext. Die Anzeigetexte
-  entstehen ebenfalls dort (Prozentangabe und Hinweistext) und
-  werden von Phasenliste, Periodisierungskurve (Lastfaktor steckt in der
-  Intensitätslinie), Trainingsbildschirm (`phaseContext.loadNote`, eingefroren auf die
-  laufende Einheit), Rückschau und Coach-Export genutzt. Journeys mit Lastfaktor 1
-  überall sehen unverändert aus – keine zusätzliche Zeile, kein Hinweis.
+- **Die Lastliste schlägt die Doppelprogression.** Trägt die laufende Phase eine
+  Lastliste (`load_plan`), gibt sie das Arbeitsgewicht vor: `reference_weight` mal dem
+  Anteil der laufenden Phasenwoche (`loadPlanForWeek` in `engine/loadPlan.ts`),
+  abgerundet auf ladbare Scheiben bzw. Kurzhantelstufen. Unter vollem Niveau ist dieser
+  Wert zugleich Ziel und Obergrenze (der Coach steuert nur noch die Wiederholungen), bei
+  100 % nur Untergrenze. Nach unten reagiert der Coach unverändert. Die Vorgabe entsteht
+  an einer Stelle (`rampLoad` in `coach.ts`, angewandt in `progression.ts`); der
+  1RM-Einstieg beim Phasenwechsel ruht solange. Ohne Lastliste ändert sich nichts – auch
+  dann nicht, wenn an den Übungen noch ein altes Referenzgewicht hängt. Bis Migration
+  0046 stand statt der Liste ein einzelner Faktor an der Phase (`load_factor`); warum es
+  eine Liste je Woche und keine Formel wurde, steht im Nachtrag zu ADR-0018.
+- **Der Coach steigert vorsichtig, wo der Baustein es sagt.** Wiedereinstieg und
+  Wiederaufbau steigern in kleineren Schritten. Ob das gilt, hängt am Vermerk `careful`
+  der Phase und nicht mehr am Fokus (`isCarefulPhase` in `engine/weekPlan.ts`, gesetzt
+  beim Anlegen aus dem Baustein); die Rechnung dazu bleibt unverändert in
+  `engine/progression.ts` (`reentry`-Zweig).
+- **Die Lastvorgabe ist überall sichtbar, aber nur wenn sie wirkt.** Ob ein Anteil
+  überhaupt wirkt, entscheidet ein Prüfwort an einer Stelle (`isNeutralLoad` in
+  `lib/loadFactor.ts`, samt Rundungstoleranz), ob eine Phase überhaupt eine Vorgabe
+  macht, ein zweites (`usesLoadPlan`) – genutzt von Journey-Start, Coach-Rampe und
+  Hinweistext. Die Anzeigetexte entstehen ebenfalls dort: die laufende Phase zeigt den
+  Anteil ihrer laufenden Woche (`loadPercent`), jede andere Ansicht die Spanne der Liste
+  (`loadSpanLabel`, „65 → 95 %") – ein einzelner Prozentwert wäre für einen wandernden
+  Block schlicht falsch. Genutzt werden sie von Phasenliste, Vorlagen-Vorschau,
+  Periodisierungskurve (der Anteil steckt in der Intensitätslinie), Trainingsbildschirm
+  (`phaseContext.loadNote`, eingefroren auf die laufende Einheit), Rückschau und
+  Coach-Export. Journeys ohne Lastliste sehen unverändert aus – keine zusätzliche Zeile,
+  kein Hinweis.
 
 ### 4.2 Journey, Phasen und Wochenplan
 
+- **Bausteine geben die Startwerte, aber nur beim Anlegen.** Was eine Phase mitbringt –
+  Wochenzahl, Satzrampe, Wiederholungsband, Entlastungswoche, Last und die Bauart –,
+  steht als Datenzeile in `phase_types` (3.2) und nicht mehr im Code. Gelesen wird sie
+  dort, wo eine Phase entsteht: `buildPhaseFromType` (`engine/phaseBuild.ts`) baut aus
+  Baustein plus wenigen Anpassungen (Wochen, Band, Entlastungswoche) die fertige
+  Vorlagenphase, angewandt im Seed (`src/seed/definitions.ts`); beim Journey-Start
+  wandern deren Werte als Kopie in die Phasenzeile (`lib/journeyWrite.ts`). Engine und
+  Coach lesen danach nur noch die Phase – eine geänderte Baustein-Vorgabe greift nie in
+  eine laufende Journey. Die Phase trägt ihre Bauart mit (`plan_builder`, `load_builder`,
+  `careful`), weil ein Wochenplan allein nicht sagt, was er tut: Kraftphase und Testphase
+  tragen beide einen und verhalten sich gegensätzlich. Der Baustein sagt, **was** gebaut
+  wird; **wie** gerechnet wird, steht in der Engine (`engine/weekPlan.ts`,
+  `engine/loadPlan.ts`) – die gültigen Bauregel-Namen kommen von dort, damit Tabelle,
+  Schema und Rechnung nicht auseinanderlaufen.
 - **Journey-Standort an einer Stelle.** „Wo stehe ich gerade?" beantwortet
   `derivePhaseContext` (`lib/phaseContext.ts`): es nimmt die Session- und Phasen-Zeilen
   herein, bringt sie selbst auf die Engine-Form (`toPlacementSessions`,
   `toPlacementPhases`), ruft `journeyPlacement` und liefert Platzierung, laufende Phase,
-  Fokus, Repband, Volumen-Phase, Woche und Lastfaktor. Trainingsbildschirm, Journey-Seite,
-  Übungs-Statusanzeige, Live-Aufbau und das „Übung anpassen"-Popup setzen sich daraus
-  zusammen, ohne selbst zu platzieren. Ausnahme: der Coach-Export liest aus einem
-  Export-JSON statt aus Hooks und behält seine eigene Zeilenform – die Regeln (Band,
-  Lastfaktor) teilt er trotzdem.
-- **Die Phase gibt die Wochenstruktur vor, der Coach nur das Gewicht.** Kraft-,
-  Schnellkraft- und Testphasen tragen ihren Wochenplan als jsonb an der Phase
+  Fokus, Repband, Volumen-Phase, Woche und den Lastanteil der laufenden Phasenwoche.
+  Trainingsbildschirm, Journey-Seite, Übungs-Statusanzeige, Live-Aufbau und das „Übung
+  anpassen"-Popup setzen sich daraus zusammen, ohne selbst zu platzieren. Ausnahme: der
+  Coach-Export liest aus einem Export-JSON statt aus Hooks und behält seine eigene
+  Zeilenform – die Regeln (Band, Lastanteil) teilt er trotzdem.
+- **Die Phase gibt die Wochenstruktur vor, der Coach nur das Gewicht.** Maximalkraft-,
+  Intensivierungs- und Testphasen tragen ihren Wochenplan als jsonb an der Phase
   (`week_plan`): je Woche Sätze, Wiederholungen, Ziel-Anstrengung (RIR), Anteil am
   Arbeitsgewicht und ein kurzer Wochenziel-Text. Gerechnet wird er an einer Stelle
-  (`engine/weekPlan.ts`: `buildWeekPlan` beim Seeden, `weekPlanForWeek` beim Lesen); das
-  Zod-Schema dort ist die Quelle der Wahrheit für die Form, die DB-Schemas verweisen nur
-  darauf. Weil der Plan an der Phase hängt, wandert er beim Journey-Start ohne eigene
-  Kopierlogik mit. Damit laufen zwei Wege nebeneinander: Phasen mit Plan nach dem
-  Wochenplan, Hypertrophie, Kraftausdauer, Wiedereinstieg und Erhaltung – und jede Phase
-  ohne Plan (null) – unverändert weiter über die Doppelprogression des Coaches. Welche
-  Fokusse einen Plan bekommen, entscheidet `buildWeekPlan`; ob er in der laufenden Woche die Last
-  steuert, `planGovernsLoad` in `derivePhaseContext`; umgeschaltet wird in
-  `suggestForExercise` (`lib/coach.ts`, `planSuggestion`). Trägt die laufende Phase einen
-  Wochenplan und ist die Übung eine Hauptübung mit Profil `strength`, gibt der Plan
-  Sätze, Wiederholungen und Ziel-Anstrengung vor; das Repband der Phase ruht dann, ebenso
-  Toleranz und Rückwärtsregel der Doppelprogression. Die Gewichtsregel selbst steht in
-  `engine/planLoad.ts`: Startgewicht beim Phaseneintritt aus dem geschätzten 1RM
-  (Planwiederholungen der ersten Woche + 2 Reserve, abgerundet), danach je Journey-Woche
-  ein `weight_step` hoch, wenn die letzte Einheit der Vorwoche voll sauber war – sonst
-  bleibt das Gewicht stehen. Innerhalb einer Woche liegt immer dasselbe Gewicht auf der
-  Übung. Gesenkt wird nie; nur eine im Training selbst reduzierte Last zieht den Anker
-  nach unten nach (`anchorAfterSession`, angewandt in `lib/katalogPatch.ts`). Der Anker
-  ist `reference_weight` samt `reference_phase_id` – nur ein an die laufende Phase
-  gebundener Anker zählt, sonst tritt die Übung gerade ein. Die Wochen-Buchhaltung
-  (welche Einheit liegt in dieser, welche in der vorigen Journey-Woche derselben Phase)
-  liegt in `lib/lastEntries.ts` (`buildWeekEntries`) und `engine/journey.ts`
-  (`journeyWeekLookup`), zusammengesetzt in `lib/planContext.ts` (`buildPlanSource` –
-  eine Quelle für Live-Aufbau, Übungs-Statusanzeige und Coach-Vorschau). Warum zwei Wege
-  statt einer Regel: ADR-0018.
+  (`engine/weekPlan.ts`: `buildWeekPlanFor` beim Anlegen, `weekPlanForWeek` beim Lesen);
+  das Zod-Schema dort ist die Quelle der Wahrheit für die Form, die DB-Schemas verweisen
+  nur darauf. Weil der Plan an der Phase hängt, wandert er beim Journey-Start ohne eigene
+  Kopierlogik mit. Damit laufen drei Wege nebeneinander: Phasen mit Plan nach dem
+  Wochenplan; Hypertrophie, Kraftausdauer, Wiedereinstieg und Erhaltung – und jede Phase
+  ohne Plan (null) – unverändert weiter über die Doppelprogression des Coaches; und der
+  Wiederaufbau als dritter Weg, in dem der Coach die Wiederholungen steuert und die
+  Lastliste das Gewicht deckelt (4.1, Nachtrag zu ADR-0018). Welchen Plan eine Phase
+  bekommt, entscheidet ihre Bauregel (`plan_builder`, gebaut in `buildWeekPlanFor`); ob
+  er in der laufenden Woche die Last steuert, `planGovernsLoad` in `derivePhaseContext`;
+  umgeschaltet wird in `suggestForExercise` (`lib/coach.ts`, `planSuggestion`). Trägt die
+  laufende Phase einen Wochenplan und ist die Übung eine Hauptübung mit Profil
+  `strength`, gibt der Plan Sätze, Wiederholungen und Ziel-Anstrengung vor; das Repband
+  der Phase ruht dann, ebenso Toleranz und Rückwärtsregel der Doppelprogression. Die
+  Gewichtsregel selbst steht in `engine/planLoad.ts`: Startgewicht beim Phaseneintritt
+  aus dem geschätzten 1RM (Planwiederholungen der ersten Woche + 2 Reserve, abgerundet),
+  danach je Journey-Woche ein `weight_step` hoch, wenn die letzte Einheit der Vorwoche
+  voll sauber war – sonst bleibt das Gewicht stehen. Innerhalb einer Woche liegt immer
+  dasselbe Gewicht auf der Übung. Gesenkt wird nie; nur eine im Training selbst
+  reduzierte Last zieht den Anker nach unten nach (`anchorAfterSession`, angewandt in
+  `lib/katalogPatch.ts`). Der Anker ist `reference_weight` samt `reference_phase_id` –
+  nur ein an die laufende Phase gebundener Anker zählt, sonst tritt die Übung gerade ein.
+  Die Wochen-Buchhaltung (welche Einheit liegt in dieser, welche in der vorigen
+  Journey-Woche derselben Phase) liegt in `lib/lastEntries.ts` (`buildWeekEntries`) und
+  `engine/journey.ts` (`journeyWeekLookup`), zusammengesetzt in `lib/planContext.ts`
+  (`buildPlanSource` – eine Quelle für Live-Aufbau, Übungs-Statusanzeige und
+  Coach-Vorschau). Warum zwei Wege statt einer Regel: ADR-0018.
 - **Die Testphase entlastet erst, dann testet sie.** Bauregel an einer Stelle
   (`engine/weekPlan.ts`, `buildTestPhaseWeekPlan`): die letzte Woche einer Testphase ist
   die reine Testwoche, jede Woche davor ist Entlastung. Die Entlastungswoche läuft
-  denselben Weg wie die Kraftwoche, nur mit anderem Bezug: 2 Sätze zu 3–5
-  Wiederholungen mit dem `loadPct` des Plans (60 %) vom Startgewicht X der
-  vorangegangenen Kraftphase, ohne jede Steigerung (`planWeekLoad` mit `deload`). X
-  steht als `plan_start_weight` an der Übung, gebunden an dieselbe Phase wie der Anker,
-  und wird beim Eintritt in die Phase einmal festgehalten (`lib/katalogPatch.ts`); fehlt
-  es, gilt der Anker, sonst das 1RM. Welche Phase den Bezug stellt, entscheidet
-  `derivePhaseContext` (`deload`, `anchorPhaseId` – die nächste Kraft-/Schnellkraftphase
-  davor). Die Testwoche selbst plant nichts: sie steht mit `sets: 0` im Wochenplan
-  (`weekDemandsSession` fragt das ab) und gibt weder dem Coach noch der Anzeige etwas
-  vor – `derivePhaseContext` lässt den ganzen Plan-Block leer, der Coach rechnet dort wie
-  in einer Phase ohne Plan. Trainieren ist erlaubt, aber nicht eingeplant; der 1RM-Test
-  läuft unverändert von der Übungsseite. Auf dem Trainingsbildschirm erklärt sie sich
-  selbst: statt der Lücke, die eine Woche ohne Plan sonst hinterlässt, steht dort der
-  Hinweis, dass die Testwoche läuft und bis wann (`sundayOfWeek` in `engine/journey.ts`),
-  darunter die Hauptübungen mit direktem Test-Start und einem Haken für die, die in
-  dieser Kalenderwoche schon getestet sind (`TestWeekPanel`). Erkannt wird die Woche an
-  einer Stelle (`derivePhaseContext.testWeek`: Testfokus, Plan vorhanden, Woche verlangt
-  nichts, Journey noch nicht durchlaufen). Die Liste ist reine Ableitung aus dem Bestand
-  – Übungen mit Rang `main` und `profile !== "bodyweight"`, abgeglichen mit `rm_tests`
-  der laufenden Kalenderwoche (`lib/testWeek.ts`) – und **entscheidet nichts**: die Woche
+  denselben Weg wie die Kraftwoche, nur mit anderem Bezug: 2 Sätze zu 3–5 Wiederholungen
+  mit dem `loadPct` des Plans (60 %) vom Startgewicht X der vorangegangenen Kraftphase,
+  ohne jede Steigerung (`planWeekLoad` mit `deload`). X steht als `plan_start_weight` an
+  der Übung, gebunden an dieselbe Phase wie der Anker, und wird beim Eintritt in die
+  Phase einmal festgehalten (`lib/katalogPatch.ts`); fehlt es, gilt der Anker, sonst das
+  1RM. Welche Phase den Bezug stellt, entscheidet `derivePhaseContext` (`deload`,
+  `anchorPhaseId` – die nächste Maximalkraft-/Intensivierungsphase davor). Die Testwoche
+  selbst plant nichts: sie steht mit `sets: 0` im Wochenplan (`weekDemandsSession` fragt
+  das ab) und gibt weder dem Coach noch der Anzeige etwas vor – `derivePhaseContext`
+  lässt den ganzen Plan-Block leer, der Coach rechnet dort wie in einer Phase ohne Plan.
+  Trainieren ist erlaubt, aber nicht eingeplant; der 1RM-Test läuft unverändert von der
+  Übungsseite. Auf dem Trainingsbildschirm erklärt sie sich selbst: statt der Lücke, die
+  eine Woche ohne Plan sonst hinterlässt, steht dort der Hinweis, dass die Testwoche
+  läuft und bis wann (`sundayOfWeek` in `engine/journey.ts`), darunter die Hauptübungen
+  mit direktem Test-Start und einem Haken für die, die in dieser Kalenderwoche schon
+  getestet sind (`TestWeekPanel`). Erkannt wird die Woche an einer Stelle
+  (`derivePhaseContext.testWeek`: Testfokus, Plan vorhanden, Woche verlangt nichts,
+  Journey noch nicht durchlaufen). Die Liste ist reine Ableitung aus dem Bestand –
+  Übungen mit Rang `main` und `profile !== "bodyweight"`, abgeglichen mit `rm_tests` der
+  laufenden Kalenderwoche (`lib/testWeek.ts`) – und **entscheidet nichts**: die Woche
   endet am Sonntag, unabhängig davon, was offen bleibt. Gestartet wird über die
   bestehende Mechanik (`useStartRmTest.startById`), Empfehlung und Workout-Liste bleiben
   unverändert darunter stehen, damit Trainieren in der Testwoche nicht verstellt ist. Ein
@@ -370,7 +421,7 @@ betroffene Tabelle beim Wiederherstellen leer.
   der Hinweis der laufenden Planwoche (Phase und Woche, Sätze/Wiederholungen/RIR, was
   den nächsten Gewichtsschritt auslöst, dazu der Cluster-Hinweis) – gebaut an einer
   Stelle (`lib/planNote.ts`, Schrittweite und Einheit aus den Einstellungen), beim Start
-  auf die Einheit eingefroren wie der Lastfaktor-Hinweis (`WorkoutSession.planNote`) und
+  auf die Einheit eingefroren wie der Lasthinweis (`WorkoutSession.planNote`) und
   in Start-Popup und Live-Panel im selben Kasten gezeigt (`PlanNoteBanner`). Auf der
   Journey-Seite klappt die laufende Phase mit Plan zur Wochentabelle auf
   (`PhaseView.weekRows` aus `lib/journey.ts`): je Woche Sätze, Wiederholungen,

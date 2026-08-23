@@ -7,34 +7,43 @@ für den Nutzer sichtbar und editierbar werden. Die Bausteine selbst, ihre Eigen
 und die Frage, was die Datenbank dafür braucht, stehen in
 [`Konzept-Bausteine-Datenstruktur.md`](./Konzept-Bausteine-Datenstruktur.md) (Teil 1).
 
-Teil 1 ist die Voraussetzung, aber keine Verpflichtung: Er ist auch ohne Editor sinnvoll –
-dann entstehen Journeys weiter per Migration, nur eben aus einem sauberen Baukasten. Ob
-dieser Teil 2 je gebaut wird, ist offen. Die bestehenden Vorlagen decken den heutigen
-Bedarf.
+Teil 1 ist seit dem 23.08.2026 gebaut (Vorhaben #321) – er war die Voraussetzung, aber
+keine Verpflichtung: Journeys entstehen weiter per Migration, nur eben aus einem sauberen
+Baukasten. Ob dieser Teil 2 je gebaut wird, ist offen. Die bestehenden Vorlagen decken den
+heutigen Bedarf.
 
 Grundlage: [`adr/0018-steuerung-je-phasentyp.md`](./adr/0018-steuerung-je-phasentyp.md)
-und [`Architektur.md`](./Architektur.md).
+samt Nachtrag und [`Architektur.md`](./Architektur.md).
 
 ---
 
 ## 1. Warum das überhaupt geht
 
 Eine Phase ist eine Datenzeile, und fast alle ihre Felder sind schon freie Werte: `name`,
-`weeks`, `sets_start`/`sets_end`, `deload_week`, `rep_target_min`/`max`, `load_factor`,
-`position`. Fest ist allein `focus` – der Baustein.
+`weeks`, `sets_start`/`sets_end`, `deload_week`, `rep_target_min`/`max`, `position`. Fest
+ist der Baustein (`focus`) und was aus ihm folgt: die Bauart (`plan_builder`,
+`load_builder`, `careful`) und die daraus gebauten Listen (`week_plan`, `load_plan`).
+Diese Felder schreibt kein Regler – sie entstehen beim Anlegen der Phase aus dem
+Baustein.
 
-Zwei Eigenschaften des heutigen Systems machen einen Editor überhaupt denkbar:
+Drei Eigenschaften des heutigen Systems machen einen Editor überhaupt denkbar:
 
 - **Ein gesetztes Wiederholungsband schlägt den Typ.** Der Baustein liefert nur den
   Ersatzwert für den leeren Fall (`phaseRepBand`). „Expliziter Wert schlägt Ableitung" ist
   also schon angelegt.
-- **Der Wochenplan wird generisch gelesen, aber typabhängig gebaut.** Das System fragt nie,
-  warum in Woche 3 steht, was dort steht – nur, was gilt (`weekPlanForWeek`).
-  Bausteinabhängig ist allein das Erzeugen (`buildWeekPlan`), und das passiert genau
-  einmal, beim Anlegen der Phase.
+- **Der Wochenplan wird generisch gelesen, aber nach Bauregel gebaut.** Das System fragt
+  nie, warum in Woche 3 steht, was dort steht – nur, was gilt (`weekPlanForWeek`). An der
+  Bauregel der Phase hängt allein das Erzeugen (`buildWeekPlanFor`, für die Lastliste
+  `buildLoadPlanFor`), und das passiert genau einmal, beim Anlegen der Phase.
+- **Eine Phase entsteht seit Teil 1 aus einem Baustein.** `buildPhaseFromType`
+  (`engine/phaseBuild.ts`) nimmt den Baustein plus die Anpassungen, die der Editor
+  ohnehin sammeln würde (Name, Wochen, Satzrampe, Band, Entlastungswoche, notfalls
+  getippte Laststufen), und gibt die fertige Phase zurück – samt Wochen- und Lastliste und
+  mit einer zu spät liegenden Entlastungswoche automatisch zurückgenommen. Die
+  Bau-Funktion, die ein Editor bräuchte, steht damit schon.
 
 Ein Editor schreibt also im Wesentlichen Felder. Die einzige Stelle, an der er in die
-Engine greift, ist das Neuberechnen des Wochenplans, wenn sich die Wochenzahl ändert.
+Engine greift, ist das Neubauen der Phase, wenn sich die Wochenzahl ändert.
 
 ---
 
@@ -45,8 +54,9 @@ Engine greift, ist das Neuberechnen des Wochenplans, wenn sich die Wochenzahl ä
   benutzen.
 - **Je Baustein erscheinen nur die Optionen, die dort etwas bewirken.** Ein Feld, an dem
   man zieht und nichts passiert, ist schlimmer als kein Feld. Die dafür nötige Information
-  steht nach Teil 1 als Daten bereit (`sets_locked`, `rep_band_locked`, `deload_allowed`) –
-  die Oberfläche muss sie nicht erraten.
+  steht seit Teil 1 als Daten bereit (`sets_locked`, `rep_band_locked`, `deload_allowed`,
+  dazu die Korridore `rep_bound_min`/`rep_bound_max` und `sets_max`) – die Oberfläche muss
+  sie nicht erraten.
 - **Was fest ist, bleibt fest und wird nicht angeboten**: die vier Sätze der Kraftphase,
   die Ziel-Anstrengung, die Bauregel der Testphase (ADR-0018).
 - **Die Abfolge liegt beim Nutzer.** Das System prüft nicht, ob ein Block
@@ -77,8 +87,10 @@ Zwei Stellen, an denen der Editor mitdenken sollte:
 - **Beim Wiederaufbau die Testphase vorschlagen.** Eine Woche, ohne Entlastung, direkt
   dahinter – und der Zielanteil des Wiederaufbaus geht dann auf 95 % statt 100 %.
   Wegnehmen ist erlaubt; nimmt man sie weg, steht der Zielanteil wieder auf 100 %.
-- **Beim Ändern der Wochenzahl den Wochenplan neu bauen.** Ohne das passt die gespeicherte
-  Leiter nicht mehr zur Phasenlänge. Betrifft Maximalkraft, Intensivierung und Test/Peak.
+- **Beim Ändern der Wochenzahl die Listen neu bauen.** Ohne das passt die gespeicherte
+  Leiter nicht mehr zur Phasenlänge. Betrifft die Wochenliste von Maximalkraft,
+  Intensivierung und Test/Peak – und ebenso die Lastliste des Wiederaufbaus, deren Stufen
+  über die Phasenwochen verteilt sind. `buildPhaseFromType` erledigt beides in einem.
 
 ---
 
@@ -112,6 +124,6 @@ alles gestaltbar.
   oder erst am Ende erscheint, ist Geschmacks- und Aufwandsfrage.
 - **Mobile Bedienung.** Bausteine umsortieren ist auf dem Telefon der unangenehmste Teil.
   Eher Pfeile hoch/runter als Ziehen.
-- **Wie viel Erklärung.** Jeder Baustein bringt nach Teil 1 seine Kurzbeschreibung als
-  Daten mit. Ob das reicht oder ob es je Baustein eine ausführlichere Seite braucht, zeigt
-  sich erst am fertigen Bildschirm.
+- **Wie viel Erklärung.** Jeder Baustein bringt seit Teil 1 seine Kurzbeschreibung als
+  Daten mit (`phase_types.summary`, dazu `placement_hint`). Ob das reicht oder ob es je
+  Baustein eine ausführlichere Seite braucht, zeigt sich erst am fertigen Bildschirm.

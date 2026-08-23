@@ -1,12 +1,25 @@
 # Bausteine in der Datenbank – Konzept (Teil 1)
 
-> Doku-Typ: Konzept. Hält den besprochenen Stand fest, bevor gebaut wird. Noch nicht in
-> Umsetzung.
+> Doku-Typ: Konzept, **umgesetzt** am 23.08.2026 (Vorhaben #321). Das Papier bleibt als
+> Begründung stehen – warum die Bausteine so geschnitten sind und was unterwegs verworfen
+> wurde. Den Ist-Zustand führen seither [`Architektur.md`](./Architektur.md) (Tabelle
+> `phase_types`, die Felder an den Phasen-Tabellen) und der Nachtrag zu
+> [`adr/0018-steuerung-je-phasentyp.md`](./adr/0018-steuerung-je-phasentyp.md) (dritter
+> Steuerweg, Lastliste statt Lastfaktor). Bei einem Widerspruch gilt der Ist-Zustand,
+> nicht dieses Papier.
 >
-> Stand 22.08.2026: gegen Code und Live-Datenbank durchgeprüft. Die Befunde sind
-> eingearbeitet – die größte Korrektur betrifft den Steuerweg (Abschnitt 2, „Die Phase
-> trägt ihre Bauart mit"). Wo der erste Entwurf danebenlag, steht das an Ort und Stelle
-> dabei, statt still ersetzt zu werden.
+> Gebaut in den acht Schritten aus Abschnitt 11 (Issues #322 bis #329, Migrationen 0043
+> bis 0047). Nachgeprüft gegen den gebauten Stand: Die Werte der acht Bausteine
+> (Abschnitt 4), beide Wochenleitern (Abschnitt 8), die Laststufen des Wiederaufbaus
+> (Abschnitt 6) und die umgebaute Fasten-Vorlage (Abschnitt 9) stehen so im System, wie
+> sie hier beschrieben sind. Ein neunter Schritt kam beim Nachprüfen dazu und ist noch
+> offen: Der Abgleichstest (Abschnitt 12) soll die Vorlagenphasen, die der Seed baut,
+> künftig auch gegen die Grenzen ihres Bausteins prüfen (#334).
+>
+> Stand 22.08.2026 (vor dem Bau): gegen Code und Live-Datenbank durchgeprüft. Die
+> Befunde sind eingearbeitet – die größte Korrektur betrifft den Steuerweg (Abschnitt 2,
+> „Die Phase trägt ihre Bauart mit"). Wo der erste Entwurf danebenlag, steht das an Ort
+> und Stelle dabei, statt still ersetzt zu werden.
 >
 > Ebenfalls am 22.08.2026 entschieden: die Leiter der Intensivierung (Abschnitt 8), die
 > Entlastungswoche der Kraftausdauer (Abschnitt 4), der Name der Testphase (Abschnitt 9)
