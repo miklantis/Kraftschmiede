@@ -2,6 +2,10 @@
 
 > Doku-Typ: Idee. Denkstand, kein Konzept und kein Auftrag.
 >
+> Am 23.08.2026 ist eine Sache entschieden: **Editiert wird die Vorlage** (Abschnitt 5).
+> Die beiden anderen Wege sind damit vom Tisch, alles Weitere baut auf diesem auf. Gebaut
+> wird deshalb noch nichts – es liegen bewusst keine Issues dazu.
+>
 > Stand 23.08.2026: gegen Code und Live-Datenbank durchgeprüft, nachdem Teil 1 gebaut war
 > (Vorhaben #321, Migrationen 0043 bis 0050). Die Befunde sind eingearbeitet – die größte
 > Korrektur betrifft Abschnitt 1: Die Felder einer Phase sind **nicht frei**, sie sind
@@ -189,14 +193,15 @@ ist die Live-Vorschau, die die Vorlagen-Auswahl seither ohnehin baut.
 
 ---
 
-## 5. Die offene Kernfrage: was wird eigentlich editiert?
+## 5. Entschieden: editiert wird die Vorlage
 
-Heute entstehen Journeys aus Vorlagen. Drei Wege sind denkbar – und diese Frage ist vor
-allem anderen zu klären, weil alles Weitere daraus folgt.
+Heute entstehen Journeys aus Vorlagen. Drei Wege waren denkbar. Die Frage war vor allem
+anderen zu klären, weil alles Weitere daraus folgt – **am 23.08.2026 ist sie entschieden:
+Weg 1**, siehe unten.
 
 | Weg | Was es heißt | Risiko |
 | --- | --- | --- |
-| **Vorlagen editierbar machen** | Der Nutzer ändert die Bauanleitung, nicht das Laufende. Wirkt erst beim nächsten Journey-Start | gering |
+| **Vorlagen editierbar machen** ✔ | Der Nutzer ändert die Bauanleitung, nicht das Laufende. Wirkt erst beim nächsten Journey-Start | gering |
 | **Journey ohne Vorlage anlegen** | Ein leeres Blatt, Bausteine hinstellen, starten | gering – siehe unten |
 | **Laufende Journey anpassen** | Der Standort wird aus den absolvierten Trainingswochen abgeleitet, nicht aus dem Kalender | hoch |
 
@@ -215,9 +220,25 @@ Standort – und die Gewichtsanker (`reference_phase_id`, `plan_start_weight`) h
 plötzlich woanders. Vermutliche Trennung, falls es je dazu kommt: **kommende Phasen ja,
 laufende und vergangene nein.**
 
-Der einfachste sinnvolle Anfang wäre Weg 1 mit einer einzigen Erweiterung: eine Vorlage
-duplizieren und die Kopie bearbeiten. Damit ist das Bestehende geschützt und trotzdem
-alles gestaltbar.
+### Die Entscheidung
+
+**Weg 1, mit einer einzigen Erweiterung: eine Vorlage duplizieren und die Kopie
+bearbeiten.** Damit ist das Bestehende geschützt und trotzdem alles gestaltbar – die
+Originale bleiben stehen, und wer sich verrennt, wirft die Kopie weg.
+
+Was daraus folgt:
+
+- **Die laufende Journey bleibt außen vor.** Eine geänderte Vorlage wirkt frühestens beim
+  nächsten Journey-Start. Die Gewichtsanker der laufenden Journey kann der Editor damit
+  gar nicht erreichen – das Risiko aus der dritten Zeile stellt sich nicht.
+- **Der Editor braucht kein leeres Blatt.** Eine neue Journey entsteht weiter, indem eine
+  Vorlage gewählt wird; neu ist nur, dass es mehr Vorlagen geben kann. Der zweite Weg
+  bleibt möglich, wird aber nicht gebraucht.
+- **Vorlagen-Verwaltung wird Pflicht statt Kür.** Sobald es Kopien gibt, müssen sie sich
+  benennen, ordnen und löschen lassen (Abschnitt 7, erster Punkt).
+
+Nicht entschieden ist, **ob und wann** gebaut wird. Die bestehenden Vorlagen decken den
+heutigen Bedarf; es liegen bewusst keine Issues dazu.
 
 ---
 
