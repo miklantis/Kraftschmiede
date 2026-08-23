@@ -41,6 +41,7 @@ Jedes ADR folgt demselben Aufbau:
   – *ersetzt durch ADR-0018*
 - [ADR-0017 – Journey-Abschluss über den Kalender](./0017-journey-abschluss-ueber-den-kalender.md)
 - [ADR-0018 – Steuerung je Phasentyp: Wochenplan oder Coach](./0018-steuerung-je-phasentyp.md)
+  – *Nachtrag 23.08.2026: dritter Weg (Coach plus Lastliste) und Lastliste statt Lastfaktor*
 - [ADR-0019 – Schreibnaht je Bereich, ein Store für zusammengehörige Tabellen](./0019-schreibnaht-je-bereich.md)
 - [ADR-0020 – Der Live-Store bleibt ein Modul](./0020-live-store-bleibt-ein-modul.md)
 
@@ -56,6 +57,8 @@ zweideutig.
   so.
 - **0016 – gesperrt, nicht neu vergeben.** Vergeben an „Lastrampe der Phase" und mit
   #218/#219 wieder zurückgenommen; die Datei ist gelöscht, steht aber in der Git-Historie.
+  Der Nachtrag zu ADR-0018 (#321) bestätigt die Rücknahme: Die Last der Phase steht seither
+  als Liste je Woche an der Phase, nicht als interpolierte Rampe.
 - **0018 – vergeben** an „Steuerung je Phasentyp" (#232), löst ADR-0015 ab.
 - **0019 – vergeben** an „Schreibnaht je Bereich" (#263). Hält die Begründung fest, die
   vorher im Volltext in `Architektur.md` stand.
