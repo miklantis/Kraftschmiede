@@ -191,7 +191,8 @@ Jeder Eintrag führt:
 - **schema** – Name des zugehörigen Row-Schemas in `src/schemas`
 
 Daraus lesen: `exportSource.ts` (Abruf), `exportData.ts` (Aufbau des Export-JSON),
-`restoreData.ts` (Prüfung und Aufbereitung) und `restoreWrite.ts` (Löschen/Einfügen).
+`restoreData.ts` (Prüfung und Aufbereitung), `restoreWrite.ts` (Löschen/Einfügen) und
+`bestandsSpalten.ts` (gültige Spalten je Tabelle).
 Die Reihenfolge der Einträge im Register ist zugleich die Reihenfolge der Schlüssel im
 Export-JSON – nach Themen gruppiert, damit die Datei lesbar bleibt.
 
@@ -203,6 +204,31 @@ Funktionen) muss jede Tabelle zurückbringen.
 Das Export-Format bleibt abwärtskompatibel: Sicherungen der Schemaversionen v2 und v3
 sind weiterhin einspielbar. Kennt eine ältere Sicherung einen Schlüssel nicht, bleibt die
 betroffene Tabelle beim Wiederherstellen leer.
+
+#### Zeilen auf die bekannten Spalten eindampfen
+
+Eine Sicherung hält den Stand von damals fest. Fällt später eine Spalte weg, enthält die
+Datei ein Feld, das es nicht mehr gibt – ungefiltert eingespielt bricht der Schritt ab
+und die ganze Sicherung ist unbrauchbar. Damit wäre jede Sicherung nur so lange
+einspielbar, wie sich das Schema nicht ändert.
+
+`src/lib/bestandsSpalten.ts` leitet darum je Tabelle die heute gültigen Spalten aus dem
+Row-Schema in `src/schemas` ab (verbunden über den Schema-Namen im Register).
+`restoreData.ts` dampft jede Zeile darauf ein, bevor sie zum Schreiber geht:
+
+- **Unbekannte Felder** fallen weg, statt das Einspielen abzubrechen.
+- **Werte** bleiben unangetastet; über ihre Gültigkeit entscheidet weiterhin die
+  Datenbank. Ein voller Zod-Durchlauf würde ältere Sicherungen an Detailregeln scheitern
+  lassen, die beim Einspielen niemand gewinnt.
+- **Fehlende Spalten** werden nicht erfunden: das Feld wird nicht mitgeschickt, die
+  Datenbank setzt ihren Vorgabewert. Fehlt für eine Pflichtspalte ein Vorgabewert, bricht
+  der Schritt mit Tabellennamen ab – wie bisher.
+
+Damit erledigen sich die früher von Hand gepflegten Sonderfälle: die abgeleiteten
+Satz-Felder (`rir`/`rpe`/`scoreLabel`) und die entfallene Rolle in `template_exercises`
+fallen automatisch weg. In `restoreData.ts` bleibt nur, was echtes Umrechnen braucht
+(aus alten Feldern neue ableiten, z. B. `tier` aus `kind`) – und das läuft **vor** dem
+Eindampfen, sonst wären die alten Felder schon weg.
 
 **Neue Tabelle heißt: einen Eintrag im Register ergänzen, sonst nichts.**
 

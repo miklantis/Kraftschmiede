@@ -1,12 +1,21 @@
 // Reine, DOM-/Supabase-freie Pruefung und Aufbereitung eines eigenen Exports
-// fuer das Voll-Restore. Spiegelt V1 io.js (stripDerived): nimmt einen EIGENEN
-// Kraftschmiede-Export (app + schemaVersion "v2" oder "v3"), verwirft die
-// abgeleiteten Felder (rir/rpe/scoreLabel je Satz, _scoreScale), entschachtelt
-// die Einheiten wieder in die flachen Tabellen (sessions/session_exercises/sets)
-// und liefert pro Tabelle eine Zeilenliste plus eine kleine Vorschau (Anzahlen).
-// Validierung mit Zod auf der Huelle; die Zeilen selbst bleiben durchgereicht
-// (der Schreiber setzt user_id und behaelt ids/Fremdschluessel, damit die
-// Beziehungen halten).
+// fuer das Voll-Restore: nimmt einen EIGENEN Kraftschmiede-Export (app +
+// schemaVersion "v2" oder "v3"), entschachtelt die Einheiten wieder in die
+// flachen Tabellen (sessions/session_exercises/sets) und liefert pro Tabelle
+// eine Zeilenliste plus eine kleine Vorschau (Anzahlen).
+//
+// Validierung mit Zod nur auf der Huelle. Die Zeilen selbst werden zum Schluss
+// auf die heute bekannten Spalten eingedampft (`bestandsSpalten.ts`): eine
+// Sicherung haelt den Stand von damals fest, und ein Feld, das es inzwischen
+// nicht mehr gibt, wuerde das Einspielen abbrechen lassen. Damit erledigt sich
+// zugleich, was frueher von Hand abgeraeumt wurde - die abgeleiteten
+// Satz-Felder (rir/rpe/scoreLabel) und die alte Rolle in template_exercises.
+// Werte bleiben unangetastet, ids und Fremdschluessel auch, damit die
+// Beziehungen halten; user_id setzt spaeter der Schreiber.
+//
+// Was echtes Umrechnen braucht (aus alten Feldern neue ableiten), steht in
+// UMBAU und laeuft vor dem Eindampfen - sonst waeren die alten Felder schon
+// weg.
 //
 // Welche Tabellen dazugehoeren, steht im Bestandsregister - hier wird nur noch
 // darueber gelaufen.
@@ -18,6 +27,7 @@ import {
   type EinzelTabelle,
   type ListenTabelle,
 } from "@/lib/bestandsregister";
+import { aufBekannteSpalten } from "@/lib/bestandsSpalten";
 
 // Zeilen je Tabelle, Feldliste aus dem Bestandsregister abgeleitet.
 export type RestoreTables = Record<ListenTabelle, Row[]> &
@@ -72,44 +82,28 @@ function arr(v: unknown): Row[] {
   return Array.isArray(v) ? (v as Row[]) : [];
 }
 
-// Tabellen, deren Zeilen beim Einspielen umgebaut werden muessen (Alt-Backups).
+// Tabellen, deren Zeilen aus Alt-Backups echtes Umrechnen brauchen: aus Feldern,
+// die es heute nicht mehr gibt, wird ein heutiges Feld abgeleitet. Reines
+// Wegwerfen steht hier nicht mehr - das erledigt das Eindampfen auf die
+// bekannten Spalten weiter unten.
 const UMBAU: Record<string, (r: Row) => Row> = {
   exercises: migrateExerciseRow,
-  template_exercises: stripTemplateExerciseRow,
 };
 
-// Abgeleitete Satz-Felder wegwerfen (wie V1 stripDerived).
-function stripSet(set: Row): Row {
-  const copy: Row = { ...set };
-  delete copy.rir;
-  delete copy.rpe;
-  delete copy.scoreLabel;
-  return copy;
-}
-
-// Uebungszeilen aus Alt-Backups auf die neue Form bringen: Altfelder verwerfen
-// (category/kind aus v2, active aus Backups vor dem Aufraeumen der Aktiv-Spalte),
-// tier ableiten falls es fehlt, und die Barbell-Wahrheit aus category in
-// equipment sichern (wie die DB-Migration). Neuere Backups passieren unveraendert.
+// Uebungszeilen aus Alt-Backups auf die neue Form bringen: tier aus kind
+// ableiten falls es fehlt, und die Barbell-Wahrheit aus category in equipment
+// sichern (wie die DB-Migration). Die Altfelder selbst (category/kind, dazu
+// active aus Backups vor dem Aufraeumen der Aktiv-Spalte) bleiben stehen und
+// fallen beim Eindampfen weg. Neuere Backups passieren unveraendert.
 function migrateExerciseRow(r: Row): Row {
-  const { category, kind, active, ...rest } = r;
-  void active;
-  const out: Row = { ...rest };
+  const out: Row = { ...r };
   if (out.tier == null) {
-    out.tier = kind === "accessory" ? "accessory" : "main";
+    out.tier = r.kind === "accessory" ? "accessory" : "main";
   }
-  if (category === "barbell") {
+  if (r.category === "barbell") {
     out.equipment = "barbell";
   }
   return out;
-}
-
-// Alt-Backups (vor Version 1.3.16 bzw. Migration 0006) fuehren je Uebung eine
-// Rolle. Die Spalte gibt es nicht mehr; sie wird beim Restore verworfen, damit
-// ein aelterer Export weiterhin sauber einspielbar bleibt.
-function stripTemplateExerciseRow(r: Row): Row {
-  const { role: _role, ...rest } = r;
-  return rest;
 }
 
 export function parseRestore(text: string): RestoreResult {
@@ -143,7 +137,8 @@ export function parseRestore(text: string): RestoreResult {
   const inventar = (exp.inventory ?? {}) as Record<string, unknown>;
 
   // Einheiten entschachteln: session-Zeile ohne entries, je Uebung ohne sets,
-  // Saetze flach (abgeleitete Felder entfernt). ids/Fremdschluessel bleiben.
+  // Saetze flach. ids/Fremdschluessel bleiben; die abgeleiteten Satz-Felder
+  // (rir/rpe/scoreLabel) faellt das Eindampfen weiter unten weg.
   const sessions: Row[] = [];
   const session_exercises: Row[] = [];
   const sets: Row[] = [];
@@ -153,7 +148,7 @@ export function parseRestore(text: string): RestoreResult {
     for (const e of entries ?? []) {
       const { sets: exSets, ...exRow } = e as Row & { sets?: Row[] };
       session_exercises.push(exRow);
-      for (const st of exSets ?? []) sets.push(stripSet(st));
+      for (const st of exSets ?? []) sets.push(st);
     }
   }
   const ausEinheiten: Record<string, Row[]> = {
@@ -162,21 +157,27 @@ export function parseRestore(text: string): RestoreResult {
     sets,
   };
 
-  // Je Register-Eintrag die passende Liste holen. Fehlt ein Schluessel (aeltere
-  // Sicherung), bleibt sie leer.
+  // Je Register-Eintrag die passende Liste holen, umrechnen falls noetig und auf
+  // die heute bekannten Spalten eindampfen. Fehlt ein Schluessel (aeltere
+  // Sicherung), bleibt die Liste leer.
   const gefuellt: Record<string, Row[] | Row | null> = {};
   for (const e of BESTANDSREGISTER) {
     if (e.einzelzeile) {
-      gefuellt[e.tabelle] = (exp[e.key] as Row | null | undefined) ?? null;
+      const einzel = (exp[e.key] as Row | null | undefined) ?? null;
+      gefuellt[e.tabelle] =
+        einzel == null ? null : aufBekannteSpalten(e.tabelle, einzel);
       continue;
     }
-    if (e.ablage === "einheiten" || e.ablage === "in_einheit") {
-      gefuellt[e.tabelle] = ausEinheiten[e.tabelle] ?? [];
-      continue;
-    }
-    const roh = e.ablage === "inventar" ? arr(inventar[e.key]) : arr(exp[e.key]);
+    const roh =
+      e.ablage === "einheiten" || e.ablage === "in_einheit"
+        ? (ausEinheiten[e.tabelle] ?? [])
+        : e.ablage === "inventar"
+          ? arr(inventar[e.key])
+          : arr(exp[e.key]);
     const umbau = UMBAU[e.tabelle];
-    gefuellt[e.tabelle] = umbau ? roh.map(umbau) : roh;
+    gefuellt[e.tabelle] = roh.map((r) =>
+      aufBekannteSpalten(e.tabelle, umbau ? umbau(r) : r),
+    );
   }
 
   // Die Schluessel stammen aus dem Register, das die Form von RestoreTables
