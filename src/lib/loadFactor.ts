@@ -53,6 +53,12 @@ export function loadSpanLabel(plan: LoadPlan | null | undefined): string | null 
 // Woche. null, wenn die Phase keine Last vorgibt. Unter 100 % erklaert er den
 // bewusst niedrigen Vorschlag; bei 100 % in der letzten Phase, dass die Vorgabe
 // endet.
+//
+// Der Bezug heisst bewusst "beim Start der Journey" und nicht mehr "vor der
+// Pause": Die Lastvorgabe gehoert seit dem Wiederaufbau-Baustein nicht mehr nur
+// zur Fasten-Vorlage, und eingefroren wird das Referenzgewicht beim
+// Journey-Start (journeyWrite.friereReferenzgewichteEin) - genau das steht
+// jetzt auch da.
 export function loadFactorNote(
   factor: number | null | undefined,
   isLastPhase: boolean,
@@ -60,10 +66,10 @@ export function loadFactorNote(
   if (factor == null) return null;
   const pct = loadPercent(factor);
   if (!isNeutralLoad(factor) && factor < 1) {
-    return `Vorgegebene Last: ${pct} deines Standes vor der Pause. Der niedrige Vorschlag ist gewollt.`;
+    return `Vorgegebene Last: ${pct} deines Gewichts beim Start der Journey. Der niedrige Vorschlag ist gewollt.`;
   }
   if (isLastPhase) {
-    return `Volle Last: ${pct} deines Standes vor der Pause. Danach endet die Vorgabe und der Coach steuert wieder normal.`;
+    return `Volle Last: ${pct} deines Gewichts beim Start der Journey. Danach endet die Vorgabe und der Coach steuert wieder normal.`;
   }
-  return `Volle Last: ${pct} deines Standes vor der Pause.`;
+  return `Volle Last: ${pct} deines Gewichts beim Start der Journey.`;
 }

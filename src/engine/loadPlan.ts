@@ -15,6 +15,8 @@
 
 import { z } from "zod";
 
+import type { LoadBuilderName } from "./weekPlan";
+
 // ---- Form -------------------------------------------------------------------
 
 /** Eine Woche der Lastliste. Quelle der Wahrheit fuer die Form ist dieses
@@ -39,6 +41,70 @@ export function parseLoadPlan(value: unknown): LoadPlan | null {
   const parsed = loadPlanSchema.safeParse(value);
   if (!parsed.success || parsed.data.length === 0) return null;
   return parsed.data;
+}
+
+// ---- Bauregel ---------------------------------------------------------------
+// Die Lastliste entsteht einmal beim Anlegen der Phase - genau wie der
+// Wochenplan - und wird danach nur noch gelesen. Welcher Baustein nach welcher
+// Regel baut, steht in der Bausteine-Tabelle (`load_builder`); die Rechnung
+// dazu steht hier (Konzept Bausteine, Abschnitt 6).
+
+/** Anteil auf vier Nachkommastellen bringen (0,01 %). Das ist kein Raster,
+ *  sondern das Wegraeumen des Rechenrauschens: 0,65 + 2 × 0,06 soll 0,77
+ *  ergeben und nicht 0,7700000000000001. Auf volle 5 % wird bewusst nicht
+ *  gerundet - bei fuenf Wochen ergaebe das ungleiche Schritte, und das
+ *  gerechnete Gewicht landet ohnehin auf einer ladbaren Stufe. */
+function gerundeterAnteil(pct: number): number {
+  return Math.round(pct * 10000) / 10000;
+}
+
+/**
+ * Bauregel `rebuild_ramp` des Wiederaufbaus: gleichmaessig verteilte Stufen vom
+ * Start- auf den Zielanteil, eine je Phasenwoche.
+ *
+ * Drei Wochen ergeben 65/80/95, sechs Wochen 65/71/77/83/89/95. Wie viele
+ * Wochen erlaubt sind, sagt der Baustein (mindestens drei - zwei Wochen waeren
+ * kein Verlauf, sondern ein Sprung von 65 auf 100 %). Eine einzelne Woche
+ * traegt hier trotzdem den Zielanteil: die Regel soll auch ausserhalb ihrer
+ * Grenzen etwas Sinnvolles liefern statt durch null zu teilen.
+ */
+export function buildRebuildRamp(
+  weeks: number,
+  start: number,
+  end: number,
+): LoadPlan {
+  const wochen = Math.max(1, Math.round(weeks));
+  if (wochen === 1) return [{ week: 1, loadPct: gerundeterAnteil(end) }];
+  const schritt = (end - start) / (wochen - 1);
+  return Array.from({ length: wochen }, (_, i) => ({
+    week: i + 1,
+    loadPct: gerundeterAnteil(start + schritt * i),
+  }));
+}
+
+/** Lastliste zur Bauregel des Bausteins. `null` heisst: keine Lastvorgabe -
+ *  dann bestimmt der Coach das Gewicht wie gewohnt aus der letzten Leistung.
+ *  Ohne Start- oder Zielanteil entsteht ebenfalls keine Liste; aus einer halben
+ *  Angabe wird nichts geraten. */
+export function buildLoadPlanFor(
+  builder: LoadBuilderName | null | undefined,
+  weeks: number,
+  start: number | null | undefined,
+  end: number | null | undefined,
+): LoadPlan | null {
+  if (builder !== "rebuild_ramp") return null;
+  if (start == null || end == null) return null;
+  return buildRebuildRamp(weeks, start, end);
+}
+
+/** Lastliste aus getippten Anteilen (eine Zahl je Phasenwoche) - fuer Phasen,
+ *  die ihre Stufen ausdruecklich vorgeben, statt sie bauen zu lassen. Eine
+ *  leere Angabe heisst "keine Vorgabe". */
+export function loadPlanFromShares(
+  shares: readonly number[] | null | undefined,
+): LoadPlan | null {
+  if (shares == null || shares.length === 0) return null;
+  return shares.map((loadPct, i) => ({ week: i + 1, loadPct }));
 }
 
 // ---- Zugriff ----------------------------------------------------------------

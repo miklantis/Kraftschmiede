@@ -4,6 +4,7 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  buildRebuildRamp,
   buildStrengthWeekPlan,
   buildTestPhaseWeekPlan,
   buildPhaseFromType,
@@ -80,6 +81,36 @@ describe("derivePhaseContext", () => {
       careful: false,
     });
     expect(ctx.journeyId).toBe(JOURNEY_ID);
+  });
+
+  it("gibt den Wiederaufbau vorsichtig und mit seiner Laststufe weiter", () => {
+    // Die Vorsicht (careful) greift beim Wiederaufbau als einzige Bremse dort,
+    // wo der Lastdeckel gar nichts tut: bei einer Uebung ohne Referenzgewicht.
+    const ctx = derivePhaseContext(
+      journeyWith([
+        phase({
+          focus: "rebuild",
+          name: "Wiederaufbau",
+          weeks: 3,
+          load_plan: buildRebuildRamp(3, 0.65, 0.95),
+        }),
+      ]),
+      [],
+      3,
+      "2026-08-05",
+    );
+    expect(ctx.phaseFocus).toEqual({
+      focus: "rebuild",
+      plan_builder: null,
+      load_builder: "rebuild_ramp",
+      careful: true,
+    });
+    expect(ctx.loadFactor).toBe(0.65);
+    // Der Bezug nennt den Journey-Start, nicht mehr die Fastenpause: die
+    // Lastvorgabe gehoert nicht mehr nur zur Fasten-Vorlage.
+    expect(ctx.loadNote).toContain("65 %");
+    expect(ctx.loadNote).toContain("beim Start der Journey");
+    expect(ctx.loadNote).not.toContain("vor der Pause");
   });
 
   it("gibt ohne gesetzte Grenzen kein Phasenband vor", () => {

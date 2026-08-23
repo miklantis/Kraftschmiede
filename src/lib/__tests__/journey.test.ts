@@ -6,7 +6,11 @@ import {
   type JourneyPhaseInput,
   type PhasePlacementInfo,
 } from "../journey";
-import { buildStrengthWeekPlan, buildTestPhaseWeekPlan } from "@/engine";
+import {
+  buildRebuildRamp,
+  buildStrengthWeekPlan,
+  buildTestPhaseWeekPlan,
+} from "@/engine";
 
 function phase(over: Partial<JourneyPhaseInput> = {}): JourneyPhaseInput {
   return {
@@ -313,6 +317,86 @@ describe("buildPhaseViews – Wochenplan", () => {
     });
     expect(views.every((v) => v.weekRows === null)).toBe(true);
     expect(views[1].detail[0].k).toBe("Wiederholungsband");
+  });
+});
+
+// Zweiter Bauweg derselben Tabelle: Der Wiederaufbau gibt nur die Last vor -
+// Saetze und Wiederholungen bleiben beim Coach - und traegt deshalb gar keine
+// Wochenliste. Seine Laststufen stehen trotzdem als Wochentabelle da.
+describe("buildPhaseViews – Wochentabelle aus der Lastliste", () => {
+  const wiederaufbau = phase({
+    name: "Wiederaufbau",
+    focus: "rebuild",
+    weeks: 3,
+    setsStart: 2,
+    setsEnd: 4,
+    deloadWeek: null,
+    repTargetMin: 6,
+    repTargetMax: 10,
+    loadPlan: buildRebuildRamp(3, 0.65, 0.95),
+    weekPlan: null,
+  });
+
+  it("zeigt an der laufenden Phase je Woche ihren Lastanteil", () => {
+    const views = buildPhaseViews([wiederaufbau], {
+      phaseIndex: 0,
+      weekInPhase: 2,
+      done: false,
+    });
+    const rows = views[0].weekRows!;
+    expect(rows.map((r) => r.label)).toEqual(["Woche 1", "Woche 2", "Woche 3"]);
+    expect(rows.map((r) => r.targets)).toEqual(["65 %", "80 %", "95 %"]);
+    expect(rows.map((r) => r.state)).toEqual(["past", "current", "future"]);
+    expect(rows[0].mark).toBe("✓");
+    expect(rows[1].mark).toBe("");
+    // Derselbe Satz an jeder Zeile waere nur Rauschen - die Leiter spricht fuer
+    // sich.
+    expect(rows.every((r) => r.note === "")).toBe(true);
+  });
+
+  it("gibt jeder Phasenwoche eine Zeile, auch wenn die Liste kuerzer ist", () => {
+    const views = buildPhaseViews(
+      [
+        phase({
+          ...wiederaufbau,
+          weeks: 4,
+          loadPlan: buildRebuildRamp(3, 0.65, 0.95),
+        }),
+      ],
+      { phaseIndex: 0, weekInPhase: 1, done: false },
+    );
+    const rows = views[0].weekRows!;
+    expect(rows).toHaveLength(4);
+    // Hinter der Liste haelt die Vorgabe auf ihrem letzten Wert.
+    expect(rows[3].targets).toBe("95 %");
+  });
+
+  it("zeigt die Tabelle nur an der laufenden Phase", () => {
+    const views = buildPhaseViews([wiederaufbau, phase()], {
+      phaseIndex: 1,
+      weekInPhase: 1,
+      done: false,
+    });
+    expect(views[0].weekRows).toBeNull();
+    // In der Vorschau laeuft keine Woche - dort bleibt die Tabelle ebenfalls weg.
+    expect(buildTemplatePhaseViews([wiederaufbau])[0].weekRows).toBeNull();
+  });
+
+  it("nennt an der laufenden Woche den Anteil, sonst die Spanne", () => {
+    const views = buildPhaseViews([wiederaufbau], {
+      phaseIndex: 0,
+      weekInPhase: 2,
+      done: false,
+    });
+    expect(views[0].detail).toContainEqual({
+      k: "Vorgegebene Last",
+      v: "80 %",
+    });
+    expect(views[0].loadNote).toContain("80 %");
+    expect(buildTemplatePhaseViews([wiederaufbau])[0].detail).toContainEqual({
+      k: "Vorgegebene Last",
+      v: "65 → 95 %",
+    });
   });
 });
 

@@ -1,10 +1,11 @@
 import { describe, it, expect } from "vitest";
 import {
   buildSeedPhase,
+  phaseTypeByKey,
   journeyTemplateSeeds,
   phaseTypeSeeds,
-  seedPhaseLoadPlan,
 } from "@/seed/definitions";
+import { buildPhaseFromType } from "@/engine/phaseBuild";
 import { phaseTypeInsert } from "@/schemas";
 
 // Die Bausteine sind ab hier die Quelle fuer die Werte einer Phase. Diese Tests
@@ -133,11 +134,9 @@ describe("Journey-Vorlagen im Seed", () => {
   it("gibt jeder Lastliste gueltige Anteile - eine Zeile je Phasenwoche", () => {
     for (const t of journeyTemplateSeeds) {
       for (const p of t.phases) {
-        const plan = seedPhaseLoadPlan(p);
+        const plan = buildSeedPhase(p).loadPlan;
         if (plan === null) continue;
-        expect(plan.map((w) => w.week)).toEqual(
-          plan.map((_, i) => i + 1),
-        );
+        expect(plan.map((w) => w.week)).toEqual(plan.map((_, i) => i + 1));
         expect(plan).toHaveLength(buildSeedPhase(p).weeks);
         for (const w of plan) {
           expect(Number.isFinite(w.loadPct)).toBe(true);
@@ -156,7 +155,7 @@ describe("Journey-Vorlagen im Seed", () => {
     expect(bestand.length).toBe(journeyTemplateSeeds.length - 1);
     for (const t of bestand) {
       for (const p of t.phases) {
-        expect(seedPhaseLoadPlan(p)).toBeNull();
+        expect(buildSeedPhase(p).loadPlan).toBeNull();
       }
     }
   });
@@ -221,7 +220,7 @@ describe('Vorlage "Wiederaufbau nach Fasten"', () => {
     if (vorlage === undefined) return;
     // Die vierte Phase gibt nichts mehr vor: ab dort steuert der Coach wieder
     // normal. Frueher stand dort ein Lastfaktor von 1.0, was dasselbe bedeutete.
-    expect(vorlage.phases.map(seedPhaseLoadPlan)).toEqual([
+    expect(vorlage.phases.map((p) => buildSeedPhase(p).loadPlan)).toEqual([
       [{ week: 1, loadPct: 0.65 }],
       [{ week: 1, loadPct: 0.8 }],
       [{ week: 1, loadPct: 0.95 }],
@@ -249,5 +248,43 @@ describe('Vorlage "Wiederaufbau nach Fasten"', () => {
     expect(vorlage.summary).toContain("80");
     expect(vorlage.summary).toContain("95");
     expect(vorlage.summary.length).toBeGreaterThan(200);
+  });
+});
+
+describe("Baustein Wiederaufbau", () => {
+  const baustein = phaseTypeByKey("rebuild");
+
+  it("faehrt von 65 auf 95 Prozent - in drei Wochen ueber 80", () => {
+    expect(buildPhaseFromType(baustein).loadPlan).toEqual([
+      { week: 1, loadPct: 0.65 },
+      { week: 2, loadPct: 0.8 },
+      { week: 3, loadPct: 0.95 },
+    ]);
+  });
+
+  it("verteilt die Stufen ueber jede erlaubte Wochenzahl neu", () => {
+    const prozente = (weeks: number): number[] =>
+      (buildPhaseFromType(baustein, { weeks }).loadPlan ?? []).map((w) =>
+        Math.round(w.loadPct * 100),
+      );
+    expect(prozente(4)).toEqual([65, 75, 85, 95]);
+    expect(prozente(6)).toEqual([65, 71, 77, 83, 89, 95]);
+  });
+
+  it("laesst mindestens drei Wochen zu - zwei waeren ein Sprung", () => {
+    expect(baustein.weeksMin).toBe(3);
+    expect(baustein.weeksDefault).toBe(3);
+  });
+
+  it("steigert vorsichtig und ohne eigene Wochenliste", () => {
+    const phase = buildPhaseFromType(baustein);
+    // Der einzige gemischte Baustein: die Last kommt aus der Liste, Saetze und
+    // Wiederholungen bleiben beim Coach.
+    expect(phase.careful).toBe(true);
+    expect(phase.weekPlan).toBeNull();
+    expect(phase.planBuilder).toBeNull();
+    expect(phase.loadBuilder).toBe("rebuild_ramp");
+    // Der Block ist selbst die Entlastung.
+    expect(phase.deloadWeek).toBeNull();
   });
 });

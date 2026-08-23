@@ -1,6 +1,16 @@
 {
   "versions": [
     {
+      "version": "1.46.6",
+      "date": "2026-08-23",
+      "changes": [
+        "Der Wiederaufbau ist ab jetzt ein eigener Baustein: ein zusammenhängender Block, der das Gewicht von 65 auf 95 Prozent deines Standes beim Journey-Start hochfährt - statt mehrerer Ein-Wochen-Phasen hintereinander. Die Stufen verteilen sich gleichmäßig auf die eingestellte Wochenzahl: drei Wochen ergeben 65, 80 und 95 Prozent, sechs Wochen 65, 71, 77, 83, 89 und 95.",
+        "Läuft eine Phase, die nur die Last vorgibt, steht ihre Leiter jetzt als Wochentabelle auf der Journey-Seite: je Woche der Anteil, die laufende Woche hervorgehoben, abgeschlossene abgehakt. Bisher gab es diese Tabelle nur an Phasen mit festem Wochenplan.",
+        "Die Hinweise zur vorgegebenen Last beziehen sich jetzt auf \"dein Gewicht beim Start der Journey\" statt auf \"deinen Stand vor der Pause\" - die Lastvorgabe gehört nicht mehr nur zur Fasten-Vorlage.",
+        "Zu sehen ist der neue Baustein erst, sobald die Vorlage \"Wiederaufbau nach Fasten\" auf ihn umgestellt ist. An der laufenden Journey ändert sich nichts."
+      ]
+    },
+    {
       "version": "1.46.5",
       "date": "2026-08-23",
       "changes": [

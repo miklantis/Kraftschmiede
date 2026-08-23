@@ -4,7 +4,6 @@
 // Skill-Progressionen. Vorlagen und Skills 1:1 aus V1 (data.js:
 // JOURNEY_TEMPLATES und SKILLS).
 
-import type { LoadPlan } from "@/engine/loadPlan";
 import {
   buildPhaseFromType,
   type BuiltPhase,
@@ -297,22 +296,14 @@ export const phaseTypeSeeds: SeedPhaseType[] = [
  *
  * Getippte Zahlen stehen hier nur noch, wo eine Phase bewusst von den Vorgaben
  * ihres Bausteins abweicht. Alles andere (Wochen, Saetze, Band, Entlastung,
- * Wochenliste, Bauart, vorsichtige Steigerung) kommt aus `phaseTypeSeeds` und
- * wird beim Seeden ueber `buildPhaseFromType` gebaut – so gibt es nur eine
- * Pflegequelle. Ohne eigenen Namen traegt die Phase den Namen ihres Bausteins.
+ * Wochenliste, Lastliste, Bauart, vorsichtige Steigerung) kommt aus
+ * `phaseTypeSeeds` und wird beim Seeden ueber `buildPhaseFromType` gebaut – so
+ * gibt es nur eine Pflegequelle. Ohne eigenen Namen traegt die Phase den Namen
+ * ihres Bausteins.
  */
 export interface SeedJourneyPhase extends PhaseAdjustments {
   /** Baustein-Schluessel; wandert unveraendert in `phases.focus`. */
   type: Focus;
-  /**
-   * Lastvorgabe der Phase: je Phasenwoche der Anteil des Referenzgewichts
-   * (0.65 = 65 %). Ohne Angabe gibt die Phase keine Last vor und der Coach
-   * bestimmt das Gewicht wie gewohnt aus der letzten Leistung. Eine Vorgabe
-   * macht nur der "Wiederaufbau nach Fasten"; dort steuert die Journey das
-   * Gewicht. Die Bauregel, die diese Stufen selbst verteilt, kommt mit dem
-   * Wiederaufbau-Baustein (Schritt 5).
-   */
-  load?: number[];
 }
 
 export interface SeedJourneyTemplate {
@@ -337,14 +328,8 @@ export function phaseTypeByKey(key: PhaseTypeKey): SeedPhaseType {
 /** Vorlagen-Phase zu einer fertigen Phasenzeile bauen. Einzige Stelle, an der
  *  aus dem Seed eine Phase entsteht – Vorlagen-Seed und Test lesen dieselbe. */
 export function buildSeedPhase(phase: SeedJourneyPhase): BuiltPhase {
-  const { type, load: _load, ...anpassungen } = phase;
+  const { type, ...anpassungen } = phase;
   return buildPhaseFromType(phaseTypeByKey(type), anpassungen);
-}
-
-/** Lastliste einer Vorlagen-Phase; ohne Angabe keine Vorgabe (null). */
-export function seedPhaseLoadPlan(phase: SeedJourneyPhase): LoadPlan | null {
-  if (phase.load === undefined || phase.load.length === 0) return null;
-  return phase.load.map((loadPct, i) => ({ week: i + 1, loadPct }));
 }
 
 export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
