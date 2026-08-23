@@ -23,6 +23,7 @@ import {
 import {
   buildSeedPhase,
   journeyTemplateSeeds,
+  phaseTypeByKey,
   phaseTypeSeeds,
 } from "@/seed/definitions";
 import { focusEnum, phaseTypeKeyEnum } from "@/schemas";
@@ -298,5 +299,67 @@ describe("Abgleich 7: die laufende Journey bleibt unberuehrt", () => {
 
   it("benennt die letzte Phase nach ihrem Baustein", () => {
     expect(phasen.at(-1)?.name).toBe("Test/Peak");
+  });
+});
+
+// Abgleich 8: die Vorlagen, die der Seed baut, gegen die Grenzen ihres Bausteins.
+//
+// Abgleich 4 prueft die Grenzen jedes Bausteins ueber jede erlaubte Wochenzahl
+// durch - aber mit den Vorgaben des Bausteins selbst. Wo eine Vorlage davon
+// abweicht (die Fasten-Vorlage stellt ihre Testphase auf eine Woche), sagt das
+// nichts. Diese Pruefung schliesst die Luecke: gebaut wird, was der Seed
+// tatsaechlich erzeugt, gemessen wird an den Grenzen des jeweiligen Bausteins.
+//
+// Die Sperren bleiben aussen vor. Wo ein Baustein seine Saetze oder sein Band
+// sperrt, gibt die Wochenliste beides ohnehin vor - der mitgeschriebene Wert
+// ist dort wirkungslos und darf ueber der Vorgabe liegen (siehe
+// `buildPhaseFromType`, das die Sperren bewusst nicht erzwingt).
+const VORLAGENPHASEN = journeyTemplateSeeds.flatMap((t) =>
+  t.phases.map((p) => ({
+    baustein: phaseTypeByKey(p.type),
+    phase: buildSeedPhase(p),
+    wo: `${t.key}/${p.type}`,
+  })),
+);
+
+describe("Abgleich 8: die gebauten Vorlagen bleiben in den Grenzen ihres Bausteins", () => {
+  it("laesst jede Vorlagenphase innerhalb der erlaubten Wochenzahl laufen", () => {
+    for (const { baustein, phase, wo } of VORLAGENPHASEN) {
+      expect(phase.weeks, wo).toBeGreaterThanOrEqual(baustein.weeksMin);
+      expect(phase.weeks, wo).toBeLessThanOrEqual(baustein.weeksMax);
+    }
+  });
+
+  it("haelt die Saetze unter der Obergrenze - wo sie nicht gesperrt sind", () => {
+    const geprueft = VORLAGENPHASEN.filter((v) => !v.baustein.setsLocked);
+    // Ohne mindestens eine offene Phase liefe die Pruefung ins Leere.
+    expect(geprueft.length).toBeGreaterThan(0);
+    for (const { baustein, phase, wo } of geprueft) {
+      expect(phase.setsStart, wo).toBeLessThanOrEqual(baustein.setsMax);
+      expect(phase.setsEnd, wo).toBeLessThanOrEqual(baustein.setsMax);
+    }
+  });
+
+  it("haelt das Wiederholungsband im Korridor - wo es Wirkung hat", () => {
+    const geprueft = VORLAGENPHASEN.filter((v) => !v.baustein.repBandLocked);
+    expect(geprueft.length).toBeGreaterThan(0);
+    let mitKorridor = 0;
+    for (const { baustein, phase, wo } of geprueft) {
+      // Ohne Vorgabeband (Erhaltung) gibt es auch keinen Korridor - dann
+      // behaelt die Uebung ihr eigenes Band und es ist nichts zu messen.
+      if (baustein.repBoundMin !== null && phase.repTargetMin !== null) {
+        expect(phase.repTargetMin, wo).toBeGreaterThanOrEqual(
+          baustein.repBoundMin,
+        );
+        mitKorridor++;
+      }
+      if (baustein.repBoundMax !== null && phase.repTargetMax !== null) {
+        expect(phase.repTargetMax, wo).toBeLessThanOrEqual(
+          baustein.repBoundMax,
+        );
+        mitKorridor++;
+      }
+    }
+    expect(mitKorridor).toBeGreaterThan(0);
   });
 });

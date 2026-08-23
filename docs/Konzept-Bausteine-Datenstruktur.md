@@ -12,9 +12,9 @@
 > bis 0047). Nachgeprüft gegen den gebauten Stand: Die Werte der acht Bausteine
 > (Abschnitt 4), beide Wochenleitern (Abschnitt 8), die Laststufen des Wiederaufbaus
 > (Abschnitt 6) und die umgebaute Fasten-Vorlage (Abschnitt 9) stehen so im System, wie
-> sie hier beschrieben sind. Ein neunter Schritt kam beim Nachprüfen dazu und ist noch
-> offen: Der Abgleichstest (Abschnitt 12) soll die Vorlagenphasen, die der Seed baut,
-> künftig auch gegen die Grenzen ihres Bausteins prüfen (#334).
+> sie hier beschrieben sind. Ein neunter Schritt kam beim Nachprüfen dazu und ist
+> ebenfalls gebaut: Der Abgleichstest prüft die Vorlagenphasen, die der Seed baut, seither
+> auch gegen die Grenzen ihres Bausteins (#334, Abschnitt 12, Punkt 8).
 >
 > Stand 22.08.2026 (vor dem Bau): gegen Code und Live-Datenbank durchgeprüft. Die
 > Befunde sind eingearbeitet – die größte Korrektur betrifft den Steuerweg (Abschnitt 2,
@@ -828,6 +828,14 @@ fehl, sobald eine Seite vergessen wird. Er prüft bei jedem Lauf:
 7. **Laufende Journey unberührt:** Die Phasen der laufenden Journey ergeben nach dem
    Umbau dieselben Vorgaben wie vorher – Band, Sätze, Wochenliste, vorsichtige Steigerung
    und Anker-Bezug der Testphase.
+8. **Vorlagen in den Grenzen ihres Bausteins:** Jede Phase, die der Seed tatsächlich baut,
+   liegt in der erlaubten Wochenzahl ihres Bausteins, unter dessen Satz-Obergrenze und im
+   Korridor seines Wiederholungsbandes. Punkt 4 prüft die Grenzen mit den Vorgaben des
+   Bausteins selbst – wo eine Vorlage davon abweicht (die Fasten-Vorlage stellt ihre
+   Testphase auf eine Woche), sagt das nichts. Ausgenommen bleiben gesperrte Sätze und
+   gesperrte Bänder: Dort gibt die Wochenliste beides ohnehin vor, der mitgeschriebene
+   Wert ist wirkungslos und darf über der Vorgabe liegen (Abschnitt 5). Dieser Punkt kam
+   beim Nachprüfen dazu und wurde als neunter Schritt gebaut (#334).
 
 Punkt 6 und 7 sind die eigentliche Absicherung dieses Vorhabens: Sie machen aus „das
 sollte nichts ändern" ein „das ändert nachweislich nichts".
