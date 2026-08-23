@@ -37,6 +37,13 @@ export async function ensureDefinitionsSeeded(
     throw new Error(`Pruefung des Datenstands fehlgeschlagen: ${error.message}`);
   }
   const definitionsSeeded = (count ?? 0) === 0;
+
+  // Bausteine zuerst, und zwar zwingend: seit Migration 0048 zeigt der Fokus
+  // jeder Vorlagenphase per Fremdschluessel auf den Baustein desselben Nutzers.
+  // Fehlt er, scheitert das Anlegen der Vorlagen. Idempotent - nur fehlende
+  // Schluessel werden ergaenzt, bestehende Zeilen bleiben unangetastet.
+  const phaseTypesAdded = await ensurePhaseTypesSeeded(userId);
+
   if (definitionsSeeded) {
     await seedJourneyTemplates(userId);
     await seedSkills(userId);
@@ -46,11 +53,6 @@ export async function ensureDefinitionsSeeded(
   // werden ergaenzt, bestehende (auch per V1-Import) bleiben unangetastet. So
   // bekommen auch frueher angelegte Nutzer das Skill-Tor-Inventar.
   const equipmentAdded = await ensureEquipmentSeeded(userId);
-
-  // Bausteine ebenso: nur fehlende Schluessel werden ergaenzt. Bestehende Nutzer
-  // bekommen sie ueber die Migration, dieser Weg faengt neue Konten und spaeter
-  // dazukommende Bausteine ab.
-  const phaseTypesAdded = await ensurePhaseTypesSeeded(userId);
 
   return {
     seeded: definitionsSeeded || equipmentAdded > 0 || phaseTypesAdded > 0,

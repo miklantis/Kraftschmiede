@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.46.11",
+      "date": "2026-08-23",
+      "changes": [
+        "Der Typ einer Phase (Maximalkraft, Hypertrophie, Wiederaufbau und so weiter) ist ab jetzt fest an die Bausteine gebunden: Die Datenbank nimmt keine Phase mehr an, zu der es keinen passenden Baustein gibt.",
+        "Umgekehrt lässt sich ein Baustein, den eine Phase gerade nutzt, nicht mehr versehentlich löschen - wichtig für den späteren Journey-Editor.",
+        "Sichtbar ändert sich nichts: Vorlagen, laufende Journey und Coach arbeiten unverändert weiter."
+      ]
+    },
+    {
       "version": "1.46.10",
       "date": "2026-08-23",
       "changes": [

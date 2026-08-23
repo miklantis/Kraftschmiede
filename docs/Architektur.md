@@ -101,9 +101,14 @@ Recovery-Fenster, Timer).
   Phasenwoche, Last aufsteigend und höchstens volles Niveau). Was ein Baustein
   ausdrücklich nicht sagt, ist wie gerechnet wird: `plan_builder`/`load_builder` nennen
   die Bauregel nur beim Namen, die Rechnung steht in der Engine. Gelesen wird die Tabelle
-  beim Anlegen einer Phase, nicht beim Rechnen (siehe 4.2)
+  beim Anlegen einer Phase, nicht beim Rechnen (siehe 4.2). Seit Migration 0048 zeigen
+  beide Phasentabellen per Fremdschlüssel über `(user_id, focus)` hierher
+  (`phase_types (user_id, key)`, ADR-0021): Eine Phase kann keinen Typ tragen, den es als
+  Baustein nicht gibt, und ein Baustein, auf den Phasen zeigen, lässt sich nicht löschen.
+  Deshalb legt der Seed die Bausteine vor den Journey-Vorlagen an (`src/lib/seed.ts`)
 - **journey_templates** – key, name, tagline, for_whom, summary, position
-- **journey_template_phases** – journey_template_id (FK), name, focus, weeks, sets_start,
+- **journey_template_phases** – journey_template_id (FK), name, focus (FK auf
+  `phase_types` über Nutzer plus Schlüssel, Migration 0048), weeks, sets_start,
   sets_end, deload_week (nullable), rep_target_min/max, load_plan (jsonb, nullable –
   Lastliste der Phase: je Phasenwoche der Anteil des Referenzgewichts, Form in
   `engine/loadPlan.ts`), week_plan (jsonb, nullable – Wochenplan der Phase, Form in
@@ -127,7 +132,8 @@ Begründung in ADR-0003.
   end_date (nullable, gesetzt beim Abschluss bzw. beim Wechsel), created_at. Invariante:
   Partial Unique Index `journeys_one_active_per_user` auf
   `user_id where active` -> genau eine aktive Journey pro Nutzer (ADR-0004)
-- **phases** – journey_id (FK), name, focus, weeks, sets_start, sets_end, deload_week
+- **phases** – journey_id (FK), name, focus (FK auf `phase_types` über Nutzer plus
+  Schlüssel, Migration 0048), weeks, sets_start, sets_end, deload_week
   (nullable), rep_target_min/max, load_plan (jsonb, nullable – Lastliste der Phase: je
   Phasenwoche der Anteil des Referenzgewichts; null = keine Vorgabe, dann rechnet der
   Coach wie gewohnt), week_plan (jsonb, nullable – Kopie des Vorlagen-Wochenplans,
@@ -204,6 +210,11 @@ Funktionen) muss jede Tabelle zurückbringen.
 Das Export-Format bleibt abwärtskompatibel: Sicherungen der Schemaversionen v2 und v3
 sind weiterhin einspielbar. Kennt eine ältere Sicherung einen Schlüssel nicht, bleibt die
 betroffene Tabelle beim Wiederherstellen leer.
+
+Eine Ausnahme davon sind seit Migration 0048 die Bausteine: Enthält eine Sicherung keine
+`phaseTypes`, scheitert das Einfügen der Phasen am Fremdschlüssel, statt Phasen ohne
+gültigen Typ zu hinterlassen (ADR-0021). Die Einfügereihenfolge stimmt bereits – die
+Bausteine haben Tiefe 0 und laufen damit vor Vorlagenphasen (1) und Phasen (2).
 
 #### Zeilen auf die bekannten Spalten eindampfen
 
