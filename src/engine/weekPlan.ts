@@ -9,6 +9,8 @@
 
 import { z } from "zod";
 
+import type { PhaseBuild } from "./types";
+
 // ---- Form -------------------------------------------------------------------
 
 /** Eine Woche des Plans. Quelle der Wahrheit fuer die Form ist dieses Schema;
@@ -48,8 +50,15 @@ export function parseWeekPlan(value: unknown): WeekPlan | null {
 
 // ---- Eckwerte ---------------------------------------------------------------
 
-/** Phasen-Fokusse, die nach Wochenplan laufen statt nach Doppelprogression. */
-export const WEEK_PLAN_FOCUSES = ["strength", "power", "test"] as const;
+/** Fokus -> Bauregel seiner Wochenliste. Gilt beim Anlegen einer Phase
+ *  (buildWeekPlan, phaseBuildForFocus); zur Laufzeit wird nicht mehr der Fokus
+ *  gefragt, sondern der Bauart-Vermerk an der Phase. Ab Schritt 3 kommt die
+ *  Zuordnung aus dem Baustein. */
+const PLAN_BUILDER_BY_FOCUS = {
+  strength: "strength_ladder",
+  power: "power_ladder",
+  test: "test",
+} as const;
 
 /** Durchgehende Satzzahl der Kraft- und Schnellkraftwochen. */
 export const WEEK_PLAN_SETS = 4;
@@ -166,34 +175,84 @@ export function weekDemandsSession(
   return week != null && week.sets > 0;
 }
 
-/** Laeuft dieser Fokus nach Wochenplan? */
-export function hasWeekPlanFocus(focus: string | null | undefined): boolean {
-  return (WEEK_PLAN_FOCUSES as readonly string[]).includes(focus ?? "");
+// ---- Bauart-Vermerk ---------------------------------------------------------
+// Ein Wochenplan allein sagt nicht, was er tut: Kraft- und Testphasen tragen
+// beide einen und verhalten sich gegensaetzlich. Deshalb schreibt jede Phase
+// beim Anlegen mit, nach welcher Bauregel ihre Listen entstanden sind - und zur
+// Laufzeit wird dieser Vermerk gelesen statt einer Fokus-Liste im Code
+// (Konzept Bausteine, Abschnitt 2).
+
+/** Bauregeln der Wochenliste, deren Plan die Last Woche fuer Woche hochfaehrt
+ *  (Anker beim Phaseneintritt plus Wochenschritt, engine/planLoad.ts). */
+export const RISING_PLAN_BUILDERS = ["strength_ladder", "power_ladder"] as const;
+
+/** Bauregel der Testphase: sie traegt ebenfalls einen Plan, steigert aber
+ *  nichts - ihre Entlastungswochen arbeiten mit einem Anteil des Startgewichts
+ *  X der vorangegangenen Kraftphase, ihre letzte Woche plant gar nichts. */
+export const TEST_PLAN_BUILDER = "test";
+
+/** Alle Bauregeln der Wochenliste. Einzige Pflegequelle: die Zod-Enums der
+ *  Phasen-Schemas leiten sich daraus ab. */
+export const PLAN_BUILDERS = [
+  ...RISING_PLAN_BUILDERS,
+  TEST_PLAN_BUILDER,
+] as const;
+export type PlanBuilderName = (typeof PLAN_BUILDERS)[number];
+
+/** Bauregeln der Lastliste (Anteil des Referenzgewichts je Phasenwoche). Die
+ *  Rampe selbst kommt mit dem Wiederaufbau-Baustein (Schritt 5). */
+export const LOAD_BUILDERS = ["rebuild_ramp"] as const;
+export type LoadBuilderName = (typeof LOAD_BUILDERS)[number];
+
+/** Traegt diese Phase ueberhaupt eine gebaute Wochenliste? */
+export function hasPlanBuilder(phase: PhaseBuild | null | undefined): boolean {
+  return (PLAN_BUILDERS as readonly string[]).includes(phase?.plan_builder ?? "");
 }
 
-/** Fokusse, deren Wochenplan die Last als Rampe steuert (Anker beim
- *  Phaseneintritt plus Wochenschritt, engine/planLoad.ts). */
-export const LOAD_PLAN_FOCUSES = ["strength", "power"] as const;
-
-/** Steuert der Wochenplan dieses Fokus das Gewicht als Rampe? */
-export function hasLoadPlanFocus(focus: string | null | undefined): boolean {
-  return (LOAD_PLAN_FOCUSES as readonly string[]).includes(focus ?? "");
+/** Faehrt die Wochenliste dieser Phase die Last als Rampe hoch? */
+export function buildsRisingPlan(phase: PhaseBuild | null | undefined): boolean {
+  return (RISING_PLAN_BUILDERS as readonly string[]).includes(
+    phase?.plan_builder ?? "",
+  );
 }
 
-/** Fokus der Testphase: sie traegt ebenfalls einen Plan, steigert aber nichts -
- *  ihre Entlastungswochen arbeiten mit einem Anteil des Startgewichts X der
- *  vorangegangenen Kraftphase, ihre letzte Woche plant gar nichts. */
-export const TEST_FOCUS = "test";
-
-/** Laeuft dieser Fokus als Testphase (Entlastung, dann reine Testwoche)? */
-export function hasTestFocus(focus: string | null | undefined): boolean {
-  return focus === TEST_FOCUS;
+/** Laeuft diese Phase als Testphase (Entlastung, dann reine Testwoche)? */
+export function buildsTestPlan(phase: PhaseBuild | null | undefined): boolean {
+  return phase?.plan_builder === TEST_PLAN_BUILDER;
 }
 
-/** Steuert der Wochenplan dieses Fokus das Gewicht - als Rampe (Kraft,
+/** Steuert die Wochenliste dieser Phase das Gewicht - als Rampe (Kraft,
  *  Schnellkraft) oder als Entlastung (Testphase)? */
-export function planGovernsLoad(focus: string | null | undefined): boolean {
-  return hasLoadPlanFocus(focus) || hasTestFocus(focus);
+export function planGovernsLoad(phase: PhaseBuild | null | undefined): boolean {
+  return buildsRisingPlan(phase) || buildsTestPlan(phase);
+}
+
+/** Steigert der Coach in dieser Phase vorsichtig? Ersetzt den fest
+ *  verdrahteten Zweig `focus === "reentry"`. */
+export function isCarefulPhase(phase: PhaseBuild | null | undefined): boolean {
+  return phase?.careful === true;
+}
+
+/** Bauart einer neu entstehenden Phase aus ihrem Fokus. Dieselbe Regel, nach
+ *  der Migration 0044 den Bestand nachtraegt - sie gilt, bis die Bausteine
+ *  selbst die Quelle sind (Schritt 3). */
+export function phaseBuildForFocus(
+  focus: string | null | undefined,
+  weeks: number,
+): {
+  plan_builder: PlanBuilderName | null;
+  load_builder: LoadBuilderName | null;
+  careful: boolean;
+} {
+  const builder =
+    PLAN_BUILDER_BY_FOCUS[focus as keyof typeof PLAN_BUILDER_BY_FOCUS] ?? null;
+  return {
+    // Ohne gebaute Wochenliste kein Vermerk: eine Kraftphase ohne Plan laeuft
+    // ueber den Coach und darf nicht als Rampe gelesen werden.
+    plan_builder: buildWeekPlan(focus, weeks) == null ? null : builder,
+    load_builder: null,
+    careful: focus === "reentry",
+  };
 }
 
 /** Plan zur Phase: Kraft und Schnellkraft bekommen die Leiter, Test die

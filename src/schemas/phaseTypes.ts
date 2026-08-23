@@ -11,6 +11,7 @@
 // geaenderte Baustein-Vorgabe greift damit nie in eine laufende Journey.
 
 import { z } from "zod";
+import { LOAD_BUILDERS, PLAN_BUILDERS } from "@/engine/weekPlan";
 import { phaseTypeKeyEnum, uuid } from "./shared";
 
 // Steuerweg: gibt eine Wochenliste Saetze und Wiederholungen vor, oder steuert
@@ -18,16 +19,13 @@ import { phaseTypeKeyEnum, uuid } from "./shared";
 export const phaseControlEnum = z.enum(["coach", "plan"]);
 export type PhaseControl = z.infer<typeof phaseControlEnum>;
 
-// Bauregel der Wochenliste. Die Leitern selbst stehen im Code (engine/weekPlan).
-export const planBuilderEnum = z.enum([
-  "strength_ladder",
-  "power_ladder",
-  "test",
-]);
+// Bauregel der Wochenliste bzw. der Lastliste. Die Bauregeln selbst stehen im
+// Code (engine/weekPlan.ts) - von dort kommt auch die Liste der gueltigen
+// Namen, damit Tabelle, Schema und Rechnung nicht auseinanderlaufen.
+export const planBuilderEnum = z.enum(PLAN_BUILDERS);
 export type PlanBuilder = z.infer<typeof planBuilderEnum>;
 
-// Bauregel der Lastliste (Anteil des Referenzgewichts je Phasenwoche).
-export const loadBuilderEnum = z.enum(["rebuild_ramp"]);
+export const loadBuilderEnum = z.enum(LOAD_BUILDERS);
 export type LoadBuilder = z.infer<typeof loadBuilderEnum>;
 
 // phase_types – ein Baustein je Zeile, pro Nutzer geseedet (ADR-0002).

@@ -58,12 +58,33 @@ export interface Soreness {
   overall?: number;
 }
 
+// Bauart-Vermerk einer Phase, so wie er an der Phasenzeile steht: nach welchen
+// Bauregeln ihre Listen entstanden sind und ob der Coach hier vorsichtig
+// steigert. Ein Wochenplan allein sagt nicht, was er tut - Kraft- und
+// Testphasen tragen beide einen und verhalten sich gegensaetzlich (Konzept
+// Bausteine, Abschnitt 2). Die Felder sind optional, weil ihn nicht jeder
+// Aufrufer vollstaendig mitfuehrt.
+export interface PhaseBuild {
+  /** Bauregel der Wochenliste; null = keine Wochenliste. */
+  plan_builder?: string | null;
+  /** Bauregel der Lastliste; null = keine Lastvorgabe. */
+  load_builder?: string | null;
+  /** Steigert der Coach in dieser Phase vorsichtig? */
+  careful?: boolean;
+}
+
+// Fokus plus Bauart - so sehen Coach und Empfehlung die laufende Phase. Der
+// Fokus sagt, was die Phase ist, die Bauart, wie ihre Listen entstanden sind.
+export interface PhaseMark extends PhaseBuild {
+  focus?: string;
+}
+
 export interface SuitabilityCtx {
   now?: number;
   lastByExercise?: Record<string, number>;
   soreness?: Soreness;
   weekCounts?: Record<string, number>;
-  phase?: { focus?: string };
+  phase?: PhaseMark | null;
   freqTarget?: number;
 }
 

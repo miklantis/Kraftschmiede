@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { journeyWeekForDate } from "@/engine/journey";
-import { hasLoadPlanFocus } from "@/engine/weekPlan";
+import { buildsRisingPlan } from "@/engine/weekPlan";
 import { todayISO } from "@/lib/format";
 import { asRmFormula } from "@/lib/rmTest";
 import { buildFinishRows } from "@/lib/liveFinish";
@@ -97,7 +97,7 @@ export function useFinishSession(): UseFinishSession {
       const planPhase =
         (journeyQ.data?.phases ?? []).find(
           (p) =>
-            p.id === session.phaseId && hasLoadPlanFocus(p.focus) && !!p.week_plan,
+            p.id === session.phaseId && buildsRisingPlan(p) && !!p.week_plan,
         ) ?? null;
 
       // Katalog-Patches: die Regel steht in katalogPatch, hier wird nur der

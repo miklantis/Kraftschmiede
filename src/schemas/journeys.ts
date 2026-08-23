@@ -5,6 +5,7 @@
 import { z } from "zod";
 import { weekPlanSchema } from "@/engine/weekPlan";
 import { focusEnum, isoDate, isoTimestamp, uuid } from "./shared";
+import { loadBuilderEnum, planBuilderEnum } from "./phaseTypes";
 
 // Status einer Journey (journeys.status).
 export const journeyStatusEnum = z.enum(["active", "archived"]);
@@ -56,6 +57,12 @@ export const phaseRow = z.object({
   rep_target_max: z.number().int().nullable(),
   load_factor: z.number(),
   week_plan: weekPlanSchema.nullable(),
+  // Bauart-Vermerk: nach welchen Bauregeln die Listen der Phase entstanden
+  // sind. Wird beim Anlegen geschrieben und danach nur gelesen; die Bauregeln
+  // selbst stehen im Code (engine/weekPlan.ts).
+  plan_builder: planBuilderEnum.nullable(),
+  load_builder: loadBuilderEnum.nullable(),
+  careful: z.boolean(),
   position: z.number().int(),
 });
 export type PhaseRow = z.infer<typeof phaseRow>;
@@ -68,6 +75,9 @@ export const phaseInsert = phaseRow
     rep_target_max: true,
     load_factor: true,
     week_plan: true,
+    plan_builder: true,
+    load_builder: true,
+    careful: true,
     position: true,
   });
 export type PhaseInsert = z.infer<typeof phaseInsert>;

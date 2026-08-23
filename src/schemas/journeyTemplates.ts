@@ -4,6 +4,7 @@
 import { z } from "zod";
 import { weekPlanSchema } from "@/engine/weekPlan";
 import { focusEnum, uuid } from "./shared";
+import { loadBuilderEnum, planBuilderEnum } from "./phaseTypes";
 
 // journey_templates – kuratierte Periodisierung als Vorlage.
 export const journeyTemplateRow = z.object({
@@ -48,6 +49,11 @@ export const journeyTemplatePhaseRow = z.object({
   rep_target_max: z.number().int().nullable(),
   load_factor: z.number(),
   week_plan: weekPlanSchema.nullable(),
+  // Bauart-Vermerk wie an der Phase - die Vorlagenphase wandert beim
+  // Journey-Start unveraendert mit.
+  plan_builder: planBuilderEnum.nullable(),
+  load_builder: loadBuilderEnum.nullable(),
+  careful: z.boolean(),
   position: z.number().int(),
 });
 export type JourneyTemplatePhaseRow = z.infer<typeof journeyTemplatePhaseRow>;
@@ -60,6 +66,9 @@ export const journeyTemplatePhaseInsert = journeyTemplatePhaseRow
     rep_target_max: true,
     load_factor: true,
     week_plan: true,
+    plan_builder: true,
+    load_builder: true,
+    careful: true,
     position: true,
   });
 export type JourneyTemplatePhaseInsert = z.infer<

@@ -1,5 +1,11 @@
 import { useMemo } from "react";
-import { sundayOfWeek, weekProgress, skillAdvice, type Exercise } from "@/engine";
+import {
+  sundayOfWeek,
+  weekProgress,
+  skillAdvice,
+  type Exercise,
+  type PhaseMark,
+} from "@/engine";
 import {
   derivePhaseContext,
   toPlacementPhases,
@@ -176,7 +182,7 @@ export function useTrainingOverview(): {
       .map((s) => ({ date: s.date, exerciseIds: s.exerciseIds }));
 
     // Aktuelle Phase aus der Platzierung.
-    let phaseFocus: { focus?: string } | null = null;
+    let phaseFocus: PhaseMark | null = null;
     let testWeek: TestWeekView | null = null;
     let journeyView: TrainingOverview["journey"] = {
       title: "Freies Training",

@@ -3,7 +3,11 @@
 // ist zusaetzlich in lastfaktor.test.ts gedeckt; hier steht das Uebrige.
 
 import { describe, expect, it } from "vitest";
-import { buildStrengthWeekPlan, buildTestPhaseWeekPlan } from "@/engine";
+import {
+  buildStrengthWeekPlan,
+  buildTestPhaseWeekPlan,
+  phaseBuildForFocus,
+} from "@/engine";
 import { derivePhaseContext } from "../phaseContext";
 import type { PhaseContextJourney, SessionForPhase } from "../phaseContext";
 import type { PhaseRow } from "@/schemas";
@@ -11,14 +15,18 @@ import type { PhaseRow } from "@/schemas";
 const JOURNEY_ID = "00000000-0000-0000-0000-0000000000aa";
 const USER_ID = "00000000-0000-0000-0000-0000000000ff";
 
+// Der Bauart-Vermerk faellt aus Fokus und Phasenlaenge, genau wie beim Seed und
+// beim Nachtrag der Migration - so tragen die Testphasen dasselbe, was in der
+// Datenbank steht. Wer ihn ausdruecklich setzt, ueberschreibt ihn.
 function phase(overrides: Partial<PhaseRow> = {}): PhaseRow {
+  const focus = overrides.focus ?? "hypertrophy";
+  const weeks = overrides.weeks ?? 4;
   return {
     id: "00000000-0000-0000-0000-000000000001",
     user_id: USER_ID,
     journey_id: JOURNEY_ID,
     name: "Aufbau",
-    focus: "hypertrophy",
-    weeks: 4,
+    weeks,
     sets_start: 3,
     sets_end: 3,
     deload_week: null,
@@ -27,6 +35,8 @@ function phase(overrides: Partial<PhaseRow> = {}): PhaseRow {
     load_factor: 1,
     week_plan: null,
     position: 0,
+    focus,
+    ...phaseBuildForFocus(focus, weeks),
     ...overrides,
   };
 }
@@ -50,7 +60,12 @@ describe("derivePhaseContext", () => {
   it("nimmt die gesetzten Grenzen als Repband der Phase", () => {
     const ctx = derivePhaseContext(journeyWith([phase()]), [], 3, "2026-08-05");
     expect(ctx.phaseRepTarget).toEqual([8, 12]);
-    expect(ctx.phaseFocus).toEqual({ focus: "hypertrophy" });
+    expect(ctx.phaseFocus).toEqual({
+      focus: "hypertrophy",
+      plan_builder: null,
+      load_builder: null,
+      careful: false,
+    });
     expect(ctx.journeyId).toBe(JOURNEY_ID);
   });
 
