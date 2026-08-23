@@ -58,6 +58,60 @@ describe("parseRestore", () => {
     expect(row[0]?.equipment).toBe("barbell");
   });
 
+  it("verwirft Spalten, die es in der Tabelle nicht mehr gibt", () => {
+    // Eine Sicherung haelt den Stand von damals fest. Faellt spaeter eine Spalte
+    // weg, muss die Datei trotzdem einspielbar bleiben.
+    const exp = validExport();
+    exp.exercises = [
+      { id: "e1", name: "Back Squat", work_weight: 60, abgeschaffte_spalte: "alt" },
+    ];
+    exp.journeys = [{ id: "j1", name: "Rückkehr", active: true, alt_feld: 1 }];
+    const res = parseRestore(JSON.stringify(exp));
+    expect(res.tables.exercises[0]).not.toHaveProperty("abgeschaffte_spalte");
+    expect(res.tables.exercises[0]?.work_weight).toBe(60);
+    expect(res.tables.journeys[0]).not.toHaveProperty("alt_feld");
+    expect(res.tables.journeys[0]?.name).toBe("Rückkehr");
+  });
+
+  it("raeumt auch in den geschachtelten Einheiten auf", () => {
+    const exp = validExport();
+    const sess = (exp.sessions as Record<string, unknown>[])[0];
+    sess.abgeschaffte_spalte = "alt";
+    const entry = (sess.entries as Record<string, unknown>[])[0];
+    entry.abgeschaffte_spalte = "alt";
+    (entry.sets as Record<string, unknown>[])[0].abgeschaffte_spalte = "alt";
+    const res = parseRestore(JSON.stringify(exp));
+    expect(res.tables.sessions[0]).not.toHaveProperty("abgeschaffte_spalte");
+    expect(res.tables.session_exercises[0]).not.toHaveProperty("abgeschaffte_spalte");
+    expect(res.tables.sets[0]).not.toHaveProperty("abgeschaffte_spalte");
+    expect(res.tables.sets[0]?.reps).toBe(5);
+  });
+
+  it("raeumt auch in Inventar und Einstellungen auf", () => {
+    const exp = validExport();
+    exp.inventory = {
+      bars: [{ id: "b1", name: "Standard", weight: 20, abgeschaffte_spalte: "alt" }],
+      plates: [],
+      kettlebells: [],
+      dumbbells: [],
+      equipment: [],
+    };
+    exp.settings = { user_id: "u1", unit: "kg", abgeschaffte_spalte: "alt" };
+    const res = parseRestore(JSON.stringify(exp));
+    expect(res.tables.inventory_bars[0]).not.toHaveProperty("abgeschaffte_spalte");
+    expect(res.tables.inventory_bars[0]?.weight).toBe(20);
+    expect(res.tables.settings).toEqual({ user_id: "u1", unit: "kg" });
+  });
+
+  it("erfindet keine Spalten, die in einer alten Sicherung fehlen", () => {
+    // Fehlende Felder werden nicht mitgeschickt - den Vorgabewert setzt die
+    // Datenbank beim Einfuegen.
+    const exp = validExport();
+    exp.templates = [{ id: "t1", name: "Push" }];
+    const row = parseRestore(JSON.stringify(exp)).tables.templates[0];
+    expect(Object.keys(row).sort()).toEqual(["id", "name"]);
+  });
+
   it("verwirft die alte Rolle aus template_exercises (Migration 0006)", () => {
     const exp = validExport();
     exp.templateExercises = [

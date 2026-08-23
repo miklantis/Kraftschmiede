@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.46.10",
+      "date": "2026-08-23",
+      "changes": [
+        "Eine Sicherung lässt sich ab jetzt auch dann noch einspielen, wenn die App inzwischen umgebaut wurde. Bisher hätte schon eine einzige weggefallene Angabe in der Datei das Einspielen abbrechen lassen - beim Wiederherstellen werden die Daten jetzt still auf das eingedampft, was die App heute kennt.",
+        "Angaben, die es damals noch nicht gab, werden nicht erfunden: die Datenbank setzt dafür ihren eigenen Vorgabewert.",
+        "Im normalen Betrieb ändert sich nichts. Bemerkbar wird es nur beim Wiederherstellen einer älteren Sicherung."
+      ]
+    },
+    {
       "version": "1.46.9",
       "date": "2026-08-23",
       "changes": [

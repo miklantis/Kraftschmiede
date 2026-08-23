@@ -1,7 +1,8 @@
 // Bestandsregister: die eine Stelle, an der steht, aus welchen Tabellen der
 // Datenbestand eines Nutzers besteht. Abruf (exportSource), Voll-Export
-// (exportData), Wiederherstellung (restoreData) und die Loesch-/Einfuege-
-// Reihenfolge (restoreWrite) lesen ausschliesslich hier.
+// (exportData), Wiederherstellung (restoreData), die Loesch-/Einfuege-
+// Reihenfolge (restoreWrite) und die gueltigen Spalten je Tabelle
+// (bestandsSpalten) lesen ausschliesslich hier.
 //
 // Frueher stand diese Liste an acht Stellen von Hand aufgezaehlt. Wurde eine
 // vergessen, fiel die betroffene Tabelle still aus der Sicherung heraus und
@@ -11,6 +12,8 @@
 // Bewusst ohne Import aus anderen App-Modulen, damit es keinen Ringschluss gibt.
 // Die Verbindung zu den Zod-Schemas laeuft ueber den Namen des Row-Schemas in
 // `src/schemas`; ein Test prueft, dass Register und Schemas deckungsgleich sind.
+// Ueber diese Verbindung leitet `bestandsSpalten.ts` ab, welche Spalten eine
+// Tabelle heute hat - gebraucht beim Wiederherstellen alter Sicherungen.
 
 /** Wo die Zeilen einer Tabelle im Export-JSON liegen. */
 export type Ablage =

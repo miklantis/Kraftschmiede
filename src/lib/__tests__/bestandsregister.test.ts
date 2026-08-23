@@ -75,11 +75,14 @@ describe("Bestandsregister – abgeleitete Reihenfolgen", () => {
   });
 });
 
-// Je Tabelle genau eine Zeile, erkennbar an "marke". Die drei Tabellen rund um
-// die Einheiten brauchen zusaetzlich ihre Verknuepfung, damit der Export sie
-// schachteln kann.
+// Je Tabelle genau eine Zeile, erkennbar an "user_id". Als Marke dient bewusst
+// eine echte Spalte: das Wiederherstellen dampft Zeilen auf die bekannten
+// Spalten ein, ein erfundenes Feld wuerde also unterwegs wegfallen. user_id gibt
+// es in jeder Tabelle des Bestands - auch in settings, das kein id fuehrt.
+// Die drei Tabellen rund um die Einheiten brauchen zusaetzlich ihre
+// Verknuepfung, damit der Export sie schachteln kann.
 function zeile(tabelle: string): Row {
-  const basis: Row = { id: `${tabelle}-1`, marke: tabelle };
+  const basis: Row = { id: `${tabelle}-1`, user_id: `${tabelle}-u` };
   if (tabelle === "sessions") return { ...basis, date: "2026-06-01" };
   if (tabelle === "session_exercises")
     return { ...basis, session_id: "sessions-1", position: 1 };
@@ -104,12 +107,12 @@ describe("Rundlauf Export -> Wiederherstellen", () => {
     for (const e of BESTANDSREGISTER) {
       if (e.einzelzeile) {
         const einzel = tables[e.tabelle as "settings"];
-        expect(einzel?.marke, e.tabelle).toBe(e.tabelle);
+        expect(einzel?.user_id, e.tabelle).toBe(`${e.tabelle}-u`);
         continue;
       }
       const rows = (tables as unknown as Record<string, Row[]>)[e.tabelle];
       expect(rows, `${e.tabelle} fehlt nach dem Rundlauf`).toHaveLength(1);
-      expect(rows[0]?.marke, e.tabelle).toBe(e.tabelle);
+      expect(rows[0]?.user_id, e.tabelle).toBe(`${e.tabelle}-u`);
       expect(rows[0]?.id, e.tabelle).toBe(`${e.tabelle}-1`);
     }
   });
