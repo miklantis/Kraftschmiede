@@ -1,6 +1,16 @@
 {
   "versions": [
     {
+      "version": "1.47.0",
+      "date": "2026-08-23",
+      "changes": [
+        "Wer sein Passwort vergisst, kommt jetzt selbst wieder rein: Auf dem Anmeldebildschirm gibt es \"Passwort vergessen?\", dort E-Mail eingeben und die App schickt einen Link zum Zurücksetzen.",
+        "Der Link führt direkt auf einen Bildschirm, auf dem ein neues Passwort vergeben wird - vorher landete man dort ohne jeden Hinweis in der App.",
+        "In den Einstellungen steht im Konto-Bereich neu \"Passwort ändern\" - damit lässt sich das Passwort im laufenden Betrieb wechseln, ohne Umweg über eine Mail.",
+        "Fordert man zu oft einen Link an, sagt die App das jetzt verständlich, statt einen technischen Fehler zu zeigen."
+      ]
+    },
+    {
       "version": "1.46.14",
       "date": "2026-08-23",
       "changes": [
