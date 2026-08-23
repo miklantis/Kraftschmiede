@@ -22,7 +22,9 @@ import { supabase } from "@/lib/supabase";
 import type {
   JourneyInsert,
   JourneyWorkoutRow,
+  LoadBuilder,
   PhaseInsert,
+  PlanBuilder,
   TemplateExerciseRow,
   TemplateRow,
 } from "@/schemas";
@@ -43,6 +45,17 @@ export type VorlageRow = TemplateRow;
 
 /** Zeile einer Uebung in einer Workout-Vorlage, Id clientseitig vergeben. */
 export type VorlageUebungRow = TemplateExerciseRow;
+
+/** Die Bauart-Vorgaben eines Bausteins (phase_types), auf das reduziert, was
+ *  beim Anlegen einer Phase von dort kommt. Seit Migration 0049 traegt die
+ *  Vorlagenphase diese Angaben nicht mehr selbst – der Journey-Start schlaegt
+ *  sie ueber `key` (= `phases.focus`) hier nach. */
+export interface BausteinBauartRow {
+  key: string;
+  plan_builder: PlanBuilder | null;
+  load_builder: LoadBuilder | null;
+  careful: boolean;
+}
 
 /** Arbeitsgewicht einer Uebung – die Grundlage fuers Einfrieren des
  *  Referenzgewichts beim Start einer Lastfaktor-Journey. */
@@ -65,6 +78,9 @@ export interface JourneyStore {
   insertJourney(row: JourneyRowIns): Promise<string>;
   renameJourney(id: string, name: string): Promise<void>;
   insertPhasen(rows: PhaseRowIns[]): Promise<void>;
+  /** Bauart-Vorgaben aller Bausteine eines Nutzers – gelesen genau dort, wo
+   *  eine Phase entsteht (Konzept Bausteine, Abschnitt 2), nie im Training. */
+  listBausteine(userId: string): Promise<BausteinBauartRow[]>;
   /** Arbeitsgewichte des Uebungskatalogs eines Nutzers lesen. */
   listArbeitsgewichte(userId: string): Promise<ArbeitsgewichtRow[]>;
   setReferenzgewicht(exerciseId: string, gewicht: number): Promise<void>;
@@ -123,6 +139,14 @@ export const supabaseJourneyStore: JourneyStore = {
   },
   async insertPhasen(rows) {
     must(await supabase.from("phases").insert(rows));
+  },
+  async listBausteine(userId) {
+    const { data, error } = await supabase
+      .from("phase_types")
+      .select("key, plan_builder, load_builder, careful")
+      .eq("user_id", userId);
+    if (error) throw new Error(error.message);
+    return (data ?? []) as BausteinBauartRow[];
   },
   async listArbeitsgewichte(userId) {
     const { data, error } = await supabase
@@ -232,6 +256,8 @@ export interface MemoryJourneyLog {
 export interface MemoryJourneySeed {
   /** Id der aktiven Journey vor dem Start einer neuen (null = keine). */
   aktiveJourneyId?: string | null;
+  /** Bauart-Vorgaben der Bausteine, die der Speicher zurueckgibt. */
+  bausteine?: BausteinBauartRow[];
   /** Arbeitsgewichte des Uebungskatalogs, je Nutzer-Kennung. */
   arbeitsgewichte?: ArbeitsgewichtRow[];
   /** Bereits zugewiesene Workout-Ids, je Journey-Kennung. */
@@ -285,6 +311,10 @@ export function createMemoryJourneyStore(seed: MemoryJourneySeed = {}): {
     async insertPhasen(rows) {
       log.phasenInserted.push(rows);
       log.folge.push("insertPhasen");
+    },
+    async listBausteine() {
+      log.folge.push("listBausteine");
+      return seed.bausteine ?? [];
     },
     async listArbeitsgewichte() {
       log.folge.push("listArbeitsgewichte");

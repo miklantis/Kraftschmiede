@@ -27,6 +27,7 @@ import {
   phaseTypeSeeds,
 } from "@/seed/definitions";
 import { focusEnum, phaseTypeKeyEnum } from "@/schemas";
+import { bauartFuerPhase } from "@/lib/journeyWrite";
 
 function migration(datei: string): string {
   return readFileSync(
@@ -243,6 +244,11 @@ describe("Abgleich 5b: die Lastliste deckt sich mit ihrer Bauregel", () => {
 // "Test/Peak", Migration 0045) und der Umbau der Vorlage "Wiederaufbau nach
 // Fasten" auf zwei Bausteine (Migration 0047). Verschiebt sich sonst
 // irgendetwas, faellt dieser Test um.
+//
+// Der Bauart-Vermerk steht hier nicht mehr: Seit Migration 0049 traegt die
+// Vorlagenphase ihn nicht, und was nicht in der Tabelle steht, kann der Seed
+// auch nicht verschieben. Dass die Bauart trotzdem stimmt, prueft Abgleich 9
+// an der Stelle, an der sie jetzt entsteht - beim Journey-Start.
 interface Bestand {
   name: string;
   focus: string;
@@ -254,23 +260,21 @@ interface Bestand {
   repTargetMax: number | null;
   loadPlan: number[] | null;
   hatPlan: boolean;
-  planBuilder: string | null;
-  careful: boolean;
 }
 
 const BESTAND: Record<string, Bestand[]> = {
   reentry_build: [
-    { name: "Wiedereinstieg", focus: "reentry", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 5, repTargetMax: 8, loadPlan: null, hatPlan: false, planBuilder: null, careful: true },
-    { name: "Hypertrophie", focus: "hypertrophy", weeks: 5, setsStart: 2, setsEnd: 6, deloadWeek: 4, repTargetMin: 8, repTargetMax: 12, loadPlan: null, hatPlan: false, planBuilder: null, careful: false },
-    { name: "Maximalkraft", focus: "strength", weeks: 5, setsStart: 4, setsEnd: 4, deloadWeek: null, repTargetMin: 4, repTargetMax: 6, loadPlan: null, hatPlan: true, planBuilder: "strength_ladder", careful: false },
-    { name: "Test/Peak", focus: "test", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadPlan: null, hatPlan: true, planBuilder: "test", careful: false },
+    { name: "Wiedereinstieg", focus: "reentry", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 5, repTargetMax: 8, loadPlan: null, hatPlan: false },
+    { name: "Hypertrophie", focus: "hypertrophy", weeks: 5, setsStart: 2, setsEnd: 6, deloadWeek: 4, repTargetMin: 8, repTargetMax: 12, loadPlan: null, hatPlan: false },
+    { name: "Maximalkraft", focus: "strength", weeks: 5, setsStart: 4, setsEnd: 4, deloadWeek: null, repTargetMin: 4, repTargetMax: 6, loadPlan: null, hatPlan: true },
+    { name: "Test/Peak", focus: "test", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadPlan: null, hatPlan: true },
   ],
   // Umgebaut in Schritt 7 (Migration 0047): aus vier getippten Wochenphasen
   // werden zwei Bausteine. Was hier steht, ist der Stand nach der Migration -
   // dieselben Werte, die der Seed baut.
   refeed_rebuild: [
-    { name: "Wiederaufbau", focus: "rebuild", weeks: 3, setsStart: 2, setsEnd: 4, deloadWeek: null, repTargetMin: 6, repTargetMax: 10, loadPlan: [0.65, 0.8, 0.95], hatPlan: false, planBuilder: null, careful: true },
-    { name: "Test/Peak", focus: "test", weeks: 1, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadPlan: null, hatPlan: true, planBuilder: "test", careful: false },
+    { name: "Wiederaufbau", focus: "rebuild", weeks: 3, setsStart: 2, setsEnd: 4, deloadWeek: null, repTargetMin: 6, repTargetMax: 10, loadPlan: [0.65, 0.8, 0.95], hatPlan: false },
+    { name: "Test/Peak", focus: "test", weeks: 1, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadPlan: null, hatPlan: true },
   ],
 };
 
@@ -297,8 +301,6 @@ describe("Abgleich 6: der neue Seed verschiebt nichts", () => {
           repTargetMax: b.repTargetMax,
           loadPlan: b.loadPlan?.map((w) => w.loadPct) ?? null,
           hatPlan: b.weekPlan !== null,
-          planBuilder: b.planBuilder,
-          careful: b.careful,
         };
       });
       expect(gebaut).toEqual(erwartet);
@@ -391,5 +393,34 @@ describe("Abgleich 8: die gebauten Vorlagen bleiben in den Grenzen ihres Baustei
       }
     }
     expect(mitKorridor).toBeGreaterThan(0);
+  });
+});
+
+// Abgleich 9: was der Journey-Start setzt, deckt sich mit dem Baustein.
+//
+// Seit Migration 0049 traegt die Vorlagenphase ihre Bauart nicht mehr - sie
+// entsteht erst beim Journey-Start aus dem Baustein (lib/journeyWrite.ts). Damit
+// ist eine neue Naht da: Bauregel und Liste werden nicht mehr in einem Zug
+// gebaut, sondern in zwei Schritten zusammengefuehrt. Diese Pruefung schliesst
+// sie - was der Start eintraegt, muss Wort fuer Wort das sein, was
+// `buildPhaseFromType` beim Bauen der Phase vermerkt haette.
+describe("Abgleich 9: der Journey-Start setzt genau die Bauart des Bausteins", () => {
+  it("trifft bei jeder Vorlagenphase den Vermerk der gebauten Phase", () => {
+    for (const { baustein, phase, wo } of VORLAGENPHASEN) {
+      const bauart = bauartFuerPhase(
+        {
+          key: baustein.key,
+          plan_builder: baustein.planBuilder,
+          load_builder: baustein.loadBuilder,
+          careful: baustein.careful,
+        },
+        { load_plan: phase.loadPlan, week_plan: phase.weekPlan },
+      );
+      expect(bauart, wo).toEqual({
+        plan_builder: phase.planBuilder,
+        load_builder: phase.loadBuilder,
+        careful: phase.careful,
+      });
+    }
   });
 });

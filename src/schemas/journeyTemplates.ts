@@ -5,7 +5,6 @@ import { z } from "zod";
 import { loadPlanSchema } from "@/engine/loadPlan";
 import { weekPlanSchema } from "@/engine/weekPlan";
 import { focusEnum, uuid } from "./shared";
-import { loadBuilderEnum, planBuilderEnum } from "./phaseTypes";
 
 // journey_templates – kuratierte Periodisierung als Vorlage.
 export const journeyTemplateRow = z.object({
@@ -36,6 +35,12 @@ export type JourneyTemplateInsert = z.infer<typeof journeyTemplateInsert>;
 // engine/loadPlan.ts): je Phasenwoche der Anteil des Referenzgewichts, null =
 // keine Vorgabe. week_plan ist der Wochenplan der Phase (Form:
 // engine/weekPlan.ts); beide wandern beim Journey-Start mit der Phase mit.
+//
+// Die Bauart (plan_builder, load_builder, careful) steht hier bewusst NICHT
+// mehr (Migration 0049): Die Vorlagenphase nennt nur ihren Baustein, alles
+// Bauart-bezogene folgt daraus. Der Journey-Start schlaegt es beim Anlegen der
+// Phase in phase_types nach (lib/journeyWrite.ts) - danach traegt die
+// Phasenzeile es wieder selbst, wie der Coach es erwartet.
 export const journeyTemplatePhaseRow = z.object({
   id: uuid,
   user_id: uuid,
@@ -50,11 +55,6 @@ export const journeyTemplatePhaseRow = z.object({
   rep_target_max: z.number().int().nullable(),
   load_plan: loadPlanSchema.nullable(),
   week_plan: weekPlanSchema.nullable(),
-  // Bauart-Vermerk wie an der Phase - die Vorlagenphase wandert beim
-  // Journey-Start unveraendert mit.
-  plan_builder: planBuilderEnum.nullable(),
-  load_builder: loadBuilderEnum.nullable(),
-  careful: z.boolean(),
   position: z.number().int(),
 });
 export type JourneyTemplatePhaseRow = z.infer<typeof journeyTemplatePhaseRow>;
@@ -67,9 +67,6 @@ export const journeyTemplatePhaseInsert = journeyTemplatePhaseRow
     rep_target_max: true,
     load_plan: true,
     week_plan: true,
-    plan_builder: true,
-    load_builder: true,
-    careful: true,
     position: true,
   });
 export type JourneyTemplatePhaseInsert = z.infer<

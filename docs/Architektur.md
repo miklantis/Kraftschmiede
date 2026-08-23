@@ -112,9 +112,12 @@ Recovery-Fenster, Timer).
   sets_end, deload_week (nullable), rep_target_min/max, load_plan (jsonb, nullable –
   Lastliste der Phase: je Phasenwoche der Anteil des Referenzgewichts, Form in
   `engine/loadPlan.ts`), week_plan (jsonb, nullable – Wochenplan der Phase, Form in
-  `engine/weekPlan.ts`), plan_builder/load_builder/careful (Bauart-Vermerk wie an der
-  Phase, Migration 0044), position. Das frühere Einzelfeld load_factor ist mit Migration
-  0046 entfallen
+  `engine/weekPlan.ts`), position. Die Vorlagenphase nennt bewusst **nur** ihren
+  Baustein: Der Bauart-Vermerk (plan_builder/load_builder/careful) ist mit Migration
+  0049 hier entfallen und kommt beim Journey-Start aus `phase_types`
+  (`lib/journeyWrite.ts`) – so kann eine Vorlage keine Bauart tragen, die nicht zu
+  ihrem Baustein passt. Das frühere Einzelfeld load_factor ist mit Migration 0046
+  entfallen
 - **skills** – key, name, category, image, position
 - **skill_phases** – skill_id (FK), label, description, consecutive_sessions
   (aufeinanderfolgende Erfolge bis Aufstieg), position
@@ -139,8 +142,9 @@ Begründung in ADR-0003.
   Coach wie gewohnt), week_plan (jsonb, nullable – Kopie des Vorlagen-Wochenplans,
   wandert beim Journey-Start mit der Phase mit), plan_builder/load_builder/careful
   (Bauart der Phase: nach welcher Regel Wochen- und Lastliste gebaut wurden und ob der
-  Coach vorsichtig steigert – ein Wochenplan allein sagt nicht, was er tut), position.
-  Das frühere Einzelfeld load_factor ist mit Migration 0046 entfallen
+  Coach vorsichtig steigert – ein Wochenplan allein sagt nicht, was er tut; beim
+  Journey-Start aus dem Baustein gesetzt und danach eingefroren, Migration 0049),
+  position. Das frühere Einzelfeld load_factor ist mit Migration 0046 entfallen
 - **journey_workouts** – ordnet Workouts der Journey zu: journey_id (FK), template_id (FK),
   `unique(user_id, journey_id, template_id)`. Reine Ja/Nein-Menge, bewusst ohne position
   (die Empfehlungsreihenfolge bestimmt der Coach); ON DELETE CASCADE über beide FKs
@@ -378,11 +382,13 @@ Eindampfen, sonst wären die alten Felder schon weg.
   dort, wo eine Phase entsteht: `buildPhaseFromType` (`engine/phaseBuild.ts`) baut aus
   Baustein plus wenigen Anpassungen (Wochen, Band, Entlastungswoche) die fertige
   Vorlagenphase, angewandt im Seed (`src/seed/definitions.ts`); beim Journey-Start
-  wandern deren Werte als Kopie in die Phasenzeile (`lib/journeyWrite.ts`). Engine und
-  Coach lesen danach nur noch die Phase – eine geänderte Baustein-Vorgabe greift nie in
-  eine laufende Journey. Die Phase trägt ihre Bauart mit (`plan_builder`, `load_builder`,
-  `careful`), weil ein Wochenplan allein nicht sagt, was er tut: Kraftphase und Testphase
-  tragen beide einen und verhalten sich gegensätzlich. Der Baustein sagt, **was** gebaut
+  wandern deren Werte als Kopie in die Phasenzeile (`lib/journeyWrite.ts`) – die Bauart
+  holt der Start dort direkt aus dem Baustein, weil die Vorlagenphase sie seit Migration
+  0049 nicht mehr trägt. Engine und Coach lesen danach nur noch die Phase – eine
+  geänderte Baustein-Vorgabe greift nie in eine laufende Journey. Die Phase trägt ihre
+  Bauart mit (`plan_builder`, `load_builder`, `careful`), weil ein Wochenplan allein
+  nicht sagt, was er tut: Kraftphase und Testphase tragen beide einen und verhalten sich
+  gegensätzlich. Der Baustein sagt, **was** gebaut
   wird; **wie** gerechnet wird, steht in der Engine (`engine/weekPlan.ts`,
   `engine/loadPlan.ts`) – die gültigen Bauregel-Namen kommen von dort, damit Tabelle,
   Schema und Rechnung nicht auseinanderlaufen.

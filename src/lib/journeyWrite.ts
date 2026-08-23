@@ -20,6 +20,7 @@
 
 import type {
   ArbeitsgewichtRow,
+  BausteinBauartRow,
   JourneyRowIns,
   JourneyStore,
   PhaseRowIns,
@@ -30,10 +31,21 @@ import { usesLoadPlan } from "./loadFactor";
 
 /** Eine Phase der gewaehlten Journey-Vorlage, so wie sie in die neue Journey
  *  kopiert wird. Nutzer, Journey und Reihenfolge kommen erst beim Kopieren
- *  dazu. */
+ *  dazu – der Bauart-Vermerk aus dem Baustein (siehe `bauartFuerPhase`). */
 export type JourneyStartPhase = Omit<
   PhaseRowIns,
-  "user_id" | "journey_id" | "position"
+  | "user_id"
+  | "journey_id"
+  | "position"
+  | "plan_builder"
+  | "load_builder"
+  | "careful"
+>;
+
+/** Der Bauart-Vermerk, den eine entstehende Phase mitbekommt. */
+export type PhasenBauart = Pick<
+  PhaseRowIns,
+  "plan_builder" | "load_builder" | "careful"
 >;
 
 /** Die gewaehlte Journey-Vorlage, auf das reduziert, was der Start braucht. */
@@ -83,6 +95,27 @@ export type VorlageAction =
       exercises: VorlageUebung[];
     }
   | { type: "setActive"; templateId: string; aktiv: boolean };
+
+/**
+ * Bauart-Vermerk einer entstehenden Phase: Er kommt aus dem Baustein, aber nur
+ * dort, wo die Phase die zugehoerige Liste auch traegt. Ein Vermerk ohne Liste
+ * wuerde den Coach eine Rampe lesen lassen, die es nicht gibt.
+ *
+ * Dieselbe Regel wie in `buildPhaseFromType` (engine/phaseBuild.ts), nur von
+ * der anderen Seite: dort entstehen Liste und Vermerk gemeinsam, hier trifft
+ * der Vermerk auf eine bereits gebaute Liste der Vorlage. `careful` haengt an
+ * keiner Liste und kommt unveraendert aus dem Baustein.
+ */
+export function bauartFuerPhase(
+  baustein: BausteinBauartRow,
+  phase: Pick<JourneyStartPhase, "load_plan" | "week_plan">,
+): PhasenBauart {
+  return {
+    plan_builder: phase.week_plan == null ? null : baustein.plan_builder,
+    load_builder: phase.load_plan == null ? null : baustein.load_builder,
+    careful: baustein.careful,
+  };
+}
 
 /** Gibt die Vorlage irgendwo eine Last vor? Nur dann wird beim Start ein
  *  Referenzgewicht eingefroren – es ist der Bezugspunkt, auf den sich die
@@ -136,28 +169,40 @@ export async function writeJourneyStart(
   };
   const newJourneyId = await store.insertJourney(row);
 
-  const phaseRows: PhaseRowIns[] = vorlage.phases.map((p, i) => ({
-    user_id: userId,
-    journey_id: newJourneyId,
-    name: p.name,
-    focus: p.focus,
-    weeks: p.weeks,
-    sets_start: p.sets_start,
-    sets_end: p.sets_end,
-    deload_week: p.deload_week,
-    rep_target_min: p.rep_target_min,
-    rep_target_max: p.rep_target_max,
-    load_plan: p.load_plan,
-    // Der Wochenplan der Vorlage wandert unveraendert in die Journey mit; ohne
-    // ihn liefe eine frisch gestartete Kraftphase wieder frei ueber den Coach.
-    week_plan: p.week_plan,
-    // Ebenso der Bauart-Vermerk: ohne ihn wuesste die Journey nicht mehr, ob
-    // ihr Wochenplan die Last hochfaehrt oder entlastet.
-    plan_builder: p.plan_builder,
-    load_builder: p.load_builder,
-    careful: p.careful,
-    position: i,
-  }));
+  // Bausteine einmal lesen: Die Vorlagenphase nennt nur ihren Baustein
+  // (`focus`), der Bauart-Vermerk kommt von dort (Migration 0049). Genau hier
+  // entsteht die Phase - der einzige Ort, an dem `phase_types` gelesen wird.
+  const bausteine = await store.listBausteine(userId);
+  const bausteinNach = new Map(bausteine.map((b) => [b.key, b]));
+
+  const phaseRows: PhaseRowIns[] = vorlage.phases.map((p, i) => {
+    const baustein = bausteinNach.get(p.focus);
+    // Kann nicht passieren, solange der Fremdschluessel aus Migration 0048
+    // steht - aber lieber ein klarer Abbruch als eine Journey ohne Bauart.
+    if (baustein === undefined) {
+      throw new Error(`Kein Baustein fuer die Phase "${p.name}" (${p.focus}).`);
+    }
+    return {
+      user_id: userId,
+      journey_id: newJourneyId,
+      name: p.name,
+      focus: p.focus,
+      weeks: p.weeks,
+      sets_start: p.sets_start,
+      sets_end: p.sets_end,
+      deload_week: p.deload_week,
+      rep_target_min: p.rep_target_min,
+      rep_target_max: p.rep_target_max,
+      load_plan: p.load_plan,
+      // Der Wochenplan der Vorlage wandert unveraendert in die Journey mit; ohne
+      // ihn liefe eine frisch gestartete Kraftphase wieder frei ueber den Coach.
+      week_plan: p.week_plan,
+      // Der Bauart-Vermerk dagegen kommt aus dem Baustein: ohne ihn wuesste die
+      // Journey nicht mehr, ob ihr Wochenplan die Last hochfaehrt oder entlastet.
+      ...bauartFuerPhase(baustein, p),
+      position: i,
+    };
+  });
   await store.insertPhasen(phaseRows);
 
   // Referenzgewicht: Bezugspunkt einer Journey, die die Last selbst vorgibt.

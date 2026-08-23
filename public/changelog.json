@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.46.12",
+      "date": "2026-08-23",
+      "changes": [
+        "Die Bauart einer Phase (nach welcher Regel Wochenliste und Lastliste gebaut werden, ob der Coach vorsichtig steigert) stand bisher doppelt: einmal am Baustein, einmal als Kopie an der Vorlage. Die Kopie an der Vorlage ist weg - die Vorlage nennt jetzt nur noch ihren Baustein.",
+        "Beim Start einer Journey holt die App die Bauart direkt vom Baustein und schreibt sie wie bisher in die Phase. Für laufende Journeys ändert sich dadurch nichts.",
+        "Sichtbar ändert sich nichts: Vorlagen, Journey und Coach arbeiten unverändert weiter."
+      ]
+    },
+    {
       "version": "1.46.11",
       "date": "2026-08-23",
       "changes": [
