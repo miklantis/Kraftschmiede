@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildPowerWeekPlan,
   buildStrengthWeekPlan,
   buildTestPhaseWeekPlan,
   buildWeekPlanFor,
@@ -11,6 +12,7 @@ import {
   isCarefulPhase,
   planGovernsLoad,
   parseWeekPlan,
+  powerRepLadder,
   repLadder,
   nextWeekPlanWeek,
   weekDemandsSession,
@@ -42,7 +44,7 @@ describe("repLadder – Wiederholungsleiter je Phasenlaenge", () => {
   });
 });
 
-describe("buildStrengthWeekPlan – Kraft- und Schnellkraftphase", () => {
+describe("buildStrengthWeekPlan – Kraftphase (Maximalkraft)", () => {
   it("5 Wochen: Leiter, 4 Saetze durchgehend, RIR 2 mit zwei Peak-Wochen", () => {
     const plan = buildStrengthWeekPlan(5);
     expect(plan.map((w) => w.week)).toEqual([1, 2, 3, 4, 5]);
@@ -68,6 +70,58 @@ describe("buildStrengthWeekPlan – Kraft- und Schnellkraftphase", () => {
   });
   it("fuehrt keinen Wochenziel-Text mehr (#275)", () => {
     const plan = buildStrengthWeekPlan(5);
+    expect(plan.every((w) => w.note === "")).toBe(true);
+  });
+});
+
+describe("powerRepLadder – Leiter der Intensivierung", () => {
+  it("3 Wochen: bis in den Einzelversuch", () => {
+    expect(powerRepLadder(3)).toEqual([3, 2, 1]);
+  });
+  it("4 Wochen: ein Anlauf mehr, dann derselbe Abstieg", () => {
+    expect(powerRepLadder(4)).toEqual([3, 3, 2, 1]);
+  });
+  it("kuerzer als 3 Wochen: kuerzeste Leiter von hinten geschnitten", () => {
+    expect(powerRepLadder(2)).toEqual([3, 2]);
+    expect(powerRepLadder(1)).toEqual([3]);
+  });
+  it("laenger als 4 Wochen: erste Woche wiederholt, Abstieg bleibt hinten", () => {
+    expect(powerRepLadder(5)).toEqual([3, 3, 3, 2, 1]);
+    expect(powerRepLadder(6)).toEqual([3, 3, 3, 3, 2, 1]);
+  });
+  it("ist ueberall schwerer als die Kraftleiter – keine zweite Kraftphase", () => {
+    for (const weeks of [3, 4]) {
+      const kraft = repLadder(weeks);
+      const intensiv = powerRepLadder(weeks);
+      expect(intensiv).not.toEqual(kraft);
+      expect(intensiv.every((reps, i) => reps < kraft[i]!)).toBe(true);
+    }
+  });
+});
+
+describe("buildPowerWeekPlan – Intensivierung", () => {
+  it("3 Wochen: eigene Leiter, 4 Saetze, letzte Woche der Einzelversuch", () => {
+    const plan = buildPowerWeekPlan(3);
+    expect(plan.map((w) => w.week)).toEqual([1, 2, 3]);
+    expect(plan.map((w) => w.reps)).toEqual([3, 2, 1]);
+    expect(plan.every((w) => w.sets === WEEK_PLAN_SETS)).toBe(true);
+  });
+  it("4 Wochen: RIR 2, in den beiden schwersten Wochen RIR 1", () => {
+    expect(buildPowerWeekPlan(4).map((w) => w.reps)).toEqual([3, 3, 2, 1]);
+    expect(buildPowerWeekPlan(4).map((w) => w.rir)).toEqual([2, 2, 1, 1]);
+  });
+  it("unter 4 Wochen: nur die letzte Woche auf RIR 1", () => {
+    expect(buildPowerWeekPlan(3).map((w) => w.rir)).toEqual([2, 2, 1]);
+  });
+  it("der Einzelversuch behaelt seine Reserve – kein 1RM-Test", () => {
+    const letzte = buildPowerWeekPlan(3).at(-1)!;
+    expect(letzte).toMatchObject({ reps: 1, rir: 1, sets: WEEK_PLAN_SETS });
+    expect(weekDemandsSession(letzte)).toBe(true);
+  });
+  it("arbeitet auf vollem Arbeitsgewicht, ohne Band und ohne Wochentext", () => {
+    const plan = buildPowerWeekPlan(4);
+    expect(plan.every((w) => w.loadPct === 1)).toBe(true);
+    expect(plan.every((w) => w.repsMax === null)).toBe(true);
     expect(plan.every((w) => w.note === "")).toBe(true);
   });
 });
@@ -111,12 +165,15 @@ describe("buildTestPhaseWeekPlan – Entlastung, dann reine Testwoche", () => {
 });
 
 describe("buildWeekPlanFor – die Wochenliste zur Bauregel", () => {
-  it("strength_ladder und power_ladder fahren die Leiter", () => {
+  it("strength_ladder und power_ladder fahren je ihre eigene Leiter", () => {
     expect(buildWeekPlanFor("strength_ladder", 4)?.map((w) => w.reps)).toEqual([
       5, 4, 3, 2,
     ]);
+    expect(buildWeekPlanFor("power_ladder", 4)?.map((w) => w.reps)).toEqual([
+      3, 3, 2, 1,
+    ]);
     expect(buildWeekPlanFor("power_ladder", 3)?.map((w) => w.reps)).toEqual([
-      5, 4, 3,
+      3, 2, 1,
     ]);
   });
   it("test faehrt Entlastung und Testwoche", () => {

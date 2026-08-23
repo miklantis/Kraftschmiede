@@ -1,7 +1,7 @@
 // Wochenplan einer Phase: Saetze, Wiederholungen und Ziel-Anstrengung stehen je
 // Woche fest, gesteuert wird nur noch das Gewicht. Das gilt in Kraft-,
-// Schnellkraft- und Testphasen; Hypertrophie, Kraftausdauer, Wiedereinstieg und
-// Erhaltung bleiben bei der Doppelprogression des Coaches (Issue #225).
+// Intensivierungs- und Testphasen; Hypertrophie, Kraftausdauer, Wiedereinstieg
+// und Erhaltung bleiben bei der Doppelprogression des Coaches (Issue #225).
 //
 // Reine Rechenlogik: hier entsteht die Form des Plans und seine Ableitung aus
 // der Phasenlaenge. Gespeichert wird der Plan an der Phase (week_plan), gelesen
@@ -50,7 +50,7 @@ export function parseWeekPlan(value: unknown): WeekPlan | null {
 
 // ---- Eckwerte ---------------------------------------------------------------
 
-/** Durchgehende Satzzahl der Kraft- und Schnellkraftwochen. */
+/** Durchgehende Satzzahl der Kraft- und Intensivierungswochen. */
 export const WEEK_PLAN_SETS = 4;
 
 /** Ziel-Anstrengung der Aufbauwochen (RIR 2) und der schwersten Wochen (RIR 1).
@@ -86,19 +86,50 @@ const LADDERS: Record<number, number[]> = {
 const LADDER_MIN = 3;
 const LADDER_MAX = 6;
 
+// Leiter der Intensivierung: dieselbe Form, aber eine Stufe schwerer und bis in
+// den Einzelversuch hinein. Ohne eine eigene Leiter waere die Intensivierung
+// mechanisch dasselbe wie die Maximalkraft - vier feste Saetze, ruhendes Band,
+// nur eine andere Wochen-Obergrenze (Konzept Bausteine, Abschnitt 8). Gesetzt
+// sind die drei und vier Wochen, ueber die der Baustein laeuft.
+const POWER_LADDERS: Record<number, number[]> = {
+  3: [3, 2, 1],
+  4: [3, 3, 2, 1],
+};
+
+const POWER_LADDER_MIN = 3;
+const POWER_LADDER_MAX = 4;
+
 // ---- Ableitung --------------------------------------------------------------
 
-/** Wiederholungsleiter zur Phasenlaenge. Ausserhalb 3-6 Wochen definiert:
- *  kuerzer wird die kuerzeste Leiter von hinten geschnitten (die schweren
- *  Wochen fallen weg), laenger wird die erste Woche wiederholt (der Anlauf wird
- *  laenger, der Abstieg bis 2 Wiederholungen bleibt am Ende stehen). */
-export function repLadder(weeks: number): number[] {
+/** Leiter aus einer Leitertafel zur Phasenlaenge. Ausserhalb der gesetzten
+ *  Laengen definiert: kuerzer wird die kuerzeste Leiter von hinten geschnitten
+ *  (die schweren Wochen fallen weg), laenger wird die erste Woche wiederholt
+ *  (der Anlauf wird laenger, der Abstieg bleibt am Ende stehen). Beide Leitern
+ *  folgen derselben Regel - sie steht deshalb genau einmal hier. */
+function ladderFrom(
+  ladders: Record<number, number[]>,
+  min: number,
+  max: number,
+  weeks: number,
+): number[] {
   const w = Math.max(1, Math.round(weeks));
-  if (w < LADDER_MIN) return LADDERS[LADDER_MIN]!.slice(0, w);
-  const base = LADDERS[Math.min(w, LADDER_MAX)]!;
-  if (w <= LADDER_MAX) return base.slice();
-  const lead = new Array<number>(w - LADDER_MAX).fill(base[0]!);
+  if (w < min) return ladders[min]!.slice(0, w);
+  const base = ladders[Math.min(w, max)]!;
+  if (w <= max) return base.slice();
+  const lead = new Array<number>(w - max).fill(base[0]!);
   return [...lead, ...base];
+}
+
+/** Wiederholungsleiter der Kraftphase, 3-6 Wochen gesetzt: von 5 Wiederholungen
+ *  hinunter auf 2. */
+export function repLadder(weeks: number): number[] {
+  return ladderFrom(LADDERS, LADDER_MIN, LADDER_MAX, weeks);
+}
+
+/** Wiederholungsleiter der Intensivierung, 3-4 Wochen gesetzt: von 3
+ *  Wiederholungen hinunter in den Einzelversuch. */
+export function powerRepLadder(weeks: number): number[] {
+  return ladderFrom(POWER_LADDERS, POWER_LADDER_MIN, POWER_LADDER_MAX, weeks);
 }
 
 /** Ziel-Anstrengung je Woche: RIR 2, in den beiden schwersten (letzten) Wochen
@@ -108,11 +139,9 @@ function rirForWeek(weekIndex: number, weeks: number): number {
   return weekIndex >= weeks - peakWeeks ? WEEK_PLAN_RIR_PEAK : WEEK_PLAN_RIR;
 }
 
-/** Wochenplan einer Kraft- oder Schnellkraftphase: feste Leiter, durchgehend
- *  4 Arbeitssaetze, keine Entlastungswoche - die steht am Anfang der
- *  Testphase. */
-export function buildStrengthWeekPlan(weeks: number): WeekPlan {
-  const ladder = repLadder(weeks);
+/** Wochenplan aus einer Wiederholungsleiter: durchgehend 4 Arbeitssaetze,
+ *  keine Entlastungswoche - die steht am Anfang der Testphase. */
+function buildLadderWeekPlan(ladder: number[]): WeekPlan {
   return ladder.map((reps, i) => ({
     week: i + 1,
     sets: WEEK_PLAN_SETS,
@@ -124,6 +153,20 @@ export function buildStrengthWeekPlan(weeks: number): WeekPlan {
     // und RIR - zusaetzliche Saetze machen die Phasenkarte nur unruhig (#275).
     note: "",
   }));
+}
+
+/** Wochenplan einer Kraftphase (Maximalkraft): die Leiter von 5 auf 2. */
+export function buildStrengthWeekPlan(weeks: number): WeekPlan {
+  return buildLadderWeekPlan(repLadder(weeks));
+}
+
+/** Wochenplan einer Intensivierung: dieselbe Form wie die Kraftphase, nur auf
+ *  der schwereren Leiter. Die Ziel-Anstrengung folgt derselben Regel - RIR 2, in
+ *  den schwersten Wochen RIR 1. Ein Einzelversuch bei RIR 1 ist eine echte
+ *  Peaking-Woche und bleibt klar vom 1RM-Test der Testphase unterschieden, der
+ *  ohne Reserve laeuft und gar keine Einheit plant. */
+export function buildPowerWeekPlan(weeks: number): WeekPlan {
+  return buildLadderWeekPlan(powerRepLadder(weeks));
 }
 
 /** Wochenplan einer Testphase. Bauregel: die letzte Woche ist die reine
@@ -212,7 +255,7 @@ export function buildsTestPlan(phase: PhaseBuild | null | undefined): boolean {
 }
 
 /** Steuert die Wochenliste dieser Phase das Gewicht - als Rampe (Kraft,
- *  Schnellkraft) oder als Entlastung (Testphase)? */
+ *  Intensivierung) oder als Entlastung (Testphase)? */
 export function planGovernsLoad(phase: PhaseBuild | null | undefined): boolean {
   return buildsRisingPlan(phase) || buildsTestPlan(phase);
 }
@@ -231,9 +274,8 @@ export function buildWeekPlanFor(
   builder: PlanBuilderName | null | undefined,
   weeks: number,
 ): WeekPlan | null {
-  if (builder === "strength_ladder" || builder === "power_ladder") {
-    return buildStrengthWeekPlan(weeks);
-  }
+  if (builder === "strength_ladder") return buildStrengthWeekPlan(weeks);
+  if (builder === "power_ladder") return buildPowerWeekPlan(weeks);
   if (builder === TEST_PLAN_BUILDER) return buildTestPhaseWeekPlan(weeks);
   return null;
 }
