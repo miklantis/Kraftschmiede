@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.46.7",
+      "date": "2026-08-23",
+      "changes": [
+        "Die Intensivierung hat ab jetzt eine eigene, schwerere Leiter: über drei Wochen 3, 2 und 1 Wiederholung, über vier Wochen 3, 3, 2 und 1 - bei durchgehend vier Sätzen. Bisher lief sie mit derselben Leiter wie die Maximalkraft (5 bis 2) und war damit dasselbe unter anderem Namen.",
+        "Die letzte Woche ist ein schwerer Einzelversuch, aber mit einer Wiederholung in Reserve: eine Peaking-Woche, kein Maximaltest. Der bleibt der Phase \"Test/Peak\" vorbehalten, die ohne Reserve arbeitet und gar keine Einheit vorgibt.",
+        "Zu sehen ist das erst, sobald eine Vorlage die Intensivierung benutzt - heute tut das keine. An der laufenden Journey ändert sich nichts."
+      ]
+    },
+    {
       "version": "1.46.6",
       "date": "2026-08-23",
       "changes": [
