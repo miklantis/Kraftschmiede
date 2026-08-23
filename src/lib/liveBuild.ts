@@ -6,7 +6,7 @@
 // Stangen/Scheiben) macht der Daten-Hook useLiveBuilder.
 
 import { workWeightForPhase } from "@/engine";
-import type { SetEntry, VolumePhase } from "@/engine/types";
+import type { PhaseMark, SetEntry, VolumePhase } from "@/engine/types";
 import {
   suggestWithBar,
   warmupFor,
@@ -47,7 +47,7 @@ export interface LiveBuildInput {
   exercisesById: Record<string, LiveBuildExercise>;
   // Phasen-Fokus (nur focus noetig; steuert z. B. den Wiedereinstieg) und das
   // fertig gerechnete Ziel-Repband der Phase (derivePhaseContext).
-  phaseFocus: { focus?: string } | null;
+  phaseFocus: PhaseMark | null;
   phaseRepTarget: [number, number] | null;
   // Volumensteuerung der aktuellen Phase (Satzrampe/Deload) oder null.
   volumePhase: VolumePhase | null;

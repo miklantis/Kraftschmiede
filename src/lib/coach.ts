@@ -14,6 +14,7 @@ import {
   weekDemandsSession,
   scoreForRir,
   workSets,
+  isCarefulPhase,
   DEFAULT_TARGET_SCORE,
 } from "@/engine";
 import type {
@@ -29,6 +30,7 @@ import type {
 } from "@/engine";
 import type {
   Exercise,
+  PhaseMark,
   SuitabilityCtx,
   EngineSet,
   SetEntry,
@@ -115,7 +117,7 @@ export interface SuitabilityCtxInput {
   done: DoneSessionEntry[];
   today: string;
   body: BodyReadiness;
-  phase: { focus?: string } | null;
+  phase: PhaseMark | null;
   freqTarget: number;
 }
 
@@ -265,7 +267,7 @@ export function lastWorkSetCount(lastEntry: SetEntry | null): number | null {
 }
 
 export interface SuggestBuildCtx {
-  phase: { focus?: string } | null;
+  phase: PhaseMark | null;
   lastEntry: SetEntry | null;
   // Einheit davor (Rueckwaertsregel bei zweimal verfehltem Ziel).
   prevEntry?: SetEntry | null;
@@ -511,7 +513,7 @@ export function planOutlook(
 }
 
 // Gewichts-/Wdh.-Vorschlag. Core/Bodyweight -> coreCarry; sonst Doppelprogression
-// ueber die Engine, Wiedereinstiegs-Reduktion bei phase.focus === "reentry". Ein
+// ueber die Engine, vorsichtige Steigerung bei Phasen mit careful-Vermerk. Ein
 // gesetztes repTarget ueberschreibt das Repband der Uebung fuer die Rechnung.
 export function suggestForExercise(
   exo: CoachBuildExercise,
@@ -526,7 +528,6 @@ export function suggestForExercise(
   // Der Wochenplan der Kraftphase uebersteuert die Doppelprogression.
   const planned = planSuggestion(exo, ctx);
   if (planned) return planned;
-  const focus = ctx.phase ? ctx.phase.focus : null;
   const exUse: SuggestExercise = {
     workWeight: exo.workWeight,
     repRange: ctx.repTarget
@@ -538,7 +539,7 @@ export function suggestForExercise(
     bar: ctx.bar,
     plates: ctx.plates,
     dumbbells: ctx.dumbbells,
-    reentry: focus === "reentry",
+    reentry: isCarefulPhase(ctx.phase),
     ramp: rampLoad(exo, ctx.loadFactor),
     step: ctx.weightStep,
     prevEntry: ctx.prevEntry ?? null,
@@ -572,7 +573,7 @@ export function pickBarForTarget<T extends { weight: number }>(
 // ohne Stange. Die Senk-/Halte-/Steiger-Entscheidung haengt nur am Arbeitsgewicht
 // und am letzten Eintrag, nicht an der Stange (die wirkt erst beim Ladbar-Machen).
 export interface SuggestWithBarInput<B extends { weight: number }> {
-  phaseFocus: { focus?: string } | null;
+  phaseFocus: PhaseMark | null;
   lastEntry: SetEntry | null;
   // Einheit davor (Rueckwaertsregel bei zweimal verfehltem Ziel).
   prevEntry?: SetEntry | null;

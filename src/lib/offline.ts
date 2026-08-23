@@ -12,7 +12,10 @@ const CACHE_SCHLUESSEL = "kraftschmiede-query-cache";
 //     alte gecachte Stand ohne diese Felder muss verworfen werden.
 // v3: journey_workouts wurde kurzzeitig als Set gecacht und zerfiel im
 //     JSON-Persister zu {}; dieser kaputte Stand muss einmalig verworfen werden.
-export const CACHE_BUSTER = "v3";
+// v4: Die Phasenzeile traegt jetzt den Bauart-Vermerk (plan_builder,
+//     load_builder, careful) - ohne ihn wuerde der Coach gecachte Phasen als
+//     Phasen ohne Wochenplan lesen (Konzept Bausteine, Schritt 2).
+export const CACHE_BUSTER = "v4";
 
 // Wie lange ein gespeicherter Stand hoechstens gueltig ist, bevor er beim
 // Laden verworfen wird. Korrespondiert mit gcTime im queryClient.

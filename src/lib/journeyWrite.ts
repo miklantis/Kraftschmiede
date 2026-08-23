@@ -150,6 +150,11 @@ export async function writeJourneyStart(
     // Der Wochenplan der Vorlage wandert unveraendert in die Journey mit; ohne
     // ihn liefe eine frisch gestartete Kraftphase wieder frei ueber den Coach.
     week_plan: p.week_plan,
+    // Ebenso der Bauart-Vermerk: ohne ihn wuesste die Journey nicht mehr, ob
+    // ihr Wochenplan die Last hochfaehrt oder entlastet.
+    plan_builder: p.plan_builder,
+    load_builder: p.load_builder,
+    careful: p.careful,
     position: i,
   }));
   await store.insertPhasen(phaseRows);

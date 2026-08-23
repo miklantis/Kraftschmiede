@@ -2,6 +2,7 @@
 // Score = empfehlenswerter. Kater=3 in einer betroffenen Region schliesst aus.
 
 import { round2 } from "./math";
+import { hasPlanBuilder } from "./weekPlan";
 import type { Exercise, SuitabilityCtx, SuitabilityTemplate } from "./types";
 
 type Region = "legs" | "upper_body";
@@ -105,11 +106,12 @@ export function suitability(
   });
   reasons.push("Wochenbalance berücksichtigt");
 
-  // Phasen-Fit: in Kraftphasen (strength/power/test) zaehlt jeder schwere
-  // Hauptlift extra; uebrige Phasen bleiben mit +0.5 neutral.
+  // Phasen-Fit: in Phasen mit gebauter Wochenliste (Kraft, Schnellkraft, Test)
+  // zaehlt jeder schwere Hauptlift extra; uebrige Phasen bleiben mit +0.5
+  // neutral. Gefragt wird der Bauart-Vermerk der Phase, nicht mehr eine eigene
+  // Fokus-Liste (Konzept Bausteine, Abschnitt 2).
   if (ctx.phase && ctx.phase.focus) {
-    const pf = ctx.phase.focus;
-    if (pf === "strength" || pf === "power" || pf === "test") {
+    if (hasPlanBuilder(ctx.phase)) {
       let mains = 0;
       ids.forEach((id) => {
         const exo = exMap[id];

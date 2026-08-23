@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.46.3",
+      "date": "2026-08-23",
+      "changes": [
+        "Jede Journey-Phase merkt sich ab jetzt selbst, wie ihr Wochenplan gebaut wurde: ob er das Gewicht Woche für Woche hochfährt (Maximalkraft, Intensivierung), ob er zur Testwoche hin entlastet, und ob der Coach in dieser Phase vorsichtig steigern soll.",
+        "Bisher stand diese Unterscheidung als feste Liste im Programm. Nötig war sie schon immer: ein Wochenplan allein sagt nicht, was er tut - eine Kraftphase und eine Testphase tragen beide einen und verhalten sich gegensätzlich.",
+        "Sichtbar ändert sich nichts. Die laufende Journey wurde dabei einmal nachgetragen und verhält sich exakt wie vorher; die Entlastung vor der Testwoche rechnet weiter von der Maximalkraft-Phase davor."
+      ]
+    },
+    {
       "version": "1.46.2",
       "date": "2026-08-23",
       "changes": [

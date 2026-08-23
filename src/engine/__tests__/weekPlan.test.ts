@@ -5,7 +5,12 @@ import {
   buildWeekPlan,
   DELOAD_LOAD_PCT,
   DELOAD_SETS,
-  hasWeekPlanFocus,
+  buildsRisingPlan,
+  buildsTestPlan,
+  hasPlanBuilder,
+  isCarefulPhase,
+  phaseBuildForFocus,
+  planGovernsLoad,
   parseWeekPlan,
   repLadder,
   nextWeekPlanWeek,
@@ -122,12 +127,59 @@ describe("buildWeekPlan – nur Kraft, Schnellkraft und Test bekommen einen Plan
     expect(buildWeekPlan("maintenance", 4)).toBeNull();
     expect(buildWeekPlan(null, 4)).toBeNull();
   });
-  it("hasWeekPlanFocus deckt sich damit", () => {
-    expect(hasWeekPlanFocus("strength")).toBe(true);
-    expect(hasWeekPlanFocus("power")).toBe(true);
-    expect(hasWeekPlanFocus("test")).toBe(true);
-    expect(hasWeekPlanFocus("hypertrophy")).toBe(false);
-    expect(hasWeekPlanFocus(null)).toBe(false);
+});
+
+describe("phaseBuildForFocus – Bauart einer neuen Phase", () => {
+  it("nennt die Bauregel der Wochenliste beim Namen", () => {
+    expect(phaseBuildForFocus("strength", 5).plan_builder).toBe("strength_ladder");
+    expect(phaseBuildForFocus("power", 4).plan_builder).toBe("power_ladder");
+    expect(phaseBuildForFocus("test", 2).plan_builder).toBe("test");
+  });
+  it("laesst Phasen ohne Wochenliste ohne Vermerk", () => {
+    expect(phaseBuildForFocus("hypertrophy", 5).plan_builder).toBeNull();
+    expect(phaseBuildForFocus("reentry", 2).plan_builder).toBeNull();
+    expect(phaseBuildForFocus(null, 3).plan_builder).toBeNull();
+  });
+  it("deckt sich mit buildWeekPlan", () => {
+    (["strength", "power", "test", "hypertrophy", "endurance", "reentry",
+      "maintenance"] as const).forEach((f) => {
+      const hatPlan = buildWeekPlan(f, 4) != null;
+      expect(phaseBuildForFocus(f, 4).plan_builder != null).toBe(hatPlan);
+    });
+  });
+  it("gibt in Teil 1 noch keine Lastliste vor", () => {
+    expect(phaseBuildForFocus("strength", 5).load_builder).toBeNull();
+    expect(phaseBuildForFocus("reentry", 2).load_builder).toBeNull();
+  });
+  it("markiert den Wiedereinstieg als vorsichtig", () => {
+    expect(phaseBuildForFocus("reentry", 2).careful).toBe(true);
+    expect(phaseBuildForFocus("hypertrophy", 5).careful).toBe(false);
+  });
+});
+
+describe("Bauart-Vermerk – was die Phase zur Laufzeit sagt", () => {
+  it("erkennt eine gebaute Wochenliste", () => {
+    expect(hasPlanBuilder({ plan_builder: "strength_ladder" })).toBe(true);
+    expect(hasPlanBuilder({ plan_builder: "test" })).toBe(true);
+    expect(hasPlanBuilder({ plan_builder: null })).toBe(false);
+    expect(hasPlanBuilder(null)).toBe(false);
+  });
+  it("trennt die hochfahrende Liste von der Testphase", () => {
+    expect(buildsRisingPlan({ plan_builder: "strength_ladder" })).toBe(true);
+    expect(buildsRisingPlan({ plan_builder: "power_ladder" })).toBe(true);
+    expect(buildsRisingPlan({ plan_builder: "test" })).toBe(false);
+    expect(buildsTestPlan({ plan_builder: "test" })).toBe(true);
+    expect(buildsTestPlan({ plan_builder: "strength_ladder" })).toBe(false);
+  });
+  it("beide steuern das Gewicht, eine Phase ohne Liste nicht", () => {
+    expect(planGovernsLoad({ plan_builder: "strength_ladder" })).toBe(true);
+    expect(planGovernsLoad({ plan_builder: "test" })).toBe(true);
+    expect(planGovernsLoad({ plan_builder: null })).toBe(false);
+  });
+  it("liest die vorsichtige Steigerung aus dem Vermerk", () => {
+    expect(isCarefulPhase({ careful: true })).toBe(true);
+    expect(isCarefulPhase({ careful: false })).toBe(false);
+    expect(isCarefulPhase(null)).toBe(false);
   });
 });
 

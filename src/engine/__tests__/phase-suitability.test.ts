@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { loadForReps, workWeightForPhase } from "../phaseChange";
 import type { PhaseWeightOpts } from "../phaseChange";
 import { suitability } from "../suitability";
+import { phaseBuildForFocus } from "../weekPlan";
 import type { Exercise, SuitabilityTemplate } from "../types";
 
 describe("loadForReps – invertierte Epley-Naeherung", () => {
@@ -65,10 +66,18 @@ describe("suitability – Phasen-Fit (Paritaet zu V1)", () => {
     id: "t1",
     items: [{ exerciseId: "sq" }, { exerciseId: "cu" }, { exerciseId: "co" }],
   };
+  // Der Phasen-Fit liest den Bauart-Vermerk der Phase, nicht mehr den Fokus:
+  // gebaute Wochenliste (Kraft, Schnellkraft, Test) = Hauptlift-Bonus.
   const suit = (t: SuitabilityTemplate, focus: string) =>
     suitability(
       t,
-      { now: Date.now(), lastByExercise: {}, soreness: {}, weekCounts: {}, phase: { focus } },
+      {
+        now: Date.now(),
+        lastByExercise: {},
+        soreness: {},
+        weekCounts: {},
+        phase: { focus, ...phaseBuildForFocus(focus, 4) },
+      },
       { exMap },
     );
   const diff2 = (a: number, b: number) => Math.round((a - b) * 100) / 100;

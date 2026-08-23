@@ -2,7 +2,7 @@
 // Datenbank. Idempotent: laeuft nur, wenn noch keine Skills fuer den Nutzer
 // existieren. Alles wird mit der user_id des angemeldeten Nutzers angelegt (RLS).
 
-import { buildWeekPlan } from "@/engine/weekPlan";
+import { buildWeekPlan, phaseBuildForFocus } from "@/engine/weekPlan";
 import { supabase } from "@/lib/supabase";
 import {
   journeyTemplateSeeds,
@@ -180,6 +180,10 @@ async function seedJourneyTemplates(userId: string): Promise<void> {
       throw new Error(`Journey-Vorlage ohne ID: ${t.key}`);
     }
     t.phases.forEach((p, i) => {
+      // Bauart-Vermerk der Phase: nach welcher Regel ihre Listen entstanden
+      // sind. Er wandert beim Journey-Start mit der Phase mit und wird zur
+      // Laufzeit gelesen (Coach, Anker-Nachfuehrung, Empfehlung).
+      const build = phaseBuildForFocus(p.focus, p.weeks);
       phaseInserts.push({
         user_id: userId,
         journey_template_id: tplId,
@@ -195,6 +199,9 @@ async function seedJourneyTemplates(userId: string): Promise<void> {
         // Wochenplan faellt aus Fokus und Phasenlaenge; Kraft-, Schnellkraft-
         // und Testphasen bekommen ihn, alle uebrigen bleiben ohne (null).
         week_plan: buildWeekPlan(p.focus, p.weeks),
+        plan_builder: build.plan_builder,
+        load_builder: build.load_builder,
+        careful: build.careful,
         position: i,
       });
     });

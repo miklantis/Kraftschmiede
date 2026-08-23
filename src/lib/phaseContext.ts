@@ -8,8 +8,8 @@
 // (toPlacementSessions) – sie stand vorher in jedem Aufrufer wortgleich.
 
 import {
-  hasLoadPlanFocus,
-  hasTestFocus,
+  buildsRisingPlan,
+  buildsTestPlan,
   journeyPlacement,
   nextWeekPlanWeek,
   phaseRepBand,
@@ -20,6 +20,7 @@ import {
 import type {
   JourneySession,
   PhaseLike,
+  PhaseMark,
   Placement,
   WeekPlan,
   WeekPlanWeek,
@@ -72,7 +73,7 @@ export function toPlacementPhases(
 }
 
 export interface PhaseContext {
-  phaseFocus: { focus?: string } | null;
+  phaseFocus: PhaseMark | null;
   // Ziel-Repband der laufenden Phase: gesetzte Grenzen, sonst aus dem Fokus
   // abgeleitet (phaseRepBand). null = die Phase gibt kein Band vor.
   phaseRepTarget: [number, number] | null;
@@ -128,7 +129,7 @@ export function derivePhaseContext(
   freqTarget: number,
   today: string,
 ): PhaseContext {
-  let phaseFocus: { focus?: string } | null = null;
+  let phaseFocus: PhaseMark | null = null;
   let phaseRepTarget: [number, number] | null = null;
   let volumePhase: VolumePhase | null = null;
   let weekInPhase = 0;
@@ -157,7 +158,14 @@ export function derivePhaseContext(
     phase = journey.phases[placement.phaseIndex] ?? null;
     if (phase) {
       phaseId = phase.id;
-      phaseFocus = { focus: phase.focus };
+      // Der Coach bekommt Fokus und Bauart-Vermerk der Phase: der Fokus sagt,
+      // was die Phase ist, der Vermerk, wie ihre Listen entstanden sind.
+      phaseFocus = {
+        focus: phase.focus,
+        plan_builder: phase.plan_builder,
+        load_builder: phase.load_builder,
+        careful: phase.careful,
+      };
       volumePhase = {
         setsStart: phase.sets_start,
         setsEnd: phase.sets_end,
@@ -185,16 +193,16 @@ export function derivePhaseContext(
       // und die Journey laeuft noch. Ist sie durchlaufen, steht der Abschluss
       // an und nicht mehr die Frist.
       testWeek =
-        hasTestFocus(phase.focus) &&
+        buildsTestPlan(phase) &&
         phase.week_plan != null &&
         !weekDemandsSession(week) &&
         !placement.done;
-      if (planGovernsLoad(phase.focus) && phase.week_plan && weekDemandsSession(week)) {
+      if (planGovernsLoad(phase) && phase.week_plan && weekDemandsSession(week)) {
         planWeek = week;
         prevPlanWeek = weekPlanForWeek(phase.week_plan, placement.weekInPhase - 1);
         nextPlanWeek = nextWeekPlanWeek(phase.week_plan, placement.weekInPhase);
         firstPlanWeek = phase.week_plan[0] ?? null;
-        deload = hasTestFocus(phase.focus);
+        deload = buildsTestPlan(phase);
         // Bezugsphase des Ankers: in der Rampe die Phase selbst, in der
         // Entlastung die naechste Kraft-/Schnellkraftphase davor. Gibt es keine
         // (Testphase am Anfang der Journey), bleibt der Bezug leer und die
@@ -203,7 +211,7 @@ export function derivePhaseContext(
           ? (journey.phases
               .slice(0, placement.phaseIndex)
               .reverse()
-              .find((p) => hasLoadPlanFocus(p.focus))?.id ?? null)
+              .find((p) => buildsRisingPlan(p))?.id ?? null)
           : phase.id;
       }
       if (usesLoadFactor(journey.phases.map((p) => p.load_factor))) {
