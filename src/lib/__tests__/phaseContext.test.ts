@@ -45,7 +45,7 @@ function phase(overrides: Partial<PhaseRow> = {}): PhaseRow {
     deload_week: null,
     rep_target_min: 8,
     rep_target_max: 12,
-    load_factor: 1,
+    load_plan: null,
     week_plan: null,
     position: 0,
     focus,

@@ -3,7 +3,7 @@ import {
   buildSeedPhase,
   journeyTemplateSeeds,
   phaseTypeSeeds,
-  seedPhaseLoadFactor,
+  seedPhaseLoadPlan,
 } from "@/seed/definitions";
 import { phaseTypeInsert } from "@/schemas";
 
@@ -130,18 +130,25 @@ describe("Journey-Vorlagen im Seed", () => {
     expect(new Set(keys).size).toBe(keys.length);
   });
 
-  it("gibt jeder Phase einen gueltigen Lastfaktor", () => {
+  it("gibt jeder Lastliste gueltige Anteile - eine Zeile je Phasenwoche", () => {
     for (const t of journeyTemplateSeeds) {
       for (const p of t.phases) {
-        const lf = seedPhaseLoadFactor(p);
-        expect(Number.isFinite(lf)).toBe(true);
-        expect(lf).toBeGreaterThan(0);
-        expect(lf).toBeLessThanOrEqual(1);
+        const plan = seedPhaseLoadPlan(p);
+        if (plan === null) continue;
+        expect(plan.map((w) => w.week)).toEqual(
+          plan.map((_, i) => i + 1),
+        );
+        expect(plan).toHaveLength(buildSeedPhase(p).weeks);
+        for (const w of plan) {
+          expect(Number.isFinite(w.loadPct)).toBe(true);
+          expect(w.loadPct).toBeGreaterThan(0);
+          expect(w.loadPct).toBeLessThanOrEqual(1);
+        }
       }
     }
   });
 
-  it("laesst alle bestehenden Vorlagen auf Lastfaktor 1.0", () => {
+  it("laesst alle bestehenden Vorlagen ohne Lastvorgabe", () => {
     const bestand = journeyTemplateSeeds.filter(
       (t) => t.key !== "refeed_rebuild",
     );
@@ -149,7 +156,7 @@ describe("Journey-Vorlagen im Seed", () => {
     expect(bestand.length).toBe(journeyTemplateSeeds.length - 1);
     for (const t of bestand) {
       for (const p of t.phases) {
-        expect(seedPhaseLoadFactor(p)).toBe(1);
+        expect(seedPhaseLoadPlan(p)).toBeNull();
       }
     }
   });
@@ -209,11 +216,16 @@ describe('Vorlage "Wiederaufbau nach Fasten"', () => {
     expect(i).toBe(j + 1);
   });
 
-  it("faehrt die Rampe 0.65 / 0.80 / 0.95 / 1.00 ueber vier Wochen", () => {
+  it("faehrt die Rampe 0.65 / 0.80 / 0.95 ueber vier Wochen", () => {
     expect(vorlage).toBeDefined();
     if (vorlage === undefined) return;
-    expect(vorlage.phases.map(seedPhaseLoadFactor)).toEqual([
-      0.65, 0.8, 0.95, 1,
+    // Die vierte Phase gibt nichts mehr vor: ab dort steuert der Coach wieder
+    // normal. Frueher stand dort ein Lastfaktor von 1.0, was dasselbe bedeutete.
+    expect(vorlage.phases.map(seedPhaseLoadPlan)).toEqual([
+      [{ week: 1, loadPct: 0.65 }],
+      [{ week: 1, loadPct: 0.8 }],
+      [{ week: 1, loadPct: 0.95 }],
+      null,
     ]);
     expect(vorlage.phases.map(buildSeedPhase).map((p) => p.weeks)).toEqual([
       1, 1, 1, 1,

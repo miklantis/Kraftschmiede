@@ -83,7 +83,7 @@ export function useJourneyView(): {
       deloadWeek: p.deload_week,
       repTargetMin: p.rep_target_min,
       repTargetMax: p.rep_target_max,
-      loadFactor: p.load_factor ?? 1,
+      loadPlan: p.load_plan,
       weekPlan: p.week_plan,
     }));
 

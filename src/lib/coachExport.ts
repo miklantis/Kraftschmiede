@@ -11,9 +11,10 @@ import {
   phaseRepBand,
   type JourneySession,
 } from "@/engine/journey";
+import { parseLoadPlan } from "@/engine/loadPlan";
 import { parseWeekPlan } from "@/engine/weekPlan";
 import { todayISO } from "@/lib/format";
-import { isNeutralLoad } from "@/lib/loadFactor";
+import { loadSpanLabel } from "@/lib/loadFactor";
 import { zeitraumLabel } from "@/lib/zeitraeume";
 import type {
   RawExportData,
@@ -35,6 +36,20 @@ function flag(row: Row, key: string): boolean {
   return row[key] === true;
 }
 
+// Lastvorgabe einer Phasenzeile fuer den Export: als lesbare Spanne und als
+// Zahlenreihe. Ohne Liste bleibt beides weg.
+function loadFields(row: Row): { load?: string; loadPlan?: number[] } {
+  const plan = parseLoadPlan(row["load_plan"]);
+  if (plan === null) return {};
+  return {
+    load: loadSpanLabel(plan) ?? undefined,
+    loadPlan: plan
+      .slice()
+      .sort((a, b) => a.week - b.week)
+      .map((w) => w.loadPct),
+  };
+}
+
 // ---- Ausgabe-Formen (schlank, sprechend) ----
 export interface CoachPhase {
   index: string; // "1/4"
@@ -44,9 +59,15 @@ export interface CoachPhase {
   setsRamp: string; // "2→6"
   deloadWeek: number | null;
   repBand: string | null; // "8-12"
-  /** Vorgegebene Last der Phase als Anteil des Referenzgewichts; nur wenn die
-   *  Journey damit arbeitet (sonst weggelassen). */
-  loadFactor?: number;
+  /** Vorgegebene Last der Phase, Woche fuer Woche als Anteil des
+   *  Referenzgewichts ("65 → 95 %" bzw. "80 %"); nur wenn die Phase eine Last
+   *  vorgibt (sonst weggelassen). Die Phase ist im Export nie "gerade in
+   *  Woche 2", darum die Spanne und nicht eine einzelne Zahl - bei einem Block,
+   *  der von 65 auf 95 wandert, waere die falsch. */
+  load?: string;
+  /** Dieselbe Vorgabe als Zahlenreihe, eine je Phasenwoche - damit der Coach
+   *  nachrechnen kann statt einen Text zu deuten. */
+  loadPlan?: number[];
 }
 
 export interface CoachJourney {
@@ -372,11 +393,9 @@ export function buildCoachExport(
       setsRamp: `${num(p, "sets_start") ?? "?"}→${num(p, "sets_end") ?? "?"}`,
       deloadWeek: num(p, "deload_week"),
       repBand: repBand(num(p, "rep_target_min"), num(p, "rep_target_max")),
-      // Lastfaktor nur ausgeben, wenn er die Last wirklich vorgibt - sonst
-      // traegt der Export in jeder Journey eine nichtssagende 1.
-      ...(isNeutralLoad(num(p, "load_factor"))
-        ? {}
-        : { loadFactor: num(p, "load_factor") ?? 1 }),
+      // Lastliste nur ausgeben, wenn die Phase eine traegt - sonst stuende in
+      // jeder Journey eine nichtssagende Vorgabe.
+      ...loadFields(p),
     }));
 
     // aktuelle Woche/Phase ueber die getestete Placement-Engine

@@ -6,8 +6,9 @@
 // keiner Phase zugeordnet ist (aeltere Einheiten), landet in einer eigenen
 // Restgruppe, damit nichts unsichtbar wird.
 
+import type { LoadPlan } from "@/engine";
 import { longDateShort } from "./format";
-import { loadPercent, usesLoadFactor } from "./loadFactor";
+import { loadSpanLabel, usesLoadPlan } from "./loadFactor";
 
 export interface ReviewSessionInput {
   id: string;
@@ -24,8 +25,8 @@ export interface ReviewPhaseInput {
   id: string;
   name: string;
   weeks: number;
-  /** Vorgegebene Last der Phase (1 = keine Vorgabe). */
-  loadFactor: number;
+  /** Lastliste der Phase; null = die Phase gab keine Last vor. */
+  loadPlan: LoadPlan | null;
 }
 
 export interface ReviewLookups {
@@ -84,19 +85,22 @@ export function buildJourneyReview(
     title: titleOf(s, lk),
   });
 
-  // Gab die Journey die Last vor, gehoert der Anteil in die Rueckschau - sonst
-  // ist spaeter nicht mehr erkennbar, warum die ersten Wochen leichter waren.
-  const withLoad = usesLoadFactor(phases.map((p) => p.loadFactor));
+  // Gab die Journey die Last vor, gehoert sie in die Rueckschau - sonst ist
+  // spaeter nicht mehr erkennbar, warum die ersten Wochen leichter waren. Die
+  // Phase ist abgeschlossen, es gibt also keine laufende Woche: gezeigt wird die
+  // Spanne ("65 → 95 %"). Phasen ohne eigene Liste lassen den Abschnitt weg.
+  const withLoad = usesLoadPlan(phases.map((p) => p.loadPlan));
   const known = new Set(phases.map((p) => p.id));
   const groups: ReviewGroup[] = phases.map((p) => {
     const list = mine.filter((s) => s.phaseId === p.id).map(view);
+    const lastLabel = withLoad ? loadSpanLabel(p.loadPlan) : null;
     return {
       id: p.id,
       name: p.name,
       meta: [
         p.weeks === 1 ? "1 Woche" : p.weeks + " Wochen",
         unitsLabel(list.length),
-        ...(withLoad ? [loadPercent(p.loadFactor) + " Last"] : []),
+        ...(lastLabel === null ? [] : [lastLabel + " Last"]),
       ].join(" · "),
       sessions: list,
     };

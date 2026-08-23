@@ -18,7 +18,7 @@ function phase(over: Partial<JourneyPhaseInput> = {}): JourneyPhaseInput {
     deloadWeek: 4,
     repTargetMin: 8,
     repTargetMax: 12,
-    loadFactor: 1,
+    loadPlan: null,
     weekPlan: null,
     ...over,
   };
@@ -99,10 +99,25 @@ describe("buildPhaseViews", () => {
   });
 });
 
-describe("buildPhaseViews \u2013 Lastfaktor", () => {
+describe("buildPhaseViews \u2013 Lastliste", () => {
   const rampe: JourneyPhaseInput[] = [
-    phase({ name: "Tasten", weeks: 1, loadFactor: 0.65 }),
-    phase({ name: "Standort", weeks: 1, loadFactor: 1 }),
+    phase({ name: "Tasten", weeks: 1, loadPlan: [{ week: 1, loadPct: 0.65 }] }),
+    phase({ name: "Standort", weeks: 1, loadPlan: [{ week: 1, loadPct: 1 }] }),
+  ];
+
+  // Ein Block, der ueber drei Wochen von 65 auf 95 Prozent wandert - der Fall,
+  // fuer den eine einzelne Zahl je Phase nicht mehr reicht.
+  const block: JourneyPhaseInput[] = [
+    phase({
+      name: "Wiederaufbau",
+      weeks: 3,
+      loadPlan: [
+        { week: 1, loadPct: 0.65 },
+        { week: 2, loadPct: 0.8 },
+        { week: 3, loadPct: 0.95 },
+      ],
+    }),
+    phase({ name: "Test/Peak", weeks: 1, loadPlan: null }),
   ];
 
   it("zeigt die vorgegebene Last als Detailzeile an jeder Phase", () => {
@@ -113,6 +128,39 @@ describe("buildPhaseViews \u2013 Lastfaktor", () => {
     });
     expect(views[0].detail[3]).toEqual({ k: "Vorgegebene Last", v: "65 %" });
     expect(views[1].detail[3]).toEqual({ k: "Vorgegebene Last", v: "100 %" });
+  });
+
+  it("zeigt an der laufenden Phase den Anteil der laufenden Woche", () => {
+    const views = buildPhaseViews(block, {
+      phaseIndex: 0,
+      weekInPhase: 2,
+      done: false,
+    });
+    expect(views[0].detail[3]).toEqual({ k: "Vorgegebene Last", v: "80 %" });
+    expect(views[0].loadNote).toContain("80 %");
+  });
+
+  it("zeigt an nicht laufenden Phasen die Spanne", () => {
+    // Phase 2 laeuft: der Block liegt hinter uns und wird als Spanne gezeigt.
+    const views = buildPhaseViews(block, {
+      phaseIndex: 1,
+      weekInPhase: 1,
+      done: false,
+    });
+    expect(views[0].detail[3]).toEqual({
+      k: "Vorgegebene Last",
+      v: "65 \u2192 95 %",
+    });
+  });
+
+  it("sagt an einer Phase ohne eigene Liste, dass es keine Vorgabe gibt", () => {
+    const views = buildPhaseViews(block, {
+      phaseIndex: 0,
+      weekInPhase: 1,
+      done: false,
+    });
+    expect(views[1].detail[3]).toEqual({ k: "Vorgegebene Last", v: "keine" });
+    expect(views[1].loadNote).toBeNull();
   });
 
   it("erklaert die Vorgabe nur an der laufenden Phase", () => {
@@ -134,7 +182,7 @@ describe("buildPhaseViews \u2013 Lastfaktor", () => {
     expect(views[1].loadNote).toContain("endet");
   });
 
-  it("laesst Journeys ohne Lastfaktor unveraendert", () => {
+  it("laesst Journeys ohne Lastliste unveraendert", () => {
     const views = buildPhaseViews([phase()], {
       phaseIndex: 0,
       weekInPhase: 1,
@@ -303,12 +351,29 @@ describe("buildTemplatePhaseViews", () => {
 
   it("ergaenzt die Lastzeile, wenn die Vorlage die Last vorgibt", () => {
     const views = buildTemplatePhaseViews([
-      phase({ loadFactor: 0.65 }),
-      phase({ loadFactor: 1 }),
+      phase({ loadPlan: [{ week: 1, loadPct: 0.65 }] }),
+      phase({ loadPlan: [{ week: 1, loadPct: 1 }] }),
     ]);
     expect(views[0].detail).toHaveLength(4);
     expect(views[0].detail[3]).toEqual({ k: "Vorgegebene Last", v: "65 %" });
     expect(views[1].detail).toHaveLength(4);
+  });
+
+  it("zeigt in der Vorschau die Spanne, weil es keine laufende Woche gibt", () => {
+    const views = buildTemplatePhaseViews([
+      phase({
+        weeks: 3,
+        loadPlan: [
+          { week: 1, loadPct: 0.65 },
+          { week: 2, loadPct: 0.8 },
+          { week: 3, loadPct: 0.95 },
+        ],
+      }),
+    ]);
+    expect(views[0].detail[3]).toEqual({
+      k: "Vorgegebene Last",
+      v: "65 \u2192 95 %",
+    });
   });
 });
 

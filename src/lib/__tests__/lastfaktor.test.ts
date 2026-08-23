@@ -1,8 +1,10 @@
-// Lastfaktor-Rampe (Journey "Wiederaufbau nach Fasten"): die Journey gibt das
-// Arbeitsgewicht selbst vor – Referenzgewicht x Lastfaktor der Phase – statt es
-// aus der letzten Leistung abzuleiten. Geprueft wird die ganze Kette: die
-// Vorgabe in der Engine (suggestWeight), die Ableitung des Lastfaktors aus der
-// Journey (derivePhaseContext) und der fertige Sitzungsaufbau (buildLiveEntries).
+// Lastvorgabe einer Journey (heute "Wiederaufbau nach Fasten"): die Journey gibt
+// das Arbeitsgewicht selbst vor – Referenzgewicht x Anteil der laufenden Woche –
+// statt es aus der letzten Leistung abzuleiten. Der Anteil steht seit Schritt 4
+// als Liste an der Phase (load_plan), eine Zeile je Phasenwoche. Geprueft wird
+// die ganze Kette: die Vorgabe in der Engine (suggestWeight), die Ableitung des
+// Anteils aus der Journey (derivePhaseContext) und der fertige Sitzungsaufbau
+// (buildLiveEntries).
 
 import { describe, expect, it } from "vitest";
 import { suggestWeight } from "@/engine";
@@ -32,7 +34,7 @@ const work = (o: Partial<EngineSet>): EngineSet => ({
   ...o,
 });
 
-// Vorschlag mit der Vorgabe einer Lastfaktor-Phase.
+// Vorschlag mit dem Lastanteil einer Woche.
 function withFactor(
   factor: number,
   workWeight: number,
@@ -52,7 +54,7 @@ const easy = (weight: number): SetEntry =>
     work({ weight, reps: 12, targetWeight: weight, targetReps: 12, score: 2 }),
   ]);
 
-describe("Lastfaktor-Rampe in der Gewichtssteuerung", () => {
+describe("Lastvorgabe in der Gewichtssteuerung", () => {
   it("Rampe 0.65 -> 0.80 -> 0.95 -> 1.00 landet exakt beim Ausgangsgewicht", () => {
     // Woche 1: erste Einheit der Journey, noch keine Vordaten. Das
     // Arbeitsgewicht steht noch auf dem Stand vor der Pause und wird gedeckelt.
@@ -72,7 +74,7 @@ describe("Lastfaktor-Rampe in der Gewichtssteuerung", () => {
     expect(w4.weight).toBe(REF);
   });
 
-  it("deckelt innerhalb einer Lastfaktor-Phase: kein Steigern ueber die Phasenlast", () => {
+  it("deckelt innerhalb einer Woche mit Vorgabe: kein Steigern ueber die Wochenlast", () => {
     // Zweite Einheit derselben Woche nach einer leichten ersten: die doppelte
     // Progression wollte auf 40 – die Phase laesst nur 37.5 zu.
     const r = withFactor(0.65, 37.5, easy(37.5));
@@ -91,7 +93,7 @@ describe("Lastfaktor-Rampe in der Gewichtssteuerung", () => {
     expect(r.weight).toBe(35);
   });
 
-  it("Abschlussphase (Lastfaktor 1) stuetzt nur nach unten, deckelt nicht", () => {
+  it("Abschlussphase (voller Anteil) stuetzt nur nach unten, deckelt nicht", () => {
     // Auf dem alten Niveau angekommen darf der Coach wieder normal steigern.
     const r = withFactor(1, REF, easy(REF));
     expect(r.decision).toBe("increase");
@@ -127,22 +129,32 @@ describe("Lastfaktor-Rampe in der Gewichtssteuerung", () => {
   });
 });
 
-// --- Lastfaktor aus der Journey ableiten ---
+// --- Lastanteil der laufenden Woche aus der Journey ableiten ---
 
-function phase(name: string, loadFactor: number, position: number): PhaseRow {
+// Eine Phase, die ihre Last als Liste traegt. `last` = Anteile je Phasenwoche;
+// null bedeutet "keine Vorgabe".
+function phase(
+  name: string,
+  last: number[] | null,
+  position: number,
+  weeks = 1,
+): PhaseRow {
   return {
     id: "00000000-0000-0000-0000-00000000000" + position,
     user_id: "00000000-0000-0000-0000-0000000000ff",
     journey_id: "00000000-0000-0000-0000-0000000000aa",
     name,
     focus: "hypertrophy",
-    weeks: 1,
+    weeks,
     sets_start: 3,
     sets_end: 3,
     deload_week: null,
     rep_target_min: 8,
     rep_target_max: 12,
-    load_factor: loadFactor,
+    load_plan:
+      last === null
+        ? null
+        : last.map((loadPct, i) => ({ week: i + 1, loadPct })),
     plan_builder: null,
     load_builder: null,
     careful: false,
@@ -166,10 +178,13 @@ function journeyWith(phases: PhaseRow[]): PhaseContextJourney {
   };
 }
 
-describe("derivePhaseContext – Lastfaktor", () => {
-  it("gibt den Lastfaktor der aktuellen Phase heraus", () => {
+describe("derivePhaseContext – Lastliste", () => {
+  it("gibt den Anteil der aktuellen Phase heraus", () => {
     const ctx = derivePhaseContext(
-      journeyWith([phase("Tasten", 0.65, 0), phase("Reaktivieren", 0.8, 1)]),
+      journeyWith([
+        phase("Tasten", [0.65], 0),
+        phase("Reaktivieren", [0.8], 1),
+      ]),
       [],
       3,
       "2026-08-05",
@@ -177,11 +192,28 @@ describe("derivePhaseContext – Lastfaktor", () => {
     expect(ctx.loadFactor).toBe(0.65);
   });
 
-  it("bleibt bei einer Journey ohne Lastfaktor leer", () => {
+  it("gibt innerhalb einer Phase den Anteil der laufenden Woche heraus", () => {
+    // Ein Block ueber drei Wochen: 65 / 80 / 95. Woche 1 (03.-05.08.) ist mit
+    // drei Einheiten erfuellt, am 12.08. laeuft damit Woche 2.
+    const ctx = derivePhaseContext(
+      journeyWith([phase("Wiederaufbau", [0.65, 0.8, 0.95], 0, 3)]),
+      [
+        { date: "2026-08-03", status: "done", type: "strength", journey_id: "00000000-0000-0000-0000-0000000000aa" },
+        { date: "2026-08-04", status: "done", type: "strength", journey_id: "00000000-0000-0000-0000-0000000000aa" },
+        { date: "2026-08-05", status: "done", type: "strength", journey_id: "00000000-0000-0000-0000-0000000000aa" },
+      ],
+      3,
+      "2026-08-12",
+    );
+    expect(ctx.loadFactor).toBe(0.8);
+    expect(ctx.loadNote).toContain("80 %");
+  });
+
+  it("bleibt bei einer Journey ohne Lastliste leer", () => {
     // Wichtig, damit ein liegengebliebenes Referenzgewicht eine normale Journey
     // nicht auf das alte Niveau festnagelt.
     const ctx = derivePhaseContext(
-      journeyWith([phase("Hypertrophie", 1, 0), phase("Kraft", 1, 1)]),
+      journeyWith([phase("Hypertrophie", null, 0), phase("Kraft", null, 1)]),
       [],
       3,
       "2026-08-05",
@@ -191,7 +223,7 @@ describe("derivePhaseContext – Lastfaktor", () => {
 
   it("erklaert die niedrige Vorgabe im Hinweis fuer den Trainingsbildschirm", () => {
     const ctx = derivePhaseContext(
-      journeyWith([phase("Tasten", 0.65, 0), phase("Standort", 1, 1)]),
+      journeyWith([phase("Tasten", [0.65], 0), phase("Standort", [1], 1)]),
       [],
       3,
       "2026-08-05",
@@ -204,7 +236,7 @@ describe("derivePhaseContext – Lastfaktor", () => {
     // Woche 1 (03.-05.08.) ist mit drei Einheiten erfuellt; am 12.08. laeuft
     // damit Woche 2 – die letzte Phase.
     const ctx = derivePhaseContext(
-      journeyWith([phase("Tasten", 0.65, 0), phase("Standort", 1, 1)]),
+      journeyWith([phase("Tasten", [0.65], 0), phase("Standort", [1], 1)]),
       [
         { date: "2026-08-03", status: "done", type: "strength", journey_id: "00000000-0000-0000-0000-0000000000aa" },
         { date: "2026-08-04", status: "done", type: "strength", journey_id: "00000000-0000-0000-0000-0000000000aa" },
@@ -218,9 +250,9 @@ describe("derivePhaseContext – Lastfaktor", () => {
     expect(ctx.loadNote).toContain("endet");
   });
 
-  it("ohne Lastfaktor-Journey gibt es keinen Hinweis", () => {
+  it("ohne Lastliste gibt es keinen Hinweis", () => {
     const ctx = derivePhaseContext(
-      journeyWith([phase("Hypertrophie", 1, 0)]),
+      journeyWith([phase("Hypertrophie", null, 0)]),
       [],
       3,
       "2026-08-05",
@@ -267,7 +299,7 @@ function input(overrides: Partial<LiveBuildInput> = {}): LiveBuildInput {
   };
 }
 
-describe("buildLiveEntries – Lastfaktor", () => {
+describe("buildLiveEntries – Lastvorgabe", () => {
   it("baut die Einheit mit der Phasenlast statt aus dem 1RM", () => {
     // Das 1RM wuerde fuer 8-10 Wdh. deutlich mehr hergeben; die Journey gibt vor.
     const res = buildLiveEntries(input());
@@ -275,7 +307,7 @@ describe("buildLiveEntries – Lastfaktor", () => {
     expect(res.entries[0]!.phaseEntry).toBe(false);
   });
 
-  it("ohne Lastfaktor bleibt der bisherige Aufbau unveraendert", () => {
+  it("ohne Lastvorgabe bleibt der bisherige Aufbau unveraendert", () => {
     const res = buildLiveEntries(
       input({
         loadFactor: null,

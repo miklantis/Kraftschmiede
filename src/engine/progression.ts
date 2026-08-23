@@ -17,12 +17,12 @@ export interface SuggestExercise {
   barId?: string;
 }
 
-// Von der Journey vorgegebene Last: Referenzgewicht x Lastfaktor der Phase.
-// `cap` = true, solange der Lastfaktor unter 1 liegt – dann ist `weight`
-// zugleich Zielwert und Obergrenze: die Rampe der Journey steuert das Gewicht,
-// nicht die Tagesform. Bei Lastfaktor 1 (Abschlussphase) wirkt `weight` nur als
-// Untergrenze, damit die Journey wieder exakt am alten Niveau ankommt und der
-// Coach von dort normal weiterarbeitet.
+// Von der Journey vorgegebene Last: Referenzgewicht x Anteil der laufenden
+// Woche (aus der Lastliste der Phase). `cap` = true, solange der Anteil unter 1
+// liegt – dann ist `weight` zugleich Zielwert und Obergrenze: die Vorgabe der
+// Journey steuert das Gewicht, nicht die Tagesform. Bei vollem Anteil wirkt
+// `weight` nur als Untergrenze, damit die Journey wieder exakt am alten Niveau
+// ankommt und der Coach von dort normal weiterarbeitet.
 export interface RampLoad {
   weight: number;
   cap: boolean;
@@ -35,7 +35,7 @@ export interface SuggestOpts {
   // Gewicht auf die naechste feste Stufe gerundet statt mit Scheiben geladen.
   dumbbells?: number[];
   reentry?: boolean;
-  // Vorgabe einer Lastfaktor-Journey; ohne sie rechnet der Coach wie gewohnt.
+  // Lastvorgabe der Phase; ohne sie rechnet der Coach wie gewohnt.
   ramp?: RampLoad | null;
   // Schrittweite eines Gewichtssprungs aus den Einstellungen (kg). Ohne Angabe
   // der bisherige Standard 2,5. Gerundet wird danach weiterhin auf eine ladbare

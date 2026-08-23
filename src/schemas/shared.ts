@@ -27,6 +27,8 @@ export const isoTimestamp = z.iso.datetime({ offset: true }); // timestamptz
 // ---- Mehrfach genutzte Enums (CHECK-Listen aus dem Schema) ------------------
 
 // Periodisierungs-Fokus einer Phase (journey_template_phases.focus, phases.focus).
+// Seit Migration 0046 gehoert "rebuild" dazu: der Wiederaufbau ist damit nicht
+// mehr nur Baustein, sondern auch erlaubter Phasen-Fokus.
 export const focusEnum = z.enum([
   "reentry",
   "hypertrophy",
@@ -35,13 +37,15 @@ export const focusEnum = z.enum([
   "endurance",
   "test",
   "maintenance",
+  "rebuild",
 ]);
 
 // Baustein-Schluessel einer Phase (phase_types.key). Deckungsgleich mit
-// focusEnum plus "rebuild": der Wiederaufbau existiert erst als Baustein, als
-// Phasen-Fokus kommt er einen Schritt spaeter dazu (dann fallen beide Listen
-// wieder zusammen).
-export const phaseTypeKeyEnum = z.enum([...focusEnum.options, "rebuild"]);
+// focusEnum - der Fokus einer Phase ist zugleich der Schluessel auf ihren
+// Baustein (Konzept Bausteine, Abschnitt 9: kein zweites Feld dafuer). Der
+// eigene Name bleibt stehen, weil er an der Baustein-Tabelle die sprechendere
+// Bezeichnung ist.
+export const phaseTypeKeyEnum = focusEnum;
 
 // Mess-Art ohne Gewicht (exercises.metric, skill_phase_exercises.metric).
 export const metricEnum = z.enum(["reps", "duration"]);

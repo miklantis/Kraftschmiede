@@ -26,7 +26,7 @@ import type {
   VorlageUebungRow,
   ZuordnungRow,
 } from "./journeyStore";
-import { usesLoadFactor } from "./loadFactor";
+import { usesLoadPlan } from "./loadFactor";
 
 /** Eine Phase der gewaehlten Journey-Vorlage, so wie sie in die neue Journey
  *  kopiert wird. Nutzer, Journey und Reihenfolge kommen erst beim Kopieren
@@ -84,11 +84,12 @@ export type VorlageAction =
     }
   | { type: "setActive"; templateId: string; aktiv: boolean };
 
-/** Nutzt die Vorlage einen Lastfaktor? Nur dann wird beim Start ein
- *  Referenzgewicht eingefroren. Was als neutral gilt, entscheidet
- *  usesLoadFactor/isNeutralLoad – dort liegt die Toleranz. */
-function nutztLastfaktor(phases: JourneyStartPhase[]): boolean {
-  return usesLoadFactor(phases.map((p) => p.load_factor));
+/** Gibt die Vorlage irgendwo eine Last vor? Nur dann wird beim Start ein
+ *  Referenzgewicht eingefroren – es ist der Bezugspunkt, auf den sich die
+ *  Anteile der Lastliste beziehen. Traegt keine Phase eine Liste, gibt es
+ *  nichts einzufrieren. */
+function nutztLastliste(phases: JourneyStartPhase[]): boolean {
+  return usesLoadPlan(phases.map((p) => p.load_plan));
 }
 
 /** Referenzgewicht aller Uebungen des Nutzers auf den aktuellen Stand
@@ -146,7 +147,7 @@ export async function writeJourneyStart(
     deload_week: p.deload_week,
     rep_target_min: p.rep_target_min,
     rep_target_max: p.rep_target_max,
-    load_factor: p.load_factor,
+    load_plan: p.load_plan,
     // Der Wochenplan der Vorlage wandert unveraendert in die Journey mit; ohne
     // ihn liefe eine frisch gestartete Kraftphase wieder frei ueber den Coach.
     week_plan: p.week_plan,
@@ -160,10 +161,10 @@ export async function writeJourneyStart(
   await store.insertPhasen(phaseRows);
 
   // Referenzgewicht: Bezugspunkt einer Journey, die die Last selbst vorgibt.
-  // Bei einer Lastfaktor-Journey den aktuellen Stand einfrieren (work_weight
-  // wird nach jeder Einheit fortgeschrieben und waere sonst nach der ersten
-  // abgesenkten Einheit verloren), sonst den alten Stand wegraeumen.
-  if (nutztLastfaktor(vorlage.phases)) {
+  // Traegt die Journey irgendwo eine Lastliste, den aktuellen Stand einfrieren
+  // (work_weight wird nach jeder Einheit fortgeschrieben und waere sonst nach
+  // der ersten abgesenkten Einheit verloren), sonst den alten Stand wegraeumen.
+  if (nutztLastliste(vorlage.phases)) {
     await friereReferenzgewichteEin(store, userId);
   } else {
     await store.clearReferenzgewichte(userId);

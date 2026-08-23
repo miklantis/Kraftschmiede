@@ -57,7 +57,7 @@ export interface LiveBuildInput {
   // Freies Training: keine aktive Journey. Der Coach gibt dann nichts vor -
   // Gewicht, Wdh. und Satzzahl kommen unveraendert aus der letzten Einheit.
   freeMode: boolean;
-  // Lastfaktor der aktiven Phase; null ausserhalb einer Lastfaktor-Journey.
+  // Lastanteil der laufenden Woche; null ohne Lastvorgabe an der Phase.
   loadFactor: number | null;
   // Wochenplan-Stand der laufenden Phase; null = die Phase laeuft ueber die
   // Doppelprogression des Coaches wie bisher.
@@ -158,7 +158,7 @@ export interface PhaseEntryResult {
 // der Doppelprogression. Nur Langhantel (Scheiben-Rechnung). Verletzungs-
 // bewusst gedeckelt und abgerundet (workWeightForPhase). Selbstbegrenzt: ab
 // der zweiten Einheit liegt das letzte Band in der neuen Zone -> kein Sprung.
-// Gibt die Journey die Last selbst vor (Lastfaktor-Rampe), steuert sie den
+// Gibt die Journey die Last selbst vor (Lastliste an der Phase), steuert sie den
 // Phasenwechsel bereits im Vorschlag - der 1RM-Umweg wuerde dagegenhalten.
 //
 // Exportiert, damit die Uebungs-Statusanzeige (useCoachStatuses) denselben

@@ -1,6 +1,11 @@
-import type { WeekPlan, WeekPlanWeek } from "@/engine";
-import { weekDemandsSession } from "@/engine";
-import { loadFactorNote, loadPercent, usesLoadFactor } from "@/lib/loadFactor";
+import type { LoadPlan, WeekPlan, WeekPlanWeek } from "@/engine";
+import { loadPlanForWeek, weekDemandsSession } from "@/engine";
+import {
+  loadFactorNote,
+  loadPercent,
+  loadSpanLabel,
+  usesLoadPlan,
+} from "@/lib/loadFactor";
 import type { Focus } from "@/schemas/shared";
 
 // Phase einer aktiven Journey, soweit die Anzeige sie braucht. Werte snake_case-
@@ -14,8 +19,9 @@ export interface JourneyPhaseInput {
   deloadWeek: number | null;
   repTargetMin: number | null;
   repTargetMax: number | null;
-  /** Anteil des Referenzgewichts, den die Phase vorgibt (1 = keine Vorgabe). */
-  loadFactor: number;
+  /** Lastliste der Phase: je Phasenwoche der Anteil des Referenzgewichts;
+   *  null = die Phase gibt keine Last vor. */
+  loadPlan: LoadPlan | null;
   /** Wochenplan der Phase (Saetze, Wiederholungen, RIR je Woche); null = die
    *  Phase laeuft ueber die Doppelprogression des Coaches. */
   weekPlan: WeekPlan | null;
@@ -60,8 +66,8 @@ export interface PhaseView {
   mark: string; // "\u2713" bei vergangenen Phasen, sonst ""
   meta: string;
   detail: PhaseDetail[];
-  /** Hinweis zur vorgegebenen Last, nur an der laufenden Phase einer
-   *  Lastfaktor-Journey; sonst null. */
+  /** Hinweis zur vorgegebenen Last, nur an der laufenden Phase einer Journey
+   *  mit Lastvorgabe; sonst null. */
   loadNote: string | null;
   /** Ablauf-Hinweis der laufenden Testphase; sonst null. */
   testNote: string | null;
@@ -113,6 +119,18 @@ function planReps(plan: WeekPlan): string {
   return `${planSpan(plan.map((w) => w.reps))} Wdh`;
 }
 
+// Wert der Last-Detailzeile. An der laufenden Phase steht der Anteil ihrer
+// laufenden Woche, ueberall sonst die Spanne ("65 → 95 %") - bei einem Block,
+// der von 65 auf 95 wandert, waere eine einzelne Zahl fuer eine vergangene oder
+// kuenftige Phase schlicht falsch, und in der Vorlagen-Vorschau gibt es
+// ueberhaupt keine laufende Woche. Phasen ohne eigene Liste sagen "keine": die
+// Zeile bleibt stehen, damit die Karten derselben Journey gleich aufgebaut sind.
+function loadValue(plan: LoadPlan | null, currentWeek: number | null): string {
+  if (currentWeek == null) return loadSpanLabel(plan) ?? "keine";
+  const pct = loadPlanForWeek(plan, currentWeek);
+  return pct == null ? "keine" : loadPercent(pct);
+}
+
 // Detailzeilen einer Phase. Gleich fuer laufende Journeys und Vorlagen-Vorschau,
 // damit beide Ansichten nicht auseinanderlaufen.
 //
@@ -125,11 +143,16 @@ function planReps(plan: WeekPlan): string {
 // Gezaehlt werden nur Wochen mit geplanter Einheit: die reine Testwoche verlangt
 // nichts, in den Spannen stuende sonst "2 → 0 Sätze". Plant die Phase gar nichts
 // (einwoechige Testphase), sagen die Zeilen genau das.
-function phaseDetail(p: JourneyPhaseInput, withLoad: boolean): PhaseDetail[] {
+function phaseDetail(
+  p: JourneyPhaseInput,
+  withLoad: boolean,
+  // 1-basierte Woche in der Phase, wenn sie gerade laeuft; sonst null.
+  currentWeek: number | null,
+): PhaseDetail[] {
   const geplant = p.weekPlan?.filter(weekDemandsSession) ?? [];
   const plan = geplant.length > 0 ? geplant : null;
   const loadRow = withLoad
-    ? [{ k: "Vorgegebene Last", v: loadPercent(p.loadFactor) }]
+    ? [{ k: "Vorgegebene Last", v: loadValue(p.loadPlan, currentWeek) }]
     : [];
   if (p.weekPlan && p.weekPlan.length > 0 && !plan) {
     return [
@@ -211,8 +234,8 @@ export function buildPhaseViews(
 ): PhaseView[] {
   // Gibt die Journey die Last vor, bekommt jede Phase eine Detailzeile "Last"
   // und die laufende Phase zusaetzlich den erklaerenden Hinweis. Journeys ohne
-  // Lastfaktor sehen unveraendert aus.
-  const withLoad = usesLoadFactor(phases.map((p) => p.loadFactor));
+  // Lastvorgabe sehen unveraendert aus.
+  const withLoad = usesLoadPlan(phases.map((p) => p.loadPlan));
   return phases.map((p, i) => {
     const state: PhaseState = placement.done
       ? "past"
@@ -231,10 +254,13 @@ export function buildPhaseViews(
       isCurrent,
       mark: state === "past" ? "\u2713" : "",
       meta,
-      detail: phaseDetail(p, withLoad),
+      detail: phaseDetail(p, withLoad, isCurrent ? placement.weekInPhase : null),
       loadNote:
         withLoad && isCurrent
-          ? loadFactorNote(p.loadFactor, i === phases.length - 1)
+          ? loadFactorNote(
+              loadPlanForWeek(p.loadPlan, placement.weekInPhase),
+              i === phases.length - 1,
+            )
           : null,
       // Nur an der laufenden Testphase: dort steht ihr Ablauf.
       testNote: isCurrent && p.focus === "test" ? testPhaseNote(p.weeks) : null,
@@ -254,14 +280,15 @@ export function buildPhaseViews(
 export function buildTemplatePhaseViews(
   phases: JourneyPhaseInput[],
 ): PhaseView[] {
-  const withLoad = usesLoadFactor(phases.map((p) => p.loadFactor));
+  const withLoad = usesLoadPlan(phases.map((p) => p.loadPlan));
   return phases.map((p) => ({
     name: p.name,
     state: "preview" as const,
     isCurrent: false,
     mark: "",
     meta: `${p.weeks} ${p.weeks === 1 ? "Woche" : "Wochen"}`,
-    detail: phaseDetail(p, withLoad),
+    // Ohne laufende Woche zeigt die Vorschau die Spanne der Lastliste.
+    detail: phaseDetail(p, withLoad, null),
     loadNote: null,
     testNote: null,
     // In der Vorschau laeuft keine Woche - die Tabelle gehoert zur laufenden

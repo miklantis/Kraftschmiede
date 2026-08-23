@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.46.5",
+      "date": "2026-08-23",
+      "changes": [
+        "Eine Journey-Phase gibt die Last ab jetzt Woche für Woche vor statt mit einer einzigen Zahl für die ganze Phase. Damit kann ein Block über mehrere Wochen von zum Beispiel 65 auf 95 Prozent des Gewichts vor der Pause hochwandern, ohne dass er in mehrere Ein-Wochen-Phasen zerlegt werden muss.",
+        "Überall, wo die vorgegebene Last steht, passt die Anzeige jetzt dazu: Die laufende Phase zeigt den Anteil der laufenden Woche, alle anderen Stellen die Spanne (\"65 → 95 %\") - auf der Journey-Seite, in der Vorlagen-Vorschau, in der Periodisierungskurve, im Hinweisband beim Training, im Rückblick und im Coach-Export. Die Kurve zeichnet den Anstieg jetzt Woche für Woche statt drei gleich hohe Wochen.",
+        "Für die laufende Journey ändert sich nichts: Sie gibt keine Last vor und wird weiter ganz normal vom Coach gesteuert."
+      ]
+    },
+    {
       "version": "1.46.4",
       "date": "2026-08-23",
       "changes": [

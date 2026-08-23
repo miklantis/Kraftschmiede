@@ -15,7 +15,8 @@ import type { JourneyStartVorlage } from "../journeyWrite";
 // zaehlt zusaetzlich die Reihenfolge (erst abloesen, dann anlegen; erst
 // Uebungsliste weg, dann neu), deshalb wird dort `folge` mitgeprueft.
 
-const phase = (name: string, loadFactor: number) => ({
+// `last` = Anteil je Phasenwoche; null bedeutet "keine Lastvorgabe".
+const phase = (name: string, last: number | null) => ({
   name,
   focus: "hypertrophy" as const,
   weeks: 4,
@@ -24,13 +25,16 @@ const phase = (name: string, loadFactor: number) => ({
   deload_week: null,
   rep_target_min: 8,
   rep_target_max: 12,
-  load_factor: loadFactor,
+  load_plan:
+    last === null
+      ? null
+      : [1, 2, 3, 4].map((week) => ({ week, loadPct: last })),
 });
 
-const vorlage = (loadFactor: number): JourneyStartVorlage => ({
+const vorlage = (last: number | null): JourneyStartVorlage => ({
   id: "vorlage-1",
   name: "Aufbau",
-  phases: [phase("Grundlage", loadFactor), phase("Steigerung", loadFactor)],
+  phases: [phase("Grundlage", last), phase("Steigerung", last)],
 });
 
 describe("writeJourneyStart", () => {
@@ -42,7 +46,7 @@ describe("writeJourneyStart", () => {
     const ergebnis = await writeJourneyStart(
       store,
       "u1",
-      vorlage(1),
+      vorlage(null),
       "2026-08-10",
     );
 
@@ -66,7 +70,7 @@ describe("writeJourneyStart", () => {
     const ergebnis = await writeJourneyStart(
       store,
       "u1",
-      vorlage(1),
+      vorlage(null),
       "2026-08-10",
     );
 
@@ -86,7 +90,7 @@ describe("writeJourneyStart", () => {
 
   it("kopiert die Vorlagenphasen in der Reihenfolge der Vorlage", async () => {
     const { store, log } = createMemoryJourneyStore({ neueJourneyId: "j-neu" });
-    await writeJourneyStart(store, "u1", vorlage(1), "2026-08-10");
+    await writeJourneyStart(store, "u1", vorlage(null), "2026-08-10");
 
     const phasen = log.phasenInserted[0];
     expect(phasen).toHaveLength(2);
@@ -98,7 +102,7 @@ describe("writeJourneyStart", () => {
     expect(phasen[0].user_id).toBe("u1");
   });
 
-  it("friert bei einer Lastfaktor-Journey die Arbeitsgewichte ein", async () => {
+  it("friert bei einer Journey mit Lastliste die Arbeitsgewichte ein", async () => {
     const { store, log } = createMemoryJourneyStore({
       arbeitsgewichte: [
         { id: "ex1", work_weight: 60 },
@@ -118,20 +122,32 @@ describe("writeJourneyStart", () => {
     );
   });
 
-  it("raeumt ohne Lastfaktor die alten Referenzgewichte weg", async () => {
+  it("raeumt ohne Lastliste die alten Referenzgewichte weg", async () => {
     const { store, log } = createMemoryJourneyStore({
       arbeitsgewichte: [{ id: "ex1", work_weight: 60 }],
     });
-    await writeJourneyStart(store, "u1", vorlage(1), "2026-08-10");
+    await writeJourneyStart(store, "u1", vorlage(null), "2026-08-10");
 
     expect(log.referenzgewichteCleared).toEqual(["u1"]);
     expect(log.referenzgewichte).toHaveLength(0);
   });
 
+  it("friert auch bei durchgehend voller Last ein - die Liste ist die Vorgabe", async () => {
+    // Eine gleichbleibende Last ist eine Liste mit lauter gleichen Zeilen. Sie
+    // braucht denselben Bezugspunkt wie eine wandernde.
+    const { store, log } = createMemoryJourneyStore({
+      arbeitsgewichte: [{ id: "ex1", work_weight: 60 }],
+    });
+    await writeJourneyStart(store, "u1", vorlage(1), "2026-08-10");
+
+    expect(log.referenzgewichte).toEqual([{ exerciseId: "ex1", gewicht: 60 }]);
+    expect(log.referenzgewichteCleared).toHaveLength(0);
+  });
+
   it("schreibt ohne angemeldeten Nutzer nichts", async () => {
     const { store, log } = createMemoryJourneyStore();
     await expect(
-      writeJourneyStart(store, null, vorlage(1), "2026-08-10"),
+      writeJourneyStart(store, null, vorlage(null), "2026-08-10"),
     ).rejects.toThrow("Nicht angemeldet.");
     expect(log.folge).toHaveLength(0);
   });

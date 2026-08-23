@@ -184,7 +184,7 @@ export interface CoachBuildExercise {
   repRange: [number, number] | null;
   workWeight: number;
   barId: string | null;
-  // Eingefrorenes Arbeitsgewicht vom Start einer Lastfaktor-Journey bzw. Anker
+  // Eingefrorenes Arbeitsgewicht vom Start einer Journey mit Lastvorgabe bzw. Anker
   // einer Phase mit Wochenplan (null, solange keines von beidem laeuft).
   referenceWeight: number | null;
   // Phase, an die der Anker gebunden ist. Ohne diesen Bezug liesse sich „Anker
@@ -281,17 +281,17 @@ export interface SuggestBuildCtx {
   repTarget?: [number, number] | null;
   // Freies Training ohne aktive Journey: keine Progression, nur Uebernahme.
   freeMode?: boolean;
-  // Lastfaktor der aktiven Phase; null, wenn die laufende Journey ohne
-  // Lastfaktor arbeitet (Normalfall).
+  // Lastanteil der laufenden Woche (aus der Lastliste der Phase); null, wenn
+  // die Phase keine Last vorgibt (Normalfall).
   loadFactor?: number | null;
   // Wochenplan-Bezug der laufenden Phase; null = die Phase laeuft ueber die
   // Doppelprogression wie bisher.
   plan?: PlanContext | null;
 }
 
-// Vorgabe der Journey fuer diese Uebung: Referenzgewicht x Lastfaktor. null,
-// solange keine Lastfaktor-Journey laeuft oder kein Referenzgewicht eingefroren
-// ist – dann rechnet der Coach wie gewohnt aus der letzten Leistung.
+// Vorgabe der Journey fuer diese Uebung: Referenzgewicht x Anteil der laufenden
+// Woche. null, solange die Phase keine Last vorgibt oder kein Referenzgewicht
+// eingefroren ist – dann rechnet der Coach wie gewohnt aus der letzten Leistung.
 export function rampLoad(
   exo: CoachBuildExercise,
   loadFactor: number | null | undefined,
@@ -586,7 +586,7 @@ export interface SuggestWithBarInput<B extends { weight: number }> {
   repTarget: [number, number] | null;
   // Freies Training ohne aktive Journey (Vorbelegung statt Progression).
   freeMode?: boolean;
-  // Lastfaktor der aktiven Phase; null ausserhalb einer Lastfaktor-Journey.
+  // Lastanteil der laufenden Woche; null ohne Lastvorgabe an der Phase.
   loadFactor?: number | null;
   // Wochenplan-Bezug der laufenden Phase; null = Doppelprogression wie bisher.
   plan?: PlanContext | null;

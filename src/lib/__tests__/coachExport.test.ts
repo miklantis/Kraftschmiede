@@ -186,6 +186,28 @@ describe("buildCoachExport - Zuordnung und Saetze", () => {
     expect(out.activeJourney?.phases[1].repBand).toBe("8-12");
     expect(out.settings.unit).toBe("kg");
   });
+
+  it("gibt die Lastliste als Spanne und als Zahlenreihe weiter", () => {
+    const raw = emptyRaw();
+    raw.journeys = [{ id: "j1", name: "Wiederaufbau", active: true, start_date: "2026-05-31" }];
+    raw.phases = [
+      { id: "p1", journey_id: "j1", name: "Wiederaufbau", focus: "reentry", weeks: 3, sets_start: 2, sets_end: 4, rep_target_min: 6, rep_target_max: 10, position: 0,
+        load_plan: [
+          { week: 1, loadPct: 0.65 },
+          { week: 2, loadPct: 0.8 },
+          { week: 3, loadPct: 0.95 },
+        ] },
+      { id: "p2", journey_id: "j1", name: "Test/Peak", focus: "test", weeks: 1, sets_start: 2, sets_end: 2, rep_target_min: 3, rep_target_max: 6, position: 1 },
+    ];
+    raw.settings = { weekly_frequency_target: 3, unit: "kg", rm_formula: "mean" };
+    const out = buildCoachExport(raw, { weeks: null, today: TODAY });
+    // Die Phase ist im Export nie "gerade in Woche 2" - darum die Spanne.
+    expect(out.activeJourney?.phases[0].load).toBe("65 \u2192 95 %");
+    expect(out.activeJourney?.phases[0].loadPlan).toEqual([0.65, 0.8, 0.95]);
+    // Ohne Liste bleibt beides weg statt eine nichtssagende 1 zu tragen.
+    expect(out.activeJourney?.phases[1].load).toBeUndefined();
+    expect(out.activeJourney?.phases[1].loadPlan).toBeUndefined();
+  });
 });
 
 describe("buildCoachExport - aktives Wiederholungsband", () => {
