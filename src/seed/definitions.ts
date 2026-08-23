@@ -359,16 +359,13 @@ export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
       "Nach Fastenwoche, Krankheit oder kurzer Trainingspause, wenn die Kraft noch da ist, die ersten Einheiten aber nicht überziehen sollen.",
     summary:
       "Diese Journey gibt das Gewicht selbst vor: In den ersten drei Wochen trainierst du mit 65, 80 und 95 Prozent des Gewichts von vor der Pause. Der Coach darf in dieser Zeit nicht darüber hinausgehen und steuert nur die Wiederholungen; nach unten reagiert er wie gewohnt, wenn Schmerz oder schlechte Erholung dazwischenkommen. Ab Woche vier bist du wieder beim alten Gewicht und der Coach arbeitet wieder normal. Bei allen anderen Vorlagen bestimmt er das Gewicht aus deiner letzten Leistung.",
-    // Vier Wochenphasen mit eigenen Namen und eigenen Werten – diese Vorlage
-    // weicht heute an fast jeder Stelle von den Vorgaben ab. Schritt 7 baut sie
-    // auf zwei Bausteine um (Wiederaufbau + Test/Peak); bis dahin bleibt sie
-    // Wert fuer Wert, wie sie ist.
-    phases: [
-      { type: "reentry", name: "Tasten", weeks: 1, repTargetMin: 8, repTargetMax: 10, load: [0.65] },
-      { type: "reentry", name: "Reaktivieren", weeks: 1, setsStart: 3, setsEnd: 3, repTargetMin: 6, repTargetMax: 10, load: [0.8] },
-      { type: "hypertrophy", name: "Anschluss", weeks: 1, setsStart: 3, setsEnd: 4, repTargetMin: 6, repTargetMax: 10, load: [0.95] },
-      { type: "test", name: "Standort", weeks: 1, setsEnd: 3, repTargetMin: 3, repTargetMax: 6 },
-    ],
+    // Zwei Bausteine statt vier getippter Wochenphasen (Konzept Abschnitt 9):
+    // Der Wiederaufbau-Block traegt die Rampe 65/80/95 ueber seine drei Wochen
+    // selbst, danach misst eine Testwoche den Stand. Die Eigennamen „Tasten“,
+    // „Reaktivieren“, „Anschluss“ und „Standort“ entfallen – beide Phasen
+    // heissen wie ihr Baustein. Einzige Abweichung: die Testphase laeuft eine
+    // Woche statt zwei, es gibt vor dem Test also keine Entlastungswoche.
+    phases: [{ type: "rebuild" }, { type: "test", weeks: 1 }],
   },
 ];
 

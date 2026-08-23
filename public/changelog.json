@@ -1,6 +1,16 @@
 {
   "versions": [
     {
+      "version": "1.46.8",
+      "date": "2026-08-23",
+      "changes": [
+        "Die Vorlage \"Wiederaufbau nach Fasten\" besteht ab jetzt aus zwei Phasen statt aus vier: ein Wiederaufbau-Block über drei Wochen, der das Gewicht von 65 über 80 auf 95 Prozent hochfährt, und danach eine Testwoche. In der Vorlagen-Übersicht stehen darum zwei Phasenkarten mit der Spanne \"65 → 95 %\" statt vier Karten über je eine Woche.",
+        "Die Phasen heißen jetzt nach ihrem Baustein - \"Wiederaufbau\" und \"Test/Peak\" - statt \"Tasten\", \"Reaktivieren\", \"Anschluss\" und \"Standort\". Der Ablauf bleibt derselbe: vier Wochen, dieselbe Laststeigerung, und in den ersten Wochen steigert der Coach weiterhin vorsichtig.",
+        "Zwei Kleinigkeiten laufen dabei runder: Das Wiederholungsband ist über alle drei Aufbauwochen 6 bis 10, und die Sätze steigen durchgehend von 2 auf 4.",
+        "Die laufende Journey ist nicht betroffen - diese Vorlage ist nicht in Benutzung."
+      ]
+    },
+    {
       "version": "1.46.7",
       "date": "2026-08-23",
       "changes": [

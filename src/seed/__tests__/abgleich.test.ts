@@ -207,9 +207,11 @@ describe("Abgleich 5b: die Lastliste deckt sich mit ihrer Bauregel", () => {
 //
 // Was hier steht, ist der Stand der Live-Datenbank vom 22.08.2026 - dieselben
 // Werte tragen die Vorlage "Wiedereinstieg & Aufbau" und die daraus gestartete
-// laufende Journey. Die einzige gewollte Abweichung ist der Name der letzten
-// Phase: "Uebergang / Test" heisst kuenftig ueberall "Test/Peak" (Migration
-// 0045). Verschiebt sich sonst irgendetwas, faellt dieser Test um.
+// laufende Journey. Zwei Abweichungen sind gewollt und je von einer Migration
+// nachgezogen: der Name der letzten Phase ("Uebergang / Test" heisst ueberall
+// "Test/Peak", Migration 0045) und der Umbau der Vorlage "Wiederaufbau nach
+// Fasten" auf zwei Bausteine (Migration 0047). Verschiebt sich sonst
+// irgendetwas, faellt dieser Test um.
 interface Bestand {
   name: string;
   focus: string;
@@ -232,11 +234,12 @@ const BESTAND: Record<string, Bestand[]> = {
     { name: "Maximalkraft", focus: "strength", weeks: 5, setsStart: 4, setsEnd: 4, deloadWeek: null, repTargetMin: 4, repTargetMax: 6, loadPlan: null, hatPlan: true, planBuilder: "strength_ladder", careful: false },
     { name: "Test/Peak", focus: "test", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadPlan: null, hatPlan: true, planBuilder: "test", careful: false },
   ],
+  // Umgebaut in Schritt 7 (Migration 0047): aus vier getippten Wochenphasen
+  // werden zwei Bausteine. Was hier steht, ist der Stand nach der Migration -
+  // dieselben Werte, die der Seed baut.
   refeed_rebuild: [
-    { name: "Tasten", focus: "reentry", weeks: 1, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 8, repTargetMax: 10, loadPlan: [0.65], hatPlan: false, planBuilder: null, careful: true },
-    { name: "Reaktivieren", focus: "reentry", weeks: 1, setsStart: 3, setsEnd: 3, deloadWeek: null, repTargetMin: 6, repTargetMax: 10, loadPlan: [0.8], hatPlan: false, planBuilder: null, careful: true },
-    { name: "Anschluss", focus: "hypertrophy", weeks: 1, setsStart: 3, setsEnd: 4, deloadWeek: null, repTargetMin: 6, repTargetMax: 10, loadPlan: [0.95], hatPlan: false, planBuilder: null, careful: false },
-    { name: "Standort", focus: "test", weeks: 1, setsStart: 2, setsEnd: 3, deloadWeek: null, repTargetMin: 3, repTargetMax: 6, loadPlan: null, hatPlan: true, planBuilder: "test", careful: false },
+    { name: "Wiederaufbau", focus: "rebuild", weeks: 3, setsStart: 2, setsEnd: 4, deloadWeek: null, repTargetMin: 6, repTargetMax: 10, loadPlan: [0.65, 0.8, 0.95], hatPlan: false, planBuilder: null, careful: true },
+    { name: "Test/Peak", focus: "test", weeks: 1, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadPlan: null, hatPlan: true, planBuilder: "test", careful: false },
   ],
 };
 
