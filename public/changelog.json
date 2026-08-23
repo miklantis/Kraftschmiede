@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.46.14",
+      "date": "2026-08-23",
+      "changes": [
+        "Beim Start prüft die App, ob du angemeldet bist. Klemmte diese Prüfung, blieb ewig \"Laden ...\" stehen - ohne Hinweis und ohne Ausweg, auch nach Neustart.",
+        "Jetzt gibt die Prüfung nach 8 Sekunden auf und zeigt stattdessen \"Die Anmeldung ist gerade nicht erreichbar\" samt Fehlertext und einem Knopf \"Erneut versuchen\".",
+        "Läuft alles normal, ändert sich nichts: Anmelden, Einladung und der Start in die App bleiben wie gewohnt."
+      ]
+    },
+    {
       "version": "1.46.13",
       "date": "2026-08-23",
       "changes": [
