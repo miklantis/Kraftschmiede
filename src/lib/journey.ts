@@ -47,7 +47,8 @@ export interface PhaseDetail {
 export interface PhaseWeekRow {
   /** "Woche 3". */
   label: string;
-  /** "4 × 4 · RIR 1" - Saetze, Wiederholungen, Ziel-Anstrengung. */
+  /** "4 × 4 · RIR 1" - Saetze, Wiederholungen, Ziel-Anstrengung. Bei einer
+   *  Phase, die nur die Last vorgibt, steht dort deren Anteil ("80 %"). */
   targets: string;
   /** Wochenziel in einem kurzen Satz (aus dem Plan). */
   note: string;
@@ -71,7 +72,8 @@ export interface PhaseView {
   loadNote: string | null;
   /** Ablauf-Hinweis der laufenden Testphase; sonst null. */
   testNote: string | null;
-  /** Wochentabelle des Plans an der laufenden Phase; sonst null. Die Testphase
+  /** Wochentabelle an der laufenden Phase; sonst null. Sie entsteht aus der
+   *  Wochenliste oder - wo es keine gibt - aus der Lastliste. Die Testphase
    *  zeigt ihren Ablauf (testNote) statt Zahlen. */
   weekRows: PhaseWeekRow[] | null;
 }
@@ -200,6 +202,18 @@ export function weekTargets(w: WeekPlanWeek): string {
   return `${w.sets} × ${reps} · RIR ${w.rir}`;
 }
 
+// Zustand einer Phasenwoche gegenueber der laufenden Woche.
+function weekState(
+  week: number,
+  weekInPhase: number,
+): Exclude<PhaseState, "preview"> {
+  return week < weekInPhase
+    ? "past"
+    : week === weekInPhase
+      ? "current"
+      : "future";
+}
+
 // Wochentabelle des Plans: je Woche Saetze, Wiederholungen, Ziel-Anstrengung und
 // das Wochenziel. Der Zustand kommt aus der laufenden Woche der Phase -
 // abgeschlossene Wochen sind abgehakt, die laufende ist markiert.
@@ -208,12 +222,7 @@ function planWeekRows(plan: WeekPlan, weekInPhase: number): PhaseWeekRow[] {
     .slice()
     .sort((a, b) => a.week - b.week)
     .map((w) => {
-      const state: Exclude<PhaseState, "preview"> =
-        w.week < weekInPhase
-          ? "past"
-          : w.week === weekInPhase
-            ? "current"
-            : "future";
+      const state = weekState(w.week, weekInPhase);
       return {
         label: `Woche ${w.week}`,
         targets: weekTargets(w),
@@ -222,6 +231,51 @@ function planWeekRows(plan: WeekPlan, weekInPhase: number): PhaseWeekRow[] {
         mark: state === "past" ? "✓" : "",
       };
     });
+}
+
+// Zweiter Bauweg derselben Tabelle: aus der Lastliste statt aus der
+// Wochenliste. Der Wiederaufbau gibt nur das Gewicht vor - Saetze und
+// Wiederholungen bleiben beim Coach -, hat also gar keine Wochenliste. Ohne
+// diesen Weg bliebe seine Laststufen-Leiter unsichtbar, obwohl sie das ist,
+// was die Phase ausmacht (Konzept Bausteine, Abschnitt 10).
+//
+// Eine Zeile je Phasenwoche, nicht je Listenzeile: der Anteil kommt ueber
+// loadPlanForWeek, damit eine kuerzere Liste die Tabelle nicht verkuerzt,
+// sondern - wie ueberall sonst - auf ihrem letzten Wert stehen bleibt. Der
+// Wochentext bleibt leer; die Leiter erklaert sich aus den Prozentwerten, und
+// derselbe Satz an jeder Zeile waere nur Rauschen.
+function loadWeekRows(
+  plan: LoadPlan,
+  weeks: number,
+  weekInPhase: number,
+): PhaseWeekRow[] {
+  const anzahl = weeks > 0 ? weeks : plan.length;
+  return Array.from({ length: anzahl }, (_, i) => {
+    const week = i + 1;
+    const state = weekState(week, weekInPhase);
+    const pct = loadPlanForWeek(plan, week);
+    return {
+      label: `Woche ${week}`,
+      targets: pct == null ? "" : loadPercent(pct),
+      note: "",
+      state,
+      mark: state === "past" ? "✓" : "",
+    };
+  });
+}
+
+// Wochentabelle der laufenden Phase auf dem Weg, den die Phase hergibt:
+// Wochenliste zuerst, sonst die Lastliste, sonst keine Tabelle. Die Testphase
+// zeigt stattdessen ihren Ablauf (testNote) - dort stuenden Zahlen, nach denen
+// gar nicht trainiert wird.
+function phaseWeekRows(
+  p: JourneyPhaseInput,
+  weekInPhase: number,
+): PhaseWeekRow[] | null {
+  if (p.focus === "test") return null;
+  if (p.weekPlan?.length) return planWeekRows(p.weekPlan, weekInPhase);
+  if (p.loadPlan?.length) return loadWeekRows(p.loadPlan, p.weeks, weekInPhase);
+  return null;
 }
 
 // Reine Aufbereitung der Phasen einer aktiven Journey in Anzeige-Modelle.
@@ -264,12 +318,9 @@ export function buildPhaseViews(
           : null,
       // Nur an der laufenden Testphase: dort steht ihr Ablauf.
       testNote: isCurrent && p.focus === "test" ? testPhaseNote(p.weeks) : null,
-      // Wochentabelle nur an der laufenden Phase mit Plan; die Testphase zeigt
-      // ihren Ablauf (testNote) statt Zahlen.
-      weekRows:
-        isCurrent && p.weekPlan && p.focus !== "test"
-          ? planWeekRows(p.weekPlan, placement.weekInPhase)
-          : null,
+      // Wochentabelle nur an der laufenden Phase - aus ihrer Wochenliste oder,
+      // wo es keine gibt, aus ihrer Lastliste.
+      weekRows: isCurrent ? phaseWeekRows(p, placement.weekInPhase) : null,
     };
   });
 }

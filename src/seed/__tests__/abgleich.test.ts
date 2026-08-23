@@ -24,7 +24,6 @@ import {
   buildSeedPhase,
   journeyTemplateSeeds,
   phaseTypeSeeds,
-  seedPhaseLoadPlan,
 } from "@/seed/definitions";
 import { focusEnum, phaseTypeKeyEnum } from "@/schemas";
 
@@ -176,6 +175,34 @@ describe("Abgleich 5: die Bauart deckt sich mit der Liste", () => {
   });
 });
 
+describe("Abgleich 5b: die Lastliste deckt sich mit ihrer Bauregel", () => {
+  it("baut jedem Baustein mit Lastregel eine Liste in Phasenlaenge", () => {
+    for (const b of phaseTypeSeeds) {
+      for (let weeks = b.weeksMin; weeks <= b.weeksMax; weeks++) {
+        const phase = buildPhaseFromType(b, { weeks });
+        // Liste genau dort, wo eine Bauregel steht - und nirgends sonst.
+        expect(phase.loadPlan !== null, `${b.key}/${weeks}`).toBe(
+          b.loadBuilder !== null,
+        );
+        expect(phase.loadBuilder, `${b.key}/${weeks}`).toBe(
+          phase.loadPlan === null ? null : b.loadBuilder,
+        );
+        if (phase.loadPlan === null) continue;
+        // Eine Zeile je Phasenwoche: eine verstellte Laenge zieht die Rampe
+        // mit, statt sie hinten abzuschneiden.
+        expect(phase.loadPlan, `${b.key}/${weeks}`).toHaveLength(weeks);
+        expect(phase.loadPlan[0]!.loadPct, `${b.key}/${weeks}`).toBe(
+          b.loadStartDefault,
+        );
+        expect(
+          phase.loadPlan[phase.loadPlan.length - 1]!.loadPct,
+          `${b.key}/${weeks}`,
+        ).toBe(b.loadEndDefault);
+      }
+    }
+  });
+});
+
 // Abgleich 6 und 7: der Bestand, Feld fuer Feld.
 //
 // Was hier steht, ist der Stand der Live-Datenbank vom 22.08.2026 - dieselben
@@ -234,7 +261,7 @@ describe("Abgleich 6: der neue Seed verschiebt nichts", () => {
           deloadWeek: b.deloadWeek,
           repTargetMin: b.repTargetMin,
           repTargetMax: b.repTargetMax,
-          loadPlan: seedPhaseLoadPlan(p)?.map((w) => w.loadPct) ?? null,
+          loadPlan: b.loadPlan?.map((w) => w.loadPct) ?? null,
           hatPlan: b.weekPlan !== null,
           planBuilder: b.planBuilder,
           careful: b.careful,

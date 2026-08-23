@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabase";
 import {
   buildSeedPhase,
   journeyTemplateSeeds,
-  seedPhaseLoadPlan,
   phaseTypeSeeds,
   skillSeeds,
   equipmentSeeds,
@@ -183,10 +182,10 @@ async function seedJourneyTemplates(userId: string): Promise<void> {
     }
     t.phases.forEach((p, i) => {
       // Die Phase entsteht aus ihrem Baustein: Wochen, Saetze, Band und
-      // Entlastung kommen von dort, die Wochenliste wird zur Wochenzahl gebaut,
-      // und der Bauart-Vermerk sagt danach, nach welcher Regel das geschah. Er
-      // wandert beim Journey-Start mit und wird zur Laufzeit gelesen (Coach,
-      // Anker-Nachfuehrung, Empfehlung).
+      // Entlastung kommen von dort, Wochenliste und Lastliste werden zur
+      // Wochenzahl gebaut, und der Bauart-Vermerk sagt danach, nach welcher
+      // Regel das geschah. Er wandert beim Journey-Start mit und wird zur
+      // Laufzeit gelesen (Coach, Anker-Nachfuehrung, Empfehlung).
       const gebaut = buildSeedPhase(p);
       phaseInserts.push({
         user_id: userId,
@@ -199,7 +198,7 @@ async function seedJourneyTemplates(userId: string): Promise<void> {
         deload_week: gebaut.deloadWeek,
         rep_target_min: gebaut.repTargetMin,
         rep_target_max: gebaut.repTargetMax,
-        load_plan: seedPhaseLoadPlan(p),
+        load_plan: gebaut.loadPlan,
         week_plan: gebaut.weekPlan,
         plan_builder: gebaut.planBuilder,
         load_builder: gebaut.loadBuilder,

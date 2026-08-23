@@ -5,8 +5,11 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  buildLoadPlanFor,
+  buildRebuildRamp,
   hasLoadPlan,
   loadPlanForWeek,
+  loadPlanFromShares,
   loadPlanSpan,
   parseLoadPlan,
 } from "@/engine";
@@ -95,5 +98,90 @@ describe("hasLoadPlan", () => {
     expect(hasLoadPlan([{ week: 1, loadPct: 1 }])).toBe(true);
     expect(hasLoadPlan([])).toBe(false);
     expect(hasLoadPlan(null)).toBe(false);
+  });
+});
+
+// Anteile einer gebauten Liste in ganzen Prozent - so, wie die Tabelle im
+// Konzept (Abschnitt 6) sie nennt.
+function prozente(plan: ReadonlyArray<{ loadPct: number }>): number[] {
+  return plan.map((w) => Math.round(w.loadPct * 100));
+}
+
+describe("buildRebuildRamp", () => {
+  it("verteilt drei Wochen auf 65 / 80 / 95", () => {
+    expect(buildRebuildRamp(3, 0.65, 0.95)).toEqual([
+      { week: 1, loadPct: 0.65 },
+      { week: 2, loadPct: 0.8 },
+      { week: 3, loadPct: 0.95 },
+    ]);
+  });
+
+  it("trifft die Stufen des Konzepts bei vier bis sechs Wochen", () => {
+    expect(prozente(buildRebuildRamp(4, 0.65, 0.95))).toEqual([65, 75, 85, 95]);
+    // Fuenf Wochen ergeben halbe Prozent - genau deshalb wird nicht auf ein
+    // 5er-Raster gerundet.
+    expect(buildRebuildRamp(5, 0.65, 0.95).map((w) => w.loadPct)).toEqual([
+      0.65, 0.725, 0.8, 0.875, 0.95,
+    ]);
+    expect(prozente(buildRebuildRamp(6, 0.65, 0.95))).toEqual([
+      65, 71, 77, 83, 89, 95,
+    ]);
+  });
+
+  it("gibt je Phasenwoche eine Zeile, aufsteigend von Start auf Ziel", () => {
+    for (let weeks = 3; weeks <= 6; weeks++) {
+      const plan = buildRebuildRamp(weeks, 0.65, 0.95);
+      expect(plan, `${weeks} Wochen`).toHaveLength(weeks);
+      expect(plan.map((w) => w.week)).toEqual(
+        Array.from({ length: weeks }, (_, i) => i + 1),
+      );
+      expect(plan[0].loadPct).toBe(0.65);
+      expect(plan[plan.length - 1].loadPct).toBe(0.95);
+      for (let i = 1; i < plan.length; i++) {
+        expect(plan[i].loadPct, `${weeks}/${i}`).toBeGreaterThan(
+          plan[i - 1].loadPct,
+        );
+      }
+    }
+  });
+
+  it("laesst keine Rechenreste in den Anteilen stehen", () => {
+    // Ohne Rundung stuende hier 0.7700000000000001 und in der Datenbank
+    // dieselbe Zahl.
+    expect(buildRebuildRamp(6, 0.65, 0.95)[2].loadPct).toBe(0.77);
+  });
+
+  it("traegt bei einer einzelnen Woche den Zielanteil statt zu scheitern", () => {
+    // Der Baustein laesst erst drei Wochen zu; die Regel soll auch ausserhalb
+    // ihrer Grenzen etwas Sinnvolles liefern statt durch null zu teilen.
+    expect(buildRebuildRamp(1, 0.65, 0.95)).toEqual([
+      { week: 1, loadPct: 0.95 },
+    ]);
+  });
+});
+
+describe("buildLoadPlanFor", () => {
+  it("baut die Liste nur zur bekannten Bauregel", () => {
+    expect(buildLoadPlanFor("rebuild_ramp", 3, 0.65, 0.95)).toHaveLength(3);
+    expect(buildLoadPlanFor(null, 3, 0.65, 0.95)).toBeNull();
+  });
+
+  it("raet nichts aus einer halben Angabe", () => {
+    expect(buildLoadPlanFor("rebuild_ramp", 3, null, 0.95)).toBeNull();
+    expect(buildLoadPlanFor("rebuild_ramp", 3, 0.65, null)).toBeNull();
+  });
+});
+
+describe("loadPlanFromShares", () => {
+  it("nummeriert getippte Anteile durch", () => {
+    expect(loadPlanFromShares([0.65, 0.8])).toEqual([
+      { week: 1, loadPct: 0.65 },
+      { week: 2, loadPct: 0.8 },
+    ]);
+  });
+
+  it("macht aus keiner Angabe keine Vorgabe", () => {
+    expect(loadPlanFromShares([])).toBeNull();
+    expect(loadPlanFromShares(undefined)).toBeNull();
   });
 });
