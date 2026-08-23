@@ -18,7 +18,13 @@ const CACHE_SCHLUESSEL = "kraftschmiede-query-cache";
 // v5: Die Testphase heisst per Migration ueberall "Test/Peak" statt
 //     "Übergang / Test", und die Anzeige nimmt ab jetzt den Phasennamen. Ohne
 //     Verwerfen zeigte der gecachte Stand tagelang den alten Namen weiter.
-export const CACHE_BUSTER = "v6";
+// v6: Die Phase traegt ihre Last als Liste (load_plan) statt als Einzelfeld
+//     load_factor; der alte gecachte Stand kennt die Liste nicht.
+// v7: Der Bauart-Vermerk ist an der Vorlagenphase entfallen (Migration 0049);
+//     die Bauart kommt beim Journey-Start aus den Bausteinen. Ein vor dem Umbau
+//     gespeicherter Vorlagenstand fuehrt die drei Felder noch mit und beschreibt
+//     damit eine Tabelle, die es so nicht mehr gibt - er wird einmal verworfen.
+export const CACHE_BUSTER = "v7";
 
 // Wie lange ein gespeicherter Stand hoechstens gueltig ist, bevor er beim
 // Laden verworfen wird. Korrespondiert mit gcTime im queryClient.

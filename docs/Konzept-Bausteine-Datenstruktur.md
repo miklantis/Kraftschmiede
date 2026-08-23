@@ -204,9 +204,11 @@ Die Kopie hat drei Folgen, alle erwünscht:
   Bauart-Vermerk an der Phase selbst (siehe oben): `plan_builder` sagt, welche Wochenliste
   sie gebaut hat, `load_builder`, welche Lastliste – beide leer heißt: der Coach steuert.
 
-In Teil 1 hat die Tabelle damit **genau einen Leser**: die Stelle, an der die Vorlagen
-entstehen. Das ist wenig, aber es ist ein echter – und es ist derselbe Weg, den der
-Editor in Teil 2 benutzen wird.
+In Teil 1 hat die Tabelle damit **genau zwei Leser**, und beide sind Stellen, an denen
+eine Phase entsteht: der Seed, der die Vorlagen baut, und seit dem Nachtrag zu
+Abschnitt 9 der Journey-Start, der der neuen Phase ihren Bauart-Vermerk mitgibt. Das ist
+wenig, aber es sind echte – und es ist derselbe Weg, den der Editor in Teil 2 benutzen
+wird. Im Training liest niemand die Tabelle.
 
 Damit das so bleibt, gilt für die Anzeigenamen dieselbe Regel: Der Name eines Bausteins
 wird beim Anlegen in den **Phasennamen** geschrieben, statt zur Anzeigezeit aus der
@@ -547,6 +549,19 @@ verworfen wurden zwei Ideen:
 Alle vier Felder bekommen beide Tabellen, weil die Phasenzeile beim Journey-Start
 unverändert mitwandert.
 
+> **Nachtrag (Issue #342, Migration 0049).** Für die drei Bauart-Felder gilt das nur noch
+> an `phases`. An `journey_template_phases` sind sie wieder entfallen: Dieselbe Aussage
+> stand dort ein zweites Mal, obwohl über alle sechs Vorlagenphasen und acht Bausteine
+> keine einzige Zeile abwich – eine Doppelung, die nichts trägt, aber auseinanderlaufen
+> kann. Die Vorlagenphase nennt jetzt nur noch ihren Baustein (`focus`); den Vermerk
+> setzt der Journey-Start beim Anlegen der Phase aus `phase_types`
+> (`lib/journeyWrite.ts`, `bauartFuerPhase`) – genau dort, wo eine Phase entsteht und
+> der Zugriff auf die Bausteine nach Abschnitt 2 ohnehin vorgesehen ist. Damit kann der
+> geplante Journey-Editor keine Vorlage mehr speichern, deren Bauart nicht zu ihrem
+> Baustein passt. An `phases` bleibt alles unverändert – das ist der Vertrag mit dem
+> Coach. Preis: Die Vorlagenzeile wandert nicht mehr Feld für Feld in die Phase, sondern
+> plus drei Werten aus einer zweiten Tabelle.
+
 `careful` steht aus demselben Grund an der Phase wie die Bauart: Der Coach liest im
 Training ausschließlich die Phasenzeile (Abschnitt 2). Stünde die Eigenschaft nur am
 Baustein, müsste er sie zur Laufzeit nachschlagen – genau der Datenzugriff, den dieses
@@ -848,6 +863,13 @@ fehl, sobald eine Seite vergessen wird. Er prüft bei jedem Lauf:
    gesperrte Bänder: Dort gibt die Wochenliste beides ohnehin vor, der mitgeschriebene
    Wert ist wirkungslos und darf über der Vorgabe liegen (Abschnitt 5). Dieser Punkt kam
    beim Nachprüfen dazu und wurde als neunter Schritt gebaut (#334).
+9. **Journey-Start setzt die Bauart des Bausteins:** Seit dem Nachtrag zu Abschnitt 9
+   (Migration 0049) entstehen Liste und Bauart-Vermerk nicht mehr in einem Zug, sondern
+   werden in zwei Schritten zusammengeführt – die Liste beim Seed, der Vermerk erst beim
+   Journey-Start. Geprüft wird, dass der Start bei jeder Vorlagenphase Wort für Wort den
+   Vermerk setzt, den `buildPhaseFromType` beim Bauen der Phase geschrieben hätte.
+   Punkt 6 kann das nicht mehr abdecken: Was nicht in der Tabelle steht, kann der Seed
+   auch nicht verschieben.
 
 Punkt 6 und 7 sind die eigentliche Absicherung dieses Vorhabens: Sie machen aus „das
 sollte nichts ändern" ein „das ändert nachweislich nichts".

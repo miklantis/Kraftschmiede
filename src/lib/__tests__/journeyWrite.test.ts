@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createMemoryJourneyStore } from "../journeyStore";
+import type { BausteinBauartRow } from "../journeyStore";
 import {
   readJourneyZuordnungen,
   writeJourneyRename,
@@ -37,9 +38,29 @@ const vorlage = (last: number | null): JourneyStartVorlage => ({
   phases: [phase("Grundlage", last), phase("Steigerung", last)],
 });
 
+// Die Bausteine, aus denen der Start die Bauart holt (seit Migration 0049
+// steht sie nicht mehr an der Vorlagenphase). Der Hypertrophie-Baustein
+// steigert nicht vorsichtig und baut keine Wochenliste; `rebuild` traegt eine
+// Lastregel und steigert vorsichtig.
+const BAUSTEINE: BausteinBauartRow[] = [
+  {
+    key: "hypertrophy",
+    plan_builder: null,
+    load_builder: "rebuild_ramp",
+    careful: false,
+  },
+  {
+    key: "strength",
+    plan_builder: "strength_ladder",
+    load_builder: null,
+    careful: false,
+  },
+];
+
 describe("writeJourneyStart", () => {
   it("loest die bisherige Journey ab, bevor die neue angelegt wird", async () => {
     const { store, log } = createMemoryJourneyStore({
+      bausteine: BAUSTEINE,
       aktiveJourneyId: "j-alt",
       neueJourneyId: "j-neu",
     });
@@ -57,16 +78,20 @@ describe("writeJourneyStart", () => {
     expect(log.journeysArchived).toEqual([
       { id: "j-alt", endDatum: "2026-08-10" },
     ]);
-    expect(log.folge.slice(0, 4)).toEqual([
+    expect(log.folge.slice(0, 5)).toEqual([
       "findActiveJourneyId",
       "archiveJourney",
       "insertJourney",
+      "listBausteine",
       "insertPhasen",
     ]);
   });
 
   it("legt die Journey mit Vorlagen-Bezug und Startdatum an", async () => {
-    const { store, log } = createMemoryJourneyStore({ neueJourneyId: "j-neu" });
+    const { store, log } = createMemoryJourneyStore({
+      bausteine: BAUSTEINE,
+      neueJourneyId: "j-neu",
+    });
     const ergebnis = await writeJourneyStart(
       store,
       "u1",
@@ -89,7 +114,10 @@ describe("writeJourneyStart", () => {
   });
 
   it("kopiert die Vorlagenphasen in der Reihenfolge der Vorlage", async () => {
-    const { store, log } = createMemoryJourneyStore({ neueJourneyId: "j-neu" });
+    const { store, log } = createMemoryJourneyStore({
+      bausteine: BAUSTEINE,
+      neueJourneyId: "j-neu",
+    });
     await writeJourneyStart(store, "u1", vorlage(null), "2026-08-10");
 
     const phasen = log.phasenInserted[0];
@@ -104,6 +132,7 @@ describe("writeJourneyStart", () => {
 
   it("friert bei einer Journey mit Lastliste die Arbeitsgewichte ein", async () => {
     const { store, log } = createMemoryJourneyStore({
+      bausteine: BAUSTEINE,
       arbeitsgewichte: [
         { id: "ex1", work_weight: 60 },
         { id: "ex2", work_weight: 80 },
@@ -124,6 +153,7 @@ describe("writeJourneyStart", () => {
 
   it("raeumt ohne Lastliste die alten Referenzgewichte weg", async () => {
     const { store, log } = createMemoryJourneyStore({
+      bausteine: BAUSTEINE,
       arbeitsgewichte: [{ id: "ex1", work_weight: 60 }],
     });
     await writeJourneyStart(store, "u1", vorlage(null), "2026-08-10");
@@ -136,12 +166,51 @@ describe("writeJourneyStart", () => {
     // Eine gleichbleibende Last ist eine Liste mit lauter gleichen Zeilen. Sie
     // braucht denselben Bezugspunkt wie eine wandernde.
     const { store, log } = createMemoryJourneyStore({
+      bausteine: BAUSTEINE,
       arbeitsgewichte: [{ id: "ex1", work_weight: 60 }],
     });
     await writeJourneyStart(store, "u1", vorlage(1), "2026-08-10");
 
     expect(log.referenzgewichte).toEqual([{ exerciseId: "ex1", gewicht: 60 }]);
     expect(log.referenzgewichteCleared).toHaveLength(0);
+  });
+
+  it("holt den Bauart-Vermerk aus dem Baustein der Phase", async () => {
+    // Seit Migration 0049 traegt die Vorlagenphase die Bauart nicht mehr - sie
+    // nennt nur ihren Baustein, alles Weitere folgt daraus.
+    const { store, log } = createMemoryJourneyStore({
+      bausteine: BAUSTEINE,
+    });
+    await writeJourneyStart(store, "u1", vorlage(0.8), "2026-08-10");
+
+    const phasen = log.phasenInserted[0];
+    expect(phasen.map((p) => p.load_builder)).toEqual([
+      "rebuild_ramp",
+      "rebuild_ramp",
+    ]);
+    expect(phasen.map((p) => p.careful)).toEqual([false, false]);
+  });
+
+  it("vermerkt keine Bauregel, wo die Phase die Liste gar nicht traegt", async () => {
+    // Der Hypertrophie-Baustein nennt eine Lastregel; die Vorlagenphase ohne
+    // Lastliste darf sie trotzdem nicht mitbekommen - sonst laese der Coach
+    // eine Rampe, die es nicht gibt.
+    const { store, log } = createMemoryJourneyStore({
+      bausteine: BAUSTEINE,
+    });
+    await writeJourneyStart(store, "u1", vorlage(null), "2026-08-10");
+
+    const phasen = log.phasenInserted[0];
+    expect(phasen.map((p) => p.load_builder)).toEqual([null, null]);
+    expect(phasen.map((p) => p.plan_builder)).toEqual([null, null]);
+  });
+
+  it("bricht ab, wenn es zur Phase keinen Baustein gibt", async () => {
+    const { store, log } = createMemoryJourneyStore({ bausteine: [] });
+    await expect(
+      writeJourneyStart(store, "u1", vorlage(null), "2026-08-10"),
+    ).rejects.toThrow("Kein Baustein");
+    expect(log.phasenInserted).toHaveLength(0);
   });
 
   it("schreibt ohne angemeldeten Nutzer nichts", async () => {
