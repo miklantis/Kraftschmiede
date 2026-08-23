@@ -574,6 +574,18 @@ Bewusst **kein** neues Feld:
 
 ### Der Fremdschlüssel: bewusst keiner
 
+> **Nachtrag 23.08.2026 (#341, ADR-0021): Diese Entscheidung ist revidiert.** Der
+> Fremdschlüssel ist mit Migration 0048 gesetzt, die `CHECK`-Listen an beiden
+> Phasentabellen sind entfallen. Zwei der unten genannten Hindernisse waren inzwischen
+> weggefallen – `phase_types` trägt den eindeutigen Schlüssel über Nutzer plus Typ
+> (Migration 0043), und das Bestandsregister ordnet die Bausteine beim Wiederherstellen
+> bereits vor die Phasen ein. Geblieben ist die Kopplung des Seed-Ablaufs: Der Seed legt
+> die Bausteine jetzt vor den Journey-Vorlagen an. Das kostet eine umgestellte Zeile und
+> ist der Preis dafür, dass eine Phase keinen Typ mehr tragen kann, den es als Baustein
+> nicht gibt. Der übrige Abschnitt 9 – kein `phase_type_id`, keine Kopie von `control`,
+> keine Kopien der Grenzen – gilt unverändert. Der Text darunter hält den ursprünglichen
+> Stand fest.
+
 Naheliegend wäre, `phases.focus` per Fremdschlüssel an `phase_types.key` zu binden. Das
 wird **nicht** gemacht: Die Bausteine liegen wie alle Definitionen pro Nutzer (ADR-0002),
 der Fremdschlüssel müsste also über `(user_id, key)` laufen und den Seed-Ablauf an die

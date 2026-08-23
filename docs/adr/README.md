@@ -44,6 +44,7 @@ Jedes ADR folgt demselben Aufbau:
   – *Nachtrag 23.08.2026: dritter Weg (Coach plus Lastliste) und Lastliste statt Lastfaktor*
 - [ADR-0019 – Schreibnaht je Bereich, ein Store für zusammengehörige Tabellen](./0019-schreibnaht-je-bereich.md)
 - [ADR-0020 – Der Live-Store bleibt ein Modul](./0020-live-store-bleibt-ein-modul.md)
+- [ADR-0021 – Der Phasentyp hängt per Fremdschlüssel an den Bausteinen](./0021-phasentyp-fremdschluessel.md)
 
 ## Vergebene und gesperrte Nummern
 
@@ -63,3 +64,6 @@ zweideutig.
 - **0019 – vergeben** an „Schreibnaht je Bereich" (#263). Hält die Begründung fest, die
   vorher im Volltext in `Architektur.md` stand.
 - **0020 – vergeben** an „Der Live-Store bleibt ein Modul" (#263). Ebenso.
+- **0021 – vergeben** an „Der Phasentyp hängt per Fremdschlüssel an den Bausteinen"
+  (#341). Revidiert den Abschnitt „Der Fremdschlüssel: bewusst keiner" des
+  Bausteine-Konzepts; der übrige Abschnitt 9 gilt weiter.

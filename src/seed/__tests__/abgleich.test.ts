@@ -45,27 +45,32 @@ function checkListe(sql: string, spalte: string): string[] {
   return [...treffer[1]!.matchAll(/'([^']+)'/g)].map((m) => m[1]!);
 }
 
-/** Die zuletzt gesetzte CHECK-Liste einer Spalte ueber alle Migrationen. Eine
- *  spaetere Migration ersetzt den CHECK einer frueheren (0046 erweitert `focus`
- *  um `rebuild`); massgeblich ist darum die letzte, die ihn setzt - nicht die
- *  Datei, in der die Tabelle einmal entstanden ist. */
-function aktuelleCheckListe(spalte: string): string[] {
+/** Die letzte Migration, die eine CHECK-Liste fuer eine Spalte setzt. Eine
+ *  spaetere Migration ersetzt den CHECK einer frueheren; massgeblich ist darum
+ *  die letzte, die ihn setzt - nicht die Datei, in der die Tabelle einmal
+ *  entstanden ist. null = keine Migration setzt ihn. */
+function letzteCheckMigration(spalte: string): string | null {
   const dateien = readdirSync(
     fileURLToPath(new URL("../../../supabase/migrations", import.meta.url)),
   )
     .filter((d) => d.endsWith(".sql"))
     .sort();
-  let letzte: string[] | null = null;
+  let letzte: string | null = null;
   for (const datei of dateien) {
     try {
-      letzte = checkListe(migration(datei), spalte);
+      checkListe(migration(datei), spalte);
+      letzte = datei;
     } catch {
       // Diese Migration setzt den CHECK nicht - weiter.
     }
   }
-  if (letzte === null) throw new Error(`Keine CHECK-Liste fuer ${spalte}`);
   return letzte;
 }
+
+/** Die Migration, die den Fokus an die Bausteine bindet (Issue #341). Ab hier
+ *  gibt es an den Phasentabellen keine CHECK-Liste fuer `focus` mehr. */
+const FREMDSCHLUESSEL_MIGRATION = "0048_phasentyp_fremdschluessel.sql";
+const PHASEN_TABELLEN = ["phases", "journey_template_phases"] as const;
 
 describe("Abgleich 1: die Schluessel stehen ueberall gleich", () => {
   const seedKeys = phaseTypeSeeds.map((b) => b.key).sort();
@@ -79,13 +84,38 @@ describe("Abgleich 1: die Schluessel stehen ueberall gleich", () => {
     expect(checkListe(sql, "key").sort()).toEqual(seedKeys);
   });
 
-  it("deckt sich mit den Fokus-Werten der Phasen", () => {
-    // Seit Migration 0046 ist `rebuild` auch als Phasen-Fokus erlaubt. Damit
-    // fallen die drei Listen zusammen: CHECK, focusEnum und geseedete Zeilen -
-    // keine mehr, keine weniger.
-    const check = aktuelleCheckListe("focus").sort();
-    expect(check).toEqual([...focusEnum.options].sort());
-    expect(seedKeys).toEqual(check);
+  it("deckt sich mit dem Fokus-Enum der Phasen", () => {
+    // focusEnum und phaseTypeKeyEnum sind dasselbe Enum: der Fokus einer Phase
+    // ist zugleich der Schluessel auf ihren Baustein. Der Abgleich bleibt
+    // trotzdem eigenstaendig stehen - er faellt auf, wenn die beiden Enums
+    // einmal auseinandergezogen werden.
+    expect([...focusEnum.options].sort()).toEqual(seedKeys);
+  });
+
+  it("bindet den Fokus beider Phasentabellen per Fremdschluessel an die Bausteine", () => {
+    // Seit Migration 0048 ist die dritte Stelle - die CHECK-Liste je
+    // Phasentabelle - abgeloest: der Fremdschluessel prueft gegen die Bausteine
+    // des Nutzers statt gegen eine getippte Liste.
+    const sql = migration(FREMDSCHLUESSEL_MIGRATION);
+    for (const tabelle of PHASEN_TABELLEN) {
+      expect(sql, tabelle).toMatch(
+        new RegExp(
+          `add constraint ${tabelle}_focus_fkey\\s+foreign key \\(user_id, focus\\)` +
+            `\\s+references public\\.phase_types \\(user_id, key\\)`,
+          "i",
+        ),
+      );
+      expect(sql, tabelle).toContain(
+        `drop constraint if exists ${tabelle}_focus_check`,
+      );
+    }
+  });
+
+  it("laesst die CHECK-Liste des Fokus nicht wieder aufleben", () => {
+    // Wer sie neu setzt, hat eine vierte Wahrheit gebaut - und der
+    // Fremdschluessel wuerde sie stillschweigend ueberdecken.
+    const letzte = letzteCheckMigration("focus");
+    expect(letzte === null || letzte < FREMDSCHLUESSEL_MIGRATION).toBe(true);
   });
 });
 
