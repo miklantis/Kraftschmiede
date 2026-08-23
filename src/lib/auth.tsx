@@ -9,6 +9,11 @@ import type { ReactElement, ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 
 import { supabase } from "@/lib/supabase";
+import {
+  anmeldeFehlerText,
+  mitZeitlimit,
+  SITZUNG_ZEITLIMIT_MS,
+} from "@/lib/authCheck";
 
 // Ergebnis eines Anmelde-/Registriervorgangs. Bei Erfolg signalisiert
 // needsConfirmation, dass noch eine E-Mail-Bestaetigung aussteht (dann gibt es
@@ -20,6 +25,12 @@ export type AuthResult =
 interface AuthContextValue {
   session: Session | null;
   loading: boolean;
+  // Meldung, wenn der Sitzungs-Check beim Start gescheitert ist (Fehler oder
+  // Zeitlimit). null heisst: kein Problem. Wird angezeigt, statt still weiter
+  // zu laden.
+  authFehler: string | null;
+  // Startet den Sitzungs-Check neu (Knopf "Erneut versuchen").
+  erneutPruefen: () => void;
   // Wahr, solange die App ueber einen Einladungslink geoeffnet wurde und der
   // Eingeladene noch kein Passwort gesetzt hat. Steuert den Einladungs-Screen.
   invitePending: boolean;
@@ -89,16 +100,49 @@ export function AuthProvider({
   // Screen statt der App, bis das Passwort gesetzt ist.
   const [invitePending, setInvitePending] = useState<boolean>(false);
   const [inviteEmail, setInviteEmail] = useState<string | null>(null);
+  const [authFehler, setAuthFehler] = useState<string | null>(null);
+  // Zaehler fuer den Sitzungs-Check: Hochzaehlen startet ihn neu.
+  const [versuch, setVersuch] = useState<number>(0);
 
+  // Sitzungs-Check beim Start - und bei jedem "Erneut versuchen" erneut.
+  // Zeitlimit plus Fehlerfang sind Pflicht: Ohne sie bleibt loading bei einem
+  // haengenden oder scheiternden Aufruf fuer immer wahr, und die App zeigt
+  // stumm "Laden ..." (Issue #348).
   useEffect(() => {
     let active = true;
-    void supabase.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      setSession(data.session);
-      setLoading(false);
-    });
+    setLoading(true);
+    setAuthFehler(null);
+    mitZeitlimit(supabase.auth.getSession(), SITZUNG_ZEITLIMIT_MS)
+      .then((ergebnis) => {
+        if (!active) return;
+        if (ergebnis.error !== null) {
+          setAuthFehler(anmeldeFehlerText(ergebnis.error));
+        } else {
+          setSession(ergebnis.data.session);
+        }
+        setLoading(false);
+      })
+      .catch((fehler: unknown) => {
+        if (!active) return;
+        setAuthFehler(anmeldeFehlerText(fehler));
+        setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [versuch]);
+
+  // Abo auf Anmelde-Ereignisse: laeuft ueber die gesamte Lebensdauer und wird
+  // vom Neuversuch oben bewusst nicht angefasst.
+  useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event, next) => {
       setSession(next);
+      // Kommt eine Sitzung an, ist der Anmelde-Weg offensichtlich wieder da:
+      // Fehlerzustand raeumen und den Ladezustand beenden.
+      if (next !== null) {
+        setAuthFehler(null);
+        setLoading(false);
+      }
       // Supabase meldet bei Klick auf einen Einladungs-/Wiederherstellungs-
       // Link ein gesondertes Ereignis. Dann in den Einladungs-Modus gehen und
       // die E-Mail aus der Sitzung uebernehmen.
@@ -111,7 +155,6 @@ export function AuthProvider({
       }
     });
     return () => {
-      active = false;
       sub.subscription.unsubscribe();
     };
   }, []);
@@ -122,6 +165,8 @@ export function AuthProvider({
       loading,
       invitePending,
       inviteEmail,
+      authFehler,
+      erneutPruefen: () => setVersuch((n) => n + 1),
       signIn: async (email, password) => {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -156,7 +201,7 @@ export function AuthProvider({
         await supabase.auth.signOut();
       },
     }),
-    [session, loading, invitePending, inviteEmail],
+    [session, loading, invitePending, inviteEmail, authFehler],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
