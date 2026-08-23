@@ -1,5 +1,10 @@
-import type { LoadPlan, WeekPlan, WeekPlanWeek } from "@/engine";
-import { loadPlanForWeek, weekDemandsSession } from "@/engine";
+import type {
+  LoadPlan,
+  PhaseBuildRules,
+  WeekPlan,
+  WeekPlanWeek,
+} from "@/engine";
+import { buildPhasePlans, loadPlanForWeek, weekDemandsSession } from "@/engine";
 import {
   loadFactorNote,
   loadPercent,
@@ -321,6 +326,64 @@ export function buildPhaseViews(
       // Wochentabelle nur an der laufenden Phase - aus ihrer Wochenliste oder,
       // wo es keine gibt, aus ihrer Lastliste.
       weekRows: isCurrent ? phaseWeekRows(p, placement.weekInPhase) : null,
+    };
+  });
+}
+
+// Eine Vorlagenphase, so wie die Tabelle sie traegt: nur die eingestellten
+// Werte, ohne die beiden Listen (Migration 0050).
+export interface TemplatePhaseInput {
+  name: string;
+  focus: Focus;
+  weeks: number;
+  sets_start: number;
+  sets_end: number;
+  deload_week: number | null;
+  rep_target_min: number | null;
+  rep_target_max: number | null;
+}
+
+// Ein Baustein, so weit die Vorschau ihn braucht: sein Schluessel plus die
+// Bauregeln, nach denen seine Listen entstehen.
+export interface TemplateBaustein extends PhaseBuildRules {
+  key: string;
+}
+
+/**
+ * Vorlagenphasen fuer die Anzeige aufbereiten.
+ *
+ * Seit Migration 0050 traegt die Vorlage die beiden Listen nicht mehr – die
+ * Vorschau rechnet sie hier aus Baustein und Wochenzahl, statt sie zu lesen.
+ * Gebaut wird mit derselben Funktion wie beim Journey-Start, die Anzeige zeigt
+ * also genau das, was der Start spaeter einfriert.
+ *
+ * Fehlt zu einer Phase der Baustein, bleibt sie ohne Listen stehen, statt die
+ * ganze Vorlagenliste zu sprengen: In der Anzeige ist eine Phase ohne Vorgaben
+ * verkraftbar, ein Absturz nicht. Der Fremdschluessel aus Migration 0048 macht
+ * den Fall ohnehin unmoeglich.
+ */
+export function buildTemplatePhaseInputs(
+  phases: TemplatePhaseInput[],
+  bausteine: TemplateBaustein[],
+): JourneyPhaseInput[] {
+  const nach = new Map(bausteine.map((b) => [b.key, b]));
+  return phases.map((p) => {
+    const baustein = nach.get(p.focus);
+    const plaene =
+      baustein === undefined
+        ? { weekPlan: null, loadPlan: null }
+        : buildPhasePlans(baustein, p.weeks);
+    return {
+      name: p.name,
+      focus: p.focus,
+      weeks: p.weeks,
+      setsStart: p.sets_start,
+      setsEnd: p.sets_end,
+      deloadWeek: p.deload_week,
+      repTargetMin: p.rep_target_min,
+      repTargetMax: p.rep_target_max,
+      loadPlan: plaene.loadPlan,
+      weekPlan: plaene.weekPlan,
     };
   });
 }

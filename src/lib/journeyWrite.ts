@@ -18,9 +18,10 @@
 // sichert die Datenbank. Der Ablauf hier loest die bisherige nur zuerst ab,
 // damit der Unique-Index beim Einfuegen nicht verletzt wird.
 
+import { buildPhasePlans } from "@/engine";
 import type {
   ArbeitsgewichtRow,
-  BausteinBauartRow,
+  BausteinBauregelRow,
   JourneyRowIns,
   JourneyStore,
   PhaseRowIns,
@@ -30,8 +31,9 @@ import type {
 import { usesLoadPlan } from "./loadFactor";
 
 /** Eine Phase der gewaehlten Journey-Vorlage, so wie sie in die neue Journey
- *  kopiert wird. Nutzer, Journey und Reihenfolge kommen erst beim Kopieren
- *  dazu – der Bauart-Vermerk aus dem Baustein (siehe `bauartFuerPhase`). */
+ *  kopiert wird: nur die eingestellten Werte. Nutzer, Journey und Reihenfolge
+ *  kommen erst beim Kopieren dazu, Listen und Bauart aus dem Baustein (siehe
+ *  `phasenplaene`). */
 export type JourneyStartPhase = Omit<
   PhaseRowIns,
   | "user_id"
@@ -40,12 +42,8 @@ export type JourneyStartPhase = Omit<
   | "plan_builder"
   | "load_builder"
   | "careful"
->;
-
-/** Der Bauart-Vermerk, den eine entstehende Phase mitbekommt. */
-export type PhasenBauart = Pick<
-  PhaseRowIns,
-  "plan_builder" | "load_builder" | "careful"
+  | "week_plan"
+  | "load_plan"
 >;
 
 /** Die gewaehlte Journey-Vorlage, auf das reduziert, was der Start braucht. */
@@ -97,31 +95,45 @@ export type VorlageAction =
   | { type: "setActive"; templateId: string; aktiv: boolean };
 
 /**
- * Bauart-Vermerk einer entstehenden Phase: Er kommt aus dem Baustein, aber nur
- * dort, wo die Phase die zugehoerige Liste auch traegt. Ein Vermerk ohne Liste
- * wuerde den Coach eine Rampe lesen lassen, die es nicht gibt.
+ * Wochenliste, Lastliste und Bauart-Vermerk einer entstehenden Phase: Alles
+ * drei folgt aus dem Baustein und der Wochenzahl der Phase, nichts davon steht
+ * in der Vorlage (Migrationen 0049 und 0050).
  *
- * Dieselbe Regel wie in `buildPhaseFromType` (engine/phaseBuild.ts), nur von
- * der anderen Seite: dort entstehen Liste und Vermerk gemeinsam, hier trifft
- * der Vermerk auf eine bereits gebaute Liste der Vorlage. `careful` haengt an
- * keiner Liste und kommt unveraendert aus dem Baustein.
+ * Gebaut wird mit derselben Funktion, die auch `buildPhaseFromType` benutzt
+ * (engine/phaseBuild.ts) – die Phase, die hier entsteht, kann darum nicht von
+ * der abweichen, die der Seed aus demselben Baustein baut.
  */
-export function bauartFuerPhase(
-  baustein: BausteinBauartRow,
-  phase: Pick<JourneyStartPhase, "load_plan" | "week_plan">,
-): PhasenBauart {
+function phasenplaene(
+  baustein: BausteinBauregelRow,
+  phase: Pick<JourneyStartPhase, "weeks">,
+): Pick<
+  PhaseRowIns,
+  "week_plan" | "load_plan" | "plan_builder" | "load_builder" | "careful"
+> {
+  const gebaut = buildPhasePlans(
+    {
+      planBuilder: baustein.plan_builder,
+      loadBuilder: baustein.load_builder,
+      careful: baustein.careful,
+      loadStartDefault: baustein.load_start_default,
+      loadEndDefault: baustein.load_end_default,
+    },
+    phase.weeks,
+  );
   return {
-    plan_builder: phase.week_plan == null ? null : baustein.plan_builder,
-    load_builder: phase.load_plan == null ? null : baustein.load_builder,
-    careful: baustein.careful,
+    week_plan: gebaut.weekPlan,
+    load_plan: gebaut.loadPlan,
+    plan_builder: gebaut.planBuilder,
+    load_builder: gebaut.loadBuilder,
+    careful: gebaut.careful,
   };
 }
 
-/** Gibt die Vorlage irgendwo eine Last vor? Nur dann wird beim Start ein
+/** Gibt die Journey irgendwo eine Last vor? Nur dann wird beim Start ein
  *  Referenzgewicht eingefroren – es ist der Bezugspunkt, auf den sich die
- *  Anteile der Lastliste beziehen. Traegt keine Phase eine Liste, gibt es
- *  nichts einzufrieren. */
-function nutztLastliste(phases: JourneyStartPhase[]): boolean {
+ *  Anteile der Lastliste beziehen. Gefragt wird an den gebauten Phasen, nicht
+ *  an der Vorlage: Nur dort steht die Lastliste ueberhaupt. */
+function nutztLastliste(phases: PhaseRowIns[]): boolean {
   return usesLoadPlan(phases.map((p) => p.load_plan));
 }
 
@@ -170,8 +182,9 @@ export async function writeJourneyStart(
   const newJourneyId = await store.insertJourney(row);
 
   // Bausteine einmal lesen: Die Vorlagenphase nennt nur ihren Baustein
-  // (`focus`), der Bauart-Vermerk kommt von dort (Migration 0049). Genau hier
-  // entsteht die Phase - der einzige Ort, an dem `phase_types` gelesen wird.
+  // (`focus`), Bauart und beide Listen kommen von dort (Migrationen 0049 und
+  // 0050). Genau hier entsteht die Phase - der einzige Ort, an dem
+  // `phase_types` gelesen wird.
   const bausteine = await store.listBausteine(userId);
   const bausteinNach = new Map(bausteine.map((b) => [b.key, b]));
 
@@ -193,13 +206,11 @@ export async function writeJourneyStart(
       deload_week: p.deload_week,
       rep_target_min: p.rep_target_min,
       rep_target_max: p.rep_target_max,
-      load_plan: p.load_plan,
-      // Der Wochenplan der Vorlage wandert unveraendert in die Journey mit; ohne
-      // ihn liefe eine frisch gestartete Kraftphase wieder frei ueber den Coach.
-      week_plan: p.week_plan,
-      // Der Bauart-Vermerk dagegen kommt aus dem Baustein: ohne ihn wuesste die
-      // Journey nicht mehr, ob ihr Wochenplan die Last hochfaehrt oder entlastet.
-      ...bauartFuerPhase(baustein, p),
+      // Hier friert die Journey ein, was die Vorlage nur ableitbar kannte:
+      // Wochenliste, Lastliste und Bauart-Vermerk, gebaut aus dem Baustein und
+      // der Wochenzahl dieser Phase. Ab jetzt traegt die Phasenzeile alles
+      // selbst - Engine und Coach lesen im Training nur noch sie.
+      ...phasenplaene(baustein, p),
       position: i,
     };
   });
@@ -209,7 +220,7 @@ export async function writeJourneyStart(
   // Traegt die Journey irgendwo eine Lastliste, den aktuellen Stand einfrieren
   // (work_weight wird nach jeder Einheit fortgeschrieben und waere sonst nach
   // der ersten abgesenkten Einheit verloren), sonst den alten Stand wegraeumen.
-  if (nutztLastliste(vorlage.phases)) {
+  if (nutztLastliste(phaseRows)) {
     await friereReferenzgewichteEin(store, userId);
   } else {
     await store.clearReferenzgewichte(userId);
