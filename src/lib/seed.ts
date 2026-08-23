@@ -1,17 +1,19 @@
-// Erstbefuellung der Definitionen (Journey-Vorlagen, Skills) in die Datenbank.
-// Idempotent: laeuft nur, wenn noch keine Skills fuer den Nutzer existieren.
-// Alles wird mit der user_id des angemeldeten Nutzers angelegt (RLS).
+// Erstbefuellung der Definitionen (Bausteine, Journey-Vorlagen, Skills) in die
+// Datenbank. Idempotent: laeuft nur, wenn noch keine Skills fuer den Nutzer
+// existieren. Alles wird mit der user_id des angemeldeten Nutzers angelegt (RLS).
 
 import { buildWeekPlan } from "@/engine/weekPlan";
 import { supabase } from "@/lib/supabase";
 import {
   journeyTemplateSeeds,
+  phaseTypeSeeds,
   skillSeeds,
   equipmentSeeds,
 } from "@/seed/definitions";
 import type {
   JourneyTemplateInsert,
   JourneyTemplatePhaseInsert,
+  PhaseTypeInsert,
   SkillInsert,
   SkillPhaseInsert,
   SkillPhaseExerciseInsert,
@@ -44,7 +46,67 @@ export async function ensureDefinitionsSeeded(
   // bekommen auch frueher angelegte Nutzer das Skill-Tor-Inventar.
   const equipmentAdded = await ensureEquipmentSeeded(userId);
 
-  return { seeded: definitionsSeeded || equipmentAdded > 0 };
+  // Bausteine ebenso: nur fehlende Schluessel werden ergaenzt. Bestehende Nutzer
+  // bekommen sie ueber die Migration, dieser Weg faengt neue Konten und spaeter
+  // dazukommende Bausteine ab.
+  const phaseTypesAdded = await ensurePhaseTypesSeeded(userId);
+
+  return {
+    seeded: definitionsSeeded || equipmentAdded > 0 || phaseTypesAdded > 0,
+  };
+}
+
+// Fuegt fehlende Bausteine hinzu, ohne vorhandene zu ueberschreiben. Gibt die
+// Zahl neu angelegter Bausteine zurueck.
+async function ensurePhaseTypesSeeded(userId: string): Promise<number> {
+  const { data, error } = await supabase.from("phase_types").select("key");
+  if (error) {
+    throw new Error(`Bausteine pruefen fehlgeschlagen: ${error.message}`);
+  }
+  const vorhanden = new Set(
+    ((data ?? []) as Array<{ key: string }>).map((b) => b.key),
+  );
+
+  const fehlende: PhaseTypeInsert[] = phaseTypeSeeds
+    .map((b, i) => ({
+      user_id: userId,
+      key: b.key,
+      name: b.name,
+      summary: b.summary,
+      position: i,
+      control: b.control,
+      plan_builder: b.planBuilder,
+      load_builder: b.loadBuilder,
+      careful: b.careful,
+      weeks_min: b.weeksMin,
+      weeks_max: b.weeksMax,
+      weeks_default: b.weeksDefault,
+      sets_start_default: b.setsStartDefault,
+      sets_end_default: b.setsEndDefault,
+      sets_max: b.setsMax,
+      sets_locked: b.setsLocked,
+      rep_min_default: b.repMinDefault,
+      rep_max_default: b.repMaxDefault,
+      rep_bound_min: b.repBoundMin,
+      rep_bound_max: b.repBoundMax,
+      rep_band_locked: b.repBandLocked,
+      deload_allowed: b.deloadAllowed,
+      deload_default: b.deloadDefault,
+      load_start_default: b.loadStartDefault,
+      load_end_default: b.loadEndDefault,
+      placement_hint: b.placementHint,
+    }))
+    .filter((b) => !vorhanden.has(b.key));
+
+  if (fehlende.length === 0) return 0;
+
+  const { error: insError } = await supabase
+    .from("phase_types")
+    .insert(fehlende);
+  if (insError) {
+    throw new Error(`Bausteine anlegen fehlgeschlagen: ${insError.message}`);
+  }
+  return fehlende.length;
 }
 
 // Fuegt fehlende Standardgeraete hinzu, ohne vorhandene zu ueberschreiben.

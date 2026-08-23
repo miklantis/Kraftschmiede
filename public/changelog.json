@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.46.2",
+      "date": "2026-08-23",
+      "changes": [
+        "Die acht Bausteine, aus denen eine Journey-Phase entsteht - Kraftausdauer, Hypertrophie, Wiedereinstieg, Erhaltung, Maximalkraft, Intensivierung, Test/Peak und neu der Wiederaufbau - stehen ab jetzt als eigene Daten in der Datenbank. Zu jedem gehören seine Vorgaben: Wochenzahl, Satzrampe, Wiederholungsband, Entlastungswoche und Last, dazu die Grenzen, in denen sich das später verstellen lässt.",
+        "Neu dabei ist der Wiederaufbau: ein einzelner Block, der nach einer Pause vom gedrosselten Gewicht in Stufen zurück auf das alte Niveau führt - heute sind dafür vier einzelne Phasen nötig.",
+        "Sichtbar ändert sich nichts. Die Bausteine wirken noch nirgends, laufende Journey und Vorlagen bleiben unberührt. Sie sind der Unterbau dafür, dass Journeys sich später aus Bausteinen zusammenstellen lassen."
+      ]
+    },
+    {
       "version": "1.46.1",
       "date": "2026-08-21",
       "changes": [

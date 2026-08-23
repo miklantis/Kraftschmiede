@@ -20,6 +20,7 @@ function emptyRaw(): RawExportData {
     exerciseMuscles: [],
     templates: [],
     templateExercises: [],
+    phaseTypes: [],
     journeyTemplates: [],
     journeyTemplatePhases: [],
     skills: [],

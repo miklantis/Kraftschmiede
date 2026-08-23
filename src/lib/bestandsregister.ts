@@ -60,6 +60,9 @@ export const BESTANDSREGISTER = [
   { tabelle: "templates", key: "templates", tiefe: 0, ablage: "liste", einzelzeile: false, schema: "templateRow" },
   { tabelle: "template_exercises", key: "templateExercises", tiefe: 2, ablage: "liste", einzelzeile: false, schema: "templateExerciseRow" },
 
+  // --- Bausteine der Phasen ---
+  { tabelle: "phase_types", key: "phaseTypes", tiefe: 0, ablage: "liste", einzelzeile: false, schema: "phaseTypeRow" },
+
   // --- Journey-Vorlagen ---
   { tabelle: "journey_templates", key: "journeyTemplates", tiefe: 0, ablage: "liste", einzelzeile: false, schema: "journeyTemplateRow" },
   { tabelle: "journey_template_phases", key: "journeyTemplatePhases", tiefe: 1, ablage: "liste", einzelzeile: false, schema: "journeyTemplatePhaseRow" },

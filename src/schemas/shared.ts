@@ -37,11 +37,18 @@ export const focusEnum = z.enum([
   "maintenance",
 ]);
 
+// Baustein-Schluessel einer Phase (phase_types.key). Deckungsgleich mit
+// focusEnum plus "rebuild": der Wiederaufbau existiert erst als Baustein, als
+// Phasen-Fokus kommt er einen Schritt spaeter dazu (dann fallen beide Listen
+// wieder zusammen).
+export const phaseTypeKeyEnum = z.enum([...focusEnum.options, "rebuild"]);
+
 // Mess-Art ohne Gewicht (exercises.metric, skill_phase_exercises.metric).
 export const metricEnum = z.enum(["reps", "duration"]);
 
 // Aus den Enums abgeleitete Typen (einzige Pflegequelle bleibt das Enum).
 export type Focus = z.infer<typeof focusEnum>;
+export type PhaseTypeKey = z.infer<typeof phaseTypeKeyEnum>;
 export type Metric = z.infer<typeof metricEnum>;
 
 // Mess-Art einer Uebung-in-Einheit (session_exercises.metric) – inkl. Gewicht+Wdh.
