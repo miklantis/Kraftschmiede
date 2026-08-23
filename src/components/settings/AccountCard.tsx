@@ -1,14 +1,18 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabaseConfig } from "@/lib/supabase";
 import { queryKeys } from "@/lib/queryKeys";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { PasswortAendern } from "@/components/settings/PasswortAendern";
 
 // Konto-/Sync-Panel oben auf der Einstellungen-Seite. Zeigt Avatar, "Mein Konto",
 // angemeldete E-Mail und den Verbindungsstatus zur Datenbank; rechts der Status,
 // darunter neu pruefen und abmelden. Der Verbindungstest ruft den Health-Endpoint
 // des Supabase-Projekts auf (wie in der bisherigen Einstellungen-Seite).
+// "Passwort aendern" klappt darunter ein Formular auf - das ist der einzige
+// Weg zum Passwort im angemeldeten Zustand (Issue #349).
 async function checkConnection(): Promise<boolean> {
   const response = await fetch(`${supabaseConfig.url}/auth/v1/health`, {
     headers: { apikey: supabaseConfig.publishableKey },
@@ -21,6 +25,8 @@ async function checkConnection(): Promise<boolean> {
 
 export function AccountCard(): React.ReactElement {
   const { session, signOut } = useAuth();
+  const [passwortOffen, setPasswortOffen] = useState<boolean>(false);
+  const [passwortGeaendert, setPasswortGeaendert] = useState<boolean>(false);
   const email = session?.user.email ?? "unbekannt";
   const initial = (email.charAt(0) || "K").toUpperCase();
 
@@ -87,10 +93,35 @@ export function AccountCard(): React.ReactElement {
         >
           Verbindung neu prüfen
         </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setPasswortGeaendert(false);
+            setPasswortOffen((offen) => !offen);
+          }}
+        >
+          Passwort ändern
+        </Button>
         <Button variant="ghost" size="sm" onClick={() => void signOut()}>
           Abmelden
         </Button>
       </div>
+
+      {passwortOffen ? (
+        <PasswortAendern
+          onFertig={(erfolgreich) => {
+            setPasswortOffen(false);
+            setPasswortGeaendert(erfolgreich);
+          }}
+        />
+      ) : null}
+
+      {passwortGeaendert && !passwortOffen ? (
+        <p className="text-good text-xs" role="status">
+          Passwort geändert. Beim nächsten Anmelden gilt das neue.
+        </p>
+      ) : null}
     </div>
   );
 }

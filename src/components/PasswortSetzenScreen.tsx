@@ -6,17 +6,33 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthCard } from "@/components/auth/AuthCard";
 
-// Einladungs-Screen: erscheint, wenn die App ueber einen Einladungslink von
-// Supabase geoeffnet wurde. Die E-Mail steht bereits fest (aus der Einladung)
-// und wird nur angezeigt – das ist der "E-Mail-Check": nur wer den Link aus
-// der eingeladenen Mail hat, landet hier. Der Nutzer vergibt sein Passwort
-// (zweimal zur Sicherheit) und ist danach direkt angemeldet.
-export function InviteScreen(): ReactElement {
-  const { inviteEmail, setPassword } = useAuth();
+// Bildschirm zum Passwort-Vergeben. Erscheint, wenn die App ueber einen Link
+// von Supabase geoeffnet wurde - aus zwei Anlaessen, die sich nur im Text
+// unterscheiden:
+//  - "einladung": neues Konto aktivieren.
+//  - "wiederherstellung": Passwort war vergessen, ein neues wird gesetzt.
+// Die E-Mail steht in beiden Faellen schon fest (aus dem Link) und wird nur
+// angezeigt - das ist der "E-Mail-Check": nur wer den Link aus der Mail hat,
+// landet hier. Das Passwort wird zweimal eingegeben.
+const TEXTE = {
+  einladung: {
+    subtitle: "Lege ein Passwort fest, um dein Konto zu aktivieren.",
+    aktion: "Konto aktivieren",
+  },
+  wiederherstellung: {
+    subtitle: "Lege ein neues Passwort für dein Konto fest.",
+    aktion: "Passwort speichern",
+  },
+} as const;
+
+export function PasswortSetzenScreen(): ReactElement {
+  const { passwortAnlass, passwortEmail, setPassword } = useAuth();
   const [passwort, setPasswort] = useState<string>("");
   const [wiederholung, setWiederholung] = useState<string>("");
   const [fehler, setFehler] = useState<string | null>(null);
   const [busy, setBusy] = useState<boolean>(false);
+
+  const texte = TEXTE[passwortAnlass ?? "einladung"];
 
   async function absenden(e: FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
@@ -36,18 +52,18 @@ export function InviteScreen(): ReactElement {
       setFehler(ergebnis.message);
       return;
     }
-    // Bei Erfolg verlaesst der AuthProvider den Einladungs-Modus und der
+    // Bei Erfolg verlaesst der AuthProvider den Passwort-Modus und der
     // AuthGate laesst die App durch.
   }
 
   return (
-    <AuthCard subtitle="Lege ein Passwort fest, um dein Konto zu aktivieren.">
+    <AuthCard subtitle={texte.subtitle}>
       <form className="space-y-4" onSubmit={(e) => void absenden(e)}>
-        {inviteEmail !== null ? (
+        {passwortEmail !== null ? (
           <div className="space-y-2">
             <label className="text-sm font-medium">E-Mail</label>
             <p className="text-muted-foreground bg-input rounded-control px-3 py-2 text-sm">
-              {inviteEmail}
+              {passwortEmail}
             </p>
           </div>
         ) : null}
@@ -85,7 +101,7 @@ export function InviteScreen(): ReactElement {
         ) : null}
 
         <Button type="submit" className="w-full" disabled={busy}>
-          {busy ? "Bitte warten ..." : "Konto aktivieren"}
+          {busy ? "Bitte warten ..." : texte.aktion}
         </Button>
       </form>
     </AuthCard>
