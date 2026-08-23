@@ -46,15 +46,19 @@ export type VorlageRow = TemplateRow;
 /** Zeile einer Uebung in einer Workout-Vorlage, Id clientseitig vergeben. */
 export type VorlageUebungRow = TemplateExerciseRow;
 
-/** Die Bauart-Vorgaben eines Bausteins (phase_types), auf das reduziert, was
- *  beim Anlegen einer Phase von dort kommt. Seit Migration 0049 traegt die
- *  Vorlagenphase diese Angaben nicht mehr selbst – der Journey-Start schlaegt
- *  sie ueber `key` (= `phases.focus`) hier nach. */
-export interface BausteinBauartRow {
+/** Die Bauregeln eines Bausteins (phase_types), auf das reduziert, was beim
+ *  Anlegen einer Phase von dort kommt: nach welcher Regel Wochen- und Lastliste
+ *  gebaut werden, mit welchen Eckwerten die Lastrampe laeuft, und ob der Coach
+ *  vorsichtig steigert. Die Vorlagenphase traegt weder den Vermerk (Migration
+ *  0049) noch die Listen (Migration 0050) – der Journey-Start schlaegt beides
+ *  ueber `key` (= `phases.focus`) hier nach. */
+export interface BausteinBauregelRow {
   key: string;
   plan_builder: PlanBuilder | null;
   load_builder: LoadBuilder | null;
   careful: boolean;
+  load_start_default: number | null;
+  load_end_default: number | null;
 }
 
 /** Arbeitsgewicht einer Uebung – die Grundlage fuers Einfrieren des
@@ -78,9 +82,9 @@ export interface JourneyStore {
   insertJourney(row: JourneyRowIns): Promise<string>;
   renameJourney(id: string, name: string): Promise<void>;
   insertPhasen(rows: PhaseRowIns[]): Promise<void>;
-  /** Bauart-Vorgaben aller Bausteine eines Nutzers – gelesen genau dort, wo
-   *  eine Phase entsteht (Konzept Bausteine, Abschnitt 2), nie im Training. */
-  listBausteine(userId: string): Promise<BausteinBauartRow[]>;
+  /** Bauregeln aller Bausteine eines Nutzers – gelesen genau dort, wo eine
+   *  Phase entsteht (Konzept Bausteine, Abschnitt 2), nie im Training. */
+  listBausteine(userId: string): Promise<BausteinBauregelRow[]>;
   /** Arbeitsgewichte des Uebungskatalogs eines Nutzers lesen. */
   listArbeitsgewichte(userId: string): Promise<ArbeitsgewichtRow[]>;
   setReferenzgewicht(exerciseId: string, gewicht: number): Promise<void>;
@@ -143,10 +147,12 @@ export const supabaseJourneyStore: JourneyStore = {
   async listBausteine(userId) {
     const { data, error } = await supabase
       .from("phase_types")
-      .select("key, plan_builder, load_builder, careful")
+      .select(
+        "key, plan_builder, load_builder, careful, load_start_default, load_end_default",
+      )
       .eq("user_id", userId);
     if (error) throw new Error(error.message);
-    return (data ?? []) as BausteinBauartRow[];
+    return (data ?? []) as BausteinBauregelRow[];
   },
   async listArbeitsgewichte(userId) {
     const { data, error } = await supabase
@@ -256,8 +262,8 @@ export interface MemoryJourneyLog {
 export interface MemoryJourneySeed {
   /** Id der aktiven Journey vor dem Start einer neuen (null = keine). */
   aktiveJourneyId?: string | null;
-  /** Bauart-Vorgaben der Bausteine, die der Speicher zurueckgibt. */
-  bausteine?: BausteinBauartRow[];
+  /** Bauregeln der Bausteine, die der Speicher zurueckgibt. */
+  bausteine?: BausteinBauregelRow[];
   /** Arbeitsgewichte des Uebungskatalogs, je Nutzer-Kennung. */
   arbeitsgewichte?: ArbeitsgewichtRow[];
   /** Bereits zugewiesene Workout-Ids, je Journey-Kennung. */

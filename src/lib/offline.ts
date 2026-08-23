@@ -24,7 +24,11 @@ const CACHE_SCHLUESSEL = "kraftschmiede-query-cache";
 //     die Bauart kommt beim Journey-Start aus den Bausteinen. Ein vor dem Umbau
 //     gespeicherter Vorlagenstand fuehrt die drei Felder noch mit und beschreibt
 //     damit eine Tabelle, die es so nicht mehr gibt - er wird einmal verworfen.
-export const CACHE_BUSTER = "v7";
+// v8: Auch die gebauten Listen sind an der Vorlagenphase entfallen (Migration
+//     0050); Wochen- und Lastliste entstehen erst beim Journey-Start. Ein alter
+//     gecachter Vorlagenstand fuehrt beide Spalten noch mit - er wird einmal
+//     verworfen, damit die Vorschau rechnet statt zu lesen.
+export const CACHE_BUSTER = "v8";
 
 // Wie lange ein gespeicherter Stand hoechstens gueltig ist, bevor er beim
 // Laden verworfen wird. Korrespondiert mit gcTime im queryClient.

@@ -24,7 +24,7 @@ Eine Phase ist eine Datenzeile, und fast alle ihre Felder sind schon freie Werte
 ist der Baustein (`focus`) und was aus ihm folgt: die Bauart (`plan_builder`,
 `load_builder`, `careful`) und die daraus gebauten Listen (`week_plan`, `load_plan`).
 Diese Felder schreibt kein Regler – sie entstehen beim Anlegen der Phase aus dem
-Baustein.
+Baustein und stehen an der Vorlage seit den Migrationen 0049 und 0050 gar nicht mehr.
 
 Drei Eigenschaften des heutigen Systems machen einen Editor überhaupt denkbar:
 
@@ -43,7 +43,9 @@ Drei Eigenschaften des heutigen Systems machen einen Editor überhaupt denkbar:
   Bau-Funktion, die ein Editor bräuchte, steht damit schon.
 
 Ein Editor schreibt also im Wesentlichen Felder. Die einzige Stelle, an der er in die
-Engine greift, ist das Neubauen der Phase, wenn sich die Wochenzahl ändert.
+Engine greift, ist die Vorschau: Seit Issue #343 speichert die Vorlage die beiden Listen
+gar nicht mehr, sie werden zur Anzeige gebaut und beim Journey-Start eingefroren
+(`buildPhasePlans`, Abschnitt 3).
 
 ---
 
@@ -87,10 +89,13 @@ Zwei Stellen, an denen der Editor mitdenken sollte:
 - **Beim Wiederaufbau die Testphase vorschlagen.** Eine Woche, ohne Entlastung, direkt
   dahinter – und der Zielanteil des Wiederaufbaus geht dann auf 95 % statt 100 %.
   Wegnehmen ist erlaubt; nimmt man sie weg, steht der Zielanteil wieder auf 100 %.
-- **Beim Ändern der Wochenzahl die Listen neu bauen.** Ohne das passt die gespeicherte
-  Leiter nicht mehr zur Phasenlänge. Betrifft die Wochenliste von Maximalkraft,
-  Intensivierung und Test/Peak – und ebenso die Lastliste des Wiederaufbaus, deren Stufen
-  über die Phasenwochen verteilt sind. `buildPhaseFromType` erledigt beides in einem.
+- ~~**Beim Ändern der Wochenzahl die Listen neu bauen.**~~ Erledigt durch Issue #343
+  (Migration 0050): Die Vorlage speichert die beiden Listen nicht mehr, sie entstehen
+  erst beim Journey-Start aus Baustein und Wochenzahl. Damit kann keine gespeicherte
+  Leiter mehr unpassend werden – die Aufgabe ist nicht gelöst, sondern überflüssig. Was
+  der Editor stattdessen braucht, ist die Live-Vorschau, die die Vorlagen-Auswahl seither
+  ohnehin baut (`buildTemplatePhaseInputs` in `lib/journey.ts`, gerechnet mit
+  `buildPhasePlans`).
 
 ---
 

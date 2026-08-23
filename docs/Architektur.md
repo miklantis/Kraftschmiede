@@ -109,15 +109,16 @@ Recovery-Fenster, Timer).
 - **journey_templates** – key, name, tagline, for_whom, summary, position
 - **journey_template_phases** – journey_template_id (FK), name, focus (FK auf
   `phase_types` über Nutzer plus Schlüssel, Migration 0048), weeks, sets_start,
-  sets_end, deload_week (nullable), rep_target_min/max, load_plan (jsonb, nullable –
-  Lastliste der Phase: je Phasenwoche der Anteil des Referenzgewichts, Form in
-  `engine/loadPlan.ts`), week_plan (jsonb, nullable – Wochenplan der Phase, Form in
-  `engine/weekPlan.ts`), position. Die Vorlagenphase nennt bewusst **nur** ihren
-  Baustein: Der Bauart-Vermerk (plan_builder/load_builder/careful) ist mit Migration
-  0049 hier entfallen und kommt beim Journey-Start aus `phase_types`
-  (`lib/journeyWrite.ts`) – so kann eine Vorlage keine Bauart tragen, die nicht zu
-  ihrem Baustein passt. Das frühere Einzelfeld load_factor ist mit Migration 0046
-  entfallen
+  sets_end, deload_week (nullable), rep_target_min/max, position. Die Vorlagenphase
+  trägt bewusst **nur** ihren Baustein und die eingestellten Werte – alles daraus
+  Ableitbare ist hier entfallen: der Bauart-Vermerk
+  (plan_builder/load_builder/careful, Migration 0049) und die beiden gebauten Listen
+  (week_plan/load_plan, Migration 0050). Beides entsteht erst beim Journey-Start aus
+  Baustein und Wochenzahl (`lib/journeyWrite.ts`), die Vorlagen-Auswahl rechnet die
+  Vorschau mit derselben Regel (`lib/journey.ts`, `buildTemplatePhaseInputs`). So kann
+  eine Vorlage weder eine Bauart noch eine Leiter tragen, die nicht zu ihrem Baustein
+  und ihrer Wochenzahl passt. Das frühere Einzelfeld load_factor ist mit Migration
+  0046 entfallen
 - **skills** – key, name, category, image, position
 - **skill_phases** – skill_id (FK), label, description, consecutive_sessions
   (aufeinanderfolgende Erfolge bis Aufstieg), position
@@ -139,8 +140,9 @@ Begründung in ADR-0003.
   Schlüssel, Migration 0048), weeks, sets_start, sets_end, deload_week
   (nullable), rep_target_min/max, load_plan (jsonb, nullable – Lastliste der Phase: je
   Phasenwoche der Anteil des Referenzgewichts; null = keine Vorgabe, dann rechnet der
-  Coach wie gewohnt), week_plan (jsonb, nullable – Kopie des Vorlagen-Wochenplans,
-  wandert beim Journey-Start mit der Phase mit), plan_builder/load_builder/careful
+  Coach wie gewohnt), week_plan (jsonb, nullable – Wochenplan der Phase, beim
+  Journey-Start aus dem Baustein gebaut und danach eingefroren, Migration 0050),
+  plan_builder/load_builder/careful
   (Bauart der Phase: nach welcher Regel Wochen- und Lastliste gebaut wurden und ob der
   Coach vorsichtig steigert – ein Wochenplan allein sagt nicht, was er tut; beim
   Journey-Start aus dem Baustein gesetzt und danach eingefroren, Migration 0049),
@@ -382,9 +384,12 @@ Eindampfen, sonst wären die alten Felder schon weg.
   dort, wo eine Phase entsteht: `buildPhaseFromType` (`engine/phaseBuild.ts`) baut aus
   Baustein plus wenigen Anpassungen (Wochen, Band, Entlastungswoche) die fertige
   Vorlagenphase, angewandt im Seed (`src/seed/definitions.ts`); beim Journey-Start
-  wandern deren Werte als Kopie in die Phasenzeile (`lib/journeyWrite.ts`) – die Bauart
-  holt der Start dort direkt aus dem Baustein, weil die Vorlagenphase sie seit Migration
-  0049 nicht mehr trägt. Engine und Coach lesen danach nur noch die Phase – eine
+  wandern deren eingestellte Werte als Kopie in die Phasenzeile (`lib/journeyWrite.ts`).
+  Bauart und die beiden Listen holt der Start dagegen direkt aus dem Baustein, weil die
+  Vorlagenphase sie seit den Migrationen 0049 und 0050 nicht mehr trägt: Gebaut wird mit
+  `buildPhasePlans` (`engine/phaseBuild.ts`) – derselben Funktion, die auch
+  `buildPhaseFromType` benutzt, damit gestartete und gebaute Phase nicht auseinanderlaufen
+  können. Engine und Coach lesen danach nur noch die Phase – eine
   geänderte Baustein-Vorgabe greift nie in eine laufende Journey. Die Phase trägt ihre
   Bauart mit (`plan_builder`, `load_builder`, `careful`), weil ein Wochenplan allein
   nicht sagt, was er tut: Kraftphase und Testphase tragen beide einen und verhalten sich
@@ -407,8 +412,11 @@ Eindampfen, sonst wären die alten Felder schon weg.
   Arbeitsgewicht und ein kurzer Wochenziel-Text. Gerechnet wird er an einer Stelle
   (`engine/weekPlan.ts`: `buildWeekPlanFor` beim Anlegen, `weekPlanForWeek` beim Lesen);
   das Zod-Schema dort ist die Quelle der Wahrheit für die Form, die DB-Schemas verweisen
-  nur darauf. Weil der Plan an der Phase hängt, wandert er beim Journey-Start ohne eigene
-  Kopierlogik mit. Damit laufen drei Wege nebeneinander: Phasen mit Plan nach dem
+  nur darauf. In der Vorlage steht er seit Migration 0050 nicht mehr: Er ist dort aus
+  Baustein und Wochenzahl vollständig ableitbar, entsteht darum erst beim Journey-Start
+  und wird ab da an der Phase eingefroren. Die Vorlagen-Auswahl rechnet ihre Vorschau mit
+  derselben Regel (`buildTemplatePhaseInputs` in `lib/journey.ts`), zeigt also genau, was
+  der Start später einfriert. Damit laufen drei Wege nebeneinander: Phasen mit Plan nach dem
   Wochenplan; Hypertrophie, Kraftausdauer, Wiedereinstieg und Erhaltung – und jede Phase
   ohne Plan (null) – unverändert weiter über die Doppelprogression des Coaches; und der
   Wiederaufbau als dritter Weg, in dem der Coach die Wiederholungen steuert und die

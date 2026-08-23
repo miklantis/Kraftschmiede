@@ -16,6 +16,7 @@ import {
 } from "@/hooks/useJourneyTemplates";
 import { useActiveJourney } from "@/hooks/useJourney";
 import { useJourneyActions } from "@/hooks/useJourneyActions";
+import { usePhaseTypes } from "@/hooks/usePhaseTypes";
 import { useTemplates } from "@/hooks/useTemplates";
 import { useExercises } from "@/hooks/useExercises";
 import { useSessions } from "@/hooks/useSessions";
@@ -28,9 +29,9 @@ import {
 } from "@/lib/journeySwitch";
 import { todayISO } from "@/lib/format";
 import {
+  buildTemplatePhaseInputs,
   buildTemplatePhaseViews,
   totalWeeks,
-  type JourneyPhaseInput,
   type PhaseView,
 } from "@/lib/journey";
 import { buildPeriodization, type PeriodizationData } from "@/lib/periodization";
@@ -60,6 +61,9 @@ const INTRO =
 function JourneyPickerPage(): React.ReactElement {
   const navigate = useNavigate();
   const templatesQ = useJourneyTemplates();
+  // Die Bausteine kommen fuer die Vorschau dazu: Die Vorlage nennt nur ihren
+  // Baustein, die Wochentabelle entsteht erst daraus (Migration 0050).
+  const phaseTypesQ = usePhaseTypes();
   const journeyQ = useActiveJourney();
   const actions = useJourneyActions();
   const workoutsQ = useTemplates();
@@ -191,6 +195,7 @@ function JourneyPickerPage(): React.ReactElement {
 
   if (
     templatesQ.isLoading ||
+    phaseTypesQ.isLoading ||
     journeyQ.isLoading ||
     sessionsQ.isLoading ||
     settingsQ.isLoading
@@ -203,39 +208,38 @@ function JourneyPickerPage(): React.ReactElement {
     );
   }
 
-  if (templatesQ.isError) {
+  if (templatesQ.isError || phaseTypesQ.isError) {
+    const fehler = templatesQ.error ?? phaseTypesQ.error;
     return (
       <div>
         {back}
         <p className="text-sm text-danger">
           Vorlagen konnten nicht geladen werden
-          {templatesQ.error instanceof Error
-            ? ": " + templatesQ.error.message
-            : "."}
+          {fehler instanceof Error ? ": " + fehler.message : "."}
         </p>
       </div>
     );
   }
 
   const templates = templatesQ.data ?? [];
+  const bausteine = (phaseTypesQ.data ?? []).map((b) => ({
+    key: b.key,
+    planBuilder: b.plan_builder,
+    loadBuilder: b.load_builder,
+    careful: b.careful,
+    loadStartDefault: b.load_start_default,
+    loadEndDefault: b.load_end_default,
+  }));
   const models: Array<{
     template: JourneyTemplateWithPhases;
     card: TemplateCardModel;
     periodization: PeriodizationData;
     phases: PhaseView[];
   }> = templates.map((t) => {
-    const phaseInputs: JourneyPhaseInput[] = t.phases.map((p) => ({
-      name: p.name,
-      focus: p.focus,
-      weeks: p.weeks,
-      setsStart: p.sets_start,
-      setsEnd: p.sets_end,
-      deloadWeek: p.deload_week,
-      repTargetMin: p.rep_target_min,
-      repTargetMax: p.rep_target_max,
-      loadPlan: p.load_plan,
-      weekPlan: p.week_plan,
-    }));
+    // Wochen- und Lastliste stehen seit Migration 0050 nicht mehr an der
+    // Vorlage: Die Vorschau baut sie aus Baustein und Wochenzahl - mit derselben
+    // Regel, nach der der Journey-Start sie spaeter einfriert.
+    const phaseInputs = buildTemplatePhaseInputs(t.phases, bausteine);
     // Ohne "jetzt"-Marker ist die Gesamtwoche bedeutungslos; 1 als neutraler Wert.
     const periodization = buildPeriodization(phaseInputs, 1);
     return {

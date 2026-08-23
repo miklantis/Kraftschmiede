@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.46.13",
+      "date": "2026-08-23",
+      "changes": [
+        "Die Wochen- und Lasttabellen einer Journey-Vorlage waren bisher fest gespeichert, obwohl sie sich vollständig aus Phasentyp und Wochenzahl ergeben. Sie sind jetzt aus der Vorlage entfernt und entstehen erst beim Start einer Journey.",
+        "Die Vorlagen-Auswahl rechnet ihre Wochenvorschau seitdem selbst aus - sie zeigt genau das, was beim Start eingefroren wird.",
+        "Für laufende Journeys ändert sich nichts: Sie tragen ihre fertigen Tabellen unverändert weiter. Auch die angebotenen Vorlagen sehen aus wie vorher."
+      ]
+    },
+    {
       "version": "1.46.12",
       "date": "2026-08-23",
       "changes": [

@@ -184,11 +184,11 @@ async function seedJourneyTemplates(userId: string): Promise<void> {
     }
     t.phases.forEach((p, i) => {
       // Die Phase entsteht aus ihrem Baustein: Wochen, Saetze, Band und
-      // Entlastung kommen von dort, Wochenliste und Lastliste werden zur
-      // Wochenzahl gebaut. Der Bauart-Vermerk der gebauten Phase wird hier
-      // bewusst nicht mitgeschrieben (Migration 0049): Die Vorlagenphase nennt
-      // nur ihren Baustein, den Vermerk setzt erst der Journey-Start aus
-      // `phase_types` (lib/journeyWrite.ts).
+      // Entlastung kommen von dort. Was die gebaute Phase darueber hinaus
+      // traegt, wird hier bewusst nicht mitgeschrieben - weder der
+      // Bauart-Vermerk (Migration 0049) noch die beiden Listen (Migration
+      // 0050). Die Vorlagenphase nennt nur ihren Baustein; beides entsteht
+      // erst beim Journey-Start aus `phase_types` (lib/journeyWrite.ts).
       const gebaut = buildSeedPhase(p);
       phaseInserts.push({
         user_id: userId,
@@ -201,8 +201,6 @@ async function seedJourneyTemplates(userId: string): Promise<void> {
         deload_week: gebaut.deloadWeek,
         rep_target_min: gebaut.repTargetMin,
         rep_target_max: gebaut.repTargetMax,
-        load_plan: gebaut.loadPlan,
-        week_plan: gebaut.weekPlan,
         position: i,
       });
     });

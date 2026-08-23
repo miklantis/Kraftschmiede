@@ -555,12 +555,31 @@ unverändert mitwandert.
 > keine einzige Zeile abwich – eine Doppelung, die nichts trägt, aber auseinanderlaufen
 > kann. Die Vorlagenphase nennt jetzt nur noch ihren Baustein (`focus`); den Vermerk
 > setzt der Journey-Start beim Anlegen der Phase aus `phase_types`
-> (`lib/journeyWrite.ts`, `bauartFuerPhase`) – genau dort, wo eine Phase entsteht und
+> (`lib/journeyWrite.ts`) – genau dort, wo eine Phase entsteht und
 > der Zugriff auf die Bausteine nach Abschnitt 2 ohnehin vorgesehen ist. Damit kann der
 > geplante Journey-Editor keine Vorlage mehr speichern, deren Bauart nicht zu ihrem
 > Baustein passt. An `phases` bleibt alles unverändert – das ist der Vertrag mit dem
 > Coach. Preis: Die Vorlagenzeile wandert nicht mehr Feld für Feld in die Phase, sondern
 > plus drei Werten aus einer zweiten Tabelle.
+
+> **Nachtrag (Issue #343, Migration 0050).** Dasselbe gilt seitdem für die beiden
+> gebauten Listen: `week_plan` und `load_plan` sind an `journey_template_phases`
+> ebenfalls entfallen. Sie waren dort vollständig ableitbar – aus der Bauregel des
+> Bausteins und der Wochenzahl der Phase –, und der Abgleichstest musste genau diese
+> Ableitung ohnehin dauerhaft absichern. Was ein Test absichern muss, muss man nicht
+> speichern. Ausschlaggebend war der geplante Journey-Editor: Die Wochenzahl ist der
+> Regler, an dem am häufigsten gedreht wird, und jedes Drehen wäre eine Gelegenheit,
+> dass gespeicherte Leiter und Phasenlänge auseinanderlaufen. Ohne gespeicherte Liste
+> kann keine unpassend werden. Gebaut wird jetzt an einer Stelle
+> (`buildPhasePlans` in `engine/phaseBuild.ts`), die drei Aufrufer teilen: der Seed über
+> `buildPhaseFromType`, der Journey-Start und die Vorschau im Vorlagen-Wähler
+> (`buildTemplatePhaseInputs` in `lib/journey.ts`) – die rechnet ihre Wochentabelle
+> seitdem, statt sie zu lesen. An `phases` bleiben beide Spalten unverändert: Die
+> laufende Journey friert ihre fertigen Listen ein, das ist der Zweck der Kopie.
+> Nicht mit übernommen wurde der Fall „Phase nennt ihre Laststufen selbst"
+> (`loadPlanFromShares`): Keine Vorlage nutzt ihn. Soll eine Vorlage das künftig können,
+> bekommt sie ein eigenes Feld, das ausdrücklich „abweichende Stufen" heißt – und keine
+> Kopie des Gebauten ist.
 
 `careful` steht aus demselben Grund an der Phase wie die Bauart: Der Coach liest im
 Training ausschließlich die Phasenzeile (Abschnitt 2). Stünde die Eigenschaft nur am

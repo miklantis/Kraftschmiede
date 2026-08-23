@@ -27,7 +27,12 @@ import {
   phaseTypeSeeds,
 } from "@/seed/definitions";
 import { focusEnum, phaseTypeKeyEnum } from "@/schemas";
-import { bauartFuerPhase } from "@/lib/journeyWrite";
+import type { Focus } from "@/schemas";
+import { createMemoryJourneyStore } from "@/lib/journeyStore";
+import type { BausteinBauregelRow } from "@/lib/journeyStore";
+import { writeJourneyStart } from "@/lib/journeyWrite";
+import type { JourneyStartVorlage } from "@/lib/journeyWrite";
+import { buildTemplatePhaseInputs } from "@/lib/journey";
 
 function migration(datei: string): string {
   return readFileSync(
@@ -245,10 +250,11 @@ describe("Abgleich 5b: die Lastliste deckt sich mit ihrer Bauregel", () => {
 // Fasten" auf zwei Bausteine (Migration 0047). Verschiebt sich sonst
 // irgendetwas, faellt dieser Test um.
 //
-// Der Bauart-Vermerk steht hier nicht mehr: Seit Migration 0049 traegt die
-// Vorlagenphase ihn nicht, und was nicht in der Tabelle steht, kann der Seed
-// auch nicht verschieben. Dass die Bauart trotzdem stimmt, prueft Abgleich 9
-// an der Stelle, an der sie jetzt entsteht - beim Journey-Start.
+// Was hier nicht mehr steht, ist alles Ableitbare: der Bauart-Vermerk (seit
+// Migration 0049) und die beiden gebauten Listen (seit Migration 0050). Was
+// nicht in der Tabelle steht, kann der Seed auch nicht verschieben. Dass beides
+// trotzdem stimmt, prueft Abgleich 9 an der Stelle, an der es jetzt entsteht -
+// beim Journey-Start.
 interface Bestand {
   name: string;
   focus: string;
@@ -258,23 +264,21 @@ interface Bestand {
   deloadWeek: number | null;
   repTargetMin: number | null;
   repTargetMax: number | null;
-  loadPlan: number[] | null;
-  hatPlan: boolean;
 }
 
 const BESTAND: Record<string, Bestand[]> = {
   reentry_build: [
-    { name: "Wiedereinstieg", focus: "reentry", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 5, repTargetMax: 8, loadPlan: null, hatPlan: false },
-    { name: "Hypertrophie", focus: "hypertrophy", weeks: 5, setsStart: 2, setsEnd: 6, deloadWeek: 4, repTargetMin: 8, repTargetMax: 12, loadPlan: null, hatPlan: false },
-    { name: "Maximalkraft", focus: "strength", weeks: 5, setsStart: 4, setsEnd: 4, deloadWeek: null, repTargetMin: 4, repTargetMax: 6, loadPlan: null, hatPlan: true },
-    { name: "Test/Peak", focus: "test", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadPlan: null, hatPlan: true },
+    { name: "Wiedereinstieg", focus: "reentry", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 5, repTargetMax: 8 },
+    { name: "Hypertrophie", focus: "hypertrophy", weeks: 5, setsStart: 2, setsEnd: 6, deloadWeek: 4, repTargetMin: 8, repTargetMax: 12 },
+    { name: "Maximalkraft", focus: "strength", weeks: 5, setsStart: 4, setsEnd: 4, deloadWeek: null, repTargetMin: 4, repTargetMax: 6 },
+    { name: "Test/Peak", focus: "test", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4 },
   ],
   // Umgebaut in Schritt 7 (Migration 0047): aus vier getippten Wochenphasen
   // werden zwei Bausteine. Was hier steht, ist der Stand nach der Migration -
   // dieselben Werte, die der Seed baut.
   refeed_rebuild: [
-    { name: "Wiederaufbau", focus: "rebuild", weeks: 3, setsStart: 2, setsEnd: 4, deloadWeek: null, repTargetMin: 6, repTargetMax: 10, loadPlan: [0.65, 0.8, 0.95], hatPlan: false },
-    { name: "Test/Peak", focus: "test", weeks: 1, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadPlan: null, hatPlan: true },
+    { name: "Wiederaufbau", focus: "rebuild", weeks: 3, setsStart: 2, setsEnd: 4, deloadWeek: null, repTargetMin: 6, repTargetMax: 10 },
+    { name: "Test/Peak", focus: "test", weeks: 1, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4 },
   ],
 };
 
@@ -299,8 +303,6 @@ describe("Abgleich 6: der neue Seed verschiebt nichts", () => {
           deloadWeek: b.deloadWeek,
           repTargetMin: b.repTargetMin,
           repTargetMax: b.repTargetMax,
-          loadPlan: b.loadPlan?.map((w) => w.loadPct) ?? null,
-          hatPlan: b.weekPlan !== null,
         };
       });
       expect(gebaut).toEqual(erwartet);
@@ -396,31 +398,129 @@ describe("Abgleich 8: die gebauten Vorlagen bleiben in den Grenzen ihres Baustei
   });
 });
 
-// Abgleich 9: was der Journey-Start setzt, deckt sich mit dem Baustein.
+// Abgleich 9: die Strecke Vorlage -> Journey-Start verliert nichts.
 //
-// Seit Migration 0049 traegt die Vorlagenphase ihre Bauart nicht mehr - sie
-// entsteht erst beim Journey-Start aus dem Baustein (lib/journeyWrite.ts). Damit
-// ist eine neue Naht da: Bauregel und Liste werden nicht mehr in einem Zug
-// gebaut, sondern in zwei Schritten zusammengefuehrt. Diese Pruefung schliesst
-// sie - was der Start eintraegt, muss Wort fuer Wort das sein, was
-// `buildPhaseFromType` beim Bauen der Phase vermerkt haette.
-describe("Abgleich 9: der Journey-Start setzt genau die Bauart des Bausteins", () => {
-  it("trifft bei jeder Vorlagenphase den Vermerk der gebauten Phase", () => {
-    for (const { baustein, phase, wo } of VORLAGENPHASEN) {
-      const bauart = bauartFuerPhase(
-        {
-          key: baustein.key,
-          plan_builder: baustein.planBuilder,
-          load_builder: baustein.loadBuilder,
-          careful: baustein.careful,
-        },
-        { load_plan: phase.loadPlan, week_plan: phase.weekPlan },
+// Seit den Migrationen 0049 und 0050 traegt die Vorlagenphase weder ihre Bauart
+// noch die beiden Listen - sie nennt nur ihren Baustein und was jemand
+// eingestellt hat. Alles Uebrige entsteht erst beim Journey-Start
+// (lib/journeyWrite.ts). Damit ist eine Naht da: Was der Seed einst gebaut und
+// gespeichert haette, muss der Start aus dem Baustein wieder herstellen.
+//
+// Diese Pruefung schliesst sie in voller Laenge: Aus jeder Seed-Vorlage wird die
+// Zeile gemacht, die heute in der Tabelle steht (ohne Listen, ohne Bauart), der
+// Journey-Start laeuft darueber, und die entstandene Phasenzeile wird Feld fuer
+// Feld gegen die gebaute Phase gehalten. Deckt sich beides, ist bewiesen, dass
+// das Entfernen der Spalten nichts kostet.
+describe("Abgleich 9: der Journey-Start stellt die gebaute Phase wieder her", () => {
+  // Die Bausteine, wie der Speicher sie beim Start liest.
+  const bausteine: BausteinBauregelRow[] = phaseTypeSeeds.map((b) => ({
+    key: b.key,
+    plan_builder: b.planBuilder,
+    load_builder: b.loadBuilder,
+    careful: b.careful,
+    load_start_default: b.loadStartDefault,
+    load_end_default: b.loadEndDefault,
+  }));
+
+  for (const t of journeyTemplateSeeds) {
+    it(`stellt "${t.name}" Feld fuer Feld wieder her`, async () => {
+      const gebaut = t.phases.map(buildSeedPhase);
+      // Die gespeicherte Vorlagenzeile: nur die eingestellten Werte.
+      const vorlage: JourneyStartVorlage = {
+        id: "vorlage-1",
+        name: t.name,
+        phases: gebaut.map((b) => ({
+          name: b.name,
+          focus: b.focus as Focus,
+          weeks: b.weeks,
+          sets_start: b.setsStart,
+          sets_end: b.setsEnd,
+          deload_week: b.deloadWeek,
+          rep_target_min: b.repTargetMin,
+          rep_target_max: b.repTargetMax,
+        })),
+      };
+
+      const { store, log } = createMemoryJourneyStore({ bausteine });
+      await writeJourneyStart(store, "u1", vorlage, "2026-08-23");
+
+      const phasen = log.phasenInserted[0]!;
+      expect(
+        phasen.map((p) => ({
+          name: p.name,
+          focus: p.focus,
+          weeks: p.weeks,
+          setsStart: p.sets_start,
+          setsEnd: p.sets_end,
+          deloadWeek: p.deload_week,
+          repTargetMin: p.rep_target_min,
+          repTargetMax: p.rep_target_max,
+          weekPlan: p.week_plan,
+          loadPlan: p.load_plan,
+          planBuilder: p.plan_builder,
+          loadBuilder: p.load_builder,
+          careful: p.careful,
+        })),
+      ).toEqual(
+        gebaut.map((b) => ({
+          name: b.name,
+          focus: b.focus,
+          weeks: b.weeks,
+          setsStart: b.setsStart,
+          setsEnd: b.setsEnd,
+          deloadWeek: b.deloadWeek,
+          repTargetMin: b.repTargetMin,
+          repTargetMax: b.repTargetMax,
+          weekPlan: b.weekPlan,
+          loadPlan: b.loadPlan,
+          planBuilder: b.planBuilder,
+          loadBuilder: b.loadBuilder,
+          careful: b.careful,
+        })),
       );
-      expect(bauart, wo).toEqual({
-        plan_builder: phase.planBuilder,
-        load_builder: phase.loadBuilder,
-        careful: phase.careful,
-      });
-    }
-  });
+    });
+  }
+});
+
+// Abgleich 10: die Vorschau im Vorlagen-Waehler zeigt, was der Start einfriert.
+//
+// Die zweite Stelle, die seit Migration 0050 rechnen muss statt zu lesen: Die
+// Vorlagen-Auswahl baut ihre Wochentabelle aus Baustein und Wochenzahl. Liefe
+// sie anders als der Journey-Start, zeigte die Vorschau eine Journey, die so
+// nie startet.
+describe("Abgleich 10: die Vorlagen-Vorschau zeigt die spaeteren Listen", () => {
+  const bausteine = phaseTypeSeeds.map((b) => ({
+    key: b.key,
+    planBuilder: b.planBuilder,
+    loadBuilder: b.loadBuilder,
+    careful: b.careful,
+    loadStartDefault: b.loadStartDefault,
+    loadEndDefault: b.loadEndDefault,
+  }));
+
+  for (const t of journeyTemplateSeeds) {
+    it(`trifft bei "${t.name}" beide Listen`, () => {
+      const gebaut = t.phases.map(buildSeedPhase);
+      const vorschau = buildTemplatePhaseInputs(
+        gebaut.map((b) => ({
+          name: b.name,
+          focus: b.focus as Focus,
+          weeks: b.weeks,
+          sets_start: b.setsStart,
+          sets_end: b.setsEnd,
+          deload_week: b.deloadWeek,
+          rep_target_min: b.repTargetMin,
+          rep_target_max: b.repTargetMax,
+        })),
+        bausteine,
+      );
+
+      expect(vorschau.map((v) => v.weekPlan)).toEqual(
+        gebaut.map((b) => b.weekPlan),
+      );
+      expect(vorschau.map((v) => v.loadPlan)).toEqual(
+        gebaut.map((b) => b.loadPlan),
+      );
+    });
+  }
 });

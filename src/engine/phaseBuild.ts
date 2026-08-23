@@ -21,14 +21,24 @@ import {
   type WeekPlan,
 } from "./weekPlan";
 
-/** Die Vorgabewerte eines Bausteins, so weit sie in eine Phase wandern.
- *  Deckungsgleich mit den gleichnamigen Feldern von `phase_types`. */
-export interface PhaseTypeInput {
-  key: string;
-  name: string;
+/** Die Bauregeln eines Bausteins: alles, was zum Bauen der beiden Listen und
+ *  zum Bauart-Vermerk gebraucht wird - und sonst nichts. Wer nur die Listen
+ *  braucht (Journey-Start, Vorlagen-Vorschau), kommt mit diesem Ausschnitt aus,
+ *  ohne die Vorgabewerte des Bausteins mitzuschleppen. */
+export interface PhaseBuildRules {
   planBuilder: PlanBuilderName | null;
   loadBuilder: LoadBuilderName | null;
   careful: boolean;
+  /** Start- und Zielanteil der Lastliste; nur bei gesetztem `loadBuilder`. */
+  loadStartDefault: number | null;
+  loadEndDefault: number | null;
+}
+
+/** Die Vorgabewerte eines Bausteins, so weit sie in eine Phase wandern.
+ *  Deckungsgleich mit den gleichnamigen Feldern von `phase_types`. */
+export interface PhaseTypeInput extends PhaseBuildRules {
+  key: string;
+  name: string;
   weeksDefault: number;
   setsStartDefault: number;
   setsEndDefault: number;
@@ -36,9 +46,6 @@ export interface PhaseTypeInput {
   repMaxDefault: number | null;
   deloadAllowed: boolean;
   deloadDefault: number | null;
-  /** Start- und Zielanteil der Lastliste; nur bei gesetztem `loadBuilder`. */
-  loadStartDefault: number | null;
-  loadEndDefault: number | null;
 }
 
 /** Abweichungen von den Vorgaben des Bausteins. Was nicht gesetzt ist, kommt
@@ -78,6 +85,59 @@ export interface BuiltPhase {
   careful: boolean;
 }
 
+/** Was aus Baustein und Wochenzahl folgt und darum nirgends gespeichert werden
+ *  muss: die beiden Listen und der Vermerk, nach welcher Regel sie entstanden
+ *  sind. Genau dieser Ausschnitt einer Phase ist ableitbar. */
+export interface PhasePlans {
+  weekPlan: WeekPlan | null;
+  loadPlan: LoadPlan | null;
+  planBuilder: PlanBuilderName | null;
+  loadBuilder: LoadBuilderName | null;
+  careful: boolean;
+}
+
+/**
+ * Wochenliste, Lastliste und Bauart-Vermerk aus den Bauregeln des Bausteins und
+ * der Wochenzahl bauen.
+ *
+ * Die eine Stelle, an der die beiden Listen entstehen - egal ob beim Seed einer
+ * Vorlage, beim Journey-Start oder fuer die Vorschau im Vorlagen-Waehler. Die
+ * Wochenzahl ist dabei der Regler: Sie bestimmt die Laenge beider Listen, und
+ * eine verstellte Phasenlaenge zieht die Rampe mit, statt hinten abzuschneiden.
+ *
+ * Der Vermerk haengt an der Liste, nicht an der Bauregel: Wo keine Liste
+ * entstanden ist, bleibt er leer. Sonst laese der Coach eine Rampe, die es
+ * nicht gibt. `careful` haengt an keiner Liste und kommt unveraendert aus dem
+ * Baustein.
+ */
+export function buildPhasePlans(
+  rules: PhaseBuildRules,
+  weeks: number,
+  /** Ausdruecklich vorgegebene Laststufen; siehe `PhaseAdjustments.load`. */
+  load?: number[],
+): PhasePlans {
+  const weekPlan = buildWeekPlanFor(rules.planBuilder, weeks);
+  // Getippte Stufen gehen vor: nennt die Phase ihre Last selbst, wird nichts
+  // gebaut. Sonst verteilt die Bauregel des Bausteins die Stufen ueber genau
+  // diese Wochenzahl.
+  const loadPlan =
+    load !== undefined
+      ? loadPlanFromShares(load)
+      : buildLoadPlanFor(
+          rules.loadBuilder,
+          weeks,
+          rules.loadStartDefault,
+          rules.loadEndDefault,
+        );
+  return {
+    weekPlan,
+    loadPlan,
+    planBuilder: weekPlan == null ? null : rules.planBuilder,
+    loadBuilder: loadPlan == null ? null : rules.loadBuilder,
+    careful: rules.careful,
+  };
+}
+
 /**
  * Entlastungswoche auf die Phasenlaenge zurechtstutzen.
  *
@@ -108,21 +168,6 @@ export function buildPhaseFromType(
   adjustments: PhaseAdjustments = {},
 ): BuiltPhase {
   const weeks = adjustments.weeks ?? type.weeksDefault;
-  const planBuilder = type.planBuilder;
-  const weekPlan = buildWeekPlanFor(planBuilder, weeks);
-  // Getippte Stufen gehen vor: nennt die Phase ihre Last selbst, wird nichts
-  // gebaut. Sonst verteilt die Bauregel des Bausteins die Stufen ueber genau
-  // diese Wochenzahl - eine verstellte Phasenlaenge zieht die Rampe damit mit,
-  // statt hinten abzuschneiden.
-  const loadPlan =
-    adjustments.load !== undefined
-      ? loadPlanFromShares(adjustments.load)
-      : buildLoadPlanFor(
-          type.loadBuilder,
-          weeks,
-          type.loadStartDefault,
-          type.loadEndDefault,
-        );
   const deloadRoh = type.deloadAllowed
     ? (adjustments.deloadWeek !== undefined
         ? adjustments.deloadWeek
@@ -143,14 +188,9 @@ export function buildPhaseFromType(
       adjustments.repTargetMax !== undefined
         ? adjustments.repTargetMax
         : type.repMaxDefault,
-    weekPlan,
-    loadPlan,
-    // Ohne gebaute Wochenliste kein Vermerk: eine Phase ohne Plan laeuft ueber
-    // den Coach und darf nicht als Rampe gelesen werden.
-    planBuilder: weekPlan == null ? null : planBuilder,
-    // Ebenso auf der Lastseite: der Vermerk sagt, nach welcher Regel die
-    // Lastliste entstanden ist - ohne Liste gibt es keine.
-    loadBuilder: loadPlan == null ? null : type.loadBuilder,
-    careful: type.careful,
+    // Listen und Bauart-Vermerk kommen aus derselben Stelle, die auch der
+    // Journey-Start benutzt - so kann die gebaute Phase gar nicht von dem
+    // abweichen, was spaeter zur Laufzeit entsteht.
+    ...buildPhasePlans(type, weeks, adjustments.load),
   };
 }
