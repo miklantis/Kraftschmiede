@@ -215,20 +215,42 @@ describe('Vorlage "Wiederaufbau nach Fasten"', () => {
     expect(i).toBe(j + 1);
   });
 
-  it("faehrt die Rampe 0.65 / 0.80 / 0.95 ueber vier Wochen", () => {
+  it("besteht aus zwei Bausteinen: Wiederaufbau, dann Test/Peak", () => {
     expect(vorlage).toBeDefined();
     if (vorlage === undefined) return;
-    // Die vierte Phase gibt nichts mehr vor: ab dort steuert der Coach wieder
-    // normal. Frueher stand dort ein Lastfaktor von 1.0, was dasselbe bedeutete.
+    // Beide Phasen tragen den Namen ihres Bausteins - die Eigennamen "Tasten",
+    // "Reaktivieren", "Anschluss" und "Standort" sind mit Schritt 7 entfallen.
+    const phasen = vorlage.phases.map(buildSeedPhase);
+    expect(phasen.map((p) => [p.name, p.focus, p.weeks])).toEqual([
+      ["Wiederaufbau", "rebuild", 3],
+      ["Test/Peak", "test", 1],
+    ]);
+  });
+
+  it("faehrt die Rampe 0.65 / 0.80 / 0.95 ueber die ersten drei Wochen", () => {
+    expect(vorlage).toBeDefined();
+    if (vorlage === undefined) return;
+    // Die Rampe steckt jetzt im Block statt in drei Ein-Wochen-Phasen. Die
+    // Testwoche gibt nichts mehr vor: ab dort steuert der Coach wieder normal.
     expect(vorlage.phases.map((p) => buildSeedPhase(p).loadPlan)).toEqual([
-      [{ week: 1, loadPct: 0.65 }],
-      [{ week: 1, loadPct: 0.8 }],
-      [{ week: 1, loadPct: 0.95 }],
+      [
+        { week: 1, loadPct: 0.65 },
+        { week: 2, loadPct: 0.8 },
+        { week: 3, loadPct: 0.95 },
+      ],
       null,
     ]);
-    expect(vorlage.phases.map(buildSeedPhase).map((p) => p.weeks)).toEqual([
-      1, 1, 1, 1,
-    ]);
+  });
+
+  it("laeuft ueber vier Wochen und steigert vorsichtig", () => {
+    expect(vorlage).toBeDefined();
+    if (vorlage === undefined) return;
+    const phasen = vorlage.phases.map(buildSeedPhase);
+    // Die Beschreibung nennt vier Wochen - drei Aufbauwochen plus Testwoche.
+    expect(phasen.reduce((summe, p) => summe + p.weeks, 0)).toBe(4);
+    // Ohne careful waere die schonende Steigerung der ersten Wochen die vierte,
+    // unbeabsichtigte Abweichung vom bisherigen Stand gewesen.
+    expect(phasen.map((p) => p.careful)).toEqual([true, false]);
   });
 
   it("plant keinen Deload ein - die Journey ist selbst die Rampe", () => {
