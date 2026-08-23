@@ -2,15 +2,17 @@
 // Datenbank. Idempotent: laeuft nur, wenn noch keine Skills fuer den Nutzer
 // existieren. Alles wird mit der user_id des angemeldeten Nutzers angelegt (RLS).
 
-import { buildWeekPlan, phaseBuildForFocus } from "@/engine/weekPlan";
 import { supabase } from "@/lib/supabase";
 import {
+  buildSeedPhase,
   journeyTemplateSeeds,
+  seedPhaseLoadFactor,
   phaseTypeSeeds,
   skillSeeds,
   equipmentSeeds,
 } from "@/seed/definitions";
 import type {
+  Focus,
   JourneyTemplateInsert,
   JourneyTemplatePhaseInsert,
   PhaseTypeInsert,
@@ -180,28 +182,28 @@ async function seedJourneyTemplates(userId: string): Promise<void> {
       throw new Error(`Journey-Vorlage ohne ID: ${t.key}`);
     }
     t.phases.forEach((p, i) => {
-      // Bauart-Vermerk der Phase: nach welcher Regel ihre Listen entstanden
-      // sind. Er wandert beim Journey-Start mit der Phase mit und wird zur
-      // Laufzeit gelesen (Coach, Anker-Nachfuehrung, Empfehlung).
-      const build = phaseBuildForFocus(p.focus, p.weeks);
+      // Die Phase entsteht aus ihrem Baustein: Wochen, Saetze, Band und
+      // Entlastung kommen von dort, die Wochenliste wird zur Wochenzahl gebaut,
+      // und der Bauart-Vermerk sagt danach, nach welcher Regel das geschah. Er
+      // wandert beim Journey-Start mit und wird zur Laufzeit gelesen (Coach,
+      // Anker-Nachfuehrung, Empfehlung).
+      const gebaut = buildSeedPhase(p);
       phaseInserts.push({
         user_id: userId,
         journey_template_id: tplId,
-        name: p.name,
-        focus: p.focus,
-        weeks: p.weeks,
-        sets_start: p.setsStart,
-        sets_end: p.setsEnd,
-        deload_week: p.deloadWeek,
-        rep_target_min: p.repTargetMin,
-        rep_target_max: p.repTargetMax,
-        load_factor: p.loadFactor,
-        // Wochenplan faellt aus Fokus und Phasenlaenge; Kraft-, Schnellkraft-
-        // und Testphasen bekommen ihn, alle uebrigen bleiben ohne (null).
-        week_plan: buildWeekPlan(p.focus, p.weeks),
-        plan_builder: build.plan_builder,
-        load_builder: build.load_builder,
-        careful: build.careful,
+        name: gebaut.name,
+        focus: gebaut.focus as Focus,
+        weeks: gebaut.weeks,
+        sets_start: gebaut.setsStart,
+        sets_end: gebaut.setsEnd,
+        deload_week: gebaut.deloadWeek,
+        rep_target_min: gebaut.repTargetMin,
+        rep_target_max: gebaut.repTargetMax,
+        load_factor: seedPhaseLoadFactor(p),
+        week_plan: gebaut.weekPlan,
+        plan_builder: gebaut.planBuilder,
+        load_builder: gebaut.loadBuilder,
+        careful: gebaut.careful,
         position: i,
       });
     });

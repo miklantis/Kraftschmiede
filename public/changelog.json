@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.46.4",
+      "date": "2026-08-23",
+      "changes": [
+        "Die Journey-Vorlagen entstehen ab jetzt aus den Bausteinen statt aus fest eingetippten Zahlen. Wochen, Sätze, Wiederholungsband und Entlastungswoche einer Phase kommen von ihrem Baustein; nur wo eine Vorlage bewusst abweicht, steht noch ein eigener Wert.",
+        "Die letzte Phase der Journey heißt jetzt überall \"Test/Peak\". Bisher trug dieselbe Phase zwei Namen: auf der Journey-Seite \"Übergang / Test\", im Training \"Test/Peak\". Der Widerspruch ist damit weg - in der Vorlage und in der laufenden Journey.",
+        "Sonst ändert sich nichts, und das ist der Punkt: Ein neuer Abgleichstest prüft bei jedem Lauf, dass die aus Bausteinen gebauten Vorlagen Feld für Feld dem entsprechen, was heute in der Datenbank steht."
+      ]
+    },
+    {
       "version": "1.46.3",
       "date": "2026-08-23",
       "changes": [

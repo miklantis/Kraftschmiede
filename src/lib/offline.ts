@@ -15,7 +15,10 @@ const CACHE_SCHLUESSEL = "kraftschmiede-query-cache";
 // v4: Die Phasenzeile traegt jetzt den Bauart-Vermerk (plan_builder,
 //     load_builder, careful) - ohne ihn wuerde der Coach gecachte Phasen als
 //     Phasen ohne Wochenplan lesen (Konzept Bausteine, Schritt 2).
-export const CACHE_BUSTER = "v4";
+// v5: Die Testphase heisst per Migration ueberall "Test/Peak" statt
+//     "Übergang / Test", und die Anzeige nimmt ab jetzt den Phasennamen. Ohne
+//     Verwerfen zeigte der gecachte Stand tagelang den alten Namen weiter.
+export const CACHE_BUSTER = "v5";
 
 // Wie lange ein gespeicherter Stand hoechstens gueltig ist, bevor er beim
 // Laden verworfen wird. Korrespondiert mit gcTime im queryClient.

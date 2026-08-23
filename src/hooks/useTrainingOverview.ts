@@ -16,7 +16,6 @@ import {
   rankWorkouts,
   type DoneSessionEntry,
 } from "@/lib/coach";
-import { focusLabel } from "@/lib/labels";
 import {
   isJourneyCapable,
   selectRecommendationTemplates,
@@ -228,11 +227,12 @@ export function useTrainingOverview(): {
       );
       const weekInPhase = placement?.weekInPhase ?? "?";
       const phaseWeeks = currentPhase?.weeks ?? "?";
-      const focusName = currentPhase
-        ? focusLabel(currentPhase.focus) || currentPhase.name
-        : "";
+      // Titelzeile: der Phasenname selbst. Er traegt seit den Bausteinen den
+      // Namen seines Bausteins ("Maximalkraft"), sofern nicht abweichend
+      // benannt - ein abgeleiteter Anzeigename ist damit ueberfluessig.
+      const phasenName = currentPhase?.name ?? "";
       journeyView = {
-        title: journey.name + (focusName ? " · " + focusName : ""),
+        title: journey.name + (phasenName ? " · " + phasenName : ""),
         subtitle:
           "Woche " +
           weekInPhase +

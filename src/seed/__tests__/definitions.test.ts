@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { buildWeekPlan } from "@/engine/weekPlan";
-import { journeyTemplateSeeds, phaseTypeSeeds } from "@/seed/definitions";
+import {
+  buildSeedPhase,
+  journeyTemplateSeeds,
+  phaseTypeSeeds,
+  seedPhaseLoadFactor,
+} from "@/seed/definitions";
 import { phaseTypeInsert } from "@/schemas";
 
 // Die Bausteine sind ab hier die Quelle fuer die Werte einer Phase. Diese Tests
@@ -129,9 +133,10 @@ describe("Journey-Vorlagen im Seed", () => {
   it("gibt jeder Phase einen gueltigen Lastfaktor", () => {
     for (const t of journeyTemplateSeeds) {
       for (const p of t.phases) {
-        expect(Number.isFinite(p.loadFactor)).toBe(true);
-        expect(p.loadFactor).toBeGreaterThan(0);
-        expect(p.loadFactor).toBeLessThanOrEqual(1);
+        const lf = seedPhaseLoadFactor(p);
+        expect(Number.isFinite(lf)).toBe(true);
+        expect(lf).toBeGreaterThan(0);
+        expect(lf).toBeLessThanOrEqual(1);
       }
     }
   });
@@ -144,14 +149,23 @@ describe("Journey-Vorlagen im Seed", () => {
     expect(bestand.length).toBe(journeyTemplateSeeds.length - 1);
     for (const t of bestand) {
       for (const p of t.phases) {
-        expect(p.loadFactor).toBe(1);
+        expect(seedPhaseLoadFactor(p)).toBe(1);
+      }
+    }
+  });
+
+  it("nennt nur Bausteine, die es gibt", () => {
+    const keys = new Set(phaseTypeSeeds.map((t) => t.key));
+    for (const t of journeyTemplateSeeds) {
+      for (const p of t.phases) {
+        expect(keys.has(p.type)).toBe(true);
       }
     }
   });
 });
 
 describe("Wochenplan der Vorlagen-Phasen", () => {
-  const alle = journeyTemplateSeeds.flatMap((t) => t.phases);
+  const alle = journeyTemplateSeeds.flatMap((t) => t.phases).map(buildSeedPhase);
 
   it("gibt jeder Kraft-, Schnellkraft- und Testphase einen Plan ueber alle Wochen", () => {
     const geplant = alle.filter((p) =>
@@ -159,9 +173,9 @@ describe("Wochenplan der Vorlagen-Phasen", () => {
     );
     expect(geplant.length).toBeGreaterThan(0);
     for (const p of geplant) {
-      const plan = buildWeekPlan(p.focus, p.weeks);
-      expect(plan).not.toBeNull();
-      expect(plan).toHaveLength(p.weeks);
+      expect(p.weekPlan).not.toBeNull();
+      expect(p.weekPlan).toHaveLength(p.weeks);
+      expect(p.planBuilder).not.toBeNull();
     }
   });
 
@@ -170,7 +184,8 @@ describe("Wochenplan der Vorlagen-Phasen", () => {
       (p) => !["strength", "power", "test"].includes(p.focus),
     );
     for (const p of frei) {
-      expect(buildWeekPlan(p.focus, p.weeks)).toBeNull();
+      expect(p.weekPlan).toBeNull();
+      expect(p.planBuilder).toBeNull();
     }
   });
 
@@ -197,16 +212,18 @@ describe('Vorlage "Wiederaufbau nach Fasten"', () => {
   it("faehrt die Rampe 0.65 / 0.80 / 0.95 / 1.00 ueber vier Wochen", () => {
     expect(vorlage).toBeDefined();
     if (vorlage === undefined) return;
-    expect(vorlage.phases.map((p) => p.loadFactor)).toEqual([
+    expect(vorlage.phases.map(seedPhaseLoadFactor)).toEqual([
       0.65, 0.8, 0.95, 1,
     ]);
-    expect(vorlage.phases.map((p) => p.weeks)).toEqual([1, 1, 1, 1]);
+    expect(vorlage.phases.map(buildSeedPhase).map((p) => p.weeks)).toEqual([
+      1, 1, 1, 1,
+    ]);
   });
 
   it("plant keinen Deload ein - die Journey ist selbst die Rampe", () => {
     expect(vorlage).toBeDefined();
     if (vorlage === undefined) return;
-    for (const p of vorlage.phases) {
+    for (const p of vorlage.phases.map(buildSeedPhase)) {
       expect(p.deloadWeek).toBeNull();
     }
   });

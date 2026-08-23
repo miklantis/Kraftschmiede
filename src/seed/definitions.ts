@@ -4,6 +4,11 @@
 // Skill-Progressionen. Vorlagen und Skills 1:1 aus V1 (data.js:
 // JOURNEY_TEMPLATES und SKILLS).
 
+import {
+  buildPhaseFromType,
+  type BuiltPhase,
+  type PhaseAdjustments,
+} from "@/engine/phaseBuild";
 import type {
   Focus,
   LoadBuilder,
@@ -287,28 +292,25 @@ export const phaseTypeSeeds: SeedPhaseType[] = [
 // --- Journey-Vorlagen ---------------------------------------------------------
 
 /**
- * Phase einer Journey-Vorlage. Der Wochenplan (week_plan) steht hier bewusst
- * nicht: er faellt eindeutig aus Fokus und Phasenlaenge und wird beim Seeden
- * ueber `buildWeekPlan` (engine/weekPlan.ts) gerechnet - so gibt es nur eine
- * Pflegequelle fuer die Leiter. Kraftphasen haben keine Entlastungswoche mehr
- * (deloadWeek null); die Entlastung steht am Anfang der Testphase.
+ * Phase einer Journey-Vorlage – als Baustein plus Abweichungen.
+ *
+ * Getippte Zahlen stehen hier nur noch, wo eine Phase bewusst von den Vorgaben
+ * ihres Bausteins abweicht. Alles andere (Wochen, Saetze, Band, Entlastung,
+ * Wochenliste, Bauart, vorsichtige Steigerung) kommt aus `phaseTypeSeeds` und
+ * wird beim Seeden ueber `buildPhaseFromType` gebaut – so gibt es nur eine
+ * Pflegequelle. Ohne eigenen Namen traegt die Phase den Namen ihres Bausteins.
  */
-export interface SeedJourneyPhase {
-  name: string;
-  focus: Focus;
-  weeks: number;
-  setsStart: number;
-  setsEnd: number;
-  deloadWeek: number | null;
-  repTargetMin: number;
-  repTargetMax: number;
+export interface SeedJourneyPhase extends PhaseAdjustments {
+  /** Baustein-Schluessel; wandert unveraendert in `phases.focus`. */
+  type: Focus;
   /**
    * Anteil des Referenzgewichts, mit dem in dieser Phase gearbeitet wird.
    * 1.0 = volles Niveau, der Coach bestimmt das Gewicht wie gewohnt aus der
    * letzten Leistung. Werte unter 1.0 gibt nur der "Wiederaufbau nach Fasten"
-   * vor, dort steuert die Journey das Gewicht.
+   * vor, dort steuert die Journey das Gewicht. Faellt mit Schritt 4 zugunsten
+   * der Lastliste weg.
    */
-  loadFactor: number;
+  loadFactor?: number;
 }
 
 export interface SeedJourneyTemplate {
@@ -320,6 +322,28 @@ export interface SeedJourneyTemplate {
   phases: SeedJourneyPhase[];
 }
 
+/** Baustein zu einem Schluessel. Wirft, statt still ein Loch zu lassen: ein
+ *  unbekannter Schluessel im Seed ist ein Fehler, kein Sonderfall. */
+export function phaseTypeByKey(key: PhaseTypeKey): SeedPhaseType {
+  const treffer = phaseTypeSeeds.find((t) => t.key === key);
+  if (treffer === undefined) {
+    throw new Error(`Unbekannter Baustein: ${key}`);
+  }
+  return treffer;
+}
+
+/** Vorlagen-Phase zu einer fertigen Phasenzeile bauen. Einzige Stelle, an der
+ *  aus dem Seed eine Phase entsteht – Vorlagen-Seed und Test lesen dieselbe. */
+export function buildSeedPhase(phase: SeedJourneyPhase): BuiltPhase {
+  const { type, loadFactor: _loadFactor, ...anpassungen } = phase;
+  return buildPhaseFromType(phaseTypeByKey(type), anpassungen);
+}
+
+/** Lastfaktor einer Vorlagen-Phase; ohne Angabe volles Niveau. */
+export function seedPhaseLoadFactor(phase: SeedJourneyPhase): number {
+  return phase.loadFactor ?? 1;
+}
+
 export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
   {
     key: "reentry_build",
@@ -329,11 +353,14 @@ export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
       "Nach Pause, Verletzung oder als Einstieg ins strukturierte Langhanteltraining.",
     summary:
       "Beginnt bewusst leicht, um Technik und Belastbarkeit aufzubauen, steigert dann Volumen für Muskelaufbau, schaltet auf Maximalkraft um und schließt mit einer Testwoche für neue Bestwerte.",
+    // Vier Bausteine ohne eine einzige Abweichung: diese Vorlage trifft die
+    // Vorgabewerte Feld fuer Feld. Das ist zugleich der Beweis, dass die
+    // Bausteine die heutige Welt vollstaendig beschreiben (Konzept Abschnitt 9).
     phases: [
-      { name: "Wiedereinstieg", focus: "reentry", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 5, repTargetMax: 8, loadFactor: 1 },
-      { name: "Hypertrophie", focus: "hypertrophy", weeks: 5, setsStart: 2, setsEnd: 6, deloadWeek: 4, repTargetMin: 8, repTargetMax: 12, loadFactor: 1 },
-      { name: "Maximalkraft", focus: "strength", weeks: 5, setsStart: 4, setsEnd: 4, deloadWeek: null, repTargetMin: 4, repTargetMax: 6, loadFactor: 1 },
-      { name: "Übergang / Test", focus: "test", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadFactor: 1 },
+      { type: "reentry" },
+      { type: "hypertrophy" },
+      { type: "strength" },
+      { type: "test" },
     ],
   },
   {
@@ -344,11 +371,15 @@ export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
       "Nach Fastenwoche, Krankheit oder kurzer Trainingspause, wenn die Kraft noch da ist, die ersten Einheiten aber nicht überziehen sollen.",
     summary:
       "Diese Journey gibt das Gewicht selbst vor: In den ersten drei Wochen trainierst du mit 65, 80 und 95 Prozent des Gewichts von vor der Pause. Der Coach darf in dieser Zeit nicht darüber hinausgehen und steuert nur die Wiederholungen; nach unten reagiert er wie gewohnt, wenn Schmerz oder schlechte Erholung dazwischenkommen. Ab Woche vier bist du wieder beim alten Gewicht und der Coach arbeitet wieder normal. Bei allen anderen Vorlagen bestimmt er das Gewicht aus deiner letzten Leistung.",
+    // Vier Wochenphasen mit eigenen Namen und eigenen Werten – diese Vorlage
+    // weicht heute an fast jeder Stelle von den Vorgaben ab. Schritt 7 baut sie
+    // auf zwei Bausteine um (Wiederaufbau + Test/Peak); bis dahin bleibt sie
+    // Wert fuer Wert, wie sie ist.
     phases: [
-      { name: "Tasten", focus: "reentry", weeks: 1, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 8, repTargetMax: 10, loadFactor: 0.65 },
-      { name: "Reaktivieren", focus: "reentry", weeks: 1, setsStart: 3, setsEnd: 3, deloadWeek: null, repTargetMin: 6, repTargetMax: 10, loadFactor: 0.8 },
-      { name: "Anschluss", focus: "hypertrophy", weeks: 1, setsStart: 3, setsEnd: 4, deloadWeek: null, repTargetMin: 6, repTargetMax: 10, loadFactor: 0.95 },
-      { name: "Standort", focus: "test", weeks: 1, setsStart: 2, setsEnd: 3, deloadWeek: null, repTargetMin: 3, repTargetMax: 6, loadFactor: 1 },
+      { type: "reentry", name: "Tasten", weeks: 1, repTargetMin: 8, repTargetMax: 10, loadFactor: 0.65 },
+      { type: "reentry", name: "Reaktivieren", weeks: 1, setsStart: 3, setsEnd: 3, repTargetMin: 6, repTargetMax: 10, loadFactor: 0.8 },
+      { type: "hypertrophy", name: "Anschluss", weeks: 1, setsStart: 3, setsEnd: 4, repTargetMin: 6, repTargetMax: 10, loadFactor: 0.95 },
+      { type: "test", name: "Standort", weeks: 1, setsEnd: 3, repTargetMin: 3, repTargetMax: 6 },
     ],
   },
 ];

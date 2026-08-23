@@ -2,7 +2,23 @@ import { describe, expect, it } from "vitest";
 import { loadForReps, workWeightForPhase } from "../phaseChange";
 import type { PhaseWeightOpts } from "../phaseChange";
 import { suitability } from "../suitability";
-import { phaseBuildForFocus } from "../weekPlan";
+import { buildPhaseFromType } from "../phaseBuild";
+import { phaseTypeByKey } from "@/seed/definitions";
+import type { PhaseTypeKey } from "@/schemas";
+
+// Bauart-Vermerk zum Fokus, wie ihn der Seed beim Anlegen schreibt: aus dem
+// Baustein gebaut, damit der Test dieselbe Quelle liest wie die App.
+function bauart(focus: string, weeks: number) {
+  const gebaut = buildPhaseFromType(phaseTypeByKey(focus as PhaseTypeKey), {
+    weeks,
+  });
+  return {
+    plan_builder: gebaut.planBuilder,
+    load_builder: gebaut.loadBuilder,
+    careful: gebaut.careful,
+  };
+}
+
 import type { Exercise, SuitabilityTemplate } from "../types";
 
 describe("loadForReps – invertierte Epley-Naeherung", () => {
@@ -76,7 +92,7 @@ describe("suitability – Phasen-Fit (Paritaet zu V1)", () => {
         lastByExercise: {},
         soreness: {},
         weekCounts: {},
-        phase: { focus, ...phaseBuildForFocus(focus, 4) },
+        phase: { focus, ...bauart(focus, 4) },
       },
       { exMap },
     );
