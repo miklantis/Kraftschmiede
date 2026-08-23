@@ -1,9 +1,288 @@
 // Definitionsdaten der Erstbefuellung. Diese stehen bewusst im Code (nicht im
 // V1-Datenexport) und werden beim ersten Start in die Datenbank geseedet:
-// die kuratierten Journey-Vorlagen und die Skill-Progressionen. Inhalte 1:1 aus
-// V1 (data.js: JOURNEY_TEMPLATES und SKILLS).
+// die Bausteine der Phasen, die kuratierten Journey-Vorlagen und die
+// Skill-Progressionen. Vorlagen und Skills 1:1 aus V1 (data.js:
+// JOURNEY_TEMPLATES und SKILLS).
 
-import type { Focus, Metric } from "@/schemas";
+import type {
+  Focus,
+  LoadBuilder,
+  Metric,
+  PhaseControl,
+  PhaseTypeKey,
+  PlanBuilder,
+} from "@/schemas";
+
+// --- Bausteine der Phasen -----------------------------------------------------
+
+/**
+ * Ein Baustein (phase_types): womit eine Phase dieses Typs anfaengt und was
+ * daran einstellbar ist. Die Bauregeln (`planBuilder`, `loadBuilder`) werden nur
+ * beim Namen genannt - die Rechnung dazu steht im Code.
+ *
+ * Werte 1:1 aus docs/Konzept-Bausteine-Datenstruktur.md (Abschnitte 4 und 5) und
+ * deckungsgleich mit supabase/migrations/0043_bausteine_phasentypen.sql, die sie
+ * fuer bestehende Nutzer nachzieht.
+ */
+export interface SeedPhaseType {
+  key: PhaseTypeKey;
+  name: string;
+  summary: string;
+  control: PhaseControl;
+  planBuilder: PlanBuilder | null;
+  loadBuilder: LoadBuilder | null;
+  /** Vorsichtige Steigerung des Coaches. */
+  careful: boolean;
+  weeksMin: number;
+  weeksMax: number;
+  weeksDefault: number;
+  setsStartDefault: number;
+  setsEndDefault: number;
+  setsMax: number;
+  /** true = die Saetze kommen aus der Wochenliste. */
+  setsLocked: boolean;
+  /** null = die Uebung behaelt ihr eigenes Band. */
+  repMinDefault: number | null;
+  repMaxDefault: number | null;
+  /** Korridor, in dem das Band verstellt werden darf. */
+  repBoundMin: number | null;
+  repBoundMax: number | null;
+  /** true = das Band hat in diesem Steuerweg keine Wirkung (ADR-0018). */
+  repBandLocked: boolean;
+  deloadAllowed: boolean;
+  deloadDefault: number | null;
+  loadStartDefault: number | null;
+  loadEndDefault: number | null;
+  /** Reiner Hinweistext, ohne jede Wirkung. */
+  placementHint: string | null;
+}
+
+export const phaseTypeSeeds: SeedPhaseType[] = [
+  {
+    key: "endurance",
+    name: "Kraftausdauer",
+    summary:
+      "Viele Wiederholungen bei moderatem Gewicht: baut Kapazität und Durchhaltevermögen auf, ohne schwer zu werden.",
+    control: "coach",
+    planBuilder: null,
+    loadBuilder: null,
+    careful: false,
+    weeksMin: 3,
+    weeksMax: 8,
+    weeksDefault: 4,
+    setsStartDefault: 2,
+    setsEndDefault: 4,
+    setsMax: 6,
+    setsLocked: false,
+    repMinDefault: 12,
+    repMaxDefault: 18,
+    repBoundMin: 10,
+    repBoundMax: 25,
+    repBandLocked: false,
+    deloadAllowed: true,
+    // Woche 3 von vier: eine Entlastung darf nie die letzte Phasenwoche sein.
+    deloadDefault: 3,
+    loadStartDefault: null,
+    loadEndDefault: null,
+    placementHint: null,
+  },
+  {
+    key: "hypertrophy",
+    name: "Hypertrophie",
+    summary:
+      "Muskelaufbau über das Volumen: mittleres Wiederholungsband, die Satzzahl steigt über die Wochen.",
+    control: "coach",
+    planBuilder: null,
+    loadBuilder: null,
+    careful: false,
+    weeksMin: 3,
+    weeksMax: 8,
+    weeksDefault: 5,
+    setsStartDefault: 2,
+    setsEndDefault: 6,
+    setsMax: 8,
+    setsLocked: false,
+    repMinDefault: 8,
+    repMaxDefault: 12,
+    repBoundMin: 6,
+    repBoundMax: 15,
+    repBandLocked: false,
+    deloadAllowed: true,
+    deloadDefault: 4,
+    loadStartDefault: null,
+    loadEndDefault: null,
+    placementHint: null,
+  },
+  {
+    key: "reentry",
+    name: "Wiedereinstieg",
+    summary:
+      "Vorsichtiger Start nach einer Pause: wenige Sätze, und gesteigert wird nur, wenn die letzte Einheit leicht und schmerzfrei war.",
+    control: "coach",
+    planBuilder: null,
+    loadBuilder: null,
+    careful: true,
+    weeksMin: 1,
+    weeksMax: 4,
+    weeksDefault: 2,
+    setsStartDefault: 2,
+    setsEndDefault: 2,
+    setsMax: 3,
+    setsLocked: false,
+    repMinDefault: 5,
+    repMaxDefault: 8,
+    repBoundMin: 5,
+    repBoundMax: 12,
+    repBandLocked: false,
+    deloadAllowed: false,
+    deloadDefault: null,
+    loadStartDefault: null,
+    loadEndDefault: null,
+    placementHint: null,
+  },
+  {
+    key: "maintenance",
+    name: "Erhaltung",
+    summary:
+      "Hält das Erreichte mit wenig Aufwand: niedrige Satzzahl, und jede Übung behält ihr eigenes Wiederholungsband.",
+    control: "coach",
+    planBuilder: null,
+    loadBuilder: null,
+    careful: false,
+    weeksMin: 1,
+    weeksMax: 12,
+    weeksDefault: 3,
+    setsStartDefault: 3,
+    setsEndDefault: 3,
+    setsMax: 5,
+    setsLocked: false,
+    // Ohne Vorgabeband gibt es auch keinen Korridor.
+    repMinDefault: null,
+    repMaxDefault: null,
+    repBoundMin: null,
+    repBoundMax: null,
+    repBandLocked: false,
+    // Bei bis zu zwoelf Wochen Laufzeit waere ein Verbot zu streng.
+    deloadAllowed: true,
+    deloadDefault: null,
+    loadStartDefault: null,
+    loadEndDefault: null,
+    placementHint: null,
+  },
+  {
+    key: "strength",
+    name: "Maximalkraft",
+    summary:
+      "Schwere Wochenleiter mit fester Satzzahl: das Gewicht steigt Woche für Woche, die Wiederholungen gehen zurück.",
+    control: "plan",
+    planBuilder: "strength_ladder",
+    loadBuilder: null,
+    careful: false,
+    weeksMin: 3,
+    weeksMax: 6,
+    weeksDefault: 5,
+    setsStartDefault: 4,
+    setsEndDefault: 4,
+    setsMax: 4,
+    setsLocked: true,
+    repMinDefault: 4,
+    repMaxDefault: 6,
+    repBoundMin: null,
+    repBoundMax: null,
+    repBandLocked: true,
+    deloadAllowed: false,
+    deloadDefault: null,
+    loadStartDefault: null,
+    loadEndDefault: null,
+    placementHint: null,
+  },
+  {
+    key: "power",
+    name: "Intensivierung",
+    summary:
+      "Kurz und schwer nach einer Kraftphase: eine eigene, steilere Leiter bis in den Einzelversuch.",
+    control: "plan",
+    planBuilder: "power_ladder",
+    loadBuilder: null,
+    careful: false,
+    weeksMin: 3,
+    weeksMax: 4,
+    weeksDefault: 3,
+    setsStartDefault: 4,
+    setsEndDefault: 4,
+    setsMax: 4,
+    setsLocked: true,
+    repMinDefault: 3,
+    repMaxDefault: 5,
+    repBoundMin: null,
+    repBoundMax: null,
+    repBandLocked: true,
+    deloadAllowed: false,
+    deloadDefault: null,
+    loadStartDefault: null,
+    loadEndDefault: null,
+    placementHint: null,
+  },
+  {
+    key: "test",
+    name: "Test/Peak",
+    summary:
+      "Ausgeruht messen: eine Entlastung stellt frei, danach wird das Maximum getestet.",
+    control: "plan",
+    planBuilder: "test",
+    loadBuilder: null,
+    careful: false,
+    weeksMin: 1,
+    weeksMax: 2,
+    weeksDefault: 2,
+    setsStartDefault: 2,
+    setsEndDefault: 2,
+    setsMax: 2,
+    setsLocked: true,
+    repMinDefault: 2,
+    repMaxDefault: 4,
+    repBoundMin: null,
+    repBoundMax: null,
+    repBandLocked: true,
+    // Die Entlastung steckt in der Bauregel der Testphase.
+    deloadAllowed: false,
+    deloadDefault: null,
+    loadStartDefault: null,
+    loadEndDefault: null,
+    placementHint: null,
+  },
+  {
+    key: "rebuild",
+    name: "Wiederaufbau",
+    summary:
+      "Zurück auf das Niveau vor der Pause: die Phase gibt das Gewicht Woche für Woche vor, von 65 auf 95 Prozent des Referenzgewichts.",
+    // Der einzige gemischte Baustein: die Last kommt aus der Liste, Saetze und
+    // Wiederholungen bleiben beim Coach.
+    control: "coach",
+    planBuilder: null,
+    loadBuilder: "rebuild_ramp",
+    careful: true,
+    weeksMin: 3,
+    weeksMax: 6,
+    weeksDefault: 3,
+    setsStartDefault: 2,
+    setsEndDefault: 4,
+    setsMax: 6,
+    setsLocked: false,
+    repMinDefault: 6,
+    repMaxDefault: 10,
+    repBoundMin: 5,
+    repBoundMax: 15,
+    repBandLocked: false,
+    // Der Block ist bereits die Entlastung.
+    deloadAllowed: false,
+    deloadDefault: null,
+    loadStartDefault: 0.65,
+    loadEndDefault: 0.95,
+    placementHint:
+      "Gehört an den Anfang der Journey – später gesetzt zieht er auf ein Niveau von vor mehreren Wochen zurück.",
+  },
+];
 
 // --- Journey-Vorlagen ---------------------------------------------------------
 

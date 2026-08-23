@@ -42,6 +42,7 @@ export const QUERY_ROOTS = {
   archivedJourneys: "archivedJourneys",
   journeyWorkouts: "journeyWorkouts",
   journeyTemplates: "journeyTemplates",
+  phaseTypes: "phaseTypes",
   templates: "templates",
   settings: "settings",
   skills: "skills",
@@ -95,6 +96,8 @@ export const queryKeys = {
   /** Journey-Vorlagen zur Auswahl. */
   journeyTemplates: (userId: UserId) =>
     [QUERY_ROOTS.journeyTemplates, userId] as const,
+  /** Bausteine der Phasen (Vorgaben und Grenzen je Phasentyp). */
+  phaseTypes: (userId: UserId) => [QUERY_ROOTS.phaseTypes, userId] as const,
   /** Workout-Vorlagen des Nutzers. */
   templates: (userId: UserId) => [QUERY_ROOTS.templates, userId] as const,
   /** Einstellungen des Nutzers. */

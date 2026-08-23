@@ -14,6 +14,7 @@ export * from "./zeitraeume";
 export * from "./templates";
 export * from "./journeyWorkouts";
 export * from "./journeyTemplates";
+export * from "./phaseTypes";
 export * from "./skills";
 export * from "./journeys";
 export * from "./sessions";
