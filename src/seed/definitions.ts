@@ -4,6 +4,7 @@
 // Skill-Progressionen. Vorlagen und Skills 1:1 aus V1 (data.js:
 // JOURNEY_TEMPLATES und SKILLS).
 
+import type { LoadPlan } from "@/engine/loadPlan";
 import {
   buildPhaseFromType,
   type BuiltPhase,
@@ -304,13 +305,14 @@ export interface SeedJourneyPhase extends PhaseAdjustments {
   /** Baustein-Schluessel; wandert unveraendert in `phases.focus`. */
   type: Focus;
   /**
-   * Anteil des Referenzgewichts, mit dem in dieser Phase gearbeitet wird.
-   * 1.0 = volles Niveau, der Coach bestimmt das Gewicht wie gewohnt aus der
-   * letzten Leistung. Werte unter 1.0 gibt nur der "Wiederaufbau nach Fasten"
-   * vor, dort steuert die Journey das Gewicht. Faellt mit Schritt 4 zugunsten
-   * der Lastliste weg.
+   * Lastvorgabe der Phase: je Phasenwoche der Anteil des Referenzgewichts
+   * (0.65 = 65 %). Ohne Angabe gibt die Phase keine Last vor und der Coach
+   * bestimmt das Gewicht wie gewohnt aus der letzten Leistung. Eine Vorgabe
+   * macht nur der "Wiederaufbau nach Fasten"; dort steuert die Journey das
+   * Gewicht. Die Bauregel, die diese Stufen selbst verteilt, kommt mit dem
+   * Wiederaufbau-Baustein (Schritt 5).
    */
-  loadFactor?: number;
+  load?: number[];
 }
 
 export interface SeedJourneyTemplate {
@@ -335,13 +337,14 @@ export function phaseTypeByKey(key: PhaseTypeKey): SeedPhaseType {
 /** Vorlagen-Phase zu einer fertigen Phasenzeile bauen. Einzige Stelle, an der
  *  aus dem Seed eine Phase entsteht – Vorlagen-Seed und Test lesen dieselbe. */
 export function buildSeedPhase(phase: SeedJourneyPhase): BuiltPhase {
-  const { type, loadFactor: _loadFactor, ...anpassungen } = phase;
+  const { type, load: _load, ...anpassungen } = phase;
   return buildPhaseFromType(phaseTypeByKey(type), anpassungen);
 }
 
-/** Lastfaktor einer Vorlagen-Phase; ohne Angabe volles Niveau. */
-export function seedPhaseLoadFactor(phase: SeedJourneyPhase): number {
-  return phase.loadFactor ?? 1;
+/** Lastliste einer Vorlagen-Phase; ohne Angabe keine Vorgabe (null). */
+export function seedPhaseLoadPlan(phase: SeedJourneyPhase): LoadPlan | null {
+  if (phase.load === undefined || phase.load.length === 0) return null;
+  return phase.load.map((loadPct, i) => ({ week: i + 1, loadPct }));
 }
 
 export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
@@ -376,9 +379,9 @@ export const journeyTemplateSeeds: SeedJourneyTemplate[] = [
     // auf zwei Bausteine um (Wiederaufbau + Test/Peak); bis dahin bleibt sie
     // Wert fuer Wert, wie sie ist.
     phases: [
-      { type: "reentry", name: "Tasten", weeks: 1, repTargetMin: 8, repTargetMax: 10, loadFactor: 0.65 },
-      { type: "reentry", name: "Reaktivieren", weeks: 1, setsStart: 3, setsEnd: 3, repTargetMin: 6, repTargetMax: 10, loadFactor: 0.8 },
-      { type: "hypertrophy", name: "Anschluss", weeks: 1, setsStart: 3, setsEnd: 4, repTargetMin: 6, repTargetMax: 10, loadFactor: 0.95 },
+      { type: "reentry", name: "Tasten", weeks: 1, repTargetMin: 8, repTargetMax: 10, load: [0.65] },
+      { type: "reentry", name: "Reaktivieren", weeks: 1, setsStart: 3, setsEnd: 3, repTargetMin: 6, repTargetMax: 10, load: [0.8] },
+      { type: "hypertrophy", name: "Anschluss", weeks: 1, setsStart: 3, setsEnd: 4, repTargetMin: 6, repTargetMax: 10, load: [0.95] },
       { type: "test", name: "Standort", weeks: 1, setsEnd: 3, repTargetMin: 3, repTargetMax: 6 },
     ],
   },

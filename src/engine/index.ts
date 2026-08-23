@@ -14,6 +14,7 @@ export * from "./phaseChange";
 export * from "./suitability";
 export * from "./volume";
 export * from "./weekPlan";
+export * from "./loadPlan";
 export * from "./phaseBuild";
 export * from "./planLoad";
 export * from "./recovery";

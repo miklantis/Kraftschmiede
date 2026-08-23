@@ -15,7 +15,7 @@ function phase(overrides: Partial<JourneyPhaseInput>): JourneyPhaseInput {
     deloadWeek: null,
     repTargetMin: 8,
     repTargetMax: 12,
-    loadFactor: 1,
+    loadPlan: null,
     weekPlan: null,
     ...overrides,
   };
@@ -84,8 +84,8 @@ describe("buildPeriodization", () => {
     // so hoch liegen wie in der Phase mit voller Last.
     const d = buildPeriodization(
       [
-        phase({ name: "Tasten", weeks: 1, repTargetMin: 8, repTargetMax: 12, loadFactor: 0.65 }),
-        phase({ name: "Standort", weeks: 1, repTargetMin: 8, repTargetMax: 12, loadFactor: 1 }),
+        phase({ name: "Tasten", weeks: 1, repTargetMin: 8, repTargetMax: 12, loadPlan: [{ week: 1, loadPct: 0.65 }] }),
+        phase({ name: "Standort", weeks: 1, repTargetMin: 8, repTargetMax: 12, loadPlan: null }),
       ],
       1,
     );
@@ -96,13 +96,42 @@ describe("buildPeriodization", () => {
   it("beschriftet Baender mit vorgegebener Last", () => {
     const d = buildPeriodization(
       [
-        phase({ name: "Tasten", weeks: 1, loadFactor: 0.65 }),
-        phase({ name: "Standort", weeks: 1, loadFactor: 1 }),
+        phase({ name: "Tasten", weeks: 1, loadPlan: [{ week: 1, loadPct: 0.65 }] }),
+        phase({ name: "Standort", weeks: 1, loadPlan: [{ week: 1, loadPct: 1 }] }),
       ],
       1,
     );
     expect(d.bands[0].loadLabel).toBe("65 %");
+    // Volle Last unterscheidet die Phase von nichts - kein Etikett.
     expect(d.bands[1].loadLabel).toBeNull();
+  });
+
+  it("zeichnet den Wochenverlauf aus der Lastliste statt eines Phasenwerts", () => {
+    // Ein Block, der ueber drei Wochen von 65 auf 95 Prozent wandert: die
+    // Intensitaet muss Woche fuer Woche steigen, nicht dreimal gleich sein.
+    const d = buildPeriodization(
+      [
+        phase({
+          name: "Wiederaufbau",
+          weeks: 3,
+          repTargetMin: 8,
+          repTargetMax: 12,
+          loadPlan: [
+            { week: 1, loadPct: 0.65 },
+            { week: 2, loadPct: 0.8 },
+            { week: 3, loadPct: 0.95 },
+          ],
+        }),
+      ],
+      1,
+    );
+    expect(d.weeks.map((w) => w.intens)).toEqual([
+      expect.closeTo(0.065),
+      expect.closeTo(0.08),
+      expect.closeTo(0.095),
+    ]);
+    // Das Band traegt die Spanne, nicht den Wert einer einzelnen Woche.
+    expect(d.bands[0].loadLabel).toBe("65 \u2192 95 %");
   });
 
   it("setzt die Phasen-Baender ueber ihre Wochenspanne", () => {

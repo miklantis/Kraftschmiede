@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import {
   buildSeedPhase,
   journeyTemplateSeeds,
-  seedPhaseLoadFactor,
+  seedPhaseLoadPlan,
   phaseTypeSeeds,
   skillSeeds,
   equipmentSeeds,
@@ -199,7 +199,7 @@ async function seedJourneyTemplates(userId: string): Promise<void> {
         deload_week: gebaut.deloadWeek,
         rep_target_min: gebaut.repTargetMin,
         rep_target_max: gebaut.repTargetMax,
-        load_factor: seedPhaseLoadFactor(p),
+        load_plan: seedPhaseLoadPlan(p),
         week_plan: gebaut.weekPlan,
         plan_builder: gebaut.planBuilder,
         load_builder: gebaut.loadBuilder,

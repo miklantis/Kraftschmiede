@@ -11,8 +11,8 @@ const lk = {
 };
 
 const phases = [
-  { id: "p1", name: "Wiedereinstieg", weeks: 2, loadFactor: 1 },
-  { id: "p2", name: "Aufbau", weeks: 4, loadFactor: 1 },
+  { id: "p1", name: "Wiedereinstieg", weeks: 2, loadPlan: null },
+  { id: "p2", name: "Aufbau", weeks: 4, loadPlan: null },
 ];
 
 function s(over: Partial<ReviewSessionInput>): ReviewSessionInput {
@@ -108,13 +108,13 @@ describe("buildJourneyReview", () => {
     expect(r.groups).toHaveLength(2);
   });
 });
-describe("buildJourneyReview \u2013 Lastfaktor", () => {
+describe("buildJourneyReview \u2013 Lastliste", () => {
   it("haelt die vorgegebene Last in der Meta-Zeile fest", () => {
     const r = buildJourneyReview(
       "j1",
       [
-        { id: "p1", name: "Tasten", weeks: 1, loadFactor: 0.65 },
-        { id: "p2", name: "Standort", weeks: 1, loadFactor: 1 },
+        { id: "p1", name: "Tasten", weeks: 1, loadPlan: [{ week: 1, loadPct: 0.65 }] },
+        { id: "p2", name: "Standort", weeks: 1, loadPlan: [{ week: 1, loadPct: 1 }] },
       ],
       [s({ id: "a", date: "2026-01-05", phaseId: "p1" })],
       lk,
@@ -123,7 +123,34 @@ describe("buildJourneyReview \u2013 Lastfaktor", () => {
     expect(r.groups[1]!.meta).toBe("1 Woche \u00b7 0 Einheiten \u00b7 100 % Last");
   });
 
-  it("laesst Journeys ohne Lastfaktor unveraendert", () => {
+  it("zeigt bei einem wandernden Block die Spanne", () => {
+    // Die Phase ist abgeschlossen - eine einzelne Zahl waere hier falsch.
+    const r = buildJourneyReview(
+      "j1",
+      [
+        {
+          id: "p1",
+          name: "Wiederaufbau",
+          weeks: 3,
+          loadPlan: [
+            { week: 1, loadPct: 0.65 },
+            { week: 2, loadPct: 0.8 },
+            { week: 3, loadPct: 0.95 },
+          ],
+        },
+        { id: "p2", name: "Test/Peak", weeks: 1, loadPlan: null },
+      ],
+      [s({ id: "a", date: "2026-01-05", phaseId: "p1" })],
+      lk,
+    );
+    expect(r.groups[0]!.meta).toBe(
+      "3 Wochen \u00b7 1 Einheit \u00b7 65 \u2192 95 % Last",
+    );
+    // Phase ohne eigene Liste laesst den Abschnitt weg statt "keine" zu sagen.
+    expect(r.groups[1]!.meta).toBe("1 Woche \u00b7 0 Einheiten");
+  });
+
+  it("laesst Journeys ohne Lastliste unveraendert", () => {
     const r = buildJourneyReview(
       "j1",
       phases,

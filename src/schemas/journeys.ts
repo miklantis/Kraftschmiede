@@ -3,6 +3,7 @@
 // Unique Index in der DB.
 
 import { z } from "zod";
+import { loadPlanSchema } from "@/engine/loadPlan";
 import { weekPlanSchema } from "@/engine/weekPlan";
 import { focusEnum, isoDate, isoTimestamp, uuid } from "./shared";
 import { loadBuilderEnum, planBuilderEnum } from "./phaseTypes";
@@ -37,12 +38,14 @@ export const journeyInsert = journeyRow
 export type JourneyInsert = z.infer<typeof journeyInsert>;
 
 // phases – Phase der konkreten Journey (Kopie der Vorlagenphase, frei anpassbar).
-// load_factor ist der Anteil des eingefrorenen Referenzgewichts, mit dem in
-// dieser Phase gearbeitet wird (1.0 = volles Niveau, also gewohntes Verhalten).
-// week_plan ist der Wochenplan der Phase (Saetze, Wiederholungen, Ziel-
-// Anstrengung je Woche); null = die Phase laeuft wie bisher ueber den Coach.
-// Die Form steht in der Engine (engine/weekPlan.ts), wo sie auch gerechnet wird
-// - hier steht nur der Spaltenbezug, damit es keine doppelte Pflege gibt.
+// load_plan ist die Lastliste der Phase: je Phasenwoche der Anteil des
+// eingefrorenen Referenzgewichts; null = keine Vorgabe, der Coach rechnet wie
+// gewohnt aus der letzten Leistung. Die Form steht in der Engine
+// (engine/loadPlan.ts). week_plan ist der Wochenplan der Phase (Saetze,
+// Wiederholungen, Ziel-Anstrengung je Woche); null = die Phase laeuft wie
+// bisher ueber den Coach. Auch seine Form steht in der Engine
+// (engine/weekPlan.ts), wo sie gerechnet wird - hier steht nur der
+// Spaltenbezug, damit es keine doppelte Pflege gibt.
 export const phaseRow = z.object({
   id: uuid,
   user_id: uuid,
@@ -55,7 +58,7 @@ export const phaseRow = z.object({
   deload_week: z.number().int().nullable(),
   rep_target_min: z.number().int().nullable(),
   rep_target_max: z.number().int().nullable(),
-  load_factor: z.number(),
+  load_plan: loadPlanSchema.nullable(),
   week_plan: weekPlanSchema.nullable(),
   // Bauart-Vermerk: nach welchen Bauregeln die Listen der Phase entstanden
   // sind. Wird beim Anlegen geschrieben und danach nur gelesen; die Bauregeln
@@ -73,7 +76,7 @@ export const phaseInsert = phaseRow
     deload_week: true,
     rep_target_min: true,
     rep_target_max: true,
-    load_factor: true,
+    load_plan: true,
     week_plan: true,
     plan_builder: true,
     load_builder: true,

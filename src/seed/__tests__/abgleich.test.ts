@@ -11,7 +11,7 @@
 // der Datenbank steht. Damit wird aus "das sollte nichts aendern" ein "das
 // aendert nachweislich nichts".
 
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
 import {
@@ -24,7 +24,7 @@ import {
   buildSeedPhase,
   journeyTemplateSeeds,
   phaseTypeSeeds,
-  seedPhaseLoadFactor,
+  seedPhaseLoadPlan,
 } from "@/seed/definitions";
 import { focusEnum, phaseTypeKeyEnum } from "@/schemas";
 
@@ -45,6 +45,28 @@ function checkListe(sql: string, spalte: string): string[] {
   return [...treffer[1]!.matchAll(/'([^']+)'/g)].map((m) => m[1]!);
 }
 
+/** Die zuletzt gesetzte CHECK-Liste einer Spalte ueber alle Migrationen. Eine
+ *  spaetere Migration ersetzt den CHECK einer frueheren (0046 erweitert `focus`
+ *  um `rebuild`); massgeblich ist darum die letzte, die ihn setzt - nicht die
+ *  Datei, in der die Tabelle einmal entstanden ist. */
+function aktuelleCheckListe(spalte: string): string[] {
+  const dateien = readdirSync(
+    fileURLToPath(new URL("../../../supabase/migrations", import.meta.url)),
+  )
+    .filter((d) => d.endsWith(".sql"))
+    .sort();
+  let letzte: string[] | null = null;
+  for (const datei of dateien) {
+    try {
+      letzte = checkListe(migration(datei), spalte);
+    } catch {
+      // Diese Migration setzt den CHECK nicht - weiter.
+    }
+  }
+  if (letzte === null) throw new Error(`Keine CHECK-Liste fuer ${spalte}`);
+  return letzte;
+}
+
 describe("Abgleich 1: die Schluessel stehen ueberall gleich", () => {
   const seedKeys = phaseTypeSeeds.map((b) => b.key).sort();
 
@@ -57,13 +79,13 @@ describe("Abgleich 1: die Schluessel stehen ueberall gleich", () => {
     expect(checkListe(sql, "key").sort()).toEqual(seedKeys);
   });
 
-  it("deckt sich bis auf den Wiederaufbau mit den Fokus-Werten der Phasen", () => {
-    // `rebuild` existiert bis Schritt 4 nur als Baustein; als Phasen-Fokus kommt
-    // er dort dazu, dann fallen beide Listen zusammen.
-    const sql = migration("0001_initial_schema.sql");
-    const check = checkListe(sql, "focus").sort();
+  it("deckt sich mit den Fokus-Werten der Phasen", () => {
+    // Seit Migration 0046 ist `rebuild` auch als Phasen-Fokus erlaubt. Damit
+    // fallen die drei Listen zusammen: CHECK, focusEnum und geseedete Zeilen -
+    // keine mehr, keine weniger.
+    const check = aktuelleCheckListe("focus").sort();
     expect(check).toEqual([...focusEnum.options].sort());
-    expect(seedKeys).toEqual([...check, "rebuild"].sort());
+    expect(seedKeys).toEqual(check);
   });
 });
 
@@ -170,7 +192,7 @@ interface Bestand {
   deloadWeek: number | null;
   repTargetMin: number | null;
   repTargetMax: number | null;
-  loadFactor: number;
+  loadPlan: number[] | null;
   hatPlan: boolean;
   planBuilder: string | null;
   careful: boolean;
@@ -178,16 +200,16 @@ interface Bestand {
 
 const BESTAND: Record<string, Bestand[]> = {
   reentry_build: [
-    { name: "Wiedereinstieg", focus: "reentry", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 5, repTargetMax: 8, loadFactor: 1, hatPlan: false, planBuilder: null, careful: true },
-    { name: "Hypertrophie", focus: "hypertrophy", weeks: 5, setsStart: 2, setsEnd: 6, deloadWeek: 4, repTargetMin: 8, repTargetMax: 12, loadFactor: 1, hatPlan: false, planBuilder: null, careful: false },
-    { name: "Maximalkraft", focus: "strength", weeks: 5, setsStart: 4, setsEnd: 4, deloadWeek: null, repTargetMin: 4, repTargetMax: 6, loadFactor: 1, hatPlan: true, planBuilder: "strength_ladder", careful: false },
-    { name: "Test/Peak", focus: "test", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadFactor: 1, hatPlan: true, planBuilder: "test", careful: false },
+    { name: "Wiedereinstieg", focus: "reentry", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 5, repTargetMax: 8, loadPlan: null, hatPlan: false, planBuilder: null, careful: true },
+    { name: "Hypertrophie", focus: "hypertrophy", weeks: 5, setsStart: 2, setsEnd: 6, deloadWeek: 4, repTargetMin: 8, repTargetMax: 12, loadPlan: null, hatPlan: false, planBuilder: null, careful: false },
+    { name: "Maximalkraft", focus: "strength", weeks: 5, setsStart: 4, setsEnd: 4, deloadWeek: null, repTargetMin: 4, repTargetMax: 6, loadPlan: null, hatPlan: true, planBuilder: "strength_ladder", careful: false },
+    { name: "Test/Peak", focus: "test", weeks: 2, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 2, repTargetMax: 4, loadPlan: null, hatPlan: true, planBuilder: "test", careful: false },
   ],
   refeed_rebuild: [
-    { name: "Tasten", focus: "reentry", weeks: 1, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 8, repTargetMax: 10, loadFactor: 0.65, hatPlan: false, planBuilder: null, careful: true },
-    { name: "Reaktivieren", focus: "reentry", weeks: 1, setsStart: 3, setsEnd: 3, deloadWeek: null, repTargetMin: 6, repTargetMax: 10, loadFactor: 0.8, hatPlan: false, planBuilder: null, careful: true },
-    { name: "Anschluss", focus: "hypertrophy", weeks: 1, setsStart: 3, setsEnd: 4, deloadWeek: null, repTargetMin: 6, repTargetMax: 10, loadFactor: 0.95, hatPlan: false, planBuilder: null, careful: false },
-    { name: "Standort", focus: "test", weeks: 1, setsStart: 2, setsEnd: 3, deloadWeek: null, repTargetMin: 3, repTargetMax: 6, loadFactor: 1, hatPlan: true, planBuilder: "test", careful: false },
+    { name: "Tasten", focus: "reentry", weeks: 1, setsStart: 2, setsEnd: 2, deloadWeek: null, repTargetMin: 8, repTargetMax: 10, loadPlan: [0.65], hatPlan: false, planBuilder: null, careful: true },
+    { name: "Reaktivieren", focus: "reentry", weeks: 1, setsStart: 3, setsEnd: 3, deloadWeek: null, repTargetMin: 6, repTargetMax: 10, loadPlan: [0.8], hatPlan: false, planBuilder: null, careful: true },
+    { name: "Anschluss", focus: "hypertrophy", weeks: 1, setsStart: 3, setsEnd: 4, deloadWeek: null, repTargetMin: 6, repTargetMax: 10, loadPlan: [0.95], hatPlan: false, planBuilder: null, careful: false },
+    { name: "Standort", focus: "test", weeks: 1, setsStart: 2, setsEnd: 3, deloadWeek: null, repTargetMin: 3, repTargetMax: 6, loadPlan: null, hatPlan: true, planBuilder: "test", careful: false },
   ],
 };
 
@@ -212,7 +234,7 @@ describe("Abgleich 6: der neue Seed verschiebt nichts", () => {
           deloadWeek: b.deloadWeek,
           repTargetMin: b.repTargetMin,
           repTargetMax: b.repTargetMax,
-          loadFactor: seedPhaseLoadFactor(p),
+          loadPlan: seedPhaseLoadPlan(p)?.map((w) => w.loadPct) ?? null,
           hatPlan: b.weekPlan !== null,
           planBuilder: b.planBuilder,
           careful: b.careful,

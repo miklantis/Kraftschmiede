@@ -2,7 +2,7 @@
 // der aktiven Journey und den Einheiten entsteht die trainingsgetriebene
 // Platzierung (journeyPlacement) und daraus alles, was die Anzeige und der Coach
 // davon brauchen: aktuelle Phase, Fokus, Ziel-Repband, Volumen-Phase, Woche und
-// Lastfaktor. Reine Ableitung ohne DB-/DOM-Bezug.
+// den Lastanteil der laufenden Woche. Reine Ableitung ohne DB-/DOM-Bezug.
 //
 // Auch die Abbildung der DB-Zeilen auf die Engine-Form liegt hier
 // (toPlacementSessions) – sie stand vorher in jedem Aufrufer wortgleich.
@@ -26,7 +26,8 @@ import type {
   WeekPlanWeek,
 } from "@/engine";
 import type { VolumePhase } from "@/engine/types";
-import { loadFactorNote, usesLoadFactor } from "@/lib/loadFactor";
+import { loadPlanForWeek } from "@/engine/loadPlan";
+import { loadFactorNote } from "@/lib/loadFactor";
 import type { JourneyRow, PhaseRow } from "@/schemas";
 
 export type PhaseContextJourney = JourneyRow & { phases: PhaseRow[] };
@@ -81,14 +82,14 @@ export interface PhaseContext {
   weekInPhase: number;
   journeyId: string | null;
   phaseId: string | null;
-  // Lastfaktor der aktuellen Phase – aber nur, wenn die laufende Journey
-  // ueberhaupt mit Lastfaktoren arbeitet (irgendeine Phase != 1). Sonst null:
-  // dann rechnet der Coach wie gewohnt aus der letzten Leistung, unabhaengig
-  // davon, ob an den Uebungen noch ein altes Referenzgewicht haengt.
+  // Lastanteil der LAUFENDEN WOCHE aus der Lastliste der aktuellen Phase; null,
+  // wenn die Phase keine Liste traegt. Dann rechnet der Coach wie gewohnt aus
+  // der letzten Leistung, unabhaengig davon, ob an den Uebungen noch ein altes
+  // Referenzgewicht haengt.
   loadFactor: number | null;
   // Kurzer Hinweistext zur vorgegebenen Last fuer den Trainingsbildschirm; null,
-  // wenn die laufende Journey ohne Lastfaktor arbeitet. In der letzten Phase
-  // sagt er zusaetzlich, dass die Vorgabe endet.
+  // wenn die laufende Phase keine Last vorgibt. In der letzten Phase sagt er
+  // zusaetzlich, dass die Vorgabe endet.
   loadNote: string | null;
   // Die Platzierung selbst (Phasen-Index, Woche in der Phase ab 1, globale
   // Woche, durchlaufen ja/nein); null ohne aktive Journey.
@@ -210,13 +211,16 @@ export function derivePhaseContext(
               .find((p) => buildsRisingPlan(p))?.id ?? null)
           : phase.id;
       }
-      if (usesLoadFactor(journey.phases.map((p) => p.load_factor))) {
-        loadFactor = phase.load_factor ?? 1;
-        loadNote = loadFactorNote(
-          loadFactor,
-          placement.phaseIndex === journey.phases.length - 1,
-        );
-      }
+      // Lastvorgabe der laufenden Woche: Die Phase traegt ihre Liste selbst,
+      // eine fehlende Liste heisst "keine Vorgabe". Eine Journey-weite Abfrage
+      // braucht es dafuer nicht mehr - ohne Liste bleibt das Feld leer, und ein
+      // liegengebliebenes Referenzgewicht nagelt nichts fest (die Deckelung
+      // haengt allein an diesem Wert, s. coach.rampLoad).
+      loadFactor = loadPlanForWeek(phase.load_plan, placement.weekInPhase);
+      loadNote = loadFactorNote(
+        loadFactor,
+        placement.phaseIndex === journey.phases.length - 1,
+      );
     }
   }
 
