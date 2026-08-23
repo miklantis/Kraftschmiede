@@ -218,7 +218,7 @@ describe("buildCoachExport - aktives Wiederholungsband", () => {
     expect(out.repBandNote).toContain("activeRepBand");
   });
 
-  it("leitet das aktive Band aus dem Fokus ab, wenn die Phase keins setzt", () => {
+  it("laesst das aktive Band weg, wenn die Phase keins setzt", () => {
     const raw = rawMitKatalog();
     raw.journeys = [{ id: "j1", name: "Rückkehr", active: true, start_date: "2026-05-31" }];
     raw.phases = [
@@ -226,7 +226,9 @@ describe("buildCoachExport - aktives Wiederholungsband", () => {
     ];
 
     const out = buildCoachExport(raw, { weeks: null, today: TODAY });
-    expect(out.exercises[0].activeRepBand).toBe("4-6");
+    // Kein Rueckfall auf eine Fokus-Liste: ohne Band an der Phase gilt das Band
+    // der Uebung.
+    expect(out.exercises[0].activeRepBand).toBeUndefined();
   });
 
   it("laesst das aktive Band ohne laufende Journey weg", () => {

@@ -50,16 +50,6 @@ export function parseWeekPlan(value: unknown): WeekPlan | null {
 
 // ---- Eckwerte ---------------------------------------------------------------
 
-/** Fokus -> Bauregel seiner Wochenliste. Gilt beim Anlegen einer Phase
- *  (buildWeekPlan, phaseBuildForFocus); zur Laufzeit wird nicht mehr der Fokus
- *  gefragt, sondern der Bauart-Vermerk an der Phase. Ab Schritt 3 kommt die
- *  Zuordnung aus dem Baustein. */
-const PLAN_BUILDER_BY_FOCUS = {
-  strength: "strength_ladder",
-  power: "power_ladder",
-  test: "test",
-} as const;
-
 /** Durchgehende Satzzahl der Kraft- und Schnellkraftwochen. */
 export const WEEK_PLAN_SETS = 4;
 
@@ -233,37 +223,18 @@ export function isCarefulPhase(phase: PhaseBuild | null | undefined): boolean {
   return phase?.careful === true;
 }
 
-/** Bauart einer neu entstehenden Phase aus ihrem Fokus. Dieselbe Regel, nach
- *  der Migration 0044 den Bestand nachtraegt - sie gilt, bis die Bausteine
- *  selbst die Quelle sind (Schritt 3). */
-export function phaseBuildForFocus(
-  focus: string | null | undefined,
-  weeks: number,
-): {
-  plan_builder: PlanBuilderName | null;
-  load_builder: LoadBuilderName | null;
-  careful: boolean;
-} {
-  const builder =
-    PLAN_BUILDER_BY_FOCUS[focus as keyof typeof PLAN_BUILDER_BY_FOCUS] ?? null;
-  return {
-    // Ohne gebaute Wochenliste kein Vermerk: eine Kraftphase ohne Plan laeuft
-    // ueber den Coach und darf nicht als Rampe gelesen werden.
-    plan_builder: buildWeekPlan(focus, weeks) == null ? null : builder,
-    load_builder: null,
-    careful: focus === "reentry",
-  };
-}
-
-/** Plan zur Phase: Kraft und Schnellkraft bekommen die Leiter, Test die
- *  Entlastung samt Testwoche, alle uebrigen Fokusse keinen Plan (null = Coach
- *  steuert weiter). */
-export function buildWeekPlan(
-  focus: string | null | undefined,
+/** Wochenliste zur Bauregel des Bausteins. `null` (Steuerweg Coach) heisst:
+ *  keine Liste, der Coach steuert Saetze und Wiederholungen weiter selbst.
+ *  Welcher Baustein welche Bauregel bekommt, steht seit Schritt 3 in der
+ *  Bausteine-Tabelle und nicht mehr als Fokus-Liste im Code. */
+export function buildWeekPlanFor(
+  builder: PlanBuilderName | null | undefined,
   weeks: number,
 ): WeekPlan | null {
-  if (focus === "strength" || focus === "power") return buildStrengthWeekPlan(weeks);
-  if (focus === "test") return buildTestPhaseWeekPlan(weeks);
+  if (builder === "strength_ladder" || builder === "power_ladder") {
+    return buildStrengthWeekPlan(weeks);
+  }
+  if (builder === TEST_PLAN_BUILDER) return buildTestPhaseWeekPlan(weeks);
   return null;
 }
 

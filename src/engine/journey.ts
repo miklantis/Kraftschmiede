@@ -65,38 +65,18 @@ export interface WeekProgress {
   journeyWeek: number;
 }
 
-// Ziel-Repband eines Phasen-Fokus (1:1 aus V1 repTargetForFocus). maintenance
-// und Unbekanntes liefern null -> die Uebung behaelt ihr eigenes Repband.
-export function repTargetForFocus(focus: string): [number, number] | null {
-  switch (focus) {
-    case "reentry":
-      return [5, 8];
-    case "hypertrophy":
-      return [8, 12];
-    case "strength":
-      return [4, 6];
-    case "power":
-      return [3, 5];
-    case "endurance":
-      return [12, 18];
-    case "test":
-      return [2, 4];
-    default:
-      return null; // maintenance/unbekannt
-  }
-}
-
-// Repband einer konkreten Phase: vorrangig die explizit gesetzten Grenzen, sonst
-// aus dem Fokus abgeleitet. null = kein Phasen-Repband (Uebung bestimmt selbst).
+// Repband einer konkreten Phase: die explizit gesetzten Grenzen der Phasenzeile.
+// null = kein Phasen-Repband, die Uebung bestimmt selbst. Frueher fiel ein
+// fehlendes Band auf eine Fokus-Liste im Code zurueck; seit die Bausteine die
+// Quelle sind, traegt jede Phase ihr Band beim Anlegen mit (Konzept Abschnitt 2).
 export function phaseRepBand(
   repTargetMin: number | null,
   repTargetMax: number | null,
-  focus: string,
 ): [number, number] | null {
   if (repTargetMin != null && repTargetMax != null) {
     return [repTargetMin, repTargetMax];
   }
-  return repTargetForFocus(focus);
+  return null;
 }
 
 function pad2(n: number): string {

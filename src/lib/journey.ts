@@ -1,6 +1,5 @@
 import type { WeekPlan, WeekPlanWeek } from "@/engine";
 import { weekDemandsSession } from "@/engine";
-import { focusLabel } from "@/lib/labels";
 import { loadFactorNote, loadPercent, usesLoadFactor } from "@/lib/loadFactor";
 import type { Focus } from "@/schemas/shared";
 
@@ -56,7 +55,6 @@ export interface PhaseWeekRow {
 // Detailzeilen. Komponenten bekommen nur fertige Strings.
 export interface PhaseView {
   name: string;
-  focus: string;
   state: PhaseState;
   isCurrent: boolean;
   mark: string; // "\u2713" bei vergangenen Phasen, sonst ""
@@ -229,7 +227,6 @@ export function buildPhaseViews(
       : `${p.weeks} ${p.weeks === 1 ? "Woche" : "Wochen"}`;
     return {
       name: p.name,
-      focus: focusLabel(p.focus) || p.name,
       state,
       isCurrent,
       mark: state === "past" ? "\u2713" : "",
@@ -260,7 +257,6 @@ export function buildTemplatePhaseViews(
   const withLoad = usesLoadFactor(phases.map((p) => p.loadFactor));
   return phases.map((p) => ({
     name: p.name,
-    focus: focusLabel(p.focus) || p.name,
     state: "preview" as const,
     isCurrent: false,
     mark: "",

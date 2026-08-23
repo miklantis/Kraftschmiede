@@ -2,14 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   buildStrengthWeekPlan,
   buildTestPhaseWeekPlan,
-  buildWeekPlan,
+  buildWeekPlanFor,
   DELOAD_LOAD_PCT,
   DELOAD_SETS,
   buildsRisingPlan,
   buildsTestPlan,
   hasPlanBuilder,
   isCarefulPhase,
-  phaseBuildForFocus,
   planGovernsLoad,
   parseWeekPlan,
   repLadder,
@@ -111,49 +110,24 @@ describe("buildTestPhaseWeekPlan – Entlastung, dann reine Testwoche", () => {
   });
 });
 
-describe("buildWeekPlan – nur Kraft, Schnellkraft und Test bekommen einen Plan", () => {
-  it("strength und power fahren die Leiter", () => {
-    expect(buildWeekPlan("strength", 4)?.map((w) => w.reps)).toEqual([5, 4, 3, 2]);
-    expect(buildWeekPlan("power", 3)?.map((w) => w.reps)).toEqual([5, 4, 3]);
+describe("buildWeekPlanFor – die Wochenliste zur Bauregel", () => {
+  it("strength_ladder und power_ladder fahren die Leiter", () => {
+    expect(buildWeekPlanFor("strength_ladder", 4)?.map((w) => w.reps)).toEqual([
+      5, 4, 3, 2,
+    ]);
+    expect(buildWeekPlanFor("power_ladder", 3)?.map((w) => w.reps)).toEqual([
+      5, 4, 3,
+    ]);
   });
   it("test faehrt Entlastung und Testwoche", () => {
-    expect(buildWeekPlan("test", 2)?.map((w) => w.sets)).toEqual([DELOAD_SETS, 0]);
-    expect(buildWeekPlan("test", 2)?.[0]!.loadPct).toBe(DELOAD_LOAD_PCT);
+    expect(buildWeekPlanFor("test", 2)?.map((w) => w.sets)).toEqual([
+      DELOAD_SETS, 0,
+    ]);
+    expect(buildWeekPlanFor("test", 2)?.[0]!.loadPct).toBe(DELOAD_LOAD_PCT);
   });
-  it("alle uebrigen Fokusse bleiben ohne Plan", () => {
-    expect(buildWeekPlan("hypertrophy", 5)).toBeNull();
-    expect(buildWeekPlan("endurance", 3)).toBeNull();
-    expect(buildWeekPlan("reentry", 2)).toBeNull();
-    expect(buildWeekPlan("maintenance", 4)).toBeNull();
-    expect(buildWeekPlan(null, 4)).toBeNull();
-  });
-});
-
-describe("phaseBuildForFocus – Bauart einer neuen Phase", () => {
-  it("nennt die Bauregel der Wochenliste beim Namen", () => {
-    expect(phaseBuildForFocus("strength", 5).plan_builder).toBe("strength_ladder");
-    expect(phaseBuildForFocus("power", 4).plan_builder).toBe("power_ladder");
-    expect(phaseBuildForFocus("test", 2).plan_builder).toBe("test");
-  });
-  it("laesst Phasen ohne Wochenliste ohne Vermerk", () => {
-    expect(phaseBuildForFocus("hypertrophy", 5).plan_builder).toBeNull();
-    expect(phaseBuildForFocus("reentry", 2).plan_builder).toBeNull();
-    expect(phaseBuildForFocus(null, 3).plan_builder).toBeNull();
-  });
-  it("deckt sich mit buildWeekPlan", () => {
-    (["strength", "power", "test", "hypertrophy", "endurance", "reentry",
-      "maintenance"] as const).forEach((f) => {
-      const hatPlan = buildWeekPlan(f, 4) != null;
-      expect(phaseBuildForFocus(f, 4).plan_builder != null).toBe(hatPlan);
-    });
-  });
-  it("gibt in Teil 1 noch keine Lastliste vor", () => {
-    expect(phaseBuildForFocus("strength", 5).load_builder).toBeNull();
-    expect(phaseBuildForFocus("reentry", 2).load_builder).toBeNull();
-  });
-  it("markiert den Wiedereinstieg als vorsichtig", () => {
-    expect(phaseBuildForFocus("reentry", 2).careful).toBe(true);
-    expect(phaseBuildForFocus("hypertrophy", 5).careful).toBe(false);
+  it("ohne Bauregel keine Liste – dort steuert der Coach", () => {
+    expect(buildWeekPlanFor(null, 5)).toBeNull();
+    expect(buildWeekPlanFor(undefined, 4)).toBeNull();
   });
 });
 

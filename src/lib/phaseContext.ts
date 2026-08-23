@@ -74,8 +74,8 @@ export function toPlacementPhases(
 
 export interface PhaseContext {
   phaseFocus: PhaseMark | null;
-  // Ziel-Repband der laufenden Phase: gesetzte Grenzen, sonst aus dem Fokus
-  // abgeleitet (phaseRepBand). null = die Phase gibt kein Band vor.
+  // Ziel-Repband der laufenden Phase: die beim Anlegen gesetzten Grenzen
+  // (phaseRepBand). null = die Phase gibt kein Band vor.
   phaseRepTarget: [number, number] | null;
   volumePhase: VolumePhase | null;
   weekInPhase: number;
@@ -173,13 +173,9 @@ export function derivePhaseContext(
         deloadWeek: phase.deload_week,
       };
       weekInPhase = Math.max(0, placement.weekInPhase - 1);
-      // Band der Phase: gesetzte Grenzen, sonst aus dem Fokus – gerechnet wird
-      // das an einer Stelle (phaseRepBand in der Engine).
-      phaseRepTarget = phaseRepBand(
-        phase.rep_target_min,
-        phase.rep_target_max,
-        phase.focus,
-      );
+      // Band der Phase: die beim Anlegen gesetzten Grenzen – gerechnet wird das
+      // an einer Stelle (phaseRepBand in der Engine).
+      phaseRepTarget = phaseRepBand(phase.rep_target_min, phase.rep_target_max);
       // Wochenplan der Phase: er setzt Saetze, Wiederholungen und Ziel-
       // Anstrengung und steuert ueber engine/planLoad auch das Gewicht - in
       // Kraft- und Schnellkraftphasen als Rampe, in der Testphase als

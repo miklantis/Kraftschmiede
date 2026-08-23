@@ -409,11 +409,10 @@ export function buildCoachExport(
     const isActive = flag(activeJourneyRow, "active");
     const curPhaseRow = jphases[placement.phaseIndex] ?? null;
     if (isActive && curPhaseRow != null) {
-      // Dieselbe Regel wie die Engine: gesetzte Grenzen, sonst aus dem Fokus.
+      // Dieselbe Regel wie die Engine: die an der Phase gesetzten Grenzen.
       activeBand = phaseRepBand(
         num(curPhaseRow, "rep_target_min"),
         num(curPhaseRow, "rep_target_max"),
-        str(curPhaseRow, "focus") ?? "",
       );
     }
     activeJourney = {

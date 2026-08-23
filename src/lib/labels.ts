@@ -1,21 +1,3 @@
-import type { Focus } from "@/schemas/shared";
-
-// Anzeigename des Periodisierungs-Fokus (Domaenensprache deutsch, 1:1 aus V1).
-const FOCUS_LABELS: Record<Focus, string> = {
-  reentry: "Wiedereinstieg",
-  hypertrophy: "Hypertrophie",
-  strength: "Maximalkraft",
-  power: "Intensivierung",
-  endurance: "Kraftausdauer",
-  test: "Test/Peak",
-  maintenance: "Erhaltung",
-};
-
-export function focusLabel(focus: Focus | string | null | undefined): string {
-  if (!focus) return "";
-  return FOCUS_LABELS[focus as Focus] ?? String(focus);
-}
-
 // Einheit einer Skill-Metrik fuer Ziel-Anzeigen ("3 × 8 Wdh.", "3 × 30 Sek.").
 export function skillMetricUnit(metric: string | null | undefined): string {
   if (metric === "reps") return "Wdh.";

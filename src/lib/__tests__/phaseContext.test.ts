@@ -6,18 +6,31 @@ import { describe, expect, it } from "vitest";
 import {
   buildStrengthWeekPlan,
   buildTestPhaseWeekPlan,
-  phaseBuildForFocus,
+  buildPhaseFromType,
 } from "@/engine";
 import { derivePhaseContext } from "../phaseContext";
 import type { PhaseContextJourney, SessionForPhase } from "../phaseContext";
-import type { PhaseRow } from "@/schemas";
+import { phaseTypeByKey } from "@/seed/definitions";
+import type { PhaseRow, PhaseTypeKey } from "@/schemas";
 
 const JOURNEY_ID = "00000000-0000-0000-0000-0000000000aa";
 const USER_ID = "00000000-0000-0000-0000-0000000000ff";
 
-// Der Bauart-Vermerk faellt aus Fokus und Phasenlaenge, genau wie beim Seed und
-// beim Nachtrag der Migration - so tragen die Testphasen dasselbe, was in der
-// Datenbank steht. Wer ihn ausdruecklich setzt, ueberschreibt ihn.
+// Bauart-Vermerk zum Fokus, wie ihn der Seed beim Anlegen schreibt: aus dem
+// Baustein gebaut, damit der Test dieselbe Quelle liest wie die App.
+function bauart(focus: string, weeks: number) {
+  const gebaut = buildPhaseFromType(phaseTypeByKey(focus as PhaseTypeKey), {
+    weeks,
+  });
+  return {
+    plan_builder: gebaut.planBuilder,
+    load_builder: gebaut.loadBuilder,
+    careful: gebaut.careful,
+  };
+}
+
+// So tragen die Testphasen dasselbe, was in der Datenbank steht. Wer den
+// Vermerk ausdruecklich setzt, ueberschreibt ihn.
 function phase(overrides: Partial<PhaseRow> = {}): PhaseRow {
   const focus = overrides.focus ?? "hypertrophy";
   const weeks = overrides.weeks ?? 4;
@@ -36,7 +49,7 @@ function phase(overrides: Partial<PhaseRow> = {}): PhaseRow {
     week_plan: null,
     position: 0,
     focus,
-    ...phaseBuildForFocus(focus, weeks),
+    ...bauart(focus, weeks),
     ...overrides,
   };
 }
@@ -69,7 +82,10 @@ describe("derivePhaseContext", () => {
     expect(ctx.journeyId).toBe(JOURNEY_ID);
   });
 
-  it("faellt ohne gesetzte Grenzen auf das Band des Fokus zurueck", () => {
+  it("gibt ohne gesetzte Grenzen kein Phasenband vor", () => {
+    // Seit die Bausteine die Quelle sind, traegt jede Phase ihr Band beim
+    // Anlegen mit; es gibt keinen Rueckfall auf eine Fokus-Liste im Code mehr.
+    // Ohne Band bestimmt die Uebung selbst.
     const ctx = derivePhaseContext(
       journeyWith([
         phase({ focus: "strength", rep_target_min: null, rep_target_max: null }),
@@ -78,7 +94,7 @@ describe("derivePhaseContext", () => {
       3,
       "2026-08-05",
     );
-    expect(ctx.phaseRepTarget).toEqual([4, 6]);
+    expect(ctx.phaseRepTarget).toBeNull();
   });
 
   it("bleibt ohne Band, wenn auch der Fokus keins vorgibt", () => {
