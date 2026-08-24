@@ -212,36 +212,90 @@ Block ein Textfeld verdient, entscheidet sich am fertigen Bildschirm.
 
 ## 6. Die Bezugszahl – der offene Kern
 
+> **Kurz gesagt.** Die Prozente brauchen eine Zahl, auf die sie sich beziehen. Drei kommen
+> in Frage, und die Wahl entscheidet, ob die Zahlen aus der Literatur bei uns dasselbe
+> bedeuten. Empfohlen: das gespeicherte Maximum, bewusst gedämpft, und beim Journey-Start
+> eingefroren.
+
 Alle Beispiele aus Abschnitt 3 sind Prozente **vom Maximum**, nicht vom Arbeitsgewicht. Die
 Lastliste bezieht sich heute aber auf `reference_weight`: das Arbeitsgewicht, beim
 Journey-Start eingefroren (`rampLoad` in `lib/coach.ts` rechnet `referenceWeight × Anteil`).
 
-Das passt nicht zusammen, und der Unterschied ist groß genug, um das Feature unbrauchbar zu
-machen: Ein Arbeitsgewicht für 8–12 Wiederholungen liegt bei rund 70 % des Maximums. „88 %"
-davon wären etwa 62 % des Maximums – als Maximalkraftwoche deutlich zu leicht. Umgekehrt
-müssten die Anteile einer schweren Woche regelmäßig über 100 % liegen, was das ganze
-Vokabular der Lastliste („Anteil", „Entlastung", „volle Last") auf den Kopf stellt.
+### Was das gespeicherte Maximum wirklich ist
 
-**Vorschlag: die Lastliste dieses Bausteins bezieht sich auf ein gedämpftes 1RM.** Die App
-führt je Übung ein geschätztes Maximum (`rm`, `rm_as_of`, `rm_stale`); der Plan-Weg rechnet
-damit heute schon sein Startgewicht aus. Wie bei 5/3/1 wird nicht das volle Maximum als Bezug
-genommen, sondern ein Anteil davon (dort 90 %) – das fängt eine zu optimistische Schätzung
-ab, ohne dass der Nutzer rechnen muss.
+Wichtig für die Wahl, und leicht misszuverstehen: `rm` ist **kein Testergebnis, sondern ein
+beweisgebundener Rekord** (`engine/oneRM.ts`). Nach jeder Einheit schätzt die App aus den
+sauberen Arbeitssätzen ein Maximum und übernimmt es nur, wenn es höher liegt als das
+gespeicherte – und nur aus Sätzen mit höchstens `RECORD_MAX_REPS` (5) Wiederholungen.
 
-Technisch heißt das: Die Lastliste muss lernen, auf **welche** Bezugszahl sie sich bezieht.
-Heute ist das implizit immer `reference_weight`. Das ist der einzige echte Zubau an der
-Mechanik, und er gehört in die Entscheidung (Abschnitt 11).
+Daraus folgen zwei Eigenschaften, die die ganze Entscheidung tragen:
 
-Zwei Haken, die dazugehören:
+- **Er steigt nur.** Von allein sinkt er nie; das kann nur ein bewusster 1RM-Test.
+- **Er steht auf der Bestmarke**, nicht auf der Tagesform.
 
-- **Nicht jede Übung hat ein 1RM.** Bei Ausfallschritten und ähnlichem fällt die App auf das
-  letzte Arbeitsgewicht zurück. Dieselben Prozentzahlen bedeuten dort etwas anderes als bei
-  der Kniebeuge. Das ist heute schon so und fällt bisher nicht auf, weil nur das
+„Das 1RM nehmen" und „es aus den Einheiten rechnen" sind damit **derselbe** Weg – das eine
+ist das gespeicherte Ergebnis des anderen. Es gibt hier also keine zwei Optionen, sondern
+drei ganz andere.
+
+### Die drei Varianten
+
+Beispiel: Rekord der Kniebeuge 140 kg, normales Arbeitsgewicht 100 kg.
+
+| Bezug | Hypertrophiewoche (70 %) | Kraftwoche (88 %) | Urteil |
+| --- | --- | --- | --- |
+| Arbeitsgewicht (`reference_weight`) | 70 kg | 88 kg | zu leicht – für eine echte Kraftwoche bräuchte es 125 % |
+| Rekord roh (`rm`) | 98 kg | 123 kg | richtige Größenordnung, aber an einer Bestmarke, die nie fällt |
+| **Rekord gedämpft (90 % = 126 kg)** | **88 kg** | **111 kg** | **empfohlen** |
+
+Die erste Variante kostet nichts, macht aber die Zahlen aus der Literatur bedeutungslos: Du
+müsstest bei jedem Block selbst umrechnen, und schwere Wochen lägen dauerhaft über 100 %,
+was das Vokabular der Lastliste („Anteil", „Entlastung", „volle Last") auf den Kopf stellt.
+
+Die zweite trifft die Größenordnung, hängt aber an einem Wert, der nur nach oben geht. Nach
+einer Erkältungspause oder drei ruhigen Monaten steht dort immer noch die alte Bestmarke –
+und 123 kg fühlen sich dann sehr anders an als geplant.
+
+Die dritte ist die Antwort der Praxis auf genau dieses Problem: Der Training Max bei 5/3/1
+liegt bewusst bei 90 % des echten Maximums. Der Puffer fängt eine optimistische Schätzung
+ab, ohne dass der Nutzer irgendetwas nachrechnen muss.
+
+### Die zweite Frage: wann wird eingefroren?
+
+Rechnet die App den Bezug bei jeder Einheit frisch aus, verschiebt eine Bestmarke in Woche 2
+den Rest des Blocks – Woche 3 wäre plötzlich schwerer als geplant. Wird er beim Journey-Start
+eingefroren, steht der Block so, wie er getippt wurde, und ein neuer Rekord wirkt erst im
+nächsten Block.
+
+**Vorschlag: einfrieren.** Das ist auch der Rhythmus von 5/3/1 (der Bezug steigt einmal je
+Zyklus), und die App friert beim Journey-Start ohnehin schon Werte ein.
+
+### Was das technisch heißt
+
+Die Lastliste muss lernen, auf **welche** Bezugszahl sie sich bezieht. Heute ist das implizit
+immer `reference_weight`. Das ist der einzige echte Zubau an der Mechanik.
+
+### Zwei Haken, die dazugehören
+
+- **Nicht jede Übung hat ein Maximum.** Bei Ausfallschritten und ähnlichem fällt die App auf
+  das letzte Arbeitsgewicht zurück. Dieselben Prozentzahlen bedeuten dort etwas anderes als
+  bei der Kniebeuge. Das ist heute schon so und fällt bisher nicht auf, weil nur das
   Startgewicht daran hängt – bei einem Prozent-Block hängt jede Woche daran.
-- **Das 1RM ist eine Schätzung ohne Verfallsdatum.** `rm_stale` merkt sich, ob überhaupt ein
-  frischer Wert vorliegt, nicht wie alt er ist. Prozente auf einer veralteten Schätzung
-  laufen still daneben. Die Dämpfung oben ist die Antwort darauf; ob zusätzlich eine Warnung
-  nötig ist, steht in Abschnitt 11.
+- **Das Risiko ist die Richtung, nicht das Alter.** Ein Rekord, der nie fällt, ist nach einer
+  Pause zu hoch, egal wie frisch er datiert ist (`rm_as_of` kennt das Datum, gewarnt wird
+  nirgends). Die Dämpfung ist die eigentliche Antwort; ein Hinweis wäre höchstens für „lange
+  nicht trainiert" sinnvoll, und dann eher beim Journey-Start als im Editor.
+
+### Warum keine festen Kilo statt Prozente
+
+Naheliegend und leider unmöglich: Die getippte Tabelle gilt für **alle** Hauptübungen
+gleichzeitig (Abschnitt 9). „90 kg" wäre für Kniebeuge, Bankdrücken und Kreuzheben
+gleichzeitig sinnlos – ein Prozentsatz skaliert je Übung, eine Kilozahl nicht. Feste Kilo
+setzten eine Tabelle **je Übung** voraus, und das ist ausdrücklich ein anderes Vorhaben.
+
+Die Sorge dahinter („Prozente sind zu abstrakt") lässt sich trotzdem auflösen, aber am
+Bildschirm statt in den Daten: Die Zeile kann neben dem Prozentsatz zeigen, was daraus für
+deine Übungen wird („70 % · Kniebeuge 88 kg, Bank 62 kg"). Dann tippst du Prozente und liest
+Kilo. Gehört in Abschnitt 10.
 
 ---
 
@@ -463,6 +517,10 @@ wird eigenständig besprochen, sobald die Datenseite steht. Absehbar ist nur:
   neuen Zeile steht – und ein Muster fortzuschreiben wäre genau das Rechnen, das dieser
   Baustein nicht tut. Bei den acht anderen Bausteinen bleibt der Regler, dort wird die Liste
   ohnehin neu gerechnet.
+- **Prozente tippen, Kilo lesen.** Ein Prozentsatz ist abstrakt, und feste Kilo scheiden
+  aus (Abschnitt 6). Die Zeile kann aber zeigen, was aus dem Anteil für die eigenen Übungen
+  wird – „70 % · Kniebeuge 88 kg, Bank 62 kg". Dann bleibt die Eingabe skalierbar und die
+  Anzeige konkret.
 - **Nicht jede Wochenzahl ist gleich sinnvoll.** Ein Wechsel hat eine Periode; bei einer
   ungeraden Wochenzahl endet der Block mitten im Zyklus. Warnen kann die App davor nicht, weil
   sie das getippte Muster nicht kennt – dafür steht jede Woche als eigene Zeile sichtbar da.
@@ -473,10 +531,17 @@ wird eigenständig besprochen, sobald die Datenseite steht. Absehbar ist nur:
 
 ## 11. Zu entscheiden
 
-- **Die Bezugszahl (Abschnitt 6).** Der wichtigste Punkt: gedämpftes 1RM oder weiterhin das
-  Arbeitsgewicht. Davon hängt ab, ob die recherchierten Zahlen das bedeuten, was sie in der
-  Literatur bedeuten, und ob die Lastliste eine zweite Bezugsart lernen muss.
-- **Ob eine Warnung bei altem 1RM nötig ist**, oder ob die Dämpfung reicht.
+- **Die Bezugszahl (Abschnitt 6).** Der wichtigste Punkt, drei Varianten: Arbeitsgewicht,
+  Rekord roh, Rekord gedämpft. Empfohlen ist der gedämpfte Rekord – nur damit bedeuten die
+  Zahlen aus der Literatur bei uns dasselbe, und der Puffer fängt ab, dass der Rekord eine
+  Bestmarke ist, die nie fällt. Zu entscheiden ist damit auch der Dämpfungsfaktor (5/3/1
+  nimmt 90 %) und ob die Lastliste eine zweite Bezugsart lernt.
+- **Wann der Bezug eingefroren wird (Abschnitt 6).** Beim Journey-Start oder bei jeder
+  Einheit frisch. Empfohlen: einfrieren, sonst verschiebt eine Bestmarke mitten im Block
+  dessen restliche Wochen.
+- **Ob ein Hinweis nach langer Pause nötig ist.** Nicht wegen des Alters des Rekords,
+  sondern weil er nur steigt und nach einer Pause zu hoch steht. Wenn überhaupt, beim
+  Journey-Start statt im Editor.
 - **Ob der Anteil eingetippt wird** oder ob eine Vorbelegung je Wochenart („leicht / mittel /
   schwer") die Tabelle schmaler macht. Eine Frage an den Bildschirm, nicht an die Daten.
 - **Wochengrenzen des Bausteins.** `weeks_min`/`weeks_max` müssen gesetzt werden. Die
