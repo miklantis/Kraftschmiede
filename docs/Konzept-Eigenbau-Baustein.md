@@ -1,4 +1,4 @@
-# Der Mix-Baustein: eine getippte Wochentabelle – Konzept
+# Der Eigenbau-Baustein: eine getippte Wochentabelle – Konzept
 
 > Doku-Typ: Konzept. Hält den besprochenen Stand fest, bevor gebaut wird. Noch nicht in
 > Umsetzung, es liegen bewusst keine Issues dazu. Grundlage:
@@ -6,22 +6,29 @@
 > gebaut), [`adr/0018-steuerung-je-phasentyp.md`](./adr/0018-steuerung-je-phasentyp.md)
 > samt Nachtrag und [`Architektur.md`](./Architektur.md).
 >
-> Stand 24.08.2026: gegen Code, Schema und Migrationen durchgeprüft, dazu eine Recherche
-> zur Trainingspraxis (Abschnitt 3, Quellen am Ende). Was noch zu entscheiden ist, steht in
-> Abschnitt 11.
+> Stand 24.08.2026: gegen Code, Schema und die Live-Tabelle `phase_types` durchgeprüft, dazu
+> eine Recherche zur Trainingspraxis (Abschnitt 3, Quellen am Ende). Entschieden und damit
+> nicht mehr offen: Name und Schlüssel des Bausteins (Eigenbau / `custom`, Abschnitt 1) und
+> die Bauregeln (Abschnitt 7). Was noch zu entscheiden ist, steht in Abschnitt 11.
 
 ---
 
 ## 1. Was der Nutzer will
 
-Ein Block, in dem sich die Wochenarten abwechseln: eine Woche Hypertrophie, eine Woche
-Maximalkraft, und so weiter. Nicht als neue Rechenregel, sondern als Wochenplan, den man
-selbst hinschreibt – je Woche Sätze, Wiederholungen und Ziel-Anstrengung.
+Ein Baustein, dessen Wochenplan man selbst hinschreibt: je Woche Sätze, Wiederholungen,
+Ziel-Anstrengung und Last. Keine neue Rechenregel, sondern eine Tabelle, die man ausfüllt.
 
-Ursprünglich waren das zwei Wünsche: ein Baustein, in den man seinen Wochenplan selbst
-eintippt, und ein Block mit wechselnden Wochenarten. Die Recherche in Abschnitt 3 zeigt,
-dass das **dasselbe Feature** ist. Ein Wechselblock ist eine getippte Wochentabelle, deren
-Zahlen im Zickzack stehen. Dieses Papier behandelt darum beides als einen Baustein.
+Ausgelöst hat das ein konkreter Wunsch – ein Block, in dem sich die Wochenarten abwechseln,
+eine Woche Hypertrophie, eine Woche Maximalkraft. Zunächst sah das nach zwei getrennten
+Vorhaben aus: einmal „Plan selbst eintippen", einmal „Wechselblock". Die Recherche in
+Abschnitt 3 zeigt, dass es dasselbe ist – und zwar in dieser Richtung: **Der Wechselblock
+ist eine Anwendung der getippten Tabelle, nicht umgekehrt.** Wer die Tabelle hat, kann
+abwechseln, aber ebenso aufsteigen, 5/3/1 nachbauen, eine Entlastungswoche einstreuen oder
+vier Wochen hinschreiben, die gar keinem Muster folgen.
+
+Deshalb heißt der Baustein **Eigenbau** (Schlüssel `custom`) und nicht nach einer seiner
+Anwendungen. Ein Name, der nur das Mischen nennt, würde bei jedem anderen Muster die Frage
+auslösen, ob das überhaupt vorgesehen ist.
 
 ---
 
@@ -76,7 +83,7 @@ es mit diesem Konzept auch nicht (Abschnitt 9).
 Ein Wochenplan gilt nur für **Hauptübungen mit Kraftprofil** (`planGovernsExercise` in
 `lib/coach.ts`: `profile === "strength"` und `tier === "main"`). Curl, Pull Over, Core und
 Körpergewicht laufen weiter über die Doppelprogression. Das ist seit ADR-0018 so entschieden
-und gilt heute in jeder Kraftphase. Für einen Mix-Baustein ist es eher passend als störend,
+und gilt heute in jeder Kraftphase. Für den Eigenbau ist es eher passend als störend,
 muss dem Nutzer aber gesagt werden: „ich schreibe meinen Wochenplan selbst" klingt nach
 mehr, als es tut.
 
@@ -159,7 +166,7 @@ frei war:
 | 1 – Kraft, Intensivierung, Test/Peak | Wochentabelle | Coach (Anker + Wochenschritt) |
 | 2 – Hypertrophie, Kraftausdauer, Wiedereinstieg, Erhaltung | Coach | Coach |
 | 3 – Wiederaufbau | Coach | Lastliste |
-| **4 – Mix-Baustein (neu)** | **Wochentabelle** | **Lastliste** |
+| **4 – Eigenbau (neu)** | **Wochentabelle** | **Lastliste** |
 
 Der neue Baustein füllt das leere Feld. Er ist keine Sonderlocke, sondern die letzte
 verbleibende Kombination – und beide Hälften sind gebaut und getestet.
@@ -174,7 +181,7 @@ Damit gilt:
 
 - Der Zickzack funktioniert, weil jede Woche ihren eigenen Anteil nennt.
 - Der Anker und sein Gedächtnis werden nicht angefasst.
-- Custom-Block und Mix-Block sind erledigt, es ist ein Baustein.
+- Getippter Plan und Wechselblock sind zusammen erledigt, es ist ein Baustein.
 - Wer 5/3/1 nachbauen will, kann das; wer vier Wochenarten will, auch.
 
 Der Preis steht in Abschnitt 9 und ist bewusst akzeptiert: innerhalb des Blocks wächst das
@@ -241,7 +248,23 @@ Zwei Haken, die dazugehören:
 
 ### Der neunte Baustein
 
-`phase_types` bekommt eine neunte Zeile je Nutzer. Dafür nötig:
+`phase_types` bekommt eine neunte Zeile je Nutzer. Die Eckwerte, so weit sie feststehen:
+
+| Feld | Wert |
+| --- | --- |
+| `key` | `custom` – englisch wie alle acht bestehenden Schlüssel |
+| `name` | „Eigenbau" – deutsch wie alle acht Anzeigenamen |
+| `control` | `plan`, die Tabelle regiert |
+| `plan_builder` | die neue Bauregel, siehe unten |
+| `load_builder`, `load_start_default`, `load_end_default` | leer, siehe unten |
+| `sets_locked`, `rep_band_locked` | `true` – Satzrampe und Band sind wirkungslos |
+| `careful` | `false` |
+| `deload_allowed` | `false` – eine Entlastungswoche wird als Zeile getippt |
+| `weeks_min` / `weeks_max` / `weeks_default` | offen, Abschnitt 11 |
+| Satzrampe und Band (`sets_*`, `rep_*`) | wirkungslos, brauchen aber Werte – `sets_max` muss mindestens die Rampe decken, ein Band darf leer bleiben, solange auch der Korridor leer ist |
+
+Dazu ein `summary` in der Form der anderen acht, der sagt, was der Baustein tut statt wie er
+heißt. Dafür nötig:
 
 - Der Schlüssel muss in die `CHECK`-Liste der Migration 0043 und in `focusEnum`
   (`src/schemas/shared.ts`). Beide Phasentabellen zeigen seit Migration 0048 per
@@ -401,10 +424,6 @@ wird eigenständig besprochen, sobald die Datenseite steht. Absehbar ist nur:
 - **Die Bezugszahl (Abschnitt 6).** Der wichtigste Punkt: gedämpftes 1RM oder weiterhin das
   Arbeitsgewicht. Davon hängt ab, ob die recherchierten Zahlen das bedeuten, was sie in der
   Literatur bedeuten, und ob die Lastliste eine zweite Bezugsart lernen muss.
-- **Name und Schlüssel des Bausteins.** Die acht bestehenden sind nach dem Trainingszweck
-  benannt (Hypertrophie, Maximalkraft). Dieser ist über seine Mechanik definiert. „Eigenbau"?
-  „Wechsel"? Die Entscheidung fällt vor der Migration, weil der Schlüssel im Fremdschlüssel
-  steht und danach teuer zu ändern ist.
 - **Ob eine Warnung bei altem 1RM nötig ist**, oder ob die Dämpfung reicht.
 - **Ob der Anteil eingetippt wird** oder ob eine Vorbelegung je Wochenart („leicht / mittel /
   schwer") die Tabelle schmaler macht. Eine Frage an den Bildschirm, nicht an die Daten.
@@ -435,7 +454,7 @@ Schritt-Issues.
    aus Abschnitt 4, dieses Papier auf den gebauten Stand ziehen.
 
 Die Schritte 1 bis 4 sind die Datenseite und für sich abgeschlossen: Danach ließe sich ein
-Mix-Block per Migration als Vorlage anlegen und benutzen, auch ohne Editor. Das ist
+Eigenbau-Block per Migration als Vorlage anlegen und benutzen, auch ohne Editor. Das ist
 absichtlich so geschnitten – es macht den teuren Schritt 5 überprüfbar, bevor er gebaut wird.
 
 ---
