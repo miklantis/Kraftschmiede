@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.48.0",
+      "date": "2026-08-24",
+      "changes": [
+        "Du kannst jetzt ein eigenes Profilbild hinterlegen. In den Einstellungen oben in der Konto-Karte auf den Kreis oder auf „Bild wählen“ tippen - am Handy bietet das System Kamera oder Galerie an.",
+        "Das Bild erscheint danach überall dort, wo bisher der Anfangsbuchstabe stand: oben rechts in der Kopfzeile, am Desktop unten in der Seitenleiste und in der Konto-Karte selbst.",
+        "Das Foto wird direkt auf deinem Gerät quadratisch aus der Mitte zugeschnitten und verkleinert - das Original wird nicht hochgeladen. Mit „Bild entfernen“ geht es zurück zum Buchstaben."
+      ]
+    },
+    {
       "version": "1.47.4",
       "date": "2026-08-24",
       "changes": [

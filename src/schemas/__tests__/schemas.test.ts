@@ -188,7 +188,28 @@ describe("jsonb-Wertobjekte", () => {
           sound: true,
           vibrate: true,
         },
+        avatar: "",
       }).success,
     ).toBe(true);
+  });
+
+  it("settings-Row nimmt ein Profilbild als Data-URL an", () => {
+    const parsed = settingsRow.safeParse({
+      user_id: uid(),
+      rm_formula: "mean",
+      weekly_frequency_target: 3,
+      weight_step: 2.5,
+      unit: "kg",
+      recovery_windows: { default: 48, squat: 48, deadlift: 72 },
+      timers: {
+        setRestSec: 120,
+        exerciseRestSec: 180,
+        autoStart: true,
+        sound: true,
+        vibrate: true,
+      },
+      avatar: "data:image/webp;base64,AAAA",
+    });
+    expect(parsed.success).toBe(true);
   });
 });

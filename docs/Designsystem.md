@@ -225,6 +225,7 @@ Doku nur als Beispiel im Text stehen – samt Farben, die es in der App gar nich
 | **Chart** | Generisches Verlaufschart-Fundament (D3): misst die Breite, wird am Handy scrollbar, zeichnet einheitlich (glatte Linie, weiche Fläche, Tooltip). |
 | **Calendar** | Generisches Monatsgitter; was in einer Tageszelle steht, liefert der Aufrufer (renderCell). |
 | **MuscleMap** | Einfärbbare Körper-Silhouette (SVG) zur Darstellung beanspruchter Muskeln. Konzept dazu: `Muskel-Map.md`. |
+| **Avatar** | Runder Konto-Kreis: das Profilbild, solange eines hinterlegt ist, sonst der Anfangsbuchstabe der E-Mail auf Akzentgrund. Drei Größen: sm (Seitenleisten-Fuß am Desktop), md (Kopfzeile am Handy), lg (Konto-Karte in den Einstellungen). Das Bild kommt als Data-URL aus `settings.avatar`; zugeschnitten (quadratisch aus der Mitte) und auf 256 Pixel verkleinert wird beim Auswählen in `lib/profilbild.ts`, hochgeladen wird nie das Original. |
 
 ---
 
