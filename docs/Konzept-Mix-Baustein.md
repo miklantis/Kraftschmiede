@@ -268,17 +268,43 @@ Damit erledigt sich nebenbei Abschnitt 5 des
 `load_start`/`load_end` für den Wiederaufbau werden von der allgemeineren Lösung
 mitabgedeckt, sobald eine Phase ihre Anteile selbst nennen darf.
 
-### Die Bauregel
+### Die Bauregeln: eine neue, nicht zwei
 
-`plan_builder` ist heute ein Enum aus `strength_ladder`, `power_ladder` und `test`, und drei
-`CHECK`s hängen daran: Steuerweg und Bauregel gehören zusammen, gesperrte Sätze hat genau
-wer eine Wochenliste baut, ein ruhendes Band gibt es nur mit Bauregel.
+Am 24.08.2026 gegen die Live-Tabelle und ihre `CHECK`s geprüft. Das Ergebnis ist eindeutig
+und fiel anders aus als zunächst angenommen.
 
-Der neue Baustein ist `control = 'plan'` (die Tabelle regiert), hat aber keine Rechenregel.
-Vorschlag: je eine vierte Bauregel für Wochen- und Lastliste, die „nimm die getippte Tabelle"
-bedeutet. Dann bleiben alle drei `CHECK`s unverändert gültig, und der Bauart-Vermerk an der
-Phase sagt weiterhin, was die Listen tun – die Festlegung aus Teil 1, dass ein Wochenplan
-allein nicht sagt, was er tut, bleibt gewahrt.
+**Für die Wochentabelle braucht es eine neue Bauregel.** `plan_builder` ist heute ein Enum
+aus `strength_ladder`, `power_ladder` und `test`, und drei `CHECK`s hängen daran – alle
+zeigen in die gewünschte Richtung: `phase_types_plan_stimmig` bindet `control = 'plan'` an
+eine gesetzte Bauregel, `phase_types_saetze_stimmig` erzwingt damit `sets_locked`, und
+`phase_types_band_ruht_nur_im_plan` erlaubt ein ruhendes Band nur mit Bauregel. Genau das
+soll gelten: Die Tabelle regiert, Satzrampe und Band sind wirkungslos. Erweitert werden
+müssen die `CHECK`-Listen an `phase_types` **und** an `phases`. Zur Laufzeit hängt an der
+Bauregel außerdem die Weiche aus Abschnitt 8 (`hasPlanBuilder`).
+
+**Für die Lastliste braucht es keine.** Drei Gründe:
+
+- **Es entscheidet nichts daran.** Anders als `plan_builder`, an dem vier Funktionen hängen
+  (`hasPlanBuilder`, `buildsRisingPlan`, `buildsTestPlan`, `planGovernsLoad`), wird
+  `load_builder` zur Laufzeit nirgends abgefragt – er ist reiner Vermerk. Ob eine Phase
+  überhaupt eine Last vorgibt, liest `usesLoadPlan` an der Liste selbst.
+- **Der `CHECK` passt nicht.** `phase_types_last_stimmig` erzwingt
+  `(load_builder is not null) = (load_start_default is not null)` und deckelt
+  `load_end_default` bei 1. Eine getippte Liste hat aber weder Start- noch Zielanteil,
+  sondern Werte – und der Deckel kollidiert mit der offenen Frage aus Abschnitt 6.
+- **Der Weg existiert schon.** `buildPhasePlans` baut aus getippten Stufen eine Lastliste und
+  lässt den Vermerk dabei leer; `phases.load_builder` erlaubt `null` ausdrücklich. Eine Phase
+  mit Lastliste ohne Bauregel ist damit heute schon eine gültige Form.
+
+Der Baustein trägt `load_builder`, `load_start_default` und `load_end_default` also allesamt
+leer, und `phase_types_last_stimmig` ist ohne jede Änderung erfüllt. Der Deckel bei 100 %
+gilt nur für den Vorgabe-Verlauf eines Bausteins, nicht für getippte Wochenanteile: Die
+Lastliste selbst kennt keine Obergrenze (`loadPct` ist lediglich `positive()`), die Frage aus
+Abschnitt 6 ist datenseitig also nicht blockiert.
+
+Damit bleibt der Bauart-Vermerk aussagekräftig: Die Wochentabelle sagt weiterhin, was sie
+tut – die Festlegung aus Teil 1 bleibt gewahrt –, und die Lastliste braucht das nie
+behauptet zu haben.
 
 **Dafür gibt es ein wörtliches Vorbild.** `PhaseAdjustments.load` erlaubt schon heute
 ausdrücklich vorgegebene Laststufen, die die Bauregel des Bausteins ersetzen („getippte
@@ -396,8 +422,8 @@ Schritt-Issues.
    `journey_template_phases` zurück, ausdrücklich nur für getippte Bausteine. Dazu Schema und
    Schreibnaht. Ohne neunten Baustein bleiben die Spalten leer und nichts ändert sich.
 2. **Der neunte Baustein.** Migration (Schlüssel in `CHECK` und `focusEnum`, Baustein-Zeile je
-   Nutzer, die beiden neuen Bauregeln), Seed, Schema, Bezugszahl nach Abschnitt 6. Danach
-   existiert er, ohne dass man ihn bedienen kann.
+   Nutzer, die neue Bauregel der Wochentabelle in beiden `CHECK`-Listen), Seed, Schema,
+   Bezugszahl nach Abschnitt 6. Danach existiert er, ohne dass man ihn bedienen kann.
 3. **Die Weiche trennen.** `hasPlanBuilder` statt `planGovernsLoad` als Bedingung für den
    Plan-Bezug (Abschnitt 8). Für die bestehenden Bausteine ändert sich nichts – beide
    Antworten fallen dort zusammen. Für sich testbar.
