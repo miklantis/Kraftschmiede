@@ -77,28 +77,15 @@ export interface PhaseView {
   /** Hinweis zur vorgegebenen Last, nur an der laufenden Phase einer Journey
    *  mit Lastvorgabe; sonst null. */
   loadNote: string | null;
-  /** Ablauf-Hinweis der laufenden Testphase; sonst null. */
-  testNote: string | null;
   /** Wochentabelle an der laufenden Phase; sonst null. Sie entsteht aus der
-   *  Wochenliste oder - wo es keine gibt - aus der Lastliste. Die Testphase
-   *  zeigt ihren Ablauf (testNote) statt Zahlen. */
+   *  Wochenliste oder - wo es keine gibt - aus der Lastliste. */
   weekRows: PhaseWeekRow[] | null;
 }
 
-// Ablauf der Testphase in einem Satz: sie fuehrt keinen Ablauf, sie erklaert ihn
-// nur - den 1RM-Test startet der Nutzer wie bisher von der Uebungsseite. Seit
-// #240 besteht die Phase aus Entlastungswochen und der reinen Testwoche am
-// Ende; eine einwoechige Testphase ist nur die Testwoche.
-export function testPhaseNote(weeks: number): string {
-  const test =
-    "In der Testwoche gibt es keine Vorgabe: Der 1RM-Test läuft wie gewohnt " +
-    "von der Übungsseite, Training ist erlaubt, aber nicht eingeplant.";
-  return weeks > 1
-    ? "Erst die Entlastung (2 Sätze mit 60 % vom Startgewicht), dann die " +
-        "Testwoche. " +
-        test
-    : "Reine Testwoche. " + test;
-}
+/** Was in der Zeile der reinen Testwoche steht - sie plant keine Einheit, also
+ *  stehen dort keine Zahlen. Auch die Zusammenfassung einer nicht laufenden
+ *  Testphase benutzt dieses Wort, damit beide Ansichten dasselbe sagen. */
+const TEST_WEEK_TARGETS = "1RM-Test";
 
 function repBand(min: number | null, max: number | null): string {
   if (min == null || max == null) return "?";
@@ -177,10 +164,17 @@ function phaseDetail(
   // ueberhaupt eine vorgibt; sonst bliebe eine Kachel mit einem einzelnen
   // "keine" stehen.
   if (covered === "plan") return p.loadPlan?.length ? loadRow : [];
-  if (p.weekPlan && p.weekPlan.length > 0 && !plan) {
+  // Eine Woche ohne geplante Einheit gibt es nur in der Testphase - das ist ihre
+  // reine Testwoche. Steht daneben keine Tabelle (nicht laufende Phase,
+  // Vorlagen-Vorschau), nennt die Kachel den Ablauf: sonst stuenden dort die
+  // Werte der Entlastungswoche, als gaelten sie fuer die ganze Phase.
+  // Erkannt wird sie an der Liste selbst, nicht am Fokus-Namen (ADR-0018).
+  if (p.weekPlan?.some((w) => !weekDemandsSession(w))) {
     return [
-      { k: "Vorgabe", v: "keine" },
-      { k: "Woche", v: "1RM-Test" },
+      plan
+        ? { k: "Entlastung", v: weekTargets(plan[0]!) }
+        : { k: "Vorgabe", v: "keine" },
+      { k: "Testwoche", v: TEST_WEEK_TARGETS },
       ...loadRow,
     ];
   }
@@ -246,7 +240,8 @@ function planWeekRows(plan: WeekPlan, weekInPhase: number): PhaseWeekRow[] {
       const state = weekState(w.week, weekInPhase);
       return {
         label: `Woche ${w.week}`,
-        targets: weekTargets(w),
+        // Die reine Testwoche plant nichts - "0 × 1 · RIR 0" waere Unsinn.
+        targets: weekDemandsSession(w) ? weekTargets(w) : TEST_WEEK_TARGETS,
         note: w.note,
         state,
         mark: state === "past" ? "✓" : "",
@@ -296,14 +291,15 @@ interface PhaseWeekTable {
 }
 
 // Wochentabelle der laufenden Phase auf dem Weg, den die Phase hergibt:
-// Wochenliste zuerst, sonst die Lastliste, sonst keine Tabelle. Die Testphase
-// zeigt stattdessen ihren Ablauf (testNote) - dort stuenden Zahlen, nach denen
-// gar nicht trainiert wird.
+// Wochenliste zuerst, sonst die Lastliste, sonst keine Tabelle.
+//
+// Die Testphase ist dabei keine Ausnahme mehr (#364): sie traegt einen festen
+// Plan wie Maximalkraft und Intensivierung, also zeigt sie ihn auch. Ihre
+// Testwoche plant nichts - dort steht der Test statt Zahlen (planWeekRows).
 function phaseWeekTable(
   p: JourneyPhaseInput,
   weekInPhase: number,
 ): PhaseWeekTable | null {
-  if (p.focus === "test") return null;
   if (p.weekPlan?.length)
     return { rows: planWeekRows(p.weekPlan, weekInPhase), source: "plan" };
   if (p.loadPlan?.length)
@@ -363,8 +359,6 @@ export function buildPhaseViews(
               i === phases.length - 1,
             )
           : null,
-      // Nur an der laufenden Testphase: dort steht ihr Ablauf.
-      testNote: isCurrent && p.focus === "test" ? testPhaseNote(p.weeks) : null,
       weekRows: table?.rows ?? null,
     };
   });
@@ -444,7 +438,6 @@ export function buildTemplatePhaseViews(
     // Ohne laufende Woche zeigt die Vorschau die Spanne der Lastliste.
     detail: phaseDetail(p, withLoad, null),
     loadNote: null,
-    testNote: null,
     // In der Vorschau laeuft keine Woche - die Tabelle gehoert zur laufenden
     // Journey, die Vorlage zeigt nur die Eckwerte der Phase.
     weekRows: null,

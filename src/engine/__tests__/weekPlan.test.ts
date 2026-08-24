@@ -132,7 +132,9 @@ describe("buildTestPhaseWeekPlan – Entlastung, dann reine Testwoche", () => {
     expect(plan.map((w) => w.week)).toEqual([1, 2]);
     expect(plan[1]!).toMatchObject({ sets: 0, loadPct: 1 });
     expect(weekDemandsSession(plan[1]!)).toBe(false);
-    expect(plan[1]!.note).toMatch(/Testwoche/);
+    // Der Text sagt nur, was in der Zeile selbst nicht steht - dass es die
+    // Testwoche ist, traegt die Tabelle (#364).
+    expect(plan[1]!.note).toMatch(/Übungsseite/);
   });
   it("jede Woche davor entlastet: 2 Saetze, 3-5 Wiederholungen, 60 %", () => {
     const plan = buildTestPhaseWeekPlan(2);

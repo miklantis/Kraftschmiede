@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.47.2",
+      "date": "2026-08-24",
+      "changes": [
+        "Die Phase Test/Peak hat einen festen Plan, zeigte ihn aber nie - statt der Wochen stand dort ein längerer Erklärtext. Jetzt steht auch bei Test/Peak der Wochenplan: Woche 1 die Entlastung mit 60 % vom Arbeitsgewicht, Woche 2 der 1RM-Test.",
+        "In der Testwoche stehen keine Zahlen, sondern \"1RM-Test\" - sie gibt bewusst nichts vor, der Test läuft wie gewohnt über die Übungsseite.",
+        "Test/Peak-Phasen, die noch nicht laufen, zeigten bisher die Werte der Entlastungswoche, als gälten sie für die ganze Phase. Dort steht jetzt der Ablauf: Entlastung und Testwoche getrennt."
+      ]
+    },
+    {
       "version": "1.47.1",
       "date": "2026-08-24",
       "changes": [

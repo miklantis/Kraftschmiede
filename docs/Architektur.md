@@ -477,7 +477,11 @@ Eindampfen, sonst wären die alten Felder schon weg.
   Journey-Seite klappt die laufende Phase mit Plan zur Wochentabelle auf
   (`PhaseView.weekRows` aus `lib/journey.ts`): je Woche Sätze, Wiederholungen,
   Ziel-Anstrengung und Wochenziel, abgeschlossene abgehakt, die laufende markiert. Die
-  Testphase zeigt weiter ihren Ablauf (`testNote`) statt Zahlen. Die Eckwerte einer
+  Testphase ist dabei keine Ausnahme: sie trägt einen festen Plan wie Maximalkraft und
+  Intensivierung und zeigt ihn genauso – Woche 1 die Entlastung, Woche 2 den Test. Weil
+  die Testwoche keine Einheit plant (0 Sätze), steht in ihrer Zeile „1RM-Test" statt
+  Zahlen; der frühere Fließtext (`testNote`) ist damit entfallen (Issue #364). Die
+  Eckwerte einer
   Phase mit Plan kommen ebenfalls aus dem Plan (Wiederholungen, Sätze, Ziel-Anstrengung
   statt Band, Satz-Rampe und Deload); gezählt werden dabei nur Wochen mit geplanter
   Einheit, eine Phase ganz ohne Vorgabe sagt genau das.
@@ -490,7 +494,11 @@ Eindampfen, sonst wären die alten Felder schon weg.
   nirgends stehen. Ohne Tabelle – nicht laufende Phasen, Vorlagen-Vorschau – bleiben
   die Eckwerte unverändert stehen. Sichtbar sind sie auf beiden Breiten gleich: die
   mobile Liste klappt nicht mehr nur die laufende Phase auf, sondern zeigt an jeder
-  Phase dieselben Angaben wie das Raster (Issue #362). Auch die Periodisierungskurve
+  Phase dieselben Angaben wie das Raster (Issue #362). Eine Testphase ohne Tabelle –
+  nicht laufend oder in der Vorschau – fasst ihren Ablauf zusammen („Entlastung
+  2 × 3–5 · RIR 3", „Testwoche 1RM-Test") statt die Werte der Entlastungswoche für die
+  ganze Phase auszugeben; erkannt wird sie an der Woche ohne geplante Einheit, nicht am
+  Fokus-Namen (ADR-0018). Auch die Periodisierungskurve
   rechnet dann wochengenau: beide Linien kommen in `lib/periodization.ts` aus der
   jeweiligen Planwoche statt aus den Eckwerten der Phase – die Intensität aus den
   Wiederholungen der Woche mal dem Anteil am Arbeitsgewicht (`loadPct`), das Volumen aus
