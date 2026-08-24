@@ -353,9 +353,18 @@ Das ist der aufwendigste Teil des Vorhabens und auf dem Telefon der anspruchsvol
 Bildschirm, den die App bisher hätte. Er gehört deshalb **nicht** in dieses Papier, sondern
 wird eigenständig besprochen, sobald die Datenseite steht. Absehbar ist nur:
 
-- Die Zeilenzahl folgt der Wochenzahl. Wird die Wochenzahl verstellt, müssen Zeilen entstehen
-  oder verschwinden – anders als bei den acht anderen Bausteinen, wo die Listen neu gerechnet
-  werden.
+- **Die Wochenzahl ist frei innerhalb der Spanne des Bausteins**, genau wie überall sonst.
+  Die vier Zeilen der Beispieltabelle in Abschnitt 5 sind ein Beispiel und keine Festlegung;
+  die Spanne selbst steht in Abschnitt 11 zur Entscheidung.
+- **Die Tabelle führt die Wochenzahl, nicht ein Regler.** Zeile hinzufügen, Zeile löschen,
+  die Spanne des Bausteins bremst. Ein Regler würde hier selbst getippte Zeilen anlegen und
+  wegnehmen: nach unten ginge Arbeit verloren, nach oben müsste die App raten, was in der
+  neuen Zeile steht – und ein Muster fortzuschreiben wäre genau das Rechnen, das dieser
+  Baustein nicht tut. Bei den acht anderen Bausteinen bleibt der Regler, dort wird die Liste
+  ohnehin neu gerechnet.
+- **Nicht jede Wochenzahl ist gleich sinnvoll.** Ein Wechsel hat eine Periode; bei einer
+  ungeraden Wochenzahl endet der Block mitten im Zyklus. Warnen kann die App davor nicht, weil
+  sie das getippte Muster nicht kennt – dafür steht jede Woche als eigene Zeile sichtbar da.
 - Eine leere oder halb gefüllte Tabelle darf nicht startbar sein.
 - Eine Vorbelegung, die man überschreibt, ist besser als ein leeres Raster.
 
