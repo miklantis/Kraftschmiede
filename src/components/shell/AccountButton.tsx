@@ -1,26 +1,26 @@
 import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
+import { useSettings } from "@/hooks/useSettings";
+import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 // Konto-Zugang als wiederverwendbares Element. Fuehrt zur Einstellungen-Seite
 // (dort sitzt das Konto-/Sync-Panel). Zwei Auspraegungen:
 //  - "full": Avatar + Name + Sync-Status (Sidebar-Fuss, Desktop)
 //  - "compact": nur runder Avatar (Mobile-Kopf)
+// Im Kreis steht das Profilbild, solange eines hinterlegt ist, sonst der
+// Anfangsbuchstabe der E-Mail (Baustein Avatar).
 export function AccountButton({
   variant = "full",
 }: {
   variant?: "full" | "compact";
 }): React.ReactElement {
   const { session } = useAuth();
+  const settings = useSettings();
   const email = session?.user.email ?? "";
   const initial = (email.charAt(0) || "K").toUpperCase();
+  const bild = settings.data?.avatar ?? "";
   const angemeldet = Boolean(session);
-
-  const avatar = (
-    <span className="bg-primary text-primary-foreground flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
-      {initial}
-    </span>
-  );
 
   if (variant === "compact") {
     return (
@@ -29,9 +29,7 @@ export function AccountButton({
         aria-label="Konto und Einstellungen"
         className="focus-visible:ring-ring/30 relative inline-flex rounded-full outline-none focus-visible:ring-3"
       >
-        <span className="bg-primary text-primary-foreground flex size-10 shrink-0 items-center justify-center rounded-full text-[15px] font-semibold">
-          {initial}
-        </span>
+        <Avatar bild={bild} initial={initial} groesse="md" />
         <span
           aria-hidden
           className={cn(
@@ -51,7 +49,7 @@ export function AccountButton({
         "focus-visible:ring-ring/30 outline-none focus-visible:ring-2",
       )}
     >
-      {avatar}
+      <Avatar bild={bild} initial={initial} groesse="sm" />
       <span className="flex min-w-0 flex-col">
         <span className="text-foreground truncate text-sm font-medium">
           Mein Konto

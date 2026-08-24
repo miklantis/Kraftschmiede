@@ -23,6 +23,7 @@ export type SettingsPatch = Partial<
     | "unit"
     | "recovery_windows"
     | "timers"
+    | "avatar"
   >
 >;
 

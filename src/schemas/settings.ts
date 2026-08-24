@@ -23,6 +23,10 @@ export const settingsRow = z.object({
   unit: unitEnum,
   recovery_windows: recoveryWindowsSchema,
   timers: timersSchema,
+  // Profilbild als Data-URL (quadratisch, 256 Pixel, im Browser erzeugt).
+  // Leerstring = kein Bild, dann zeigt der Konto-Kreis den Anfangsbuchstaben
+  // (Migration 0052).
+  avatar: z.string(),
 });
 export type SettingsRow = z.infer<typeof settingsRow>;
 
@@ -33,5 +37,6 @@ export const settingsInsert = settingsRow.partial({
   unit: true,
   recovery_windows: true,
   timers: true,
+  avatar: true,
 });
 export type SettingsInsert = z.infer<typeof settingsInsert>;

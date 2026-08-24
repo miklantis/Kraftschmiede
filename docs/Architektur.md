@@ -178,7 +178,8 @@ Begründung in ADR-0003.
   = keine Notiz, Migration 0025), created_at (Migration 0013). Bewusst ohne
   Bezug zu `sessions`: ein Test ist keine Trainingseinheit und zählt nirgends als solche
 - **settings** – user_id (PK), rm_formula, weekly_frequency_target, weight_step, unit,
-  recovery_windows (jsonb), timers (jsonb)
+  recovery_windows (jsonb), timers (jsonb), avatar (Profilbild als Data-URL, quadratisch
+  mit 256 px Kante, im Browser erzeugt; Leerstring = kein Bild, Migration 0052)
 
 Einen Scheiben-Bestandszähler gibt es bewusst nicht.
 
