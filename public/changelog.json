@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.47.4",
+      "date": "2026-08-24",
+      "changes": [
+        "In der Journey öffnete bisher der ganze obere Streifen einer Übungskachel die Übungs-Detailseite - jetzt nur noch der Übungsname selbst, genau wie im Start-Popup eines Workouts.",
+        "Der Pfeil am rechten Rand der Kachel ist weg, damit nichts antippbar aussieht, was es nicht mehr ist."
+      ]
+    },
+    {
       "version": "1.47.3",
       "date": "2026-08-24",
       "changes": [

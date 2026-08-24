@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { ChevronRight } from "lucide-react";
 import { JourneyExerciseChart } from "./JourneyExerciseChart";
 import { CoachBlock } from "@/components/exercise/CoachBlock";
 import type { JourneyExerciseChart as JourneyChartData } from "@/lib/journeyExercises";
@@ -7,11 +6,17 @@ import type { JourneyStat } from "@/lib/journeyStats";
 import type { CoachView } from "@/lib/coach";
 import type { JourneySeriesKey } from "@/lib/journeyChart";
 
-// Kachel einer Uebung im Abschnitt "Uebungen in dieser Journey": oben der Name
-// (antippbar zur Detailseite), links der Verlauf dieser Uebung in dieser
-// Journey, rechts der Coach-Block – links wo die Uebung herkommt, rechts wo sie
-// gerade steht. Volle Breite, einspaltig; auf dem Desktop zwei Drittel Chart /
-// ein Drittel Coach, mobil Chart oben und Coach darunter.
+// Kachel einer Uebung im Abschnitt "Uebungen in dieser Journey": oben der Name,
+// links der Verlauf dieser Uebung in dieser Journey, rechts der Coach-Block –
+// links wo die Uebung herkommt, rechts wo sie gerade steht. Volle Breite,
+// einspaltig; auf dem Desktop zwei Drittel Chart / ein Drittel Coach, mobil
+// Chart oben und Coach darunter.
+//
+// Zur Uebungs-Detailseite fuehrt allein der Name, nicht die Kopfzeile und nicht
+// die Kachel: die Schaltflaeche ist genau so breit wie der Text und meldet sich
+// ueber den Farbwechsel des Namens - dasselbe Muster wie im Workout-Start-Popup
+// (StartModal/CardTitle). Ein Chevron steht bewusst nicht daneben, sonst sieht
+// die ganze Zeile wieder antippbar aus.
 //
 // Der Coach-Block ist derselbe wie auf der Uebungs-Detailseite (CoachBlock),
 // nur ohne "Anpassen"-Knopf: die Journey-Seite ist Anzeige. Seine
@@ -44,17 +49,16 @@ export function JourneyExerciseTile({
 
   return (
     <div className="overflow-hidden rounded-[18px] bg-card shadow-card">
-      <button
-        type="button"
-        onClick={onOpen}
-        aria-label={name + " öffnen"}
-        className="flex w-full items-center gap-2 px-4 pt-3.5 pb-1 text-left transition-colors hover:bg-primary/5 min-[960px]:px-5"
-      >
-        <span className="min-w-0 flex-1 truncate text-[17px] font-semibold text-foreground min-[960px]:text-[15px]">
+      <div className="flex px-4 pt-3.5 pb-1 min-[960px]:px-5">
+        <button
+          type="button"
+          onClick={onOpen}
+          aria-label={name + " öffnen"}
+          className="min-w-0 cursor-pointer truncate rounded-[8px] text-left text-[17px] font-semibold text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 min-[960px]:text-[15px]"
+        >
           {name}
-        </span>
-        <ChevronRight className="size-[18px] flex-none text-foreground-subtle" />
-      </button>
+        </button>
+      </div>
       <div className="grid grid-cols-1 gap-y-2 px-4 pb-3 min-[960px]:grid-cols-[2fr_1fr] min-[960px]:gap-x-5 min-[960px]:px-5">
         <div className="min-w-0">
           <JourneyExerciseChart
