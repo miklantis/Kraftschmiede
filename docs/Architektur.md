@@ -474,31 +474,30 @@ Eindampfen, sonst wären die alten Felder schon weg.
   Stelle (`lib/planNote.ts`, Schrittweite und Einheit aus den Einstellungen), beim Start
   auf die Einheit eingefroren wie der Lasthinweis (`WorkoutSession.planNote`) und
   in Start-Popup und Live-Panel im selben Kasten gezeigt (`PlanNoteBanner`). Auf der
-  Journey-Seite klappt die laufende Phase mit Plan zur Wochentabelle auf
-  (`PhaseView.weekRows` aus `lib/journey.ts`): je Woche Sätze, Wiederholungen,
-  Ziel-Anstrengung und Wochenziel, abgeschlossene abgehakt, die laufende markiert. Die
+  Journey-Seite listet **jede** Phase mit Plan ihre Wochen auf (`PhaseView.weekRows` aus
+  `lib/journey.ts`): je Woche Sätze, Wiederholungen, Ziel-Anstrengung und Wochenziel.
+  Unterschiedlich ist nur der markierte Stand – an einer vergangenen Phase sind alle
+  Wochen abgehakt, an einer künftigen alle blass, an der laufenden ist die aktuelle
+  hervorgehoben; in der Vorlagen-Vorschau läuft keine Journey, dort stehen alle Zeilen
+  neutral (`tableWeek` liefert die Bezugswoche, `null` heißt Vorschau). Eine Überschrift
+  trägt der Block nicht – „Woche 1" sagt schon, was dort steht (Issue #366). Die
   Testphase ist dabei keine Ausnahme: sie trägt einen festen Plan wie Maximalkraft und
   Intensivierung und zeigt ihn genauso – Woche 1 die Entlastung, Woche 2 den Test. Weil
   die Testwoche keine Einheit plant (0 Sätze), steht in ihrer Zeile „1RM-Test" statt
-  Zahlen; der frühere Fließtext (`testNote`) ist damit entfallen (Issue #364). Die
-  Eckwerte einer
-  Phase mit Plan kommen ebenfalls aus dem Plan (Wiederholungen, Sätze, Ziel-Anstrengung
-  statt Band, Satz-Rampe und Deload); gezählt werden dabei nur Wochen mit geplanter
-  Einheit, eine Phase ganz ohne Vorgabe sagt genau das.
+  Zahlen; der frühere Fließtext (`testNote`) ist damit entfallen (Issue #364).
 - **Was die Wochentabelle trägt, steht nicht noch einmal darüber.** Die Detailzeilen
   einer Phase sind die Zusammenfassung derselben Zahlen, die die Tabelle Woche für
   Woche auflistet – also lässt `phaseDetail` weg, was die Tabelle schon zeigt
   (`PhaseView.detail` bleibt dann leer, `PhaseList` blendet die Kachel aus). Kommt die
   Tabelle aus der Wochenliste, entfällt die Kachel ganz; kommt sie aus der Lastliste,
   entfällt nur die Zeile „Vorgegebene Last", weil Band, Satz-Rampe und Deload dort
-  nirgends stehen. Ohne Tabelle – nicht laufende Phasen, Vorlagen-Vorschau – bleiben
-  die Eckwerte unverändert stehen. Sichtbar sind sie auf beiden Breiten gleich: die
-  mobile Liste klappt nicht mehr nur die laufende Phase auf, sondern zeigt an jeder
-  Phase dieselben Angaben wie das Raster (Issue #362). Eine Testphase ohne Tabelle –
-  nicht laufend oder in der Vorschau – fasst ihren Ablauf zusammen („Entlastung
-  2 × 3–5 · RIR 3", „Testwoche 1RM-Test") statt die Werte der Entlastungswoche für die
-  ganze Phase auszugeben; erkannt wird sie an der Woche ohne geplante Einheit, nicht am
-  Fokus-Namen (ADR-0018). Auch die Periodisierungskurve
+  nirgends stehen. Ohne Tabelle – die Phasen, die ganz beim Coach liegen – bleiben die
+  Eckwerte unverändert stehen. Daraus folgt eine Regel ohne Ausnahme: Phase mit
+  Wochenplan zeigt ihre Wochen und keine Kachel, Phase mit Lastliste zeigt ihre
+  Laststufen je Woche plus Band, Satz-Rampe und Deload, Coach-Phase zeigt nur die
+  Eckwerte. Sichtbar ist das auf beiden Breiten gleich: die mobile Liste klappt nicht
+  mehr nur die laufende Phase auf, sondern zeigt an jeder Phase dieselben Angaben wie
+  das Raster (Issue #362). Auch die Periodisierungskurve
   rechnet dann wochengenau: beide Linien kommen in `lib/periodization.ts` aus der
   jeweiligen Planwoche statt aus den Eckwerten der Phase – die Intensität aus den
   Wiederholungen der Woche mal dem Anteil am Arbeitsgewicht (`loadPct`), das Volumen aus
