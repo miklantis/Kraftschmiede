@@ -108,21 +108,19 @@ function WeekPlanRows({ rows }: { rows: PhaseWeekRow[] }): React.ReactElement {
   );
 }
 
-// Phasen einer Journey. Desktop: Raster mit bis zu vier Spalten, jede Karte mit
-// Detailzeilen. Mobile: Liste, nur die aktuelle Phase zeigt Details. Optik aus
-// V1 (jph): aktuelle Phase akzent-getoent, kuenftige gedimmt.
+// Phasen einer Journey. Desktop: Raster mit bis zu vier Spalten, Mobile: Liste.
+// Beide zeigen an jeder Phase dieselben Angaben - erledigte und kuenftige Phasen
+// halten ihre Detailzeilen auch auf dem Handy (Issue #362). Optik aus V1 (jph):
+// aktuelle Phase akzent-getoent, kuenftige gedimmt.
 //
-// variant "preview" ist die Vorlagenliste: dort laeuft keine Journey, also gibt
-// es keine aufgeklappte aktuelle Phase - auf Mobile zeigen deshalb alle Phasen
-// ihre Detailzeilen.
+// Die Detail-Kachel entfaellt, wo die Wochentabelle dieselben Zahlen ohnehin
+// Woche fuer Woche auffuehrt; das entscheidet lib/journey.ts, indem es die
+// Detailzeilen dann leer laesst.
 export function PhaseList({
   phases,
-  variant = "journey",
 }: {
   phases: PhaseView[];
-  variant?: "journey" | "preview";
 }): React.ReactElement {
-  const expandAll = variant === "preview";
   const cols = Math.min(Math.max(phases.length, 1), 4);
   return (
     <>
@@ -163,7 +161,7 @@ export function PhaseList({
                 <LoadNote text={p.testNote} />
               </div>
             )}
-            <DetailRows phase={p} layout="grid" />
+            {p.detail.length > 0 && <DetailRows phase={p} layout="grid" />}
             {p.weekRows !== null && (
               <div className="mt-3.5">
                 <WeekPlanRows rows={p.weekRows} />
@@ -173,8 +171,7 @@ export function PhaseList({
         ))}
       </div>
 
-      {/* Mobile: Liste; in der Journey nur die aktuelle Phase aufgeklappt, in der
-          Vorschau alle. */}
+      {/* Mobile: Liste, jede Phase mit ihren Angaben. */}
       <div className="flex flex-col gap-2.5 min-[960px]:hidden">
         {phases.map((p, i) => (
           <div
@@ -202,26 +199,24 @@ export function PhaseList({
                 <div className="text-[12px] text-foreground-subtle">{p.meta}</div>
               </div>
             </div>
-            {(p.isCurrent || expandAll) && (
-              <div className="mx-3.5 mb-3.5">
-                {p.loadNote !== null && (
-                  <div className="mb-2.5">
-                    <LoadNote text={p.loadNote} />
-                  </div>
-                )}
-                {p.testNote !== null && (
-                  <div className="mb-2.5">
-                    <LoadNote text={p.testNote} />
-                  </div>
-                )}
-                <DetailRows phase={p} layout="list" />
-                {p.weekRows !== null && (
-                  <div className="mt-2.5">
-                    <WeekPlanRows rows={p.weekRows} />
-                  </div>
-                )}
-              </div>
-            )}
+            <div className="mx-3.5 mb-3.5">
+              {p.loadNote !== null && (
+                <div className="mb-2.5">
+                  <LoadNote text={p.loadNote} />
+                </div>
+              )}
+              {p.testNote !== null && (
+                <div className="mb-2.5">
+                  <LoadNote text={p.testNote} />
+                </div>
+              )}
+              {p.detail.length > 0 && <DetailRows phase={p} layout="list" />}
+              {p.weekRows !== null && (
+                <div className={p.detail.length > 0 ? "mt-2.5" : ""}>
+                  <WeekPlanRows rows={p.weekRows} />
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>
