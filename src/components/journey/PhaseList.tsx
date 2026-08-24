@@ -55,16 +55,25 @@ function LoadNote({ text }: { text: string }): React.ReactElement {
   );
 }
 
-// Wochentabelle des Plans an der laufenden Phase (Issue #225, Schritt 5): je
-// Woche Saetze, Wiederholungen und Ziel-Anstrengung, darunter das Wochenziel.
-// Abgeschlossene Wochen sind abgehakt und gedimmt, die laufende ist hervorgehoben.
-// Die Testwoche traegt statt Zahlen den Test selbst (#364).
-function WeekPlanRows({ rows }: { rows: PhaseWeekRow[] }): React.ReactElement {
+// Wochentabelle des Plans an einer Phase (Issue #225, Schritt 5): je Woche
+// Saetze, Wiederholungen und Ziel-Anstrengung, darunter das Wochenziel.
+// Abgeschlossene Wochen sind abgehakt, die laufende ist hervorgehoben, kuenftige
+// stehen blass. Die Testwoche traegt statt Zahlen den Test selbst (#364). Eine
+// Ueberschrift braucht der Block nicht - "Woche 1" sagt schon, was dort steht.
+//
+// `onAccent` sagt, ob der Block auf der akzent-getoenten Karte der laufenden
+// Phase sitzt: dort tragen die Zeilen helles Weiss, auf weisser Karte waeren sie
+// unsichtbar und stehen deshalb gedeckt (wie bei DetailRows).
+function WeekPlanRows({
+  rows,
+  onAccent,
+}: {
+  rows: PhaseWeekRow[];
+  onAccent: boolean;
+}): React.ReactElement {
+  const rest = onAccent ? "bg-white/45" : "bg-muted";
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="text-[11.5px] font-semibold uppercase tracking-wide text-muted-foreground">
-        Wochenplan
-      </div>
       {rows.map((r) => (
         <div
           key={r.label}
@@ -72,7 +81,7 @@ function WeekPlanRows({ rows }: { rows: PhaseWeekRow[] }): React.ReactElement {
             "rounded-[10px] px-2.5 py-2 " +
             (r.state === "current"
               ? "bg-white/85 ring-1 ring-primary/30"
-              : "bg-white/45")
+              : rest)
           }
         >
           <div className="flex items-baseline justify-between gap-2">
@@ -160,7 +169,7 @@ export function PhaseList({
             {p.detail.length > 0 && <DetailRows phase={p} layout="grid" />}
             {p.weekRows !== null && (
               <div className="mt-3.5">
-                <WeekPlanRows rows={p.weekRows} />
+                <WeekPlanRows rows={p.weekRows} onAccent={p.isCurrent} />
               </div>
             )}
           </div>
@@ -204,7 +213,7 @@ export function PhaseList({
               {p.detail.length > 0 && <DetailRows phase={p} layout="list" />}
               {p.weekRows !== null && (
                 <div className={p.detail.length > 0 ? "mt-2.5" : ""}>
-                  <WeekPlanRows rows={p.weekRows} />
+                  <WeekPlanRows rows={p.weekRows} onAccent={p.isCurrent} />
                 </div>
               )}
             </div>

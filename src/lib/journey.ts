@@ -57,8 +57,9 @@ export interface PhaseWeekRow {
   targets: string;
   /** Wochenziel in einem kurzen Satz (aus dem Plan). */
   note: string;
-  /** Vergangen, laufend oder kuenftig - wie bei den Phasen selbst. */
-  state: Exclude<PhaseState, "preview">;
+  /** Vergangen, laufend oder kuenftig - wie bei den Phasen selbst. In der
+   *  Vorlagen-Vorschau laeuft keine Woche, dort stehen alle Zeilen neutral. */
+  state: PhaseState;
   /** "✓" an abgeschlossenen Wochen, sonst "". */
   mark: string;
 }
@@ -97,24 +98,6 @@ function setsRamp(start: number, end: number): string {
   return `${body} S\u00e4tze`;
 }
 
-// Spanne einer Plan-Groesse ueber alle Wochen: eine Zahl, wenn sie steht, sonst
-// "erste -> letzte" (die Leiter der Kraftphase laeuft von 5 auf 2).
-function planSpan(values: number[]): string {
-  const first = values[0] ?? 0;
-  const last = values[values.length - 1] ?? first;
-  return values.every((v) => v === first)
-    ? `${first}`
-    : `${first} → ${last}`;
-}
-
-// Wiederholungen des Plans. Arbeitet er mit einem Band (Entlastung: 3-5), steht
-// das Band statt einer Leiter.
-function planReps(plan: WeekPlan): string {
-  const band = plan.find((w) => w.repsMax != null && w.repsMax !== w.reps);
-  if (band) return `${band.reps}–${band.repsMax} Wdh`;
-  return `${planSpan(plan.map((w) => w.reps))} Wdh`;
-}
-
 // Wert der Last-Detailzeile. An der laufenden Phase steht der Anteil ihrer
 // laufenden Woche, ueberall sonst die Spanne ("65 → 95 %") - bei einem Block,
 // der von 65 auf 95 wandert, waere eine einzelne Zahl fuer eine vergangene oder
@@ -127,22 +110,15 @@ function loadValue(plan: LoadPlan | null, currentWeek: number | null): string {
   return pct == null ? "keine" : loadPercent(pct);
 }
 
-// Detailzeilen einer Phase. Gleich fuer laufende Journeys und Vorlagen-Vorschau,
-// damit beide Ansichten nicht auseinanderlaufen.
+// Detailzeilen einer Phase: die Eckwerte, nach denen der Coach arbeitet. Gleich
+// fuer laufende Journeys und Vorlagen-Vorschau, damit beide Ansichten nicht
+// auseinanderlaufen.
 //
-// Traegt die Phase einen Wochenplan, stehen dort dessen Werte: das
-// Wiederholungsband der Phase ruht dann (es bleibt nur als Rueckfall stehen) und
-// die Satzzahl kommt aus dem Plan statt aus der Satz-Rampe - sonst zeigte die
-// Kraftphase ein Band, nach dem gar nicht trainiert wird. Statt der Deload-Woche
-// (die es dort nicht gibt) steht die Ziel-Anstrengung.
-//
-// Gezaehlt werden nur Wochen mit geplanter Einheit: die reine Testwoche verlangt
-// nichts, in den Spannen stuende sonst "2 → 0 Sätze". Plant die Phase gar nichts
-// (einwoechige Testphase), sagen die Zeilen genau das.
-//
-// `covered` sagt, was die Wochentabelle unter der Phase bereits Woche fuer Woche
-// auffuehrt (Issue #362). Die Detailzeilen sind nur die Zusammenfassung derselben
-// Zahlen - was die Tabelle traegt, faellt hier weg, statt doppelt dazustehen.
+// `covered` sagt, was die Wochentabelle unter der Phase schon Woche fuer Woche
+// auffuehrt (Issue #362) - was dort steht, faellt hier weg, statt doppelt
+// dazustehen. Eine Phase mit Wochenplan traegt in der Tabelle alles, was hier
+// stuende, und bekommt deshalb gar keine Kachel mehr; bei einer Lasttabelle
+// faellt nur die Lastzeile weg, Band, Satz-Rampe und Deload stehen dort nicht.
 function phaseDetail(
   p: JourneyPhaseInput,
   withLoad: boolean,
@@ -151,56 +127,26 @@ function phaseDetail(
   // Quelle der Wochentabelle unter dieser Phase; null = es gibt keine.
   covered: WeekTableSource | null = null,
 ): PhaseDetail[] {
-  const geplant = p.weekPlan?.filter(weekDemandsSession) ?? [];
-  const plan = geplant.length > 0 ? geplant : null;
   // Die Lasttabelle nennt den Anteil jeder Woche - die Zusammenfassung daneben
   // waere reine Wiederholung.
   const loadRow =
     withLoad && covered !== "load"
       ? [{ k: "Vorgegebene Last", v: loadValue(p.loadPlan, currentWeek) }]
       : [];
-  // Die Plantabelle traegt Saetze, Wiederholungen und Ziel-Anstrengung schon
-  // selbst. Uebrig bleibt hoechstens die Last - und auch nur, wenn die Phase
-  // ueberhaupt eine vorgibt; sonst bliebe eine Kachel mit einem einzelnen
-  // "keine" stehen.
+  // Uebrig bleibt hoechstens die Last - und auch nur, wenn die Phase ueberhaupt
+  // eine vorgibt; sonst bliebe eine Kachel mit einem einzelnen "keine" stehen.
   if (covered === "plan") return p.loadPlan?.length ? loadRow : [];
-  // Eine Woche ohne geplante Einheit gibt es nur in der Testphase - das ist ihre
-  // reine Testwoche. Steht daneben keine Tabelle (nicht laufende Phase,
-  // Vorlagen-Vorschau), nennt die Kachel den Ablauf: sonst stuenden dort die
-  // Werte der Entlastungswoche, als gaelten sie fuer die ganze Phase.
-  // Erkannt wird sie an der Liste selbst, nicht am Fokus-Namen (ADR-0018).
-  if (p.weekPlan?.some((w) => !weekDemandsSession(w))) {
-    return [
-      plan
-        ? { k: "Entlastung", v: weekTargets(plan[0]!) }
-        : { k: "Vorgabe", v: "keine" },
-      { k: "Testwoche", v: TEST_WEEK_TARGETS },
-      ...loadRow,
-    ];
-  }
   return [
-    plan
-      ? { k: "Wiederholungen", v: planReps(plan) }
-      : {
-          k: "Wiederholungsband",
-          v: `${repBand(p.repTargetMin, p.repTargetMax)} Wdh`,
-        },
-    plan
-      ? {
-          k: "Sätze / Woche",
-          v: `${planSpan(plan.map((w) => w.sets))} Sätze`,
-        }
-      : {
-          // Kraftphasen fahren eine feste Satzzahl - dort waere "Rampe" falsch.
-          k: p.setsStart === p.setsEnd ? "Sätze / Woche" : "Satz-Rampe / Woche",
-          v: setsRamp(p.setsStart, p.setsEnd),
-        },
-    plan
-      ? {
-          k: "Ziel-Anstrengung",
-          v: `RIR ${planSpan(plan.map((w) => w.rir))}`,
-        }
-      : { k: "Deload", v: p.deloadWeek ? `Woche ${p.deloadWeek}` : "keiner" },
+    {
+      k: "Wiederholungsband",
+      v: `${repBand(p.repTargetMin, p.repTargetMax)} Wdh`,
+    },
+    {
+      // Kraftphasen fahren eine feste Satzzahl - dort waere "Rampe" falsch.
+      k: p.setsStart === p.setsEnd ? "Sätze / Woche" : "Satz-Rampe / Woche",
+      v: setsRamp(p.setsStart, p.setsEnd),
+    },
+    { k: "Deload", v: p.deloadWeek ? `Woche ${p.deloadWeek}` : "keiner" },
     ...loadRow,
   ];
 }
@@ -217,11 +163,11 @@ export function weekTargets(w: WeekPlanWeek): string {
   return `${w.sets} × ${reps} · RIR ${w.rir}`;
 }
 
-// Zustand einer Phasenwoche gegenueber der laufenden Woche.
-function weekState(
-  week: number,
-  weekInPhase: number,
-): Exclude<PhaseState, "preview"> {
+// Zustand einer Phasenwoche gegenueber der Bezugswoche der Phase. null heisst:
+// es laeuft keine Journey (Vorlagen-Vorschau), dort ist keine Woche voraus oder
+// zurueck.
+function weekState(week: number, weekInPhase: number | null): PhaseState {
+  if (weekInPhase === null) return "preview";
   return week < weekInPhase
     ? "past"
     : week === weekInPhase
@@ -229,10 +175,28 @@ function weekState(
       : "future";
 }
 
+// Bezugswoche fuer die Wochentabelle einer Phase: an der laufenden Phase ihre
+// laufende Woche, an einer vergangenen liegen alle Wochen dahinter, an einer
+// kuenftigen alle davor. So markiert dieselbe Tabelle an jeder Phase den
+// richtigen Stand (Issue #366).
+function tableWeek(
+  state: PhaseState,
+  weeks: number,
+  weekInPhase: number,
+): number | null {
+  if (state === "current") return weekInPhase;
+  if (state === "past") return weeks + 1;
+  if (state === "future") return 0;
+  return null;
+}
+
 // Wochentabelle des Plans: je Woche Saetze, Wiederholungen, Ziel-Anstrengung und
 // das Wochenziel. Der Zustand kommt aus der laufenden Woche der Phase -
 // abgeschlossene Wochen sind abgehakt, die laufende ist markiert.
-function planWeekRows(plan: WeekPlan, weekInPhase: number): PhaseWeekRow[] {
+function planWeekRows(
+  plan: WeekPlan,
+  weekInPhase: number | null,
+): PhaseWeekRow[] {
   return plan
     .slice()
     .sort((a, b) => a.week - b.week)
@@ -263,7 +227,7 @@ function planWeekRows(plan: WeekPlan, weekInPhase: number): PhaseWeekRow[] {
 function loadWeekRows(
   plan: LoadPlan,
   weeks: number,
-  weekInPhase: number,
+  weekInPhase: number | null,
 ): PhaseWeekRow[] {
   const anzahl = weeks > 0 ? weeks : plan.length;
   return Array.from({ length: anzahl }, (_, i) => {
@@ -290,15 +254,16 @@ interface PhaseWeekTable {
   source: WeekTableSource;
 }
 
-// Wochentabelle der laufenden Phase auf dem Weg, den die Phase hergibt:
-// Wochenliste zuerst, sonst die Lastliste, sonst keine Tabelle.
+// Wochentabelle einer Phase auf dem Weg, den die Phase hergibt: Wochenliste
+// zuerst, sonst die Lastliste, sonst keine Tabelle.
 //
-// Die Testphase ist dabei keine Ausnahme mehr (#364): sie traegt einen festen
-// Plan wie Maximalkraft und Intensivierung, also zeigt sie ihn auch. Ihre
-// Testwoche plant nichts - dort steht der Test statt Zahlen (planWeekRows).
+// Sie haengt nicht mehr an der laufenden Phase (#366): jede Phase mit Plan zeigt
+// ihre Wochen, nur der markierte Stand unterscheidet sich. Die Testphase ist
+// dabei keine Ausnahme (#364) - ihre Testwoche plant nichts, dort steht der Test
+// statt Zahlen (planWeekRows).
 function phaseWeekTable(
   p: JourneyPhaseInput,
-  weekInPhase: number,
+  weekInPhase: number | null,
 ): PhaseWeekTable | null {
   if (p.weekPlan?.length)
     return { rows: planWeekRows(p.weekPlan, weekInPhase), source: "plan" };
@@ -334,12 +299,13 @@ export function buildPhaseViews(
     const meta = isCurrent
       ? `Woche ${placement.weekInPhase} / ${p.weeks || "?"}`
       : `${p.weeks} ${p.weeks === 1 ? "Woche" : "Wochen"}`;
-    // Wochentabelle nur an der laufenden Phase - aus ihrer Wochenliste oder,
-    // wo es keine gibt, aus ihrer Lastliste. Was sie traegt, lassen die
-    // Detailzeilen weg.
-    const table = isCurrent
-      ? phaseWeekTable(p, placement.weekInPhase)
-      : null;
+    // Wochentabelle an jeder Phase mit Plan - aus ihrer Wochenliste oder, wo es
+    // keine gibt, aus ihrer Lastliste. Was sie traegt, lassen die Detailzeilen
+    // weg.
+    const table = phaseWeekTable(
+      p,
+      tableWeek(state, p.weeks, placement.weekInPhase),
+    );
     return {
       name: p.name,
       state,
@@ -429,19 +395,22 @@ export function buildTemplatePhaseViews(
   phases: JourneyPhaseInput[],
 ): PhaseView[] {
   const withLoad = usesLoadPlan(phases.map((p) => p.loadPlan));
-  return phases.map((p) => ({
-    name: p.name,
-    state: "preview" as const,
-    isCurrent: false,
-    mark: "",
-    meta: `${p.weeks} ${p.weeks === 1 ? "Woche" : "Wochen"}`,
-    // Ohne laufende Woche zeigt die Vorschau die Spanne der Lastliste.
-    detail: phaseDetail(p, withLoad, null),
-    loadNote: null,
-    // In der Vorschau laeuft keine Woche - die Tabelle gehoert zur laufenden
-    // Journey, die Vorlage zeigt nur die Eckwerte der Phase.
-    weekRows: null,
-  }));
+  return phases.map((p) => {
+    // Ohne laufende Journey ist keine Woche voraus oder zurueck: die Tabelle
+    // steht neutral da, sonst zeigt die Vorschau dasselbe wie die Journey-Seite.
+    const table = phaseWeekTable(p, null);
+    return {
+      name: p.name,
+      state: "preview" as const,
+      isCurrent: false,
+      mark: "",
+      meta: `${p.weeks} ${p.weeks === 1 ? "Woche" : "Wochen"}`,
+      // Ohne laufende Woche zeigt die Vorschau die Spanne der Lastliste.
+      detail: phaseDetail(p, withLoad, null, table?.source ?? null),
+      loadNote: null,
+      weekRows: table?.rows ?? null,
+    };
+  });
 }
 
 // Gesamtwochen einer Phasenliste (fuer die Dauer-Angabe im Vorlagen-Waehler).

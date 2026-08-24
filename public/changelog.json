@@ -1,6 +1,16 @@
 {
   "versions": [
     {
+      "version": "1.47.3",
+      "date": "2026-08-24",
+      "changes": [
+        "Die Wochenliste hing bisher an der laufenden Phase. Jetzt zeigt jede Phase mit festem Plan ihre Wochen - auch die, die noch kommen oder schon durch sind. Bei erledigten Phasen sind alle Wochen abgehakt, bei kommenden stehen sie blass da.",
+        "Test/Peak zeigt damit auch vor dem Start seine beiden Wochen einzeln statt einer Zusammenfassung.",
+        "Die Überschrift \"WOCHENPLAN\" über der Liste ist weg - \"Woche 1\" sagt schon, was dort steht.",
+        "In der Vorlagen-Vorschau (\"Phasen ansehen\") stehen die Wochen jetzt ebenfalls, damit vor dem Start sichtbar ist, was eine Vorlage vorgibt."
+      ]
+    },
+    {
       "version": "1.47.2",
       "date": "2026-08-24",
       "changes": [
