@@ -8,8 +8,9 @@
 >
 > Stand 24.08.2026: gegen Code, Schema und die Live-Tabelle `phase_types` durchgeprüft, dazu
 > eine Recherche zur Trainingspraxis (Abschnitt 3, Quellen am Ende). Entschieden und damit
-> nicht mehr offen: Name und Schlüssel des Bausteins (Eigenbau / `custom`, Abschnitt 1) und
-> die Bauregeln (Abschnitt 7). Was noch zu entscheiden ist, steht in Abschnitt 11.
+> nicht mehr offen: Name und Schlüssel des Bausteins (Eigenbau / `custom`, Abschnitt 1), die
+> Bauregeln und die Speicherform der getippten Tabelle (eine Spalte `custom_plan` an der
+> Vorlagenphase, Abschnitt 7). Was noch zu entscheiden ist, steht in Abschnitt 11.
 
 ---
 
@@ -246,6 +247,15 @@ Zwei Haken, die dazugehören:
 
 ## 7. Was das in der Datenbank bedeutet
 
+> **Kurz gesagt.** Drei Dinge ändern sich. Erstens bekommt die Liste der Bausteine eine
+> neunte Zeile – dort steht, wie der Eigenbau heißt und was an ihm einstellbar ist.
+> Zweitens bekommt die Vorlagenphase **eine** neue Spalte, in der die getippte Tabelle
+> liegt; sie heißt so, dass man ihr ansieht, dass nur dieser eine Baustein sie benutzt.
+> Drittens braucht die Wochentabelle einen Vermerk „getippt, nimm sie wie sie ist" – nicht
+> wegen einer Rechnung, sondern damit die App überhaupt weiß, dass die Tabelle das Sagen
+> hat. Fürs Gewicht braucht es keinen solchen Vermerk. Der Rest dieses Abschnitts sind die
+> genauen Feld- und Regelnamen für den Bau.
+
 ### Der neunte Baustein
 
 `phase_types` bekommt eine neunte Zeile je Nutzer. Die Eckwerte, so weit sie feststehen:
@@ -274,17 +284,52 @@ heißt. Dafür nötig:
 - Der Seed legt Bausteine vor den Journey-Vorlagen an (`src/lib/seed.ts`); die neue Zeile
   reiht sich dort ein.
 
-### Der Speicherort in der Vorlage
+### Der Speicherort in der Vorlage: eine Spalte `custom_plan`
 
-Das ist der eigentliche Eingriff. Migration 0050 hat `week_plan` und `load_plan` aus
-`journey_template_phases` **entfernt**, weil beide Listen aus Baustein und Wochenzahl
-vollständig ableitbar waren. Für getippte Listen stimmt das nicht mehr: Sie sind die
-Einstellung, nicht ihre Folge.
+Das ist der eigentliche Eingriff, und er ist am 24.08.2026 entschieden: **eine** neue,
+nullbare Spalte an `journey_template_phases`, die die getippte Tabelle als jsonb hält.
+Der Name sagt, wem sie gehört – `custom_plan` oder ähnlich, jedenfalls nicht `week_plan`.
 
-Beide Listen müssen an der Vorlagenphase wieder einen Platz bekommen. **Das ist kein Rückbau
-von 0050:** Für die acht bestehenden Bausteine bleibt die Begründung richtig, und sie bleiben
-ohne gespeicherte Liste. Nur der neue Baustein speichert seine Tabellen. Die Migration
-schreibt das ausdrücklich so hin, damit später niemand den Widerspruch sucht.
+**Warum überhaupt gespeichert wird.** Eine Bauregel ist eine Funktion; sie läuft beim
+Journey-Start und hat kein Gedächtnis. Zwischen dem Tippen der Tabelle und dem Start
+können Monate liegen. Die Zahlen müssen also irgendwo liegen, und die vorhandenen Spalten
+können sie nicht halten: Dort steht **eine** Satzrampe und **ein** Band für die ganze
+Phase, kein Wert je Woche und kein RIR.
+
+**Warum es kein Rückbau von Migration 0050 ist.** 0050 hat `week_plan` und `load_plan` aus
+dieser Tabelle entfernt, weil beide **Kopien** eines Rechenergebnisses waren – ableitbar
+aus Baustein und Wochenzahl, und damit überflüssig und veraltungsfähig. Die neue Spalte ist
+das Gegenteil: eine **Quelle**, Zahlen, die es sonst nirgends gibt. Eine Kopie abzuschaffen
+hindert nie daran, später eine Quelle anzulegen. Für die acht gerechneten Bausteine bleibt
+0050 unverändert gültig, sie speichern weiterhin nichts.
+
+Die Migration selbst hat diesen Fall sogar vorgesehen. Dort steht wörtlich, der Fall „die
+Phase nennt ihre Stufen selbst" sei nicht zurückgekommen, weil ihn keine Vorlage nutze –
+und: soll eine Vorlage das künftig können, *bekommt sie ein eigenes Feld, das ausdrücklich
+so heißt, und keine Kopie des Gebauten*. Genau das wird hier umgesetzt.
+
+**Warum der Name zählt.** An der laufenden Phase ist der Wochenplan ein *Ergebnis*: beim
+Start gerechnet und danach eingefroren. In der Vorlage ist die Tabelle eine *Eingabe*.
+Gleiche Form, entgegengesetzte Rolle. Hießen beide `week_plan`, hielte in einem Jahr jemand
+die Vorlagenspalte für einen Zwischenspeicher und räumte sie auf.
+
+**Die Datenbank schreibt die Zugehörigkeit selbst fest.** Damit die Spalte keine still
+mitlaufende Sonderregel wird, bekommt sie einen `CHECK` in der Form, die `phase_types`
+schon benutzt:
+
+```
+(focus = 'custom') = (custom_plan is not null)
+```
+
+Das bindet beides aneinander: Kein anderer Baustein kann die Spalte je füllen, und ein
+Eigenbau ohne Tabelle kann gar nicht erst entstehen. Damit ist die Ausnahme nicht mehr
+stillschweigend, sondern in der Datenbank erklärt – und die leere Spalte bei acht
+Bausteinen ist keine Nachlässigkeit, sondern eine erzwungene Aussage.
+
+**Eine Eingabe, zwei Listen.** Für den Nutzer ist es eine Tabelle. Beim Journey-Start
+zerlegt die Bauregel sie in die beiden Listen, die die Engine schon kennt: Sätze,
+Wiederholungen und RIR werden zur Wochentabelle der Phase, die Prozentspalte zur Lastliste
+(Abschnitt 4). Die Phase sieht danach aus wie jede andere.
 
 Damit erledigt sich nebenbei Abschnitt 5 des
 [Ideenpapiers zum Journey-Editor](./Idee-Journey-Editor.md): Die dort geforderten Spalten
@@ -338,6 +383,13 @@ Wochentabelle entsteht daneben dasselbe Muster.
 ---
 
 ## 8. Was die Engine lernen muss
+
+> **Kurz gesagt.** Auch hier drei Stellen. Die App koppelt heute zwei Fragen aneinander,
+> die beim Eigenbau auseinanderfallen: „gibt es eine Wochentabelle?" und „bestimmt sie das
+> Gewicht?". Die müssen getrennt werden. Dann muss der Coach lernen, Sätze und
+> Wiederholungen aus der Tabelle zu nehmen und das Gewicht aus der Prozentliste – heute
+> kann er nur entweder-oder. Und die Deckelung des Gewichts muss geprüft werden. Alles
+> andere – Anzeige, Kurve, Rückschau, Export – bleibt unberührt.
 
 Drei Stellen, alle klein und benennbar.
 
@@ -437,9 +489,10 @@ wird eigenständig besprochen, sobald die Datenseite steht. Absehbar ist nur:
 Erst wenn abgestimmt ist, dass gebaut wird, entstehen daraus ein Vorhaben-Issue und die
 Schritt-Issues.
 
-1. **Speicherort in der Vorlage.** Migration: `week_plan` und `load_plan` kehren an
-   `journey_template_phases` zurück, ausdrücklich nur für getippte Bausteine. Dazu Schema und
-   Schreibnaht. Ohne neunten Baustein bleiben die Spalten leer und nichts ändert sich.
+1. **Speicherort in der Vorlage.** Migration: eine neue nullbare Spalte `custom_plan` an
+   `journey_template_phases`, samt dem `CHECK`, der sie an `focus = 'custom'` bindet. Dazu
+   Schema und Schreibnaht. Solange es den neunten Baustein nicht gibt, kann die Spalte gar
+   nicht gefüllt werden und nichts ändert sich.
 2. **Der neunte Baustein.** Migration (Schlüssel in `CHECK` und `focusEnum`, Baustein-Zeile je
    Nutzer, die neue Bauregel der Wochentabelle in beiden `CHECK`-Listen), Seed, Schema,
    Bezugszahl nach Abschnitt 6. Danach existiert er, ohne dass man ihn bedienen kann.
@@ -447,8 +500,9 @@ Schritt-Issues.
    Plan-Bezug (Abschnitt 8). Für die bestehenden Bausteine ändert sich nichts – beide
    Antworten fallen dort zusammen. Für sich testbar.
 4. **Der vierte Steuerweg wirkt.** `suggestForExercise` kombiniert Tabelle und Lastliste, die
-   Deckelung wird geprüft, Journey-Start und Vorlagen-Vorschau reichen die getippten Listen
-   durch statt zu rechnen. Danach läuft eine von Hand eingetragene Vorlage vollständig durch.
+   Deckelung wird geprüft, Journey-Start und Vorlagen-Vorschau lesen `custom_plan` und
+   zerlegen es in die beiden Listen, statt sie zu rechnen. Danach läuft eine von Hand
+   eingetragene Vorlage vollständig durch.
 5. **Der Bildschirm.** Eigenes Konzept, siehe Abschnitt 10.
 6. **Doku.** `Architektur.md`, Nachtrag zu ADR-0018 um den vierten Steuerweg samt der Matrix
    aus Abschnitt 4, dieses Papier auf den gebauten Stand ziehen.
