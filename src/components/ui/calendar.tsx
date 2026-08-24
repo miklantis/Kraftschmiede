@@ -105,7 +105,10 @@ export function Calendar({
     "flex size-8 items-center justify-center rounded-[9px] border border-border bg-card text-foreground-secondary hover:bg-primary/5 min-[960px]:size-[34px]";
 
   return (
-    <div className="rounded-[18px] bg-card p-3.5 shadow-card min-[960px]:rounded-[20px] min-[960px]:p-5">
+    // select-none: im Kalender gibt es nichts zu kopieren, aber Longpress oder
+    // ein Wisch beim Blaettern markierte bisher Monatsname, Tagesnummern und
+    // Baender. Gilt fuer den ganzen Block inklusive der Inhalte des Aufrufers.
+    <div className="rounded-[18px] bg-card p-3.5 shadow-card select-none min-[960px]:rounded-[20px] min-[960px]:p-5">
       <div className="mb-3 flex items-center justify-between min-[960px]:mb-4">
         <button type="button" onClick={onPrev} aria-label="Vorheriger Monat" className={navBtn}>
           <ChevronLeft className="size-[18px]" />

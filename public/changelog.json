@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.48.1",
+      "date": "2026-08-24",
+      "changes": [
+        "Im Kalender lässt sich der Text jetzt nicht mehr versehentlich markieren - beim Blättern oder etwas längerem Tippen erscheint keine blaue Markierung mehr über Monatsname, Tagesnummern und Zeitraum-Balken."
+      ]
+    },
+    {
       "version": "1.48.0",
       "date": "2026-08-24",
       "changes": [
