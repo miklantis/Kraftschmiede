@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.48.2",
+      "date": "2026-08-24",
+      "changes": [
+        "Die kleinen Verlaufs-Grafiken der Übungen auf der Journey-Seite sehen jetzt aus wie der Verlauf in der Übungs-Detailansicht: Unter der Linie für Gewicht (grün) und für Wiederholungen (blau) liegt eine sanft nach unten auslaufende Farbfläche.",
+        "Der Score läuft dort jetzt als gestrichelte Linie und bleibt ohne Fläche - so ist er auf einen Blick von den anderen Werten zu unterscheiden. Der Trend bleibt unverändert."
+      ]
+    },
+    {
       "version": "1.48.1",
       "date": "2026-08-24",
       "changes": [

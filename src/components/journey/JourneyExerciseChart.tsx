@@ -1,10 +1,12 @@
 import { useCallback } from "react";
 import { scaleLinear } from "d3-scale";
 import {
+  appendAreaGradient,
   appendListTooltip,
   ChartCanvas,
   CHART_MONO,
   readToken,
+  smoothArea,
   smoothLine,
   type ChartDims,
   type ChartSvg,
@@ -33,6 +35,13 @@ import {
 // Phasengrenzen sind senkrechte Trennlinien mit dem Phasennamen am Fuss: beim
 // Phaseneintritt setzt der Coach den Anker neu, ohne Markierung saehe dieser
 // gewollte Sprung nach Fehler aus.
+//
+// Gewicht und Wiederholungen tragen zusaetzlich eine weiche Flaeche unter der
+// Linie – dieselbe Fuellung wie der Verlauf auf der Uebungs-Detailseite, damit
+// Kachel und Detailseite dieselbe Bildsprache sprechen. Score und Trend bleiben
+// reine Linien: vier Flaechen uebereinander waeren in der kleinen Kachel Brei.
+// Score laeuft dafuer gestrichelt, sonst waere er ohne Flaeche die
+// unauffaelligste Serie im Bild.
 
 // Farbe je Serie (CSS-Variablen des Themes). Legende und Schalterreihe lesen
 // dieselbe Zuordnung, damit Linie und Chip nie auseinanderlaufen.
@@ -49,6 +58,13 @@ export const JOURNEY_SERIES_VAR: Record<JourneySeriesKey, string> = {
   score: "--warning",
   trend: "--intensity",
 };
+
+// Serien mit Flaeche unter der Linie. Deckkraft oben wie in ExerciseChart auf
+// der Uebungs-Detailseite, nach unten laeuft der Verlauf auf transparent aus.
+const AREA_KEYS: ReadonlySet<JourneySeriesKey> = new Set(["weight", "reps"]);
+const AREA_TOP_OPACITY = 0.18;
+// Strichmuster der Score-Linie (Strichstaerke 2, runde Enden).
+const SCORE_DASH = "6 5";
 
 const MARGIN = { t: 10, r: 12, b: 22, l: 12 };
 // Massgebend ist die WOCHE: fuenf Wochen sollen auf einem Handy in ein Bild
@@ -169,39 +185,67 @@ export function JourneyExerciseChart({
           .text(m.name);
       });
 
-      // Linien je Serie.
-      series.forEach((s) => {
-        const color = readToken(JOURNEY_SERIES_VAR[s.key]);
+      // Koordinaten je Serie einmal berechnen: Flaeche und Linie haengen an
+      // denselben Punkten, gezeichnet wird aber in zwei Durchgaengen.
+      const drawn = series.map((s) => {
         const vals = s.points.map((p) => p.value);
         const lo = Math.min(...vals);
         const hi = Math.max(...vals);
         const flat = hi - lo <= 0;
-        const co = s.points.map((p) => ({
-          cx: px(indexOfDate.get(p.date) ?? 0),
-          cy: yOf(flat ? 0.5 : (p.value - lo) / (hi - lo)),
-        }));
+        return {
+          key: s.key,
+          color: readToken(JOURNEY_SERIES_VAR[s.key]),
+          co: s.points.map((p) => ({
+            cx: px(indexOfDate.get(p.date) ?? 0),
+            cy: yOf(flat ? 0.5 : (p.value - lo) / (hi - lo)),
+          })),
+        };
+      });
 
-        if (co.length > 1) {
-          g.append("path")
+      // Durchgang 1: alle Flaechen zuerst, damit keine Flaeche die Linie einer
+      // anderen Serie verdeckt. Ein einzelner Punkt spannt keine Flaeche auf.
+      const defs = svg.append("defs");
+      drawn.forEach((s) => {
+        if (!AREA_KEYS.has(s.key) || s.co.length < 2) return;
+        const gid = "jxarea" + Math.random().toString(36).slice(2, 8);
+        appendAreaGradient(defs, gid, s.color, AREA_TOP_OPACITY);
+        g.append("path")
+          .attr(
+            "d",
+            smoothArea<(typeof s.co)[number]>(
+              (d) => d.cx,
+              ih,
+              (d) => d.cy,
+            )(s.co) ?? "",
+          )
+          .attr("fill", `url(#${gid})`);
+      });
+
+      // Durchgang 2: Linien und Punkte je Serie.
+      drawn.forEach((s) => {
+        if (s.co.length > 1) {
+          const path = g
+            .append("path")
             .attr(
               "d",
-              smoothLine<(typeof co)[number]>(
+              smoothLine<(typeof s.co)[number]>(
                 (d) => d.cx,
                 (d) => d.cy,
-              )(co) ?? "",
+              )(s.co) ?? "",
             )
             .attr("fill", "none")
-            .attr("stroke", color)
+            .attr("stroke", s.color)
             .attr("stroke-width", 2)
             .attr("stroke-linejoin", "round")
             .attr("stroke-linecap", "round");
+          if (s.key === "score") path.attr("stroke-dasharray", SCORE_DASH);
         }
-        co.forEach((p) => {
+        s.co.forEach((p) => {
           g.append("circle")
             .attr("cx", p.cx)
             .attr("cy", p.cy)
             .attr("r", 2.6)
-            .attr("fill", color);
+            .attr("fill", s.color);
         });
       });
 
