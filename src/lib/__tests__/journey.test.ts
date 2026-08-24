@@ -267,28 +267,51 @@ describe("buildPhaseViews – Wochenplan", () => {
     expect(views[0].weekRows).toBeNull();
   });
 
-  it("zeigt an der Testphase den Ablauf statt Zahlen", () => {
+  it("zeigt die laufende Testphase als Wochenplan wie jede andere Planphase", () => {
     const views = buildPhaseViews([kraft, test], {
       phaseIndex: 1,
       weekInPhase: 1,
       done: false,
     });
-    expect(views[1].weekRows).toBeNull();
-    expect(views[1].testNote).toContain("Entlastung");
-    expect(views[1].testNote).toContain("Testwoche");
+    const rows = views[1].weekRows!;
+    expect(rows.map((r) => r.label)).toEqual(["Woche 1", "Woche 2"]);
+    expect(rows[0].targets).toBe("2 × 3–5 · RIR 3");
+    expect(rows[0].note).toBe("Entlastung mit 60 % vom Arbeitsgewicht");
+    // Die Testwoche plant nichts - dort steht der Test statt Zahlen.
+    expect(rows[1].targets).toBe("1RM-Test");
+    expect(rows[1].note).toBe("Keine Vorgabe, läuft über die Übungsseite");
+    // Wie bei allen Planphasen traegt die Tabelle alles (#362).
+    expect(views[1].detail).toEqual([]);
   });
 
-  it("nennt eine einwoechige Testphase eine reine Testwoche", () => {
+  it("zeigt an der laufenden einwoechigen Testphase nur die Testwoche", () => {
     const views = buildPhaseViews([kraft, nurTest], {
       phaseIndex: 1,
       weekInPhase: 1,
       done: false,
     });
-    expect(views[1].testNote).toContain("Reine Testwoche");
-    // Ohne geplante Einheit stehen keine Zahlen an der Phase.
-    expect(views[1].detail.slice(0, 2)).toEqual([
+    const rows = views[1].weekRows!;
+    expect(rows).toHaveLength(1);
+    expect(rows[0].targets).toBe("1RM-Test");
+  });
+
+  it("fasst eine nicht laufende Testphase als Ablauf zusammen", () => {
+    const views = buildPhaseViews([kraft, test, nurTest], {
+      phaseIndex: 0,
+      weekInPhase: 1,
+      done: false,
+    });
+    // Ohne Tabelle stuenden sonst die Werte der Entlastungswoche da, als
+    // gaelten sie fuer die ganze Phase (#364).
+    expect(views[1].weekRows).toBeNull();
+    expect(views[1].detail).toEqual([
+      { k: "Entlastung", v: "2 × 3–5 · RIR 3" },
+      { k: "Testwoche", v: "1RM-Test" },
+    ]);
+    // Eine einwoechige Testphase hat gar keine Entlastung.
+    expect(views[2].detail).toEqual([
       { k: "Vorgabe", v: "keine" },
-      { k: "Woche", v: "1RM-Test" },
+      { k: "Testwoche", v: "1RM-Test" },
     ]);
   });
 
@@ -302,20 +325,6 @@ describe("buildPhaseViews – Wochenplan", () => {
       { k: "Wiederholungen", v: "5 → 2 Wdh" },
       { k: "Sätze / Woche", v: "4 Sätze" },
       { k: "Ziel-Anstrengung", v: "RIR 2 → 1" },
-    ]);
-  });
-
-  it("zaehlt an der Testphase nur ihre Entlastungswoche", () => {
-    const views = buildPhaseViews([kraft, test], {
-      phaseIndex: 0,
-      weekInPhase: 1,
-      done: false,
-    });
-    // Die Testwoche plant nichts, sie faellt aus den Spannen heraus.
-    expect(views[1].detail).toEqual([
-      { k: "Wiederholungen", v: "3–5 Wdh" },
-      { k: "Sätze / Woche", v: "2 Sätze" },
-      { k: "Ziel-Anstrengung", v: "RIR 3" },
     ]);
   });
 

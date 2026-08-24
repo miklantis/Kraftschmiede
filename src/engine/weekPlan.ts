@@ -174,7 +174,11 @@ export function buildPowerWeekPlan(weeks: number): WeekPlan {
  *  Testphase besteht damit nur aus der Testwoche.
  *
  *  Die Testwoche plant nichts: trainiert werden darf, aber ohne Vorgabe, und
- *  der 1RM-Test laeuft unveraendert von der Uebungsseite aus. */
+ *  der 1RM-Test laeuft unveraendert von der Uebungsseite aus.
+ *
+ *  Die Wochentexte sagen nur, was in der Zeile selbst nicht steht: seit die
+ *  Phasenkarte den ganzen Plan zeigt (#364), traegt die Tabelle den Ablauf, und
+ *  ein "danach die Testwoche" waere die naechste Zeile ein zweites Mal. */
 export function buildTestPhaseWeekPlan(weeks: number): WeekPlan {
   const n = Math.max(1, Math.round(weeks));
   return Array.from({ length: n }, (_, i) =>
@@ -186,7 +190,7 @@ export function buildTestPhaseWeekPlan(weeks: number): WeekPlan {
           repsMax: null,
           rir: 0,
           loadPct: 1,
-          note: "Testwoche: keine Vorgabe, der 1RM-Test läuft über die Übungsseite",
+          note: "Keine Vorgabe, läuft über die Übungsseite",
         }
       : {
           week: i + 1,
@@ -195,7 +199,7 @@ export function buildTestPhaseWeekPlan(weeks: number): WeekPlan {
           repsMax: DELOAD_REPS_MAX,
           rir: DELOAD_RIR,
           loadPct: DELOAD_LOAD_PCT,
-          note: "Entlastung mit 60 % vom Arbeitsgewicht, danach die Testwoche",
+          note: "Entlastung mit 60 % vom Arbeitsgewicht",
         },
   );
 }
