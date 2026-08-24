@@ -480,7 +480,17 @@ Eindampfen, sonst wären die alten Felder schon weg.
   Testphase zeigt weiter ihren Ablauf (`testNote`) statt Zahlen. Die Eckwerte einer
   Phase mit Plan kommen ebenfalls aus dem Plan (Wiederholungen, Sätze, Ziel-Anstrengung
   statt Band, Satz-Rampe und Deload); gezählt werden dabei nur Wochen mit geplanter
-  Einheit, eine Phase ganz ohne Vorgabe sagt genau das. Auch die Periodisierungskurve
+  Einheit, eine Phase ganz ohne Vorgabe sagt genau das.
+- **Was die Wochentabelle trägt, steht nicht noch einmal darüber.** Die Detailzeilen
+  einer Phase sind die Zusammenfassung derselben Zahlen, die die Tabelle Woche für
+  Woche auflistet – also lässt `phaseDetail` weg, was die Tabelle schon zeigt
+  (`PhaseView.detail` bleibt dann leer, `PhaseList` blendet die Kachel aus). Kommt die
+  Tabelle aus der Wochenliste, entfällt die Kachel ganz; kommt sie aus der Lastliste,
+  entfällt nur die Zeile „Vorgegebene Last", weil Band, Satz-Rampe und Deload dort
+  nirgends stehen. Ohne Tabelle – nicht laufende Phasen, Vorlagen-Vorschau – bleiben
+  die Eckwerte unverändert stehen. Sichtbar sind sie auf beiden Breiten gleich: die
+  mobile Liste klappt nicht mehr nur die laufende Phase auf, sondern zeigt an jeder
+  Phase dieselben Angaben wie das Raster (Issue #362). Auch die Periodisierungskurve
   rechnet dann wochengenau: beide Linien kommen in `lib/periodization.ts` aus der
   jeweiligen Planwoche statt aus den Eckwerten der Phase – die Intensität aus den
   Wiederholungen der Woche mal dem Anteil am Arbeitsgewicht (`loadPct`), das Volumen aus

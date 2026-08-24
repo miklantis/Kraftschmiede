@@ -124,23 +124,25 @@ describe("buildPhaseViews \u2013 Lastliste", () => {
     phase({ name: "Test/Peak", weeks: 1, loadPlan: null }),
   ];
 
-  it("zeigt die vorgegebene Last als Detailzeile an jeder Phase", () => {
+  it("zeigt die vorgegebene Last als Detailzeile an nicht laufenden Phasen", () => {
     const views = buildPhaseViews(rampe, {
       phaseIndex: 0,
       weekInPhase: 1,
       done: false,
     });
-    expect(views[0].detail[3]).toEqual({ k: "Vorgegebene Last", v: "65 %" });
     expect(views[1].detail[3]).toEqual({ k: "Vorgegebene Last", v: "100 %" });
   });
 
-  it("zeigt an der laufenden Phase den Anteil der laufenden Woche", () => {
+  it("nennt den Anteil der laufenden Phase nur in ihrer Wochentabelle", () => {
     const views = buildPhaseViews(block, {
       phaseIndex: 0,
       weekInPhase: 2,
       done: false,
     });
-    expect(views[0].detail[3]).toEqual({ k: "Vorgegebene Last", v: "80 %" });
+    // Die Tabelle fuehrt den Anteil je Woche auf - die Detailzeile daneben
+    // waere dieselbe Zahl ein zweites Mal (Issue #362).
+    expect(views[0].detail.map((d) => d.k)).not.toContain("Vorgegebene Last");
+    expect(views[0].weekRows?.[1].targets).toBe("80 %");
     expect(views[0].loadNote).toContain("80 %");
   });
 
@@ -292,7 +294,7 @@ describe("buildPhaseViews – Wochenplan", () => {
 
   it("nimmt die Detailzeilen aus dem Plan statt aus Band und Satz-Rampe", () => {
     const views = buildPhaseViews([kraft, test], {
-      phaseIndex: 0,
+      phaseIndex: 1,
       weekInPhase: 1,
       done: false,
     });
@@ -301,12 +303,32 @@ describe("buildPhaseViews – Wochenplan", () => {
       { k: "Sätze / Woche", v: "4 Sätze" },
       { k: "Ziel-Anstrengung", v: "RIR 2 → 1" },
     ]);
-    // Die Testphase zaehlt nur ihre Entlastungswoche - die Testwoche plant nichts.
+  });
+
+  it("zaehlt an der Testphase nur ihre Entlastungswoche", () => {
+    const views = buildPhaseViews([kraft, test], {
+      phaseIndex: 0,
+      weekInPhase: 1,
+      done: false,
+    });
+    // Die Testwoche plant nichts, sie faellt aus den Spannen heraus.
     expect(views[1].detail).toEqual([
       { k: "Wiederholungen", v: "3–5 Wdh" },
       { k: "Sätze / Woche", v: "2 Sätze" },
       { k: "Ziel-Anstrengung", v: "RIR 3" },
     ]);
+  });
+
+  it("laesst die Detailzeilen weg, wo die Wochentabelle sie schon traegt", () => {
+    const views = buildPhaseViews([kraft, test], {
+      phaseIndex: 0,
+      weekInPhase: 1,
+      done: false,
+    });
+    // Die laufende Kraftphase zeigt ihre Wochentabelle - die Eckwerte darueber
+    // waeren nur deren Zusammenfassung (Issue #362).
+    expect(views[0].weekRows).not.toBeNull();
+    expect(views[0].detail).toEqual([]);
   });
 
   it("laesst Phasen ohne Plan unveraendert", () => {
@@ -382,17 +404,21 @@ describe("buildPhaseViews – Wochentabelle aus der Lastliste", () => {
     expect(buildTemplatePhaseViews([wiederaufbau])[0].weekRows).toBeNull();
   });
 
-  it("nennt an der laufenden Woche den Anteil, sonst die Spanne", () => {
+  it("laesst neben der Lasttabelle nur die Zeilen stehen, die sie nicht traegt", () => {
     const views = buildPhaseViews([wiederaufbau], {
       phaseIndex: 0,
       weekInPhase: 2,
       done: false,
     });
-    expect(views[0].detail).toContainEqual({
-      k: "Vorgegebene Last",
-      v: "80 %",
-    });
+    // Die Lasttabelle zeigt nur das Gewicht - Band, Satz-Rampe und Deload
+    // bleiben deshalb stehen, die Lastzeile faellt weg (Issue #362).
+    expect(views[0].detail.map((d) => d.k)).toEqual([
+      "Wiederholungsband",
+      "Satz-Rampe / Woche",
+      "Deload",
+    ]);
     expect(views[0].loadNote).toContain("80 %");
+    // Ohne Tabelle - hier die Vorschau - steht die Spanne wie bisher da.
     expect(buildTemplatePhaseViews([wiederaufbau])[0].detail).toContainEqual({
       k: "Vorgegebene Last",
       v: "65 → 95 %",

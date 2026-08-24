@@ -87,7 +87,7 @@ export function TemplateCard({
           </button>
           {open && (
             <div className="mt-3">
-              <PhaseList phases={phases} variant="preview" />
+              <PhaseList phases={phases} />
             </div>
           )}
         </div>

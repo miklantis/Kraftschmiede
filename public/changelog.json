@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.47.1",
+      "date": "2026-08-24",
+      "changes": [
+        "Auf der Journey-Seite standen die Eckwerte einer laufenden Phase doppelt: einmal zusammengefasst in der Kachel und direkt darunter noch einmal Woche für Woche im Wochenplan. Die Kachel entfällt jetzt, wo der Wochenplan dieselben Zahlen ohnehin zeigt.",
+        "Gibt eine Phase nur das Gewicht vor (Wiederaufbau), bleiben Wiederholungsband, Satz-Rampe und Deload stehen - nur die doppelte Lastangabe fällt weg.",
+        "Auf dem Handy zeigen jetzt alle Phasen ihre Details, nicht mehr nur die laufende. Erledigte und kommende Phasen - und die ganze Archiv-Ansicht - sind damit auch mobil vollständig lesbar."
+      ]
+    },
+    {
       "version": "1.47.0",
       "date": "2026-08-23",
       "changes": [
