@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.49.2",
+      "date": "2026-08-25",
+      "changes": [
+        "Tauschst du mitten in einer Journey eine Übung aus, verschwindet die alte jetzt nicht mehr aus „Übungen in dieser Journey“. Sie bleibt mit ihrem Verlauf und ihrer Statistik stehen – gedimmt, mit dem Hinweis „nicht mehr im Workout“ und direkt neben der Übung, die sie ersetzt hat, damit du beide vergleichen kannst. Einen Coach-Vorschlag bekommt sie nicht mehr. Dasselbe gilt, wenn du ein Workout deaktivierst oder aus der Journey nimmst."
+      ]
+    },
+    {
       "version": "1.49.1",
       "date": "2026-08-25",
       "changes": [

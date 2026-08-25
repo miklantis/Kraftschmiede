@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import {
   buildJourneyExerciseGroups,
   journeyExerciseIds,
+  journeyTrainedExerciseIds,
   type JourneyExerciseData,
   type JourneyExerciseGroup,
 } from "@/lib/journeyExercises";
@@ -26,17 +27,23 @@ export interface JourneyExercisesView {
   error: unknown;
   /** Alle Quellen da – erst dann ist ein leerer Abschnitt aussagekraeftig. */
   ready: boolean;
-  /** Leer, solange kein nutzbares Workout zugewiesen ist (Leerzustand). */
+  /** Leer, solange weder ein nutzbares Workout zugewiesen noch in dieser
+   *  Journey etwas trainiert ist (Leerzustand). */
   groups: JourneyExerciseGroup[];
   /** Gewichtseinheit fuer die Werte im Chart-Tooltip. */
   unit: string;
 }
 
 // Ansichtsmodell des Abschnitts "Uebungen in dieser Journey": welche Uebungen
-// gehoeren ueber die zugewiesenen Workouts zu dieser Journey, und wie oft ist
-// jede darin gelaufen. Die Journey kommt als Parameter herein (nicht "die
-// aktive" fest verdrahtet), damit die Rueckschau abgeschlossener Journeys
-// spaeter denselben Hook nutzen kann; ohne Journey bleibt alles leer.
+// gehoeren zu dieser Journey, und wie oft ist jede darin gelaufen. Die Journey
+// kommt als Parameter herein (nicht "die aktive" fest verdrahtet), damit die
+// Rueckschau abgeschlossener Journeys spaeter denselben Hook nutzen kann; ohne
+// Journey bleibt alles leer.
+//
+// Zwei Quellen: der heutige Plan (zugewiesene Workouts) und die Einheiten
+// dieser Journey. Die zweite haelt Uebungen im Abschnitt, die hier trainiert
+// und danach ausgetauscht oder aus dem Plan genommen wurden – sonst waere ihr
+// Verlauf mit dem Wechsel verschwunden.
 //
 // Alle Quellen sind bereits gecacht (Katalog, Vorlagen, Zuordnung, Verlauf) –
 // die Liste zieht deshalb sofort mit, wenn oben ein Workout an- oder
@@ -101,19 +108,28 @@ export function useJourneyExercises(
       lookup[e.id] = { name: e.name, profile: e.profile };
     }
 
-    const ids = journeyExerciseIds(
-      (templatesQ.data ?? []) as WorkoutInput[],
-      lookup,
-      new Set(assigned),
-    );
-    if (ids.length === 0) return [];
-
     // Einmal auf die Einheiten dieser Journey eingrenzen, dann je Uebung deren
     // Verlauf bauen – der Journey-Stempel der Einheit entscheidet.
     const journeySessions = filterJourneySessions(
       sessionsQ.data ?? [],
       journeyId,
     );
+
+    const planIds = journeyExerciseIds(
+      (templatesQ.data ?? []) as WorkoutInput[],
+      lookup,
+      new Set(assigned),
+    );
+    const planSet = new Set(planIds);
+    // Zweite Quelle: in dieser Journey trainiert, heute nicht mehr im Plan
+    // (ausgetauschte Uebung, deaktiviertes oder abgezogenes Workout). Ohne sie
+    // faellt der bereits gelaufene Verlauf aus dem Abschnitt heraus.
+    const removedIds = journeyTrainedExerciseIds(journeySessions).filter(
+      (id) => !planSet.has(id),
+    );
+    const ids = [...planIds, ...removedIds];
+    if (ids.length === 0) return [];
+
     const byId = new Map((exercisesQ.data ?? []).map((e) => [e.id, e]));
     const data: Record<string, JourneyExerciseData | undefined> = {};
     for (const id of ids) {
@@ -135,8 +151,9 @@ export function useJourneyExercises(
 
     return buildJourneyExerciseGroups(
       exercisesQ.data ?? [],
-      new Set(ids),
+      planSet,
       data,
+      new Set(removedIds),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [

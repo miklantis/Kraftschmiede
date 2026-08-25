@@ -6,14 +6,19 @@ import { useJourneySeries } from "@/hooks/useJourneySeries";
 import { JourneyExerciseTile } from "./JourneyExerciseTile";
 import { JourneySeriesToggles } from "./JourneySeriesToggles";
 
-// Abschnitt "Uebungen in dieser Journey": je Uebung der zugewiesenen Workouts
-// eine Kachel mit ihrem Verlauf in dieser Journey. Nur mit aktiver Journey
+// Abschnitt "Uebungen in dieser Journey": je Uebung dieser Journey eine Kachel
+// mit ihrem Verlauf darin. Nur mit aktiver Journey
 // sichtbar. Gruppiert wie die Uebungsseite (Hauptuebungen · Assistenz · Core ·
 // Koerpergewicht), Reihenfolge aus dem Katalog.
 //
 // Uebungen ohne Einheit in dieser Journey stehen als schmale Platzhalter-Zeile
 // an ihrem Platz: direkt nach dem Journey-Start staende sonst eine Wand leerer
 // Kacheln. Mit der ersten Einheit wird daraus die volle Kachel.
+//
+// Am Ende jeder Gruppe stehen die Uebungen, die in dieser Journey trainiert
+// wurden, aber nicht mehr im Plan sind (ausgetauscht, Workout deaktiviert oder
+// abgezogen) – gedimmt und beschriftet, damit ihr Verlauf beim Wechsel nicht
+// verschwindet und neben der Uebung steht, die sie ersetzt hat.
 export function JourneyExercisesSection(): React.ReactElement | null {
   const navigate = useNavigate();
   const journeyQ = useActiveJourney();
@@ -61,6 +66,7 @@ export function JourneyExercisesSection(): React.ReactElement | null {
                         coach={it.coach}
                         activeKeys={active}
                         unit={unit}
+                        removed={it.removed}
                         onOpen={() => open(it.id)}
                       />
                     ) : (
