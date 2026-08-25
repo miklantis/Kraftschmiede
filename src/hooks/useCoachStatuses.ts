@@ -1,16 +1,7 @@
 import { useMemo } from "react";
-import { workSets } from "@/engine";
-import {
-  suggestWithBar,
-  coachScopeFor,
-  coachStatusFromSuggestion,
-  entryWorkWeight,
-  planOutlook,
-  type CoachBuildExercise,
-  type CoachView,
-} from "@/lib/coach";
-import { activeRepTarget, phaseEntryOverride } from "@/lib/liveBuild";
-import { buildPlanSource, planContextFor } from "@/lib/planContext";
+import type { CoachView } from "@/lib/coach";
+import { coachViewFor, type CoachStandExercise } from "@/lib/coachStand";
+import { buildPlanSource } from "@/lib/planContext";
 import { buildLastEntries, buildPrevEntries } from "@/lib/lastEntries";
 import { derivePhaseContext } from "@/lib/phaseContext";
 import { todayISO } from "@/lib/format";
@@ -26,9 +17,10 @@ import { useBars, usePlates, useDumbbells } from "./useInventory";
 // senken (bzw. Begleituebung "frei" / ohne Vordaten "Start"). Buendelt dieselben
 // Daten-Hooks wie der Live-Aufbau (gecacht, kein zusaetzlicher Netz-Zugriff),
 // formt sie ueber die geteilten Bausteine (lastEntries, phaseContext) und ruft die
-// gemeinsame Coach-Naht suggestWithBar - so ist der Status deckungsgleich mit dem
-// Vorschlag, den eine gestartete Einheit zeigen wuerde. Reine Anzeige, kein
-// Schreibvorgang.
+// gemeinsame Coach-Kette coachViewFor (lib/coachStand) - dieselbe Fassung, die
+// auch den Aufbau einer Einheit und die Vorschau im Training traegt. Der Status
+// ist damit deckungsgleich mit dem Vorschlag, den eine gestartete Einheit zeigen
+// wuerde. Reine Anzeige, kein Schreibvorgang.
 //
 // Geliefert wird dieselbe Anzeigeform wie im Training (CoachView, #268,
 // Schritt 4): Zahlen, Geltungsbereich und Ausblick. Vorher trug die
@@ -116,7 +108,8 @@ export function useCoachStatuses(): UseCoachStatuses {
     );
 
     for (const e of exercisesQ.data ?? []) {
-      const exo: CoachBuildExercise = {
+      const exo: CoachStandExercise = {
+        id: e.id,
         key: e.key,
         profile: e.profile,
         tier: e.tier,
@@ -127,80 +120,33 @@ export function useCoachStatuses(): UseCoachStatuses {
             : null,
         workWeight: e.work_weight,
         barId: e.bar_id,
+        rm: e.rm,
         referenceWeight: e.reference_weight,
         referencePhaseId: e.reference_phase_id,
         planStartWeight: e.plan_start_weight,
       };
-      const plan = planContextFor(planSource, {
-        id: e.id,
-        referenceWeight: e.reference_weight,
-        referencePhaseId: e.reference_phase_id,
-        planStartWeight: e.plan_start_weight,
-        rm: e.rm,
-      });
-      const lastEntry = lastEntryByExercise[e.id] ?? null;
-      const hadPriorData = workSets(lastEntry).length > 0;
-      const repTarget = activeRepTarget(exo, ph.phaseRepTarget, hasPhase, plan);
-      const { suggestion, bar } = suggestWithBar(exo, {
+      // Vordaten sind hier die zuletzt gespeicherte Einheit der Uebung - keine
+      // laufende Einheit im Spiel, also greift auch der Phasenwechsel-Einstieg
+      // wie beim Aufbau einer Einheit.
+      const view = coachViewFor({
+        exo,
+        planSource,
         phaseFocus: ph.phaseFocus,
-        lastEntry,
-        prevEntry: prevEntryByExercise[e.id] ?? null,
+        phaseRepTarget: ph.phaseRepTarget,
+        hasPhase,
+        freeMode,
+        loadFactor: ph.loadFactor,
         weightStep,
         bars,
         plates,
         dumbbells,
-        repTarget,
-        freeMode,
-        loadFactor: ph.loadFactor,
-        plan,
+        lastEntry: lastEntryByExercise[e.id] ?? null,
+        prevEntry: prevEntryByExercise[e.id] ?? null,
+        unit,
       });
-      // Denselben Phasenwechsel-Einstieg anwenden wie der Live-Aufbau, sonst
-      // zeigt die Statusanzeige bei getrennten Repbaendern ein anderes Gewicht
-      // als die gestartete Einheit. Die Coach-Entscheidung (steigern/halten/
-      // senken) bleibt die des Vorschlags - der Einstieg setzt nur die Last.
-      const entry = phaseEntryOverride({
-        exo,
-        rm: e.rm,
-        repTarget,
-        bar: bar ? { weight: bar.weight } : null,
-        lastEntry,
-        plates,
-        loadFactor: ph.loadFactor,
-        suggestion,
-      });
-      // Die gewertete Einheit der laufenden Woche - dieselbe Rolle, die im
-      // Training die abgehakten Saetze spielen. Fehlt sie, bleibt es bei der
-      // Wochenvorgabe ohne Ausblick.
-      const judged = plan?.currentWeekEntry ?? null;
-      out[e.id] = {
-        status: coachStatusFromSuggestion(
-          { ...suggestion, weight: entry.weight, targetReps: entry.targetReps },
-          hadPriorData,
-          unit,
-        ),
-        scope: coachScopeFor(exo, plan),
-        outlook: judged
-          ? planOutlook(
-              exo,
-              {
-                phase: ph.phaseFocus,
-                lastEntry: judged,
-                weightStep,
-                bar: bar ? { weight: bar.weight } : undefined,
-                plates,
-                dumbbells,
-                plan,
-              },
-              {
-                // Vorgabe der Woche, nicht der Phasenwechsel-Einstieg: der
-                // Ausblick rechnet auf dem Wochenplan weiter.
-                weekWeight: suggestion.weight,
-                workedWeight: entryWorkWeight(judged),
-                judged,
-              },
-            )
-          : null,
-      };
+      // Ohne laufende Einheit rechnet die Kette immer (s. coachStandFor).
+      if (!view) continue;
+      out[e.id] = view;
     }
     return out;
   }, [
