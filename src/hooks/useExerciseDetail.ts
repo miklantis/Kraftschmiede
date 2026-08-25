@@ -4,7 +4,6 @@ import { useSessionsDetailed } from "./useSessionsDetailed";
 import { useSettings } from "./useSettings";
 import { useSkills } from "./useSkills";
 import { useCoachStatuses } from "./useCoachStatuses";
-import { skillSeeds } from "@/seed/definitions";
 import { muscleValuesFromRows } from "@/lib/muscles";
 import type { CoachView } from "@/lib/coach";
 import {
@@ -143,19 +142,17 @@ export function useExerciseDetail(exerciseId: string): ExerciseDetailView {
   const exercise =
     exercisesQ.data?.find((e) => e.id === exerciseId) ?? null;
 
-  // Skill-Zuordnung: skillId (DB-UUID) -> Definitions-Schluessel (useSkills),
-  // Schluessel -> Skill-Definition (Code-Seed), darin Phase + Position ->
-  // exerciseKey/target/metric. So findet der Verlauf der Katalog-Uebung auch
-  // die Skill-Saetze (1:1 wie V1 exerciseHistory).
+  // Skill-Zuordnung aus den geladenen Definitionen (useSkills): skillId
+  // (DB-UUID) -> Skill, darin Phase + Position -> verknuepfte Katalog-Uebung,
+  // Ziel und Metrik. So findet der Verlauf der Katalog-Uebung auch die
+  // Skill-Saetze (1:1 wie V1 exerciseHistory).
   const skillResolve: SkillExResolve = (skillId, phase, position) => {
     const def = skillsQ.data?.find((d) => d.id === skillId);
-    if (!def || def.key == null) return null;
-    const seed = skillSeeds.find((s) => s.key === def.key);
-    const ex = seed?.phases[phase]?.exercises[position];
-    if (!ex || ex.exerciseKey == null) return null;
+    const ex = def?.phases[phase]?.exercises[position];
+    if (!ex || ex.exerciseId == null) return null;
     return {
-      exerciseKey: ex.exerciseKey,
-      metric: ex.metric === "duration" ? "duration" : "reps",
+      exerciseId: ex.exerciseId,
+      metric: ex.metric,
       target: ex.target,
     };
   };
@@ -166,7 +163,6 @@ export function useExerciseDetail(exerciseId: string): ExerciseDetailView {
           exercise.id,
           sessionsQ.data,
           rmFormula,
-          exercise.key,
           skillResolve,
         )
       : [];

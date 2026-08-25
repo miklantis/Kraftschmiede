@@ -9,7 +9,8 @@ dieselbe Regel mehrfach steht, oder an der eine Regel dort liegt, wo kein Test s
 erreicht. Dazu je ein Vorschlag, wie sich das zu einem tieferen Modul zusammenziehen liesse.
 
 **Was dieses Dokument nicht ist:** keine Entscheidung und kein Auftrag. Umgesetzt sind
-davon bisher Kandidat 1 (Issue #379) und Kandidat 2 (Issue #380), siehe Vermerk dort;
+davon bisher Kandidat 1 (Issue #379), Kandidat 2 (Issue #380) und Kandidat 6 (Issue #381),
+siehe Vermerk dort;
 alles Übrige steht offen. Entschiedenes steht in [`docs/adr/`](./adr/README.md), der Ist-Zustand in
 [`docs/Architektur.md`](./Architektur.md). Wird ein Kandidat gebaut, bekommt er vorher ein
 Issue nach [`docs/Issue-Konventionen.md`](./Issue-Konventionen.md).
@@ -266,6 +267,9 @@ sie selbst. Dazu eine Abbildung `toPhaseInputs` neben die vorhandenen legen.
 ---
 
 ## 6. Skill-Übungen kommen aus der Datenbank
+
+> **Umgesetzt** mit Issue #381. Der Abschnitt beschreibt ab „Problem" den Stand vor der
+> Umsetzung; der heutige Stand steht in [`docs/Architektur.md`](./Architektur.md).
 
 **Empfehlung: stark** · Abhängigkeit: in-process
 

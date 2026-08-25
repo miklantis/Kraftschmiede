@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.48.5",
+      "date": "2026-08-25",
+      "changes": [
+        "Der Übungsverlauf holt die Angaben zu Skill-Übungen jetzt aus der Datenbank statt aus einer fest eingebauten Kopie im Programm. Angezeigt wird unverändert dasselbe. Sobald sich Skills künftig bearbeiten lassen, übernimmt der Verlauf die Änderung sofort, statt weiter den alten Stand zu zeigen."
+      ]
+    },
+    {
       "version": "1.48.4",
       "date": "2026-08-25",
       "changes": [
