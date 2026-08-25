@@ -1,8 +1,10 @@
 // Schreib-Baustein rund um die Journey: der Journey-Start samt Phasen und
-// Referenzgewichten, das Umbenennen, die Uebernahme der Workout-Zuordnungen
-// beim Journey-Wechsel, das Zuweisen/Herausnehmen einzelner Workouts und das
-// Speichern bzw. Archivieren der Workout-Vorlagen – alles als duenne Folgen
-// ueber der Naht JourneyStore. Hier liegen die Absicht-zu-Handgriff-Zuordnung,
+// Referenzgewichten, der Abschluss einer durchlaufenen Journey, das Umbenennen,
+// die Uebernahme der Workout-Zuordnungen beim Journey-Wechsel, das
+// Zuweisen/Herausnehmen einzelner Workouts und das Speichern bzw. Archivieren
+// der Workout-Vorlagen – alles als duenne Folgen ueber der Naht JourneyStore.
+// Beide Wege, auf denen eine Journey endet (Wechsel und Kalender-Abschluss),
+// liegen damit hier und benutzen dieselben Handgriffe (Issue #379). Hier liegen die Absicht-zu-Handgriff-Zuordnung,
 // die Reihenfolge mehrstufiger Ablaeufe und die Anmeldepruefung – an einem Ort.
 // Das eigentliche Schreiben und Fehlerwerfen macht der uebergebene Speicher.
 //
@@ -227,6 +229,39 @@ export async function writeJourneyStart(
   }
 
   return { newJourneyId, previousJourneyId };
+}
+
+/** Was der Abschluss braucht: welche Journey, und mit welchem Enddatum sie im
+ *  Archiv steht (der Sonntag ihrer letzten geplanten Woche). */
+export interface JourneyAbschlussPayload {
+  journeyId: string;
+  endDate: string;
+}
+
+/** Eine Journey beenden, weil sie durchlaufen ist (Kalender-Abschluss, #240):
+ *  ins Archiv legen und die eingefrorenen Referenzgewichte wegraeumen - mit der
+ *  Journey endet ihr Bezugspunkt, die naechste rechnet wieder aus der letzten
+ *  Leistung.
+ *
+ *  Steht hier statt beim Verlauf, damit "eine Journey endet" an genau einer
+ *  Stelle steht: derselbe Handgriff `clearReferenzgewichte`, den auch der
+ *  Journey-Wechsel benutzt, raeumt Gewicht, Startgewicht und Phasenbezug
+ *  zusammen weg (Issue #379). Zuvor lief der Kalender-Abschluss ueber eine
+ *  zweite Fassung im Verlauf-Speicher, die den Phasenbezug stehen liess.
+ *
+ *  Bewusst einfache Folge ohne Offline-Puffer (#240): der Abschluss ist keine
+ *  Dateneingabe, sondern eine Schlussfolgerung aus Daten, die schon da sind.
+ *  Schlaegt er fehl, ist die Bedingung beim naechsten Oeffnen unveraendert wahr
+ *  und die Folge laeuft erneut - sie schreibt dabei dieselben Werte und bleibt
+ *  deshalb folgenlos. */
+export async function writeJourneyAbschluss(
+  store: JourneyStore,
+  userId: string | null,
+  payload: JourneyAbschlussPayload,
+): Promise<void> {
+  if (userId === null) throw new Error("Nicht angemeldet.");
+  await store.archiveJourney(payload.journeyId, payload.endDate);
+  await store.clearReferenzgewichte(userId);
 }
 
 /** Die zugewiesenen Workout-Ids einer Journey lesen (fuer das

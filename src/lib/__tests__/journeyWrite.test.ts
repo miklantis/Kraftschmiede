@@ -3,6 +3,7 @@ import { createMemoryJourneyStore } from "../journeyStore";
 import type { BausteinBauregelRow } from "../journeyStore";
 import {
   readJourneyZuordnungen,
+  writeJourneyAbschluss,
   writeJourneyRename,
   writeJourneyStart,
   writeJourneyZuordnungUebernahme,
@@ -241,6 +242,67 @@ describe("writeJourneyStart", () => {
     const { store, log } = createMemoryJourneyStore();
     await expect(
       writeJourneyStart(store, null, vorlage(), "2026-08-10"),
+    ).rejects.toThrow("Nicht angemeldet.");
+    expect(log.folge).toHaveLength(0);
+  });
+});
+
+describe("writeJourneyAbschluss", () => {
+  it("legt die Journey mit Enddatum ins Archiv und raeumt die Anker weg", async () => {
+    const { store, log } = createMemoryJourneyStore();
+    await writeJourneyAbschluss(store, "u1", {
+      journeyId: "j1",
+      endDate: "2026-06-21",
+    });
+
+    expect(log.journeysArchived).toEqual([
+      { id: "j1", endDatum: "2026-06-21" },
+    ]);
+    expect(log.referenzgewichteCleared).toEqual(["u1"]);
+    // Erst ins Archiv, dann raeumen: die Journey ist beendet, bevor ihr
+    // Bezugspunkt faellt.
+    expect(log.folge).toEqual(["archiveJourney", "clearReferenzgewichte"]);
+  });
+
+  it("bleibt bei mehrfachem Ausfuehren folgenlos - es sind dieselben Werte", async () => {
+    const { store, log } = createMemoryJourneyStore();
+    const payload = { journeyId: "j1", endDate: "2026-06-21" };
+    await writeJourneyAbschluss(store, "u1", payload);
+    await writeJourneyAbschluss(store, "u1", payload);
+
+    expect(
+      new Set(log.journeysArchived.map((a) => a.id + a.endDatum)).size,
+    ).toBe(1);
+  });
+
+  it("raeumt die Anker genauso wie der Journey-Wechsel (Issue #379)", async () => {
+    // Der eine Test, der beide Wege erreicht: frueher lief der
+    // Kalender-Abschluss ueber eine zweite Fassung im Verlauf-Speicher, die den
+    // Phasenbezug stehen liess. Jetzt landen beide auf demselben Handgriff.
+    const wechsel = createMemoryJourneyStore({ bausteine: BAUSTEINE });
+    await writeJourneyStart(wechsel.store, "u1", vorlage(), "2026-08-10");
+
+    const abschluss = createMemoryJourneyStore();
+    await writeJourneyAbschluss(abschluss.store, "u1", {
+      journeyId: "j1",
+      endDate: "2026-08-10",
+    });
+
+    expect(abschluss.log.referenzgewichteCleared).toEqual(
+      wechsel.log.referenzgewichteCleared,
+    );
+    expect(
+      abschluss.log.folge.filter((h) => h === "clearReferenzgewichte"),
+    ).toEqual(wechsel.log.folge.filter((h) => h === "clearReferenzgewichte"));
+  });
+
+  it("schreibt ohne angemeldeten Nutzer nichts", async () => {
+    const { store, log } = createMemoryJourneyStore();
+    await expect(
+      writeJourneyAbschluss(store, null, {
+        journeyId: "j1",
+        endDate: "2026-06-21",
+      }),
     ).rejects.toThrow("Nicht angemeldet.");
     expect(log.folge).toHaveLength(0);
   });

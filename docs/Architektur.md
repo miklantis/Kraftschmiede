@@ -523,8 +523,8 @@ Eindampfen, sonst wären die alten Felder schon weg.
   künftiger Abweichungen zwischen Anzeige und Abschluss. Ausgewertet wird das vorhandene
   Signal `placement.done`; geprüft wird bei jedem App-Start und auf jeder Seite, weil der
   Hook (`useJourneyCompletion`) in der global gemounteten Live-Schicht hängt. Der
-  Schreibvorgang (`writeArchiveJourney`: archivieren, Referenzgewichte räumen) ist
-  bewusst einfach und nicht offline-gepuffert: der Abschluss ist keine Dateneingabe,
+  Schreibvorgang (`writeJourneyAbschluss` in `lib/journeyWrite.ts`: archivieren,
+  Referenzgewichte räumen) ist bewusst einfach und nicht offline-gepuffert: der Abschluss ist keine Dateneingabe,
   sondern eine Schlussfolgerung aus vorhandenen Daten – schlägt er fehl, ist die
   Bedingung beim nächsten Öffnen unverändert wahr und der Vorgang heilt sich selbst. Als
   `end_date` steht der Sonntag der letzten geplanten Woche im Archiv (`journeyEndDate`),
@@ -558,7 +558,15 @@ Eindampfen, sonst wären die alten Felder schon weg.
     (`exerciseStore`/`exerciseWrite`): `exercises`, `exercise_milestones`, `rm_tests`
   - **Journey** samt Phasen, Workout-Zuordnung und Workout-Vorlagen
     (`journeyStore`/`journeyWrite`): `journeys`, `phases`, `journey_workouts`,
-    `templates`, `template_exercises` und die Referenzgewichte in `exercises`
+    `templates`, `template_exercises` und die Referenzgewichte in `exercises`.
+    **Beide Wege, auf denen eine Journey endet, laufen hier durch**: der Wechsel
+    (`writeJourneyStart` löst die bisherige ab) und der Kalender-Abschluss
+    (`writeJourneyAbschluss`). Vorher stand die Regel „Journey endet" zusätzlich
+    im `historyStore`, und die beiden Fassungen räumten unterschiedlich auf – der
+    Weg über den Verlauf ließ den Phasenbezug (`reference_phase_id`) der
+    abgelösten Journey stehen. Seit Issue #379 gibt es dafür einen Handgriff
+    (`clearReferenzgewichte`: Gewicht, Startgewicht und Phasenbezug zusammen),
+    den beide benutzen; der `historyStore` hat mit der Journey nichts mehr zu tun
   - **Ausstattung** samt Einstellungen (`ausstattungStore`/`ausstattungWrite`):
     `inventory_plates`, `inventory_kettlebells`, `inventory_dumbbells`,
     `inventory_equipment`, `settings`

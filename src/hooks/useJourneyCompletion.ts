@@ -2,9 +2,9 @@ import { useEffect, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { journeyEndDate } from "@/engine";
 import { todayISO } from "@/lib/format";
-import { supabaseHistoryStore } from "@/lib/historyStore";
-import { writeArchiveJourney } from "@/lib/historyWrite";
 import { notifyJourneyDone } from "@/lib/journeyDone";
+import { supabaseJourneyStore } from "@/lib/journeyStore";
+import { writeJourneyAbschluss } from "@/lib/journeyWrite";
 import {
   derivePhaseContext,
   toPlacementPhases,
@@ -14,6 +14,7 @@ import { INVALIDATE, invalidateGroup } from "@/lib/queryKeys";
 import { useActiveJourney } from "./useJourney";
 import { useSessions } from "./useSessions";
 import { useSettings } from "./useSettings";
+import { useUserId } from "./useUserId";
 
 // Journey-Abschluss ueber den Kalender (#240): sind alle geplanten Wochen
 // erfuellt und vorbei, wandert die Journey ins Archiv. Geprueft wird bei jedem
@@ -29,6 +30,11 @@ import { useSettings } from "./useSettings";
 // nur eine Schlussfolgerung aus Daten, die schon da sind. Schlaegt er fehl,
 // greift die Pruefung beim naechsten Oeffnen erneut - der Vorgang heilt sich
 // selbst. Die Mutations-Registrierung (ADR-0009) bleibt dafuer unberuehrt.
+//
+// Was der Abschluss in der Datenbank tut, steht nicht hier, sondern bei der
+// Journey (`journeyWrite.writeJourneyAbschluss`, Issue #379) - dieselbe Stelle,
+// die auch der Journey-Wechsel benutzt. Dadurch raeumt der Kalender-Abschluss
+// die Referenzgewichte genauso vollstaendig weg wie der Wechsel.
 interface ArchiveVars {
   journeyId: string;
   endDate: string;
@@ -37,6 +43,7 @@ interface ArchiveVars {
 
 export function useJourneyCompletion(): void {
   const qc = useQueryClient();
+  const userId = useUserId();
   const journeyQ = useActiveJourney();
   const sessionsQ = useSessions();
   const settingsQ = useSettings();
@@ -47,7 +54,8 @@ export function useJourneyCompletion(): void {
   const startedFor = useRef<string | null>(null);
 
   const archive = useMutation<void, Error, ArchiveVars>({
-    mutationFn: (vars) => writeArchiveJourney(supabaseHistoryStore, vars),
+    mutationFn: (vars) =>
+      writeJourneyAbschluss(supabaseJourneyStore, userId, vars),
     onSuccess: (_result, vars) => {
       invalidateGroup(qc, INVALIDATE.journeyDone);
       // Die Meldung kommt erst jetzt. Vorher liefe die Journey in der Datenbank

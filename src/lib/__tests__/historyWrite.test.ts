@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createMemoryHistoryStore } from "../historyStore";
 import {
-  writeArchiveJourney,
   writeFinishStrength,
   writeFinishSkill,
   writeEditSession,
@@ -40,13 +39,6 @@ describe("writeFinishStrength", () => {
         patch: { work_weight: 100, rm: 120, rm_as_of: "2026-06-20", rm_stale: false },
       },
     ]);
-  });
-
-  it("laesst die Journey unberuehrt - sie wird ueber den Kalender abgeschlossen", async () => {
-    const { store, log } = createMemoryHistoryStore();
-    await writeFinishStrength(store, finishPayload());
-    expect(log.archivedJourneys).toHaveLength(0);
-    expect(log.clearedReferenceWeights).toBe(0);
   });
 
   it("ueberspringt leere Uebungs- und Satz-Listen", async () => {
@@ -199,27 +191,5 @@ describe("writeEditSession", () => {
     expect(log.sessionPatches).toEqual([
       { id: "s1", patch: { minutes: 75, notes: "ruhig" } },
     ]);
-  });
-});
-
-describe("writeArchiveJourney", () => {
-  it("legt die Journey mit Enddatum ins Archiv und raeumt die Referenzgewichte", async () => {
-    const { store, log } = createMemoryHistoryStore();
-    await writeArchiveJourney(store, {
-      journeyId: "j1",
-      endDate: "2026-06-21",
-    });
-    expect(log.archivedJourneys).toEqual([{ id: "j1", endDate: "2026-06-21" }]);
-    expect(log.clearedReferenceWeights).toBe(1);
-  });
-
-  it("bleibt bei mehrfachem Ausfuehren folgenlos - es sind dieselben Werte", async () => {
-    const { store, log } = createMemoryHistoryStore();
-    const payload = { journeyId: "j1", endDate: "2026-06-21" };
-    await writeArchiveJourney(store, payload);
-    await writeArchiveJourney(store, payload);
-    expect(new Set(log.archivedJourneys.map((a) => a.id + a.endDate)).size).toBe(
-      1,
-    );
   });
 });

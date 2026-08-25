@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.48.3",
+      "date": "2026-08-25",
+      "changes": [
+        "Wenn eine Journey durchlaufen ist und von selbst ins Archiv wandert, werden ihre eingefrorenen Referenzgewichte jetzt vollständig zurückgesetzt - inklusive des Phasenbezugs, der bisher stehen blieb. Damit startet die nächste Journey in jedem Fall mit sauberen Ausgangswerten, egal ob sie über den Kalender endete oder durch einen Wechsel abgelöst wurde."
+      ]
+    },
+    {
       "version": "1.48.2",
       "date": "2026-08-24",
       "changes": [
