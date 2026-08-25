@@ -335,7 +335,7 @@ heißt. Dafür nötig:
   Fremdschlüssel auf `phase_types (user_id, key)`
   ([ADR-0021](./adr/0021-phasentyp-fremdschluessel.md)) – ein erfundener Fokus ist damit
   ausgeschlossen, ein neuer muss durch beide Stellen.
-- Der Seed legt Bausteine vor den Journey-Vorlagen an (`src/lib/seed.ts`); die neue Zeile
+- Der Seed legt Bausteine vor den Journey-Vorlagen an (`src/lib/seedWrite.ts`); die neue Zeile
   reiht sich dort ein.
 
 ### Der Speicherort in der Vorlage: eine Spalte `custom_plan`
