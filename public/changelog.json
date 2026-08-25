@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.50.2",
+      "date": "2026-08-25",
+      "changes": [
+        "Die Erstbefüllung eines neuen Kontos – Übungskatalog, Bausteine, Grundausstattung, Journey-Vorlagen und Skills – ist jetzt automatisch abgesichert. Sie läuft pro Konto genau einmal, beim allerersten Öffnen, und liess sich bisher praktisch nicht prüfen. Jetzt halten Tests fest, was ein neues Konto bekommt, in welcher Reihenfolge es entsteht und dass ein zweiter Start nichts doppelt anlegt. Sichtbar ändert sich nichts."
+      ]
+    },
+    {
       "version": "1.50.1",
       "date": "2026-08-25",
       "changes": [

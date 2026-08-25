@@ -70,13 +70,18 @@ Recovery-Fenster, Timer).
 
 ### 3.2 Definitionen (Stammdaten in der DB, per Seed)
 
-Der Seed (`src/lib/seed.ts`, Daten in `src/seed/definitions.ts`) läuft beim App-Start
-über `SeedBootstrap` und legt in dieser Reihenfolge an – die Reihenfolge ist nicht frei,
-jeder Schritt braucht den vorigen: Bausteine → Inventar (Stangen, Scheiben, Kettlebells)
-→ Übungskatalog samt Muskel-Zuordnung → Journey-Vorlagen → Skills → Ausstattung. Übungen
-zeigen per `bar_id` auf eine Stange, Skill-Phasen-Übungen per `exercise_id` auf eine
-Katalog-Übung; beide Verknüpfungen entstehen über den `key` und gehen still verloren,
-wenn das Ziel noch fehlt (Issue #393).
+Der Seed läuft beim App-Start über `SeedBootstrap` und legt in dieser Reihenfolge an –
+die Reihenfolge ist nicht frei, jeder Schritt braucht den vorigen: Bausteine → Inventar
+(Stangen, Scheiben, Kettlebells) → Übungskatalog samt Muskel-Zuordnung →
+Journey-Vorlagen → Skills → Ausstattung. Übungen zeigen per `bar_id` auf eine Stange,
+Skill-Phasen-Übungen per `exercise_id` auf eine Katalog-Übung; beide Verknüpfungen
+entstehen über den `key` und gehen still verloren, wenn das Ziel noch fehlt (Issue #393).
+
+Er liegt hinter einer Schreibnaht wie jeder andere Schreibweg (4.3, ADR-0019): die
+Abfolge in `src/lib/seedWrite.ts`, die Datenbank-Handgriffe in `src/lib/seedStore.ts`,
+die Daten in `src/seed/definitions.ts`; `src/lib/seed.ts` ist nur noch der Anstoß.
+Reihenfolge, Umfang eines neuen Kontos und Idempotenz stehen damit als Test fest
+(`src/lib/__tests__/seedWrite.test.ts`) und nicht mehr nur als Kommentar.
 
 Zwei Arten von Erstbefüllung liegen dabei nebeneinander:
 
@@ -126,7 +131,7 @@ Zwei Arten von Erstbefüllung liegen dabei nebeneinander:
   beide Phasentabellen per Fremdschlüssel über `(user_id, focus)` hierher
   (`phase_types (user_id, key)`, ADR-0021): Eine Phase kann keinen Typ tragen, den es als
   Baustein nicht gibt, und ein Baustein, auf den Phasen zeigen, lässt sich nicht löschen.
-  Deshalb legt der Seed die Bausteine vor den Journey-Vorlagen an (`src/lib/seed.ts`)
+  Deshalb legt der Seed die Bausteine vor den Journey-Vorlagen an (`src/lib/seedWrite.ts`)
 - **journey_templates** – key, name, tagline, for_whom, summary, position
 - **journey_template_phases** – journey_template_id (FK), name, focus (FK auf
   `phase_types` über Nutzer plus Schlüssel, Migration 0048), weeks, sets_start,
@@ -621,6 +626,12 @@ Eindampfen, sonst wären die alten Felder schon weg.
     das Anlegen/Löschen einzelner `sessions` außerhalb des geführten Ablaufs und die
     manuellen Eingriffe in `skill_progress`; der geführte Schreibpfad bleibt im
     `historyStore`
+  - **Erstbefüllung eines neuen Kontos** (`seedStore`/`seedWrite`): dreizehn Tabellen in
+    einem Zug – Bausteine, Inventar, Übungskatalog samt Muskel-Zuordnung,
+    Journey-Vorlagen, Skills samt Phasen und Ausstattung (3.2). Ein Store für alle,
+    weil ihre Reihenfolge voneinander abhängt. Der Test-Speicher merkt sich hier
+    zusätzlich das Geschriebene und beantwortet damit die Lesefragen – nur so lässt
+    sich prüfen, dass ein zweiter Lauf nichts mehr anlegt
   - **Wiederherstellen einer Sicherung** (`restoreStore`/`restoreWrite`): drei Handgriffe
     – Tabelle leeren, Zeilen einfügen, Einzelzeile ersetzen –, die Reihenfolgen kommen
     unverändert aus dem Bestandsregister. Damit ist der heikelste Schreibpfad der App
