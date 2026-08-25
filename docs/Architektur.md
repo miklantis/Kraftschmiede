@@ -60,7 +60,8 @@ Recovery-Fenster, Timer).
 
 - **inventory_bars** – Stangen: key, name, weight, is_default, position. Fester Satz
   (Standard/Leicht/SZ/SZ-Curl/Kurz), in der Oberflaeche nicht editierbar; per `key`
-  markiert, per Migration 0008 gesetzt.
+  markiert, per Migration 0008 gesetzt. Neue Konten bekommen ihn über den Seed (3.2) –
+  er muss vor dem Übungskatalog stehen, weil `exercises.bar_id` hierher zeigt.
 - **inventory_plates** – Scheiben: je Zeile ein verfügbares Gewicht (kein Stück-Zähler;
   der Plate-Loader rechnet ohne Limit)
 - **inventory_kettlebells** – Kettlebells: je Zeile ein Gewicht
@@ -68,6 +69,26 @@ Recovery-Fenster, Timer).
   Bänder, Ringe ...)
 
 ### 3.2 Definitionen (Stammdaten in der DB, per Seed)
+
+Der Seed (`src/lib/seed.ts`, Daten in `src/seed/definitions.ts`) läuft beim App-Start
+über `SeedBootstrap` und legt in dieser Reihenfolge an – die Reihenfolge ist nicht frei,
+jeder Schritt braucht den vorigen: Bausteine → Inventar (Stangen, Scheiben, Kettlebells)
+→ Übungskatalog samt Muskel-Zuordnung → Journey-Vorlagen → Skills → Ausstattung. Übungen
+zeigen per `bar_id` auf eine Stange, Skill-Phasen-Übungen per `exercise_id` auf eine
+Katalog-Übung; beide Verknüpfungen entstehen über den `key` und gehen still verloren,
+wenn das Ziel noch fehlt (Issue #393).
+
+Zwei Arten von Erstbefüllung liegen dabei nebeneinander:
+
+- **einmalig** – Journey-Vorlagen und Skills entstehen nur, solange der Nutzer noch gar
+  keine Skills hat. Sie sind später bearbeitbar; ein zweiter Lauf dürfte Gelöschtes nicht
+  wieder hinstellen.
+- **nachziehend** – Bausteine, Übungskatalog und Ausstattung ergänzen je Lauf nur die
+  fehlenden `key`s und lassen vorhandene Zeilen unangetastet. So bekommen auch früher
+  angelegte Konten, was später dazugekommen ist.
+- **nur im leeren Fall** – Stangen, Scheiben und Kettlebells. Sie sind persönlicher
+  Bestand und in den Einstellungen löschbar (Scheiben/Kettlebells haben nicht einmal
+  einen `key`); ein Nachziehen würde Weggeräumtes beim nächsten Start zurückbringen.
 
 - **exercises** – key, name, profile (strength/core/bodyweight), tier (main/accessory),
   equipment, bar_id (FK), description, metric (reps/duration bei Körpergewicht),

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.50.0",
+      "date": "2026-08-25",
+      "changes": [
+        "Ein neu angelegtes Konto startet jetzt nicht mehr bei null: Übungskatalog, Muskel-Zuordnung für die Muskelkarte und die Grundausstattung (Stangen, Scheiben, Kettlebells) sind vom ersten Öffnen an da. Bisher blieb der Katalog leer – damit fanden auch die Skills ihre Übungen nicht, und weder der Übungsverlauf noch das Start-Popup zeigten etwas dazu an. Die Arbeitsgewichte fangen bewusst bei null an, damit jeder mit seinem eigenen Stand beginnt. Für bestehende Konten ändert sich nichts."
+      ]
+    },
+    {
       "version": "1.49.2",
       "date": "2026-08-25",
       "changes": [

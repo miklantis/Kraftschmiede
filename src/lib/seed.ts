@@ -1,16 +1,31 @@
-// Erstbefuellung der Definitionen (Bausteine, Journey-Vorlagen, Skills) in die
-// Datenbank. Idempotent: laeuft nur, wenn noch keine Skills fuer den Nutzer
-// existieren. Alles wird mit der user_id des angemeldeten Nutzers angelegt (RLS).
+// Erstbefuellung der Definitionen (Bausteine, Inventar, Uebungskatalog,
+// Journey-Vorlagen, Skills) in die Datenbank. Alles wird mit der user_id des
+// angemeldeten Nutzers angelegt (RLS).
+//
+// Zwei Arten von Erstbefuellung liegen hier nebeneinander:
+//   - einmalig: Journey-Vorlagen und Skills entstehen nur, solange der Nutzer
+//     noch gar keine Skills hat. Sie sind spaeter bearbeitbar; ein zweiter Lauf
+//     duerfte geloeschte oder umbenannte Zeilen nicht wieder herstellen.
+//   - nachziehend: Bausteine, Inventar, Uebungskatalog und Ausstattung
+//     ergaenzen jeweils nur die fehlenden Schluessel und lassen vorhandene
+//     Zeilen unangetastet. So bekommen auch frueher angelegte Konten, was
+//     spaeter dazugekommen ist, ohne dass ein zweiter Lauf etwas veraendert.
 
 import { supabase } from "@/lib/supabase";
 import {
+  barSeeds,
   buildSeedPhase,
+  exerciseSeeds,
   journeyTemplateSeeds,
+  kettlebellSeeds,
   phaseTypeSeeds,
+  plateSeeds,
   skillSeeds,
   equipmentSeeds,
 } from "@/seed/definitions";
 import type {
+  ExerciseInsert,
+  ExerciseMuscleInsert,
   Focus,
   JourneyTemplateInsert,
   JourneyTemplatePhaseInsert,
@@ -19,7 +34,10 @@ import type {
   SkillPhaseInsert,
   SkillPhaseExerciseInsert,
   SkillPhaseEquipmentInsert,
+  InventoryBarInsert,
   InventoryEquipmentInsert,
+  InventoryKettlebellInsert,
+  InventoryPlateInsert,
 } from "@/schemas";
 
 export interface SeedErgebnis {
@@ -44,6 +62,18 @@ export async function ensureDefinitionsSeeded(
   // Schluessel werden ergaenzt, bestehende Zeilen bleiben unangetastet.
   const phaseTypesAdded = await ensurePhaseTypesSeeded(userId);
 
+  // Inventar vor dem Uebungskatalog, und zwar zwingend: jede
+  // Langhantel-Uebung zeigt per bar_id auf eine Stange desselben Nutzers.
+  // Ohne Stangen bliebe der halbe Katalog ohne Last-Bezug.
+  const barIdByKey = await ensureBarsSeeded(userId);
+  const platesAdded = await ensurePlatesSeeded(userId);
+  const kettlebellsAdded = await ensureKettlebellsSeeded(userId);
+
+  // Uebungskatalog vor den Skills, und zwar zwingend: seedSkills loest
+  // exercise_id ueber den Schluessel aus dem Katalog auf. Fehlt der Katalog,
+  // bleiben alle Skill-Phasen-Uebungen ohne Verknuepfung (Issue #393).
+  const exercisesAdded = await ensureExercisesSeeded(userId, barIdByKey);
+
   if (definitionsSeeded) {
     await seedJourneyTemplates(userId);
     await seedSkills(userId);
@@ -55,7 +85,13 @@ export async function ensureDefinitionsSeeded(
   const equipmentAdded = await ensureEquipmentSeeded(userId);
 
   return {
-    seeded: definitionsSeeded || equipmentAdded > 0 || phaseTypesAdded > 0,
+    seeded:
+      definitionsSeeded ||
+      equipmentAdded > 0 ||
+      phaseTypesAdded > 0 ||
+      exercisesAdded > 0 ||
+      platesAdded > 0 ||
+      kettlebellsAdded > 0,
   };
 }
 
@@ -143,6 +179,214 @@ async function ensureEquipmentSeeded(userId: string): Promise<number> {
   if (insError) {
     throw new Error(`Equipment anlegen fehlgeschlagen: ${insError.message}`);
   }
+  return fehlende.length;
+}
+
+// Legt die Standard-Stangen an, falls der Nutzer noch gar keine hat, und gibt
+// in jedem Fall die Zuordnung Schluessel -> ID zurueck. Der Uebungskatalog
+// braucht diese IDs fuer bar_id.
+//
+// Anders als bei Bausteinen und Ausstattung wird hier nicht Schluessel fuer
+// Schluessel nachgezogen, sondern nur der leere Fall bedient: Stangen sind
+// persoenlicher Bestand. Wer seine Liste einmal zurechtgelegt hat, soll bei
+// jedem App-Start nicht die Standardstangen zurueckbekommen, die er
+// weggeraeumt hat.
+async function ensureBarsSeeded(
+  userId: string,
+): Promise<Map<string, string>> {
+  const { data, error } = await supabase
+    .from("inventory_bars")
+    .select("id, key")
+    .returns<Array<{ id: string; key: string | null }>>();
+  if (error) {
+    throw new Error(`Stangen pruefen fehlgeschlagen: ${error.message}`);
+  }
+
+  const vorhanden = data ?? [];
+  if (vorhanden.length > 0) {
+    const idByKey = new Map<string, string>();
+    for (const row of vorhanden) {
+      if (row.key !== null) idByKey.set(row.key, row.id);
+    }
+    return idByKey;
+  }
+
+  const inserts: InventoryBarInsert[] = barSeeds.map((b, i) => ({
+    user_id: userId,
+    key: b.key,
+    name: b.name,
+    weight: b.weight,
+    is_default: b.isDefault,
+    position: i,
+  }));
+
+  const { data: angelegt, error: insError } = await supabase
+    .from("inventory_bars")
+    .insert(inserts)
+    .select("id, key")
+    .returns<Array<{ id: string; key: string | null }>>();
+  if (insError) {
+    throw new Error(`Stangen anlegen fehlgeschlagen: ${insError.message}`);
+  }
+  if (angelegt === null) {
+    throw new Error("Stangen: keine IDs zurueckgegeben.");
+  }
+
+  const idByKey = new Map<string, string>();
+  for (const row of angelegt) {
+    if (row.key !== null) idByKey.set(row.key, row.id);
+  }
+  return idByKey;
+}
+
+// Legt die Standard-Scheiben an, falls der Nutzer noch keine hat. Gleicher
+// Gedanke wie bei den Stangen: Scheiben haben keinen Schluessel, sondern nur
+// ein Gewicht, und sie sind in den Einstellungen loeschbar. Ein Nachziehen
+// ueber das Gewicht wuerde eine geloeschte Scheibe beim naechsten Start wieder
+// hinstellen. Gibt die Zahl neu angelegter Scheiben zurueck.
+async function ensurePlatesSeeded(userId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from("inventory_plates")
+    .select("*", { count: "exact", head: true });
+  if (error) {
+    throw new Error(`Scheiben pruefen fehlgeschlagen: ${error.message}`);
+  }
+  if ((count ?? 0) > 0) return 0;
+
+  const inserts: InventoryPlateInsert[] = plateSeeds.map((weight, i) => ({
+    user_id: userId,
+    weight,
+    position: i,
+  }));
+
+  const { error: insError } = await supabase
+    .from("inventory_plates")
+    .insert(inserts);
+  if (insError) {
+    throw new Error(`Scheiben anlegen fehlgeschlagen: ${insError.message}`);
+  }
+  return inserts.length;
+}
+
+// Legt die Standard-Kettlebells an, falls der Nutzer noch keine hat. Gleicher
+// Gedanke wie bei den Scheiben. Gibt die Zahl neu angelegter Kettlebells
+// zurueck.
+async function ensureKettlebellsSeeded(userId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from("inventory_kettlebells")
+    .select("*", { count: "exact", head: true });
+  if (error) {
+    throw new Error(`Kettlebells pruefen fehlgeschlagen: ${error.message}`);
+  }
+  if ((count ?? 0) > 0) return 0;
+
+  const inserts: InventoryKettlebellInsert[] = kettlebellSeeds.map(
+    (weight, i) => ({
+      user_id: userId,
+      weight,
+      position: i,
+    }),
+  );
+
+  const { error: insError } = await supabase
+    .from("inventory_kettlebells")
+    .insert(inserts);
+  if (insError) {
+    throw new Error(`Kettlebells anlegen fehlgeschlagen: ${insError.message}`);
+  }
+  return inserts.length;
+}
+
+// Fuegt fehlende Katalog-Uebungen hinzu, ohne vorhandene zu ueberschreiben, und
+// legt zu jeder neu angelegten Uebung ihre Muskel-Zuordnung an. Gibt die Zahl
+// neu angelegter Uebungen zurueck.
+//
+// Nachziehend ueber den Schluessel wie bei Bausteinen und Ausstattung: ein
+// Bestandskonto hat die Uebungen bereits, dort passiert nichts. Die
+// Muskel-Zeilen entstehen nur zu den gerade angelegten Uebungen - was an einer
+// bestehenden Uebung haengt, bleibt unberuehrt.
+async function ensureExercisesSeeded(
+  userId: string,
+  barIdByKey: Map<string, string>,
+): Promise<number> {
+  const { data, error } = await supabase.from("exercises").select("key");
+  if (error) {
+    throw new Error(`Uebungskatalog pruefen fehlgeschlagen: ${error.message}`);
+  }
+  const vorhanden = new Set(
+    ((data ?? []) as Array<{ key: string | null }>)
+      .map((e) => e.key)
+      .filter((k): k is string => k !== null),
+  );
+
+  const fehlende = exerciseSeeds.filter((e) => !vorhanden.has(e.key));
+  if (fehlende.length === 0) return 0;
+
+  const inserts: ExerciseInsert[] = fehlende.map((e) => ({
+    user_id: userId,
+    key: e.key,
+    name: e.name,
+    profile: e.profile,
+    tier: e.tier,
+    equipment: e.equipment,
+    // Fehlt die Stange (Bestandskonto mit eigener Stangenliste), bleibt der
+    // Bezug leer. Der Coach faellt dann auf die Standardstange zurueck, statt
+    // dass das Anlegen am Fremdschluessel scheitert.
+    bar_id: e.barKey === null ? null : (barIdByKey.get(e.barKey) ?? null),
+    description: e.description,
+    metric: e.metric,
+    muscle_groups: e.muscleGroups,
+    rep_range_min: e.repRangeMin,
+    rep_range_max: e.repRangeMax,
+    work_weight: e.workWeight,
+    recovery_hours: e.recoveryHours,
+    position: e.position,
+  }));
+
+  const { data: angelegt, error: insError } = await supabase
+    .from("exercises")
+    .insert(inserts)
+    .select("id, key")
+    .returns<Array<{ id: string; key: string | null }>>();
+  if (insError) {
+    throw new Error(`Uebungen anlegen fehlgeschlagen: ${insError.message}`);
+  }
+  if (angelegt === null) {
+    throw new Error("Uebungen: keine IDs zurueckgegeben.");
+  }
+
+  const idByKey = new Map<string, string>();
+  for (const row of angelegt) {
+    if (row.key !== null) idByKey.set(row.key, row.id);
+  }
+
+  const muskelInserts: ExerciseMuscleInsert[] = [];
+  for (const e of fehlende) {
+    const exerciseId = idByKey.get(e.key);
+    if (exerciseId === undefined) {
+      throw new Error(`Uebung ohne ID: ${e.key}`);
+    }
+    for (const m of e.muscles) {
+      muskelInserts.push({
+        user_id: userId,
+        exercise_id: exerciseId,
+        region_id: m.regionId,
+        kategorie: m.kategorie,
+      });
+    }
+  }
+
+  if (muskelInserts.length > 0) {
+    const { error: muskelError } = await supabase
+      .from("exercise_muscles")
+      .insert(muskelInserts);
+    if (muskelError) {
+      throw new Error(
+        `Muskel-Zuordnung anlegen fehlgeschlagen: ${muskelError.message}`,
+      );
+    }
+  }
+
   return fehlende.length;
 }
 
