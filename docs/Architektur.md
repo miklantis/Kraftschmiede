@@ -151,7 +151,10 @@ Begründung in ADR-0003.
   `unique(user_id, journey_id, template_id)`. Reine Ja/Nein-Menge, bewusst ohne position
   (die Empfehlungsreihenfolge bestimmt der Coach); ON DELETE CASCADE über beide FKs
 - **sessions** – date, type (strength/yoga/skill), status (live/done), journey_id,
-  phase_id, template_id, skill_id (alle FK, nullable), week (eingefrorene Journey-Woche),
+  phase_id, template_id, skill_id (alle FK, nullable), template_name (eingebrannter
+  Workout-Name, nullable – beim Abschluss der Journey aus der Vorlage kopiert,
+  Migration 0053, ADR-0022; null = noch nicht eingebrannt, dann löst die Anzeige aktuell
+  auf), week (eingefrorene Journey-Woche),
   duration_sec, minutes (yoga), notes, started_at, body (jsonb Befinden-Snapshot),
   general_warmup (jsonb), skill_phase, skill_result (completed/missed/skipped)
 - **session_exercises** – Übung-in-Einheit: session_id (FK), exercise_id
@@ -536,8 +539,8 @@ Eindampfen, sonst wären die alten Felder schon weg.
   künftiger Abweichungen zwischen Anzeige und Abschluss. Ausgewertet wird das vorhandene
   Signal `placement.done`; geprüft wird bei jedem App-Start und auf jeder Seite, weil der
   Hook (`useJourneyCompletion`) in der global gemounteten Live-Schicht hängt. Der
-  Schreibvorgang (`writeJourneyAbschluss` in `lib/journeyWrite.ts`: archivieren,
-  Referenzgewichte räumen) ist bewusst einfach und nicht offline-gepuffert: der Abschluss ist keine Dateneingabe,
+  Schreibvorgang (`writeJourneyAbschluss` in `lib/journeyWrite.ts`: Workout-Namen
+  einbrennen, archivieren, Referenzgewichte räumen) ist bewusst einfach und nicht offline-gepuffert: der Abschluss ist keine Dateneingabe,
   sondern eine Schlussfolgerung aus vorhandenen Daten – schlägt er fehl, ist die
   Bedingung beim nächsten Öffnen unverändert wahr und der Vorgang heilt sich selbst. Als
   `end_date` steht der Sonntag der letzten geplanten Woche im Archiv (`journeyEndDate`),
@@ -545,6 +548,16 @@ Eindampfen, sonst wären die alten Felder schon weg.
   geöffnet wurde. Das Popup „Journey abgeschlossen" kommt erst nach erfolgreichem
   Archivieren. Begründung samt Konsequenzen in ADR-0017; ADR-0014 gilt für den Abschluss
   nicht mehr, sein Teil „ohne Journey gibt der Coach nichts vor" unverändert weiter.
+- **Eine abgeschlossene Journey ist ein Protokoll, kein Plan** (ADR-0022). Beim Abschluss
+  wird der heute gültige Workout-Name in die Einheiten der Journey geschrieben
+  (`sessions.template_name`) – erst einbrennen, dann archivieren, damit ein Abbruch die
+  Journey aktiv lässt und sich der Vorgang wie oben selbst nachholt. Beide Wege, auf denen
+  eine Journey endet, brennen ein: der Kalender-Abschluss und der Journey-Wechsel
+  (`writeJourneyStart`, löst die bisherige ab). Die Rückschau nimmt danach den
+  eingebrannten Namen und leitet ihre Workout-Liste aus den absolvierten Einheiten ab, nicht
+  aus der Zuordnung `journey_workouts`; der Trainingsverlauf bleibt die lebende Sicht und
+  löst weiter aktuell auf. Dieselbe Einheit darf deshalb in Verlauf und Rückschau
+  unterschiedlich heißen.
 
 ### 4.3 Datenzugriff und Schreibwege
 

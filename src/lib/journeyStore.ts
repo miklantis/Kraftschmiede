@@ -61,6 +61,15 @@ export interface BausteinBauregelRow {
   load_end_default: number | null;
 }
 
+/** Eine Einheit einer Journey, so weit das Einbrennen des Workout-Namens sie
+ *  braucht: aus welchem Workout sie stammt und wie dieses Workout heute heisst.
+ *  Je Einheit eine Zeile – dieselbe Workout-Id kommt entsprechend oft vor. */
+export interface EinheitWorkoutRow {
+  templateId: string;
+  /** Heutiger Name des Workouts; null, wenn die Vorlage nicht mehr existiert. */
+  name: string | null;
+}
+
 /** Arbeitsgewicht einer Uebung – die Grundlage fuers Einfrieren des
  *  Referenzgewichts beim Start einer Lastfaktor-Journey. */
 export interface ArbeitsgewichtRow {
@@ -94,6 +103,17 @@ export interface JourneyStore {
    *  Phasenbezug und Startgewicht. Der eine Handgriff fuers Ende einer Journey,
    *  gleich welcher Weg dorthin gefuehrt hat (Issue #379). */
   clearReferenzgewichte(userId: string): Promise<void>;
+  /** Die Einheiten einer Journey mit ihrem Workout und dessen heutigem Namen –
+   *  Grundlage fuers Einbrennen beim Abschluss (ADR-0022). Einheiten ohne
+   *  Workout (freies Training, Skill, Yoga) bleiben aussen vor. */
+  listJourneyEinheitenWorkouts(journeyId: string): Promise<EinheitWorkoutRow[]>;
+  /** Den Workout-Namen in alle Einheiten dieser Journey schreiben, die aus
+   *  diesem Workout stammen. Ab da traegt die Einheit den Namen selbst. */
+  setEinheitenWorkoutName(
+    journeyId: string,
+    templateId: string,
+    name: string,
+  ): Promise<void>;
   /** Die zugewiesenen Workout-Ids einer Journey. */
   listZuordnungen(journeyId: string): Promise<string[]>;
   insertZuordnungen(rows: ZuordnungRow[]): Promise<void>;
@@ -193,6 +213,34 @@ export const supabaseJourneyStore: JourneyStore = {
         ),
     );
   },
+  async listJourneyEinheitenWorkouts(journeyId) {
+    // Der Name kommt mit derselben Abfrage aus der verknuepften Vorlage: er wird
+    // genau jetzt gebraucht, und ein zweiter Weg dorthin koennte einen anderen
+    // Stand sehen.
+    const { data, error } = await supabase
+      .from("sessions")
+      .select("template_id, templates(name)")
+      .eq("journey_id", journeyId)
+      .not("template_id", "is", null);
+    if (error) throw new Error(error.message);
+    const rows = (data ?? []) as unknown as Array<{
+      template_id: string;
+      templates: { name: string } | null;
+    }>;
+    return rows.map((r) => ({
+      templateId: r.template_id,
+      name: r.templates?.name ?? null,
+    }));
+  },
+  async setEinheitenWorkoutName(journeyId, templateId, name) {
+    must(
+      await supabase
+        .from("sessions")
+        .update({ template_name: name })
+        .eq("journey_id", journeyId)
+        .eq("template_id", templateId),
+    );
+  },
   async listZuordnungen(journeyId) {
     const { data, error } = await supabase
       .from("journey_workouts")
@@ -252,6 +300,11 @@ export interface MemoryJourneyLog {
   phasenInserted: PhaseRowIns[][];
   referenzgewichte: Array<{ exerciseId: string; gewicht: number }>;
   referenzgewichteCleared: string[];
+  einheitenWorkoutNamen: Array<{
+    journeyId: string;
+    templateId: string;
+    name: string;
+  }>;
   zuordnungenInserted: ZuordnungRow[][];
   zuordnungenDeleted: Array<{ journeyId: string; templateId: string }>;
   vorlagenInserted: VorlageRow[];
@@ -270,6 +323,9 @@ export interface MemoryJourneySeed {
   bausteine?: BausteinBauregelRow[];
   /** Arbeitsgewichte des Uebungskatalogs, je Nutzer-Kennung. */
   arbeitsgewichte?: ArbeitsgewichtRow[];
+  /** Einheiten mit ihrem Workout und dessen heutigem Namen, je
+   *  Journey-Kennung. */
+  einheitenWorkouts?: Record<string, EinheitWorkoutRow[]>;
   /** Bereits zugewiesene Workout-Ids, je Journey-Kennung. */
   zuordnungen?: Record<string, string[]>;
   /** Id, die der Speicher fuer eine neu angelegte Journey vergibt. */
@@ -291,6 +347,7 @@ export function createMemoryJourneyStore(seed: MemoryJourneySeed = {}): {
     phasenInserted: [],
     referenzgewichte: [],
     referenzgewichteCleared: [],
+    einheitenWorkoutNamen: [],
     zuordnungenInserted: [],
     zuordnungenDeleted: [],
     vorlagenInserted: [],
@@ -337,6 +394,14 @@ export function createMemoryJourneyStore(seed: MemoryJourneySeed = {}): {
     async clearReferenzgewichte(userId) {
       log.referenzgewichteCleared.push(userId);
       log.folge.push("clearReferenzgewichte");
+    },
+    async listJourneyEinheitenWorkouts(journeyId) {
+      log.folge.push("listJourneyEinheitenWorkouts");
+      return seed.einheitenWorkouts?.[journeyId] ?? [];
+    },
+    async setEinheitenWorkoutName(journeyId, templateId, name) {
+      log.einheitenWorkoutNamen.push({ journeyId, templateId, name });
+      log.folge.push("setEinheitenWorkoutName");
     },
     async listZuordnungen(journeyId) {
       log.folge.push("listZuordnungen");

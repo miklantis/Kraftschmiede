@@ -69,6 +69,7 @@ export function useJourneyReview(journeyId: string): {
         journeyId: s.journey_id,
         phaseId: s.phase_id,
         templateId: s.template_id,
+        templateName: s.template_name,
         skillId: s.skill_id,
       })),
       {

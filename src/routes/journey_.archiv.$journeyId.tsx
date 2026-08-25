@@ -4,6 +4,7 @@ import { PageReveal } from "@/components/ui/page-reveal";
 import { Section } from "@/components/ui/section";
 import { JourneyHeadCard } from "@/components/journey/JourneyHeadCard";
 import { PhaseList } from "@/components/journey/PhaseList";
+import { JourneyReviewWorkouts } from "@/components/journey/JourneyReviewWorkouts";
 import { JourneyReviewSessions } from "@/components/journey/JourneyReviewSessions";
 import { JourneyCoachExport } from "@/components/journey/JourneyCoachExport";
 import { useJourneyReview } from "@/hooks/useJourneyReview";
@@ -11,7 +12,8 @@ import { useJourneyReview } from "@/hooks/useJourneyReview";
 // Rueckschau einer abgeschlossenen Journey: eigenstaendige Vollseite (entschachtelt
 // mit _), aufgerufen aus dem Archiv auf der Journey-Seite. Aufbau wie der
 // Vorlagen-Waehler: Zurueck-Link oben links, darunter der Inhalt. Bewusst
-// schlicht - Kopf, Phasen und die absolvierten Einheiten je Phase.
+// schlicht - Kopf, Phasen, die trainierten Workouts und die absolvierten
+// Einheiten je Phase: erst der Ueberblick, dann die Einzelheiten.
 export const Route = createFileRoute("/journey_/archiv/$journeyId")({
   component: JourneyArchiveDetailPage,
 });
@@ -66,6 +68,7 @@ function JourneyArchiveDetailPage(): React.ReactElement {
             <PhaseList phases={data.phases} />
           </Section>
         )}
+        <JourneyReviewWorkouts workouts={data.review.workouts} />
         <JourneyReviewSessions groups={data.review.groups} />
       </PageReveal>
     </div>
