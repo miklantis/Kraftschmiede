@@ -45,6 +45,7 @@ Jedes ADR folgt demselben Aufbau:
 - [ADR-0019 – Schreibnaht je Bereich, ein Store für zusammengehörige Tabellen](./0019-schreibnaht-je-bereich.md)
 - [ADR-0020 – Der Live-Store bleibt ein Modul](./0020-live-store-bleibt-ein-modul.md)
 - [ADR-0021 – Der Phasentyp hängt per Fremdschlüssel an den Bausteinen](./0021-phasentyp-fremdschluessel.md)
+- [ADR-0022 – Eine abgeschlossene Journey ist ein Protokoll, kein Plan](./0022-abgeschlossene-journey-ist-protokoll.md)
 
 ## Vergebene und gesperrte Nummern
 
@@ -67,3 +68,5 @@ zweideutig.
 - **0021 – vergeben** an „Der Phasentyp hängt per Fremdschlüssel an den Bausteinen"
   (#341). Revidiert den Abschnitt „Der Fremdschlüssel: bewusst keiner" des
   Bausteine-Konzepts; der übrige Abschnitt 9 gilt weiter.
+- **0022 – vergeben** an „Eine abgeschlossene Journey ist ein Protokoll, kein Plan"
+  (#387).

@@ -5,6 +5,12 @@
 // Trainingszeitpunkt eingefrorenen Feldern journey_id/phase_id der Einheit. Was
 // keiner Phase zugeordnet ist (aeltere Einheiten), landet in einer eigenen
 // Restgruppe, damit nichts unsichtbar wird.
+//
+// Aus demselben Grund gilt fuer den Workout-Namen: Traegt die Einheit ihn selbst
+// (beim Journey-Abschluss eingebrannt, ADR-0022), zaehlt dieser – die
+// abgeschlossene Journey ist ein Protokoll und aendert sich nicht mehr, wenn ein
+// Workout heute anders heisst. Nur wo keiner eingebrannt ist, loest die
+// Rueckschau aktuell auf.
 
 import type { LoadPlan } from "@/engine";
 import { longDateShort } from "./format";
@@ -18,6 +24,9 @@ export interface ReviewSessionInput {
   journeyId: string | null;
   phaseId: string | null;
   templateId: string | null;
+  /** Eingebrannter Workout-Name der Einheit; null = noch keiner, dann wird
+   *  aktuell aufgeloest. */
+  templateName: string | null;
   skillId: string | null;
 }
 
@@ -55,12 +64,24 @@ export interface JourneyReview {
   totalUnits: number;
 }
 
+/** Workout-Name einer Krafteinheit: der eingebrannte, sonst der heutige, sonst
+ *  keiner. Bewusst als eigener Schritt – die Reihenfolge gilt fuer die
+ *  Einheitenliste wie fuer die Workout-Liste. */
+function workoutNameOf(
+  s: ReviewSessionInput,
+  lk: ReviewLookups,
+): string | null {
+  if (s.templateName !== null && s.templateName !== "") return s.templateName;
+  if (s.templateId === null) return null;
+  return lk.templateName(s.templateId) ?? null;
+}
+
 function titleOf(s: ReviewSessionInput, lk: ReviewLookups): string {
   if (s.type === "yoga") return "Yoga";
   if (s.type === "skill") {
     return (s.skillId ? lk.skillName(s.skillId) : undefined) ?? "Skill";
   }
-  return (s.templateId ? lk.templateName(s.templateId) : undefined) ?? "Einheit";
+  return workoutNameOf(s, lk) ?? "Einheit";
 }
 
 function unitsLabel(n: number): string {

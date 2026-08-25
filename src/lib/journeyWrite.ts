@@ -153,6 +153,33 @@ async function friereReferenzgewichteEin(
   );
 }
 
+/** Den heute gueltigen Workout-Namen in die Einheiten einer Journey einbrennen –
+ *  der eine Handgriff fuers Ende einer Journey, gleich welcher Weg dorthin
+ *  gefuehrt hat (ADR-0022). Danach erzaehlt die abgeschlossene Journey ihre
+ *  eigene Geschichte: ein spaeteres Umbenennen des Workouts aendert an ihr
+ *  nichts mehr.
+ *
+ *  Geschrieben wird je Workout einmal, nicht je Einheit – Postgres kann
+ *  Spalte-auf-Spalte nur im SQL selbst, und eine Journey kennt eine Handvoll
+ *  Workouts. Vorlagen, die es nicht mehr gibt, bleiben leer: einen Namen zu
+ *  erfinden waere schlimmer als keiner. */
+async function brenneWorkoutNamenEin(
+  store: JourneyStore,
+  journeyId: string,
+): Promise<void> {
+  const einheiten = await store.listJourneyEinheitenWorkouts(journeyId);
+  const namen = new Map<string, string>();
+  for (const e of einheiten) {
+    if (e.name === null || e.name === "") continue;
+    if (!namen.has(e.templateId)) namen.set(e.templateId, e.name);
+  }
+  await Promise.all(
+    [...namen].map(([templateId, name]) =>
+      store.setEinheitenWorkoutName(journeyId, templateId, name),
+    ),
+  );
+}
+
 /** Eine neue Journey aus einer Vorlage starten. Die Reihenfolge ist Teil der
  *  Absicht: erst die bisherige aktive Journey abloesen (sonst verletzt das
  *  Einfuegen den Unique-Index), dann die neue Journey, dann ihre Phasen, zum
@@ -170,6 +197,10 @@ export async function writeJourneyStart(
   // traegt das Uebernahme-Angebot.
   const previousJourneyId = await store.findActiveJourneyId();
   if (previousJourneyId !== null) {
+    // Erst einbrennen, dann archivieren: bricht das Einbrennen ab, bleibt die
+    // bisherige Journey aktiv und der Wechsel laesst sich unveraendert
+    // wiederholen.
+    await brenneWorkoutNamenEin(store, previousJourneyId);
     await store.archiveJourney(previousJourneyId, heute);
   }
 
@@ -249,6 +280,11 @@ export interface JourneyAbschlussPayload {
  *  zusammen weg (Issue #379). Zuvor lief der Kalender-Abschluss ueber eine
  *  zweite Fassung im Verlauf-Speicher, die den Phasenbezug stehen liess.
  *
+ *  Zuerst brennt der Abschluss den Workout-Namen in die Einheiten ein und erst
+ *  danach legt er die Journey ins Archiv: bricht der Vorgang dazwischen ab,
+ *  bleibt die Journey aktiv, die Abschluss-Bedingung ist beim naechsten Oeffnen
+ *  unveraendert wahr und der Vorgang holt sich selbst nach (ADR-0017).
+ *
  *  Bewusst einfache Folge ohne Offline-Puffer (#240): der Abschluss ist keine
  *  Dateneingabe, sondern eine Schlussfolgerung aus Daten, die schon da sind.
  *  Schlaegt er fehl, ist die Bedingung beim naechsten Oeffnen unveraendert wahr
@@ -260,6 +296,7 @@ export async function writeJourneyAbschluss(
   payload: JourneyAbschlussPayload,
 ): Promise<void> {
   if (userId === null) throw new Error("Nicht angemeldet.");
+  await brenneWorkoutNamenEin(store, payload.journeyId);
   await store.archiveJourney(payload.journeyId, payload.endDate);
   await store.clearReferenzgewichte(userId);
 }

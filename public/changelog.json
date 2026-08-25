@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.49.0",
+      "date": "2026-08-25",
+      "changes": [
+        "Beim Abschluss einer Journey wird jetzt festgehalten, wie deine Workouts zu diesem Zeitpunkt hießen. Benennst du ein Workout später um, ändert das die Rückschau einer abgeschlossenen Journey nicht mehr: dort steht der Name, unter dem du damals trainiert hast. Im Trainingsverlauf gilt weiterhin der aktuelle Name."
+      ]
+    },
+    {
       "version": "1.48.6",
       "date": "2026-08-25",
       "changes": [

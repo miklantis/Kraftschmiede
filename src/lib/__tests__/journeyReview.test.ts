@@ -24,6 +24,7 @@ function s(over: Partial<ReviewSessionInput>): ReviewSessionInput {
     journeyId: "j1",
     phaseId: "p1",
     templateId: "t1",
+    templateName: null,
     skillId: null,
     ...over,
   };
@@ -100,6 +101,26 @@ describe("buildJourneyReview", () => {
     );
     const titles = r.groups[0]!.sessions.map((x) => x.title);
     expect(titles).toEqual(["Yoga", "Handstand"]);
+  });
+
+  it("nimmt den eingebrannten Workout-Namen, nicht den heutigen", () => {
+    const r = buildJourneyReview(
+      "j1",
+      phases,
+      [s({ id: "a", templateId: "t1", templateName: "Ganzkörper A (alt)" })],
+      lk,
+    );
+    expect(r.groups[0]!.sessions[0]!.title).toBe("Ganzkörper A (alt)");
+  });
+
+  it("loest ohne eingebrannten Namen weiter aktuell auf", () => {
+    const r = buildJourneyReview(
+      "j1",
+      phases,
+      [s({ id: "a", templateId: "t1", templateName: null })],
+      lk,
+    );
+    expect(r.groups[0]!.sessions[0]!.title).toBe("Ganzkörper A");
   });
 
   it("zeigt leere Phasen mit Wochen- und Einheitenangabe", () => {

@@ -28,6 +28,10 @@ export const sessionRow = z.object({
   journey_id: uuid.nullable(),
   phase_id: uuid.nullable(),
   template_id: uuid.nullable(),
+  // Eingebrannter Workout-Name: beim Abschluss der Journey aus der Vorlage
+  // kopiert (Migration 0053, ADR-0022). null = noch nicht eingebrannt, dann
+  // loest die Anzeige den Namen wie bisher aktuell auf.
+  template_name: z.string().nullable(),
   skill_id: uuid.nullable(),
   week: z.number().int().nullable(),
   duration_sec: z.number().int().nullable(),
@@ -49,6 +53,7 @@ export const sessionInsert = sessionRow
     journey_id: true,
     phase_id: true,
     template_id: true,
+    template_name: true,
     skill_id: true,
     week: true,
     duration_sec: true,

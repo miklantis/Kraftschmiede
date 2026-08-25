@@ -91,8 +91,11 @@ describe("writeJourneyStart", () => {
     expect(log.journeysArchived).toEqual([
       { id: "j-alt", endDatum: "2026-08-10" },
     ]);
-    expect(log.folge.slice(0, 5)).toEqual([
+    expect(log.folge.slice(0, 6)).toEqual([
       "findActiveJourneyId",
+      // Der Workout-Name der abgeloesten Journey wird eingebrannt, bevor sie
+      // ins Archiv geht (ADR-0022).
+      "listJourneyEinheitenWorkouts",
       "archiveJourney",
       "insertJourney",
       "listBausteine",
@@ -261,7 +264,13 @@ describe("writeJourneyAbschluss", () => {
     expect(log.referenzgewichteCleared).toEqual(["u1"]);
     // Erst ins Archiv, dann raeumen: die Journey ist beendet, bevor ihr
     // Bezugspunkt faellt.
-    expect(log.folge).toEqual(["archiveJourney", "clearReferenzgewichte"]);
+    // Erst einbrennen, dann archivieren: bricht das Einbrennen ab, bleibt die
+    // Journey aktiv und der Abschluss holt sich beim naechsten Oeffnen nach.
+    expect(log.folge).toEqual([
+      "listJourneyEinheitenWorkouts",
+      "archiveJourney",
+      "clearReferenzgewichte",
+    ]);
   });
 
   it("bleibt bei mehrfachem Ausfuehren folgenlos - es sind dieselben Werte", async () => {
@@ -294,6 +303,74 @@ describe("writeJourneyAbschluss", () => {
     expect(
       abschluss.log.folge.filter((h) => h === "clearReferenzgewichte"),
     ).toEqual(wechsel.log.folge.filter((h) => h === "clearReferenzgewichte"));
+  });
+
+  it("brennt den Workout-Namen je Workout einmal in die Einheiten ein", async () => {
+    const { store, log } = createMemoryJourneyStore({
+      einheitenWorkouts: {
+        j1: [
+          { templateId: "t1", name: "Ganzkoerper A" },
+          { templateId: "t2", name: "Ganzkoerper B" },
+          { templateId: "t1", name: "Ganzkoerper A" },
+        ],
+      },
+    });
+    await writeJourneyAbschluss(store, "u1", {
+      journeyId: "j1",
+      endDate: "2026-06-21",
+    });
+
+    expect(log.einheitenWorkoutNamen).toEqual([
+      { journeyId: "j1", templateId: "t1", name: "Ganzkoerper A" },
+      { journeyId: "j1", templateId: "t2", name: "Ganzkoerper B" },
+    ]);
+  });
+
+  it("laesst Einheiten ohne heutigen Workout-Namen leer", async () => {
+    // Die Vorlage gibt es nicht mehr: einen Namen zu erfinden waere schlimmer
+    // als keiner.
+    const { store, log } = createMemoryJourneyStore({
+      einheitenWorkouts: {
+        j1: [
+          { templateId: "t1", name: null },
+          { templateId: "t2", name: "Ganzkoerper B" },
+        ],
+      },
+    });
+    await writeJourneyAbschluss(store, "u1", {
+      journeyId: "j1",
+      endDate: "2026-06-21",
+    });
+
+    expect(log.einheitenWorkoutNamen).toEqual([
+      { journeyId: "j1", templateId: "t2", name: "Ganzkoerper B" },
+    ]);
+  });
+
+  it("brennt beim Journey-Wechsel genauso ein wie beim Kalender-Abschluss", async () => {
+    // Beide Wege, auf denen eine Journey endet, muessen dasselbe hinterlassen.
+    const einheitenWorkouts = {
+      "j-alt": [{ templateId: "t1", name: "Ganzkoerper A" }],
+    };
+    const wechsel = createMemoryJourneyStore({
+      bausteine: BAUSTEINE,
+      aktiveJourneyId: "j-alt",
+      einheitenWorkouts,
+    });
+    await writeJourneyStart(wechsel.store, "u1", vorlage(), "2026-08-10");
+
+    const abschluss = createMemoryJourneyStore({ einheitenWorkouts });
+    await writeJourneyAbschluss(abschluss.store, "u1", {
+      journeyId: "j-alt",
+      endDate: "2026-08-10",
+    });
+
+    expect(wechsel.log.einheitenWorkoutNamen).toEqual([
+      { journeyId: "j-alt", templateId: "t1", name: "Ganzkoerper A" },
+    ]);
+    expect(abschluss.log.einheitenWorkoutNamen).toEqual(
+      wechsel.log.einheitenWorkoutNamen,
+    );
   });
 
   it("schreibt ohne angemeldeten Nutzer nichts", async () => {
