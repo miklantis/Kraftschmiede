@@ -16,6 +16,11 @@ export const exerciseEquipmentEnum = z.enum([
   "dumbbell",
 ]);
 
+// Aus den Enums abgeleitete Typen (einzige Pflegequelle bleibt das Enum).
+export type ExerciseProfile = z.infer<typeof exerciseProfileEnum>;
+export type ExerciseTier = z.infer<typeof exerciseTierEnum>;
+export type ExerciseEquipment = z.infer<typeof exerciseEquipmentEnum>;
+
 // exercises – Uebungskatalog mit Coach-Feldern (rm, rm_as_of, rm_stale).
 export const exerciseRow = z.object({
   id: uuid,

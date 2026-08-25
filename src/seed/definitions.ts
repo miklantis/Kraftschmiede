@@ -10,9 +10,13 @@ import {
   type PhaseAdjustments,
 } from "@/engine/phaseBuild";
 import type {
+  ExerciseEquipment,
+  ExerciseProfile,
+  ExerciseTier,
   Focus,
   LoadBuilder,
   Metric,
+  MuscleKategorie,
   PhaseControl,
   PhaseTypeKey,
   PlanBuilder,
@@ -635,4 +639,577 @@ export const equipmentSeeds: SeedEquipment[] = [
   { key: "pullup-bar", label: "Klimmzugstange", active: true },
   { key: "rings", label: "Ringe", active: false },
   { key: "parallettes", label: "Parallettes", active: false },
+];
+
+// --- Inventar (Stangen, Scheiben, Kettlebells) --------------------------------
+
+/**
+ * Eine Stange (inventory_bars). Der Schluessel ist die Naht zum Uebungskatalog:
+ * `SeedExercise.barKey` zeigt darauf, die DB-Verknuepfung (`exercises.bar_id`)
+ * entsteht erst beim Seed, wenn die Stange ihre ID hat. Darum muessen die
+ * Stangen zwingend vor den Uebungen angelegt werden.
+ */
+export interface SeedBar {
+  key: string;
+  name: string;
+  weight: number;
+  isDefault: boolean;
+}
+
+// Stangen des Grundbestands. `isDefault` markiert die Stange, die der Coach
+// nimmt, wenn eine Uebung keine eigene nennt.
+export const barSeeds: SeedBar[] = [
+  { key: "standard", name: "Standard", weight: 20, isDefault: true },
+  { key: "leicht", name: "Leicht", weight: 10, isDefault: false },
+  { key: "sz", name: "SZ", weight: 12.5, isDefault: false },
+  { key: "sz-curl", name: "SZ-Curl", weight: 8, isDefault: false },
+  { key: "kurz", name: "Kurz", weight: 15, isDefault: false },
+];
+
+// Verfuegbare Scheiben-Gewichte in kg. Ohne sie kann der Coach kein ladbares
+// Gewicht runden - er faellt sonst auf eine fest verdrahtete Annahme zurueck.
+export const plateSeeds: number[] = [1.25, 2.5, 5, 10, 20];
+
+// Verfuegbare Kettlebell-Gewichte in kg (Core-Uebungen mit Zusatzlast).
+export const kettlebellSeeds: number[] = [4, 6, 8, 10, 12, 16, 20, 24];
+
+// --- Uebungskatalog -----------------------------------------------------------
+
+/** Feine Muskel-Beteiligung einer Uebung (exercise_muscles). Die `regionId`
+ *  entspricht einer Region der Master-SVG (lib/muscles.ts, MUSCLES). */
+export interface SeedExerciseMuscle {
+  regionId: string;
+  kategorie: MuscleKategorie;
+}
+
+/**
+ * Eine Katalog-Uebung (exercises) samt ihrer Muskel-Zuordnung.
+ *
+ * `barKey` nennt die Stange beim Namen statt bei der ID - die ID gibt es erst
+ * nach dem Anlegen der Stangen. `position` steht explizit hier und wird
+ * bewusst nicht aus dem Index abgeleitet: der Bestand vergibt die 7 doppelt
+ * (`dumbbell-curl` und `plate_situps`), und der Seed bildet den Bestand ab,
+ * statt ihn nebenbei umzusortieren.
+ *
+ * `workWeight` ist kein Katalog-Wert, sondern der persoenliche Arbeitsstand.
+ * Ein neues Konto faengt darum bei 0 an - ueberall dort, wo etwas anderes die
+ * Last traegt: bei Langhantel-Uebungen die leere Stange, bei Koerpergewicht das
+ * eigene Gewicht (so schon in Migration 0040 fuer das Kreuzheben entschieden).
+ * Nur wo es weder Stange noch Koerpergewicht gibt (Scheibe, Kurzhantel), steht
+ * ein kleiner Startwert, damit der erste Vorschlag nicht ins Leere greift.
+ */
+export interface SeedExercise {
+  key: string;
+  name: string;
+  profile: ExerciseProfile;
+  tier: ExerciseTier;
+  equipment: ExerciseEquipment;
+  barKey: string | null;
+  description: string;
+  metric: Metric | null;
+  muscleGroups: string[];
+  repRangeMin: number | null;
+  repRangeMax: number | null;
+  workWeight: number;
+  recoveryHours: number;
+  position: number;
+  muscles: SeedExerciseMuscle[];
+}
+
+// Der Grundbestand des Uebungskatalogs. Die neun Uebungen, auf die die
+// Skill-Phasen ueber `exerciseKey` zeigen, muessen hier stehen - sonst bleibt
+// die Verknuepfung (skill_phase_exercises.exercise_id) leer und weder der
+// Uebungsverlauf noch das Start-Popup finden die Uebung wieder.
+export const exerciseSeeds: SeedExercise[] = [
+  {
+    key: "back_squat",
+    name: "Back Squat",
+    profile: "strength",
+    tier: "main",
+    equipment: "barbell",
+    barKey: "standard",
+    description:
+      "Tiefe Kniebeuge mit der Langhantel auf dem oberen Rücken; Hüfte und Knie gemeinsam beugen und strecken.",
+    metric: null,
+    muscleGroups: ["legs", "glutes"],
+    repRangeMin: 6,
+    repRangeMax: 10,
+    workWeight: 0,
+    recoveryHours: 48,
+    position: 0,
+    muscles: [
+      { regionId: "gesaess", kategorie: "primaer" },
+      { regionId: "quadrizeps", kategorie: "primaer" },
+      { regionId: "beinbeuger", kategorie: "sekundaer" },
+      { regionId: "bauch", kategorie: "stabilisierend" },
+      { regionId: "ruecken_mitte", kategorie: "stabilisierend" },
+    ],
+  },
+  {
+    key: "bench_press",
+    name: "Bench Press",
+    profile: "strength",
+    tier: "main",
+    equipment: "barbell",
+    barKey: "standard",
+    description:
+      "Bankdrücken auf der Flachbank: Langhantel kontrolliert zur Brust senken und senkrecht nach oben drücken.",
+    metric: null,
+    muscleGroups: ["chest", "triceps", "shoulders"],
+    repRangeMin: 8,
+    repRangeMax: 12,
+    workWeight: 0,
+    recoveryHours: 48,
+    position: 1,
+    muscles: [
+      { regionId: "brust", kategorie: "primaer" },
+      { regionId: "schultern_vorne", kategorie: "sekundaer" },
+      { regionId: "trizeps", kategorie: "sekundaer" },
+    ],
+  },
+  {
+    key: "romanian_deadlift",
+    name: "Romanian Deadlift (RDL)",
+    profile: "strength",
+    tier: "main",
+    equipment: "barbell",
+    barKey: "standard",
+    description:
+      "Rumänisches Kreuzheben: aus dem aufrechten Stand mit leicht gebeugten Knien die Hüfte nach hinten schieben, die Langhantel eng an den Beinen bis etwa Mitte Schienbein senken, Rücken gerade, dann aus der Hüfte zurück in den Stand.",
+    metric: null,
+    muscleGroups: ["back", "legs", "glutes"],
+    repRangeMin: 4,
+    repRangeMax: 8,
+    workWeight: 0,
+    recoveryHours: 72,
+    position: 2,
+    muscles: [
+      { regionId: "beinbeuger", kategorie: "primaer" },
+      { regionId: "gesaess", kategorie: "primaer" },
+      { regionId: "ruecken_mitte", kategorie: "primaer" },
+      { regionId: "latissimus", kategorie: "sekundaer" },
+      { regionId: "quadrizeps", kategorie: "sekundaer" },
+      { regionId: "trapez", kategorie: "sekundaer" },
+      { regionId: "bauch", kategorie: "stabilisierend" },
+      { regionId: "waden", kategorie: "stabilisierend" },
+    ],
+  },
+  {
+    key: "deadlift",
+    name: "Deadlift",
+    profile: "strength",
+    tier: "main",
+    equipment: "barbell",
+    barKey: "standard",
+    description:
+      "Klassisches Kreuzheben: Langhantel vom Boden, Hüfte und Knie strecken sich gemeinsam, Rücken gerade und Stange eng am Körper, bis zum aufrechten Stand; danach kontrolliert zurück auf den Boden.",
+    metric: null,
+    muscleGroups: ["back", "legs", "glutes"],
+    repRangeMin: 4,
+    repRangeMax: 8,
+    workWeight: 0,
+    recoveryHours: 72,
+    position: 3,
+    muscles: [
+      { regionId: "beinbeuger", kategorie: "primaer" },
+      { regionId: "gesaess", kategorie: "primaer" },
+      { regionId: "quadrizeps", kategorie: "primaer" },
+      { regionId: "ruecken_mitte", kategorie: "primaer" },
+      { regionId: "latissimus", kategorie: "sekundaer" },
+      { regionId: "trapez", kategorie: "sekundaer" },
+      { regionId: "bauch", kategorie: "stabilisierend" },
+      { regionId: "waden", kategorie: "stabilisierend" },
+    ],
+  },
+  {
+    key: "bent_row",
+    name: "Bent Row",
+    profile: "strength",
+    tier: "main",
+    equipment: "barbell",
+    barKey: "standard",
+    description:
+      "Vorgebeugtes Langhantelrudern: Oberkörper geneigt, Hantel zum unteren Brustkorb beziehungsweise Bauch ziehen.",
+    metric: null,
+    muscleGroups: ["back", "biceps"],
+    repRangeMin: 8,
+    repRangeMax: 12,
+    workWeight: 0,
+    recoveryHours: 48,
+    position: 4,
+    muscles: [
+      { regionId: "latissimus", kategorie: "primaer" },
+      { regionId: "ruecken_mitte", kategorie: "primaer" },
+      { regionId: "bizeps", kategorie: "sekundaer" },
+      { regionId: "schultern_hinten", kategorie: "sekundaer" },
+      { regionId: "trapez", kategorie: "sekundaer" },
+    ],
+  },
+  {
+    key: "push_press",
+    name: "Push Press",
+    profile: "strength",
+    tier: "main",
+    equipment: "barbell",
+    barKey: "standard",
+    description:
+      "Schulterdrücken mit leichtem Bein-Impuls: Langhantel von den Schultern über den Kopf drücken.",
+    metric: null,
+    muscleGroups: ["shoulders", "triceps"],
+    repRangeMin: 5,
+    repRangeMax: 10,
+    workWeight: 0,
+    recoveryHours: 48,
+    position: 5,
+    muscles: [
+      { regionId: "schultern_vorne", kategorie: "primaer" },
+      { regionId: "trizeps", kategorie: "sekundaer" },
+      { regionId: "bauch", kategorie: "stabilisierend" },
+      { regionId: "trapez", kategorie: "stabilisierend" },
+    ],
+  },
+  {
+    key: "barbell_curl",
+    name: "Barbell Curl",
+    profile: "strength",
+    tier: "accessory",
+    equipment: "barbell",
+    barKey: "standard",
+    description:
+      "Langhantel-Bizepscurl im Stand: Hantel aus gestreckten Armen nach oben curlen, Oberarme bleiben fixiert.",
+    metric: null,
+    muscleGroups: ["biceps"],
+    repRangeMin: 8,
+    repRangeMax: 12,
+    workWeight: 0,
+    recoveryHours: 48,
+    position: 6,
+    muscles: [{ regionId: "bizeps", kategorie: "primaer" }],
+  },
+  {
+    // Einziger Schluessel mit Bindestrich statt Unterstrich, und teilt sich die
+    // Position 7 mit plate_situps. Beides Schoenheitsfehler des Bestands, die
+    // der Seed uebernimmt - aufgeraeumt wird getrennt (Issue #393).
+    key: "dumbbell-curl",
+    name: "Curl (Kurzhantel)",
+    profile: "strength",
+    tier: "accessory",
+    equipment: "dumbbell",
+    barKey: null,
+    description:
+      "Langhantel-Bizepscurl im Stand: Hantel aus gestreckten Armen nach oben curlen, Oberarme bleiben fixiert.",
+    metric: null,
+    muscleGroups: ["biceps"],
+    repRangeMin: 8,
+    repRangeMax: 12,
+    workWeight: 10,
+    recoveryHours: 48,
+    position: 7,
+    muscles: [{ regionId: "bizeps", kategorie: "primaer" }],
+  },
+  {
+    key: "plate_situps",
+    name: "Core Situps",
+    profile: "core",
+    tier: "main",
+    equipment: "plate",
+    barKey: null,
+    description:
+      "Situps mit Zusatzlast (Hantelscheibe oder Kettlebell) vor der Brust oder über dem Kopf gehalten.",
+    metric: null,
+    muscleGroups: ["core"],
+    repRangeMin: 12,
+    repRangeMax: 20,
+    workWeight: 10,
+    recoveryHours: 24,
+    position: 7,
+    muscles: [{ regionId: "bauch", kategorie: "primaer" }],
+  },
+  {
+    key: "plate_twist",
+    name: "Core Twist",
+    profile: "core",
+    tier: "main",
+    equipment: "plate",
+    barKey: null,
+    description:
+      "Sitzende Rumpfrotation (Russian Twist): Zusatzlast (Scheibe oder Kettlebell) in beiden Händen seitlich neben der Hüfte antippen.",
+    metric: null,
+    muscleGroups: ["core"],
+    repRangeMin: 12,
+    repRangeMax: 20,
+    workWeight: 16,
+    recoveryHours: 24,
+    position: 8,
+    muscles: [
+      { regionId: "bauch_seitlich", kategorie: "primaer" },
+      { regionId: "bauch", kategorie: "sekundaer" },
+    ],
+  },
+  {
+    key: "plate_cocoon",
+    name: "Core Cocoon",
+    profile: "core",
+    tier: "main",
+    equipment: "plate",
+    barKey: null,
+    description:
+      "Aus gestreckter Rückenlage Knie und Oberkörper gleichzeitig zusammenziehen (V- beziehungsweise Crunch-artig), Zusatzlast (Scheibe oder Kettlebell) in den Händen.",
+    metric: null,
+    muscleGroups: ["core"],
+    repRangeMin: 10,
+    repRangeMax: 16,
+    workWeight: 10,
+    recoveryHours: 24,
+    position: 9,
+    muscles: [
+      { regionId: "bauch", kategorie: "primaer" },
+      { regionId: "bauch_seitlich", kategorie: "sekundaer" },
+    ],
+  },
+  {
+    key: "lunge",
+    name: "Lunge",
+    profile: "strength",
+    tier: "main",
+    equipment: "barbell",
+    barKey: "standard",
+    description:
+      "Ausfallschritt mit Langhantel auf dem Rücken: pro Wiederholung ein Bein nach vorn, hinteres Knie bis knapp über den Boden senken.",
+    metric: null,
+    muscleGroups: ["legs", "glutes"],
+    repRangeMin: 8,
+    repRangeMax: 12,
+    workWeight: 0,
+    recoveryHours: 48,
+    position: 10,
+    muscles: [
+      { regionId: "gesaess", kategorie: "primaer" },
+      { regionId: "quadrizeps", kategorie: "primaer" },
+      { regionId: "beinbeuger", kategorie: "sekundaer" },
+    ],
+  },
+  {
+    key: "pull_over",
+    name: "Pull Over",
+    profile: "strength",
+    tier: "accessory",
+    equipment: "barbell",
+    barKey: "leicht",
+    description:
+      "Überzug auf der Bank: Langhantel mit nahezu gestreckten Armen hinter den Kopf absenken und über die Brust zurückführen.",
+    metric: null,
+    muscleGroups: ["back", "chest"],
+    repRangeMin: 8,
+    repRangeMax: 12,
+    workWeight: 0,
+    recoveryHours: 48,
+    position: 11,
+    muscles: [
+      { regionId: "latissimus", kategorie: "primaer" },
+      { regionId: "brust", kategorie: "sekundaer" },
+      { regionId: "trizeps", kategorie: "stabilisierend" },
+    ],
+  },
+  {
+    key: "dead_hang",
+    name: "Dead Hang",
+    profile: "bodyweight",
+    tier: "accessory",
+    equipment: "bar",
+    barKey: null,
+    description:
+      "Passiver Hang an der Stange mit gestreckten Armen; Schultern aktiv, Griff und Rumpf halten die Position auf Zeit.",
+    metric: "duration",
+    muscleGroups: ["back", "grip", "shoulders"],
+    repRangeMin: 20,
+    repRangeMax: 40,
+    workWeight: 0,
+    recoveryHours: 48,
+    position: 12,
+    muscles: [
+      { regionId: "latissimus", kategorie: "stabilisierend" },
+      { regionId: "schultern_hinten", kategorie: "stabilisierend" },
+      { regionId: "trapez", kategorie: "stabilisierend" },
+    ],
+  },
+  {
+    key: "scapular_pullup",
+    name: "Scapular Pull-Up",
+    profile: "bodyweight",
+    tier: "accessory",
+    equipment: "bar",
+    barKey: null,
+    description:
+      "Aus dem Hang nur die Schulterblätter nach unten und hinten ziehen, Arme bleiben gestreckt; baut die Ansteuerung für den Klimmzug.",
+    metric: "reps",
+    muscleGroups: ["back", "shoulders"],
+    repRangeMin: 5,
+    repRangeMax: 10,
+    workWeight: 0,
+    recoveryHours: 48,
+    position: 13,
+    muscles: [
+      { regionId: "trapez", kategorie: "primaer" },
+      { regionId: "latissimus", kategorie: "sekundaer" },
+    ],
+  },
+  {
+    key: "band_pullup",
+    name: "Band Pull-Up",
+    profile: "bodyweight",
+    tier: "accessory",
+    equipment: "band",
+    barKey: null,
+    description:
+      "Klimmzug mit Widerstandsband als Unterstützung; sauber bis Kinn über die Stange, kontrolliert ablassen. Im Skill von starkem zu leichtem Band.",
+    metric: "reps",
+    muscleGroups: ["back", "biceps"],
+    repRangeMin: 5,
+    repRangeMax: 10,
+    workWeight: 0,
+    recoveryHours: 48,
+    position: 14,
+    muscles: [
+      { regionId: "latissimus", kategorie: "primaer" },
+      { regionId: "bizeps", kategorie: "sekundaer" },
+      { regionId: "ruecken_mitte", kategorie: "sekundaer" },
+    ],
+  },
+  {
+    key: "negative_pullup",
+    name: "Negative Pull-Up",
+    profile: "bodyweight",
+    tier: "accessory",
+    equipment: "bar",
+    barKey: null,
+    description:
+      "Nur die absenkende Phase des Klimmzugs: oben starten und langsam (etwa 5 Sekunden) kontrolliert ablassen.",
+    metric: "reps",
+    muscleGroups: ["back", "biceps"],
+    repRangeMin: 3,
+    repRangeMax: 6,
+    workWeight: 0,
+    recoveryHours: 48,
+    position: 15,
+    muscles: [
+      { regionId: "latissimus", kategorie: "primaer" },
+      { regionId: "bizeps", kategorie: "sekundaer" },
+      { regionId: "ruecken_mitte", kategorie: "sekundaer" },
+    ],
+  },
+  {
+    key: "strict_pullup",
+    name: "Strict Pull-Up",
+    profile: "bodyweight",
+    tier: "main",
+    equipment: "bar",
+    barKey: null,
+    description:
+      "Strenger Klimmzug aus vollem Hang ohne Schwung; Kinn über die Stange, kontrolliert in den Hang zurück.",
+    metric: "reps",
+    muscleGroups: ["back", "biceps"],
+    repRangeMin: 3,
+    repRangeMax: 12,
+    workWeight: 0,
+    recoveryHours: 48,
+    position: 16,
+    muscles: [
+      { regionId: "latissimus", kategorie: "primaer" },
+      { regionId: "bizeps", kategorie: "sekundaer" },
+      { regionId: "ruecken_mitte", kategorie: "sekundaer" },
+      { regionId: "trapez", kategorie: "stabilisierend" },
+    ],
+  },
+  {
+    key: "knee_pushup",
+    name: "Knee Push-Up",
+    profile: "bodyweight",
+    tier: "accessory",
+    equipment: "bodyweight",
+    barKey: null,
+    description:
+      "Liegestütz auf den Knien; Körper von Knie bis Kopf gerade, Brust kontrolliert absenken und drücken.",
+    metric: "reps",
+    muscleGroups: ["chest", "triceps", "shoulders"],
+    repRangeMin: 8,
+    repRangeMax: 15,
+    workWeight: 0,
+    recoveryHours: 48,
+    position: 17,
+    muscles: [
+      { regionId: "brust", kategorie: "primaer" },
+      { regionId: "schultern_vorne", kategorie: "sekundaer" },
+      { regionId: "trizeps", kategorie: "sekundaer" },
+    ],
+  },
+  {
+    key: "incline_pushup",
+    name: "Incline Push-Up",
+    profile: "bodyweight",
+    tier: "accessory",
+    equipment: "bodyweight",
+    barKey: null,
+    description:
+      "Liegestütz mit erhöhten Händen (Bank oder Erhöhung); leichter als am Boden, gleiche gerade Körperlinie.",
+    metric: "reps",
+    muscleGroups: ["chest", "triceps", "shoulders"],
+    repRangeMin: 8,
+    repRangeMax: 15,
+    workWeight: 0,
+    recoveryHours: 48,
+    position: 18,
+    muscles: [
+      { regionId: "brust", kategorie: "primaer" },
+      { regionId: "schultern_vorne", kategorie: "sekundaer" },
+      { regionId: "trizeps", kategorie: "sekundaer" },
+    ],
+  },
+  {
+    key: "full_pushup",
+    name: "Full Push-Up",
+    profile: "bodyweight",
+    tier: "main",
+    equipment: "bodyweight",
+    barKey: null,
+    description:
+      "Voller Liegestütz am Boden; Körper gerade, Brust bis knapp über den Boden senken und kontrolliert drücken.",
+    metric: "reps",
+    muscleGroups: ["chest", "triceps", "shoulders"],
+    repRangeMin: 10,
+    repRangeMax: 35,
+    workWeight: 0,
+    recoveryHours: 48,
+    position: 19,
+    muscles: [
+      { regionId: "brust", kategorie: "primaer" },
+      { regionId: "schultern_vorne", kategorie: "sekundaer" },
+      { regionId: "trizeps", kategorie: "sekundaer" },
+      { regionId: "bauch", kategorie: "stabilisierend" },
+    ],
+  },
+  {
+    key: "plank",
+    name: "Plank",
+    profile: "core",
+    tier: "accessory",
+    equipment: "bodyweight",
+    barKey: null,
+    description:
+      "Unterarmstütz: Ellenbogen unter den Schultern, Unterarme flach am Boden, Füße hüftbreit auf den Zehen. Körper eine gerade Linie von Kopf bis Ferse, Bauch und Gesäß angespannt, Blick nach unten.",
+    metric: "duration",
+    muscleGroups: ["core"],
+    repRangeMin: null,
+    repRangeMax: null,
+    workWeight: 0,
+    recoveryHours: 24,
+    position: 20,
+    muscles: [
+      { regionId: "bauch", kategorie: "primaer" },
+      { regionId: "bauch_seitlich", kategorie: "sekundaer" },
+      { regionId: "gesaess", kategorie: "sekundaer" },
+      { regionId: "quadrizeps", kategorie: "stabilisierend" },
+      { regionId: "schultern_vorne", kategorie: "stabilisierend" },
+    ],
+  },
 ];
