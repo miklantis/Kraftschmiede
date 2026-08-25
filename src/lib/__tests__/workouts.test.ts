@@ -4,6 +4,7 @@ import {
   workoutSummary,
   buildWorkoutList,
   buildJourneyAssignment,
+  countJourneyWorkoutSessions,
   filterCopyableAssignments,
   selectRecommendationTemplates,
   type WorkoutInput,
@@ -95,6 +96,7 @@ describe("buildJourneyAssignment", () => {
       ],
       lookup,
       new Set<string>(),
+      {},
     );
     expect(rows.map((r) => r.id)).toEqual(["a"]);
   });
@@ -104,9 +106,21 @@ describe("buildJourneyAssignment", () => {
       [strengthWk("a", "A"), strengthWk("b", "B")],
       lookup,
       new Set(["b"]),
+      {},
     );
     expect(rows.find((r) => r.id === "a")?.assigned).toBe(false);
     expect(rows.find((r) => r.id === "b")?.assigned).toBe(true);
+  });
+
+  it("uebernimmt die Einheiten je Workout, fehlende zaehlen als 0", () => {
+    const rows = buildJourneyAssignment(
+      [strengthWk("a", "A"), strengthWk("b", "B")],
+      lookup,
+      new Set<string>(),
+      { a: 3 },
+    );
+    expect(rows.find((r) => r.id === "a")?.doneCount).toBe(3);
+    expect(rows.find((r) => r.id === "b")?.doneCount).toBe(0);
   });
 
   it("behaelt die Reihenfolge der Eingabe", () => {
@@ -114,6 +128,7 @@ describe("buildJourneyAssignment", () => {
       [strengthWk("x", "X"), strengthWk("y", "Y"), strengthWk("z", "Z")],
       lookup,
       new Set<string>(),
+      {},
     );
     expect(rows.map((r) => r.id)).toEqual(["x", "y", "z"]);
   });
@@ -227,5 +242,38 @@ describe("selectRecommendationTemplates", () => {
     );
     expect(sel.ids).toEqual(["b"]);
     expect(sel.libraryFallback).toBe(true);
+  });
+});
+
+describe("countJourneyWorkoutSessions", () => {
+  const se = (
+    journeyId: string | null,
+    templateId: string | null,
+    status: string,
+  ) => ({ journeyId, templateId, status });
+
+  it("zaehlt abgeschlossene Einheiten je Workout in dieser Journey", () => {
+    const counts = countJourneyWorkoutSessions(
+      [
+        se("j1", "a", "done"),
+        se("j1", "a", "done"),
+        se("j1", "b", "done"),
+      ],
+      "j1",
+    );
+    expect(counts).toEqual({ a: 2, b: 1 });
+  });
+
+  it("laesst laufende Einheiten, fremde Journeys und Einheiten ohne Workout aus", () => {
+    const counts = countJourneyWorkoutSessions(
+      [
+        se("j1", "a", "live"),
+        se("j2", "a", "done"),
+        se(null, "a", "done"),
+        se("j1", null, "done"),
+      ],
+      "j1",
+    );
+    expect(counts).toEqual({});
   });
 });
