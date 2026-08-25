@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   buildJourneyExerciseGroups,
   journeyExerciseIds,
+  journeyTrainedExerciseIds,
 } from "@/lib/journeyExercises";
 import type { JourneyExerciseData } from "@/lib/journeyExercises";
+import type { HistorySessionInput } from "@/lib/history";
 import type { WorkoutExerciseInfo, WorkoutInput } from "@/lib/workouts";
 import type { ExerciseRow } from "@/schemas";
 
@@ -59,6 +61,42 @@ function workout(
       exerciseId,
       position: i,
     })),
+  };
+}
+
+// Eine absolvierte Einheit mit den genannten Uebungen; je Uebung ein
+// Arbeitssatz. Ein Eintrag "name:warmup" legt stattdessen nur einen
+// Aufwaermsatz an, ein leerer Name eine Uebung ohne Katalogbezug (Skill).
+function einheit(id: string, ...exerciseIds: string[]): HistorySessionInput {
+  return {
+    id,
+    date: "2026-01-05",
+    journeyId: "j1",
+    type: "strength",
+    templateId: "push",
+    skillId: null,
+    skillPhase: null,
+    durationSec: null,
+    minutes: null,
+    notes: "",
+    exercises: exerciseIds.map((raw, i) => {
+      const [name, kind] = raw.split(":");
+      return {
+        exerciseId: name === "" ? null : name,
+        name: name === "" ? "Skill" : name,
+        metric: null,
+        position: i,
+        sets: [
+          {
+            kind: kind === "warmup" ? ("warmup" as const) : ("work" as const),
+            reps: 8,
+            weight: 60,
+            durationSec: null,
+            adjusted: false,
+          },
+        ],
+      };
+    }),
   };
 }
 
@@ -118,6 +156,27 @@ describe("journeyExerciseIds", () => {
   });
 });
 
+describe("journeyTrainedExerciseIds", () => {
+  it("nimmt jede trainierte Uebung genau einmal, in Reihenfolge des Auftretens", () => {
+    const ids = journeyTrainedExerciseIds([
+      einheit("s1", "bankdruecken", "plank"),
+      einheit("s2", "bankdruecken", "rudern"),
+    ]);
+    expect(ids).toEqual(["bankdruecken", "plank", "rudern"]);
+  });
+
+  it("laesst reines Aufwaermen und Uebungen ohne Katalogbezug weg", () => {
+    const ids = journeyTrainedExerciseIds([
+      einheit("s1", "kniebeuge:warmup", "", "rudern"),
+    ]);
+    expect(ids).toEqual(["rudern"]);
+  });
+
+  it("liefert ohne Einheiten eine leere Liste", () => {
+    expect(journeyTrainedExerciseIds([])).toEqual([]);
+  });
+});
+
 describe("buildJourneyExerciseGroups", () => {
   const katalog: ExerciseRow[] = [
     ex("kniebeuge", { position: 0 }),
@@ -170,6 +229,7 @@ describe("buildJourneyExerciseGroups", () => {
         chart: kniebeuge.chart,
         stats: kniebeuge.stats,
         coach: null,
+        removed: false,
       },
       {
         id: "bankdruecken",
@@ -178,6 +238,7 @@ describe("buildJourneyExerciseGroups", () => {
         chart: null,
         stats: [],
         coach: null,
+        removed: false,
       },
     ]);
   });
@@ -198,5 +259,73 @@ describe("buildJourneyExerciseGroups", () => {
       {},
     );
     expect(groups).toEqual([]);
+  });
+
+  it("haengt entfernte Uebungen ans Ende ihrer Gruppe", () => {
+    const groups = buildJourneyExerciseGroups(
+      katalog,
+      new Set(["bankdruecken"]),
+      { kniebeuge: kachel("2026-01-05"), bankdruecken: kachel("2026-01-12") },
+      new Set(["kniebeuge"]),
+    );
+    // Katalog-Reihenfolge waere kniebeuge vor bankdruecken - die entfernte
+    // Uebung steht trotzdem hinten.
+    expect(groups[0].items.map((i) => i.id)).toEqual([
+      "bankdruecken",
+      "kniebeuge",
+    ]);
+    expect(groups[0].items.map((i) => i.removed)).toEqual([false, true]);
+  });
+
+  it("zeigt eine entfernte Uebung mit Verlauf und Statistik, aber ohne Coach", () => {
+    const coach = { scope: "week" } as never;
+    const groups = buildJourneyExerciseGroups(
+      katalog,
+      new Set(),
+      { kniebeuge: { ...kachel("2026-01-05", "2026-01-12"), coach } },
+      new Set(["kniebeuge"]),
+    );
+    expect(groups[0].items).toEqual([
+      {
+        id: "kniebeuge",
+        name: "kniebeuge",
+        sessionCount: 2,
+        chart: { dates: ["2026-01-05", "2026-01-12"], series: [], marks: [] },
+        stats: [{ value: "2", label: "Einheiten" }],
+        coach: null,
+        removed: true,
+      },
+    ]);
+  });
+
+  it("laesst eine entfernte Uebung ohne Einheit in dieser Journey weg", () => {
+    const groups = buildJourneyExerciseGroups(
+      katalog,
+      new Set(["bankdruecken"]),
+      { bankdruecken: kachel("2026-01-05") },
+      new Set(["kniebeuge"]),
+    );
+    expect(groups[0].items.map((i) => i.id)).toEqual(["bankdruecken"]);
+  });
+
+  it("gewinnt der Plan, wenn eine Uebung in beiden Mengen steht", () => {
+    const groups = buildJourneyExerciseGroups(
+      katalog,
+      new Set(["kniebeuge"]),
+      { kniebeuge: kachel("2026-01-05") },
+      new Set(["kniebeuge"]),
+    );
+    expect(groups[0].items[0].removed).toBe(false);
+  });
+
+  it("traegt eine entfernte Uebung eine Gruppe auch allein", () => {
+    const groups = buildJourneyExerciseGroups(
+      katalog,
+      new Set(["kniebeuge"]),
+      { kniebeuge: kachel("2026-01-05"), plank: kachel("2026-01-12") },
+      new Set(["plank"]),
+    );
+    expect(groups.map((g) => g.title)).toEqual(["Hauptübungen", "Core"]);
+    expect(groups[1].items.map((i) => i.removed)).toEqual([true]);
   });
 });

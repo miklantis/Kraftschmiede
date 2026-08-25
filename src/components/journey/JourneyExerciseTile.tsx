@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { cn } from "@/lib/utils";
 import { JourneyExerciseChart } from "./JourneyExerciseChart";
 import { CoachBlock } from "@/components/exercise/CoachBlock";
 import type { JourneyExerciseChart as JourneyChartData } from "@/lib/journeyExercises";
@@ -22,6 +23,13 @@ import type { JourneySeriesKey } from "@/lib/journeyChart";
 // nur ohne "Anpassen"-Knopf: die Journey-Seite ist Anzeige. Seine
 // Statistikzeile rechnet auf die Journey (bestes Set in dieser Journey,
 // Veraenderung seit Journey-Start, Einheiten in dieser Journey).
+//
+// removed = in dieser Journey trainiert, heute nicht mehr im Workout. Die
+// Kachel sieht dann gleich aus, tritt aber zurueck: gedimmt, mit dem Zusatz
+// "nicht mehr im Workout" neben dem Namen. Nur leicht gedimmt, denn der
+// Vergleich mit der Uebung, die sie ersetzt hat, ist der Sinn der Sache – der
+// Verlauf muss lesbar bleiben. Der Coach-Block faellt weg (coach ist null):
+// ein Vorschlag fuer die naechste Einheit waere hier falscher Rat.
 export function JourneyExerciseTile({
   name,
   chart,
@@ -29,6 +37,7 @@ export function JourneyExerciseTile({
   coach,
   activeKeys,
   unit,
+  removed = false,
   onOpen,
 }: {
   name: string;
@@ -38,6 +47,9 @@ export function JourneyExerciseTile({
   /** Eingeschaltete Serien (Schalterreihe im Abschnittskopf). */
   activeKeys: readonly JourneySeriesKey[];
   unit: string;
+  /** Uebung steht nicht mehr im Workout, wurde in dieser Journey aber
+   *  trainiert. */
+  removed?: boolean;
   onOpen: () => void;
 }): React.ReactElement {
   // Stabile Referenz: der Chart zeichnet nur neu, wenn sich Daten oder
@@ -48,8 +60,13 @@ export function JourneyExerciseTile({
   );
 
   return (
-    <div className="overflow-hidden rounded-[18px] bg-card shadow-card">
-      <div className="flex px-4 pt-3.5 pb-1 min-[960px]:px-5">
+    <div
+      className={cn(
+        "overflow-hidden rounded-[18px] bg-card shadow-card",
+        removed && "opacity-60",
+      )}
+    >
+      <div className="flex items-baseline gap-3 px-4 pt-3.5 pb-1 min-[960px]:px-5">
         <button
           type="button"
           onClick={onOpen}
@@ -58,6 +75,11 @@ export function JourneyExerciseTile({
         >
           {name}
         </button>
+        {removed && (
+          <span className="flex-none text-[13px] text-foreground-subtle">
+            nicht mehr im Workout
+          </span>
+        )}
       </div>
       <div className="grid grid-cols-1 gap-y-2 px-4 pb-3 min-[960px]:grid-cols-[2fr_1fr] min-[960px]:gap-x-5 min-[960px]:px-5">
         <div className="min-w-0">
