@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.50.1",
+      "date": "2026-08-25",
+      "changes": [
+        "Aufräumen im Übungskatalog: Zwei Übungen standen bisher beide auf demselben Listenplatz, dadurch konnte ihre Reihenfolge zwischen zwei Aufrufen wechseln. Die Plätze sind jetzt eindeutig vergeben, die Reihenfolge bleibt stabil. Ausserdem folgt der interne Name der Kurzhantel-Curls jetzt derselben Schreibweise wie alle anderen. Sichtbar ändert sich nichts, deine Übungen, Gewichte und Verläufe bleiben unberührt."
+      ]
+    },
+    {
       "version": "1.50.0",
       "date": "2026-08-25",
       "changes": [

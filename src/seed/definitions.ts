@@ -686,10 +686,9 @@ export interface SeedExerciseMuscle {
  * Eine Katalog-Uebung (exercises) samt ihrer Muskel-Zuordnung.
  *
  * `barKey` nennt die Stange beim Namen statt bei der ID - die ID gibt es erst
- * nach dem Anlegen der Stangen. `position` steht explizit hier und wird
- * bewusst nicht aus dem Index abgeleitet: der Bestand vergibt die 7 doppelt
- * (`dumbbell-curl` und `plate_situps`), und der Seed bildet den Bestand ab,
- * statt ihn nebenbei umzusortieren.
+ * nach dem Anlegen der Stangen. Die Position ergibt sich aus der Reihenfolge in
+ * `exerciseSeeds` und steht darum nicht als eigenes Feld hier (Vorhaben #396
+ * hat die doppelt vergebene 7 aufgeraeumt).
  *
  * `workWeight` ist kein Katalog-Wert, sondern der persoenliche Arbeitsstand.
  * Ein neues Konto faengt darum bei 0 an - ueberall dort, wo etwas anderes die
@@ -712,7 +711,6 @@ export interface SeedExercise {
   repRangeMax: number | null;
   workWeight: number;
   recoveryHours: number;
-  position: number;
   muscles: SeedExerciseMuscle[];
 }
 
@@ -736,7 +734,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 10,
     workWeight: 0,
     recoveryHours: 48,
-    position: 0,
     muscles: [
       { regionId: "gesaess", kategorie: "primaer" },
       { regionId: "quadrizeps", kategorie: "primaer" },
@@ -760,7 +757,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 12,
     workWeight: 0,
     recoveryHours: 48,
-    position: 1,
     muscles: [
       { regionId: "brust", kategorie: "primaer" },
       { regionId: "schultern_vorne", kategorie: "sekundaer" },
@@ -782,7 +778,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 8,
     workWeight: 0,
     recoveryHours: 72,
-    position: 2,
     muscles: [
       { regionId: "beinbeuger", kategorie: "primaer" },
       { regionId: "gesaess", kategorie: "primaer" },
@@ -809,7 +804,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 8,
     workWeight: 0,
     recoveryHours: 72,
-    position: 3,
     muscles: [
       { regionId: "beinbeuger", kategorie: "primaer" },
       { regionId: "gesaess", kategorie: "primaer" },
@@ -836,7 +830,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 12,
     workWeight: 0,
     recoveryHours: 48,
-    position: 4,
     muscles: [
       { regionId: "latissimus", kategorie: "primaer" },
       { regionId: "ruecken_mitte", kategorie: "primaer" },
@@ -860,7 +853,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 10,
     workWeight: 0,
     recoveryHours: 48,
-    position: 5,
     muscles: [
       { regionId: "schultern_vorne", kategorie: "primaer" },
       { regionId: "trizeps", kategorie: "sekundaer" },
@@ -883,14 +875,10 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 12,
     workWeight: 0,
     recoveryHours: 48,
-    position: 6,
     muscles: [{ regionId: "bizeps", kategorie: "primaer" }],
   },
   {
-    // Einziger Schluessel mit Bindestrich statt Unterstrich, und teilt sich die
-    // Position 7 mit plate_situps. Beides Schoenheitsfehler des Bestands, die
-    // der Seed uebernimmt - aufgeraeumt wird getrennt (Issue #393).
-    key: "dumbbell-curl",
+    key: "dumbbell_curl",
     name: "Curl (Kurzhantel)",
     profile: "strength",
     tier: "accessory",
@@ -904,7 +892,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 12,
     workWeight: 10,
     recoveryHours: 48,
-    position: 7,
     muscles: [{ regionId: "bizeps", kategorie: "primaer" }],
   },
   {
@@ -922,7 +909,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 20,
     workWeight: 10,
     recoveryHours: 24,
-    position: 7,
     muscles: [{ regionId: "bauch", kategorie: "primaer" }],
   },
   {
@@ -940,7 +926,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 20,
     workWeight: 16,
     recoveryHours: 24,
-    position: 8,
     muscles: [
       { regionId: "bauch_seitlich", kategorie: "primaer" },
       { regionId: "bauch", kategorie: "sekundaer" },
@@ -961,7 +946,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 16,
     workWeight: 10,
     recoveryHours: 24,
-    position: 9,
     muscles: [
       { regionId: "bauch", kategorie: "primaer" },
       { regionId: "bauch_seitlich", kategorie: "sekundaer" },
@@ -982,7 +966,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 12,
     workWeight: 0,
     recoveryHours: 48,
-    position: 10,
     muscles: [
       { regionId: "gesaess", kategorie: "primaer" },
       { regionId: "quadrizeps", kategorie: "primaer" },
@@ -1004,7 +987,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 12,
     workWeight: 0,
     recoveryHours: 48,
-    position: 11,
     muscles: [
       { regionId: "latissimus", kategorie: "primaer" },
       { regionId: "brust", kategorie: "sekundaer" },
@@ -1026,7 +1008,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 40,
     workWeight: 0,
     recoveryHours: 48,
-    position: 12,
     muscles: [
       { regionId: "latissimus", kategorie: "stabilisierend" },
       { regionId: "schultern_hinten", kategorie: "stabilisierend" },
@@ -1048,7 +1029,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 10,
     workWeight: 0,
     recoveryHours: 48,
-    position: 13,
     muscles: [
       { regionId: "trapez", kategorie: "primaer" },
       { regionId: "latissimus", kategorie: "sekundaer" },
@@ -1069,7 +1049,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 10,
     workWeight: 0,
     recoveryHours: 48,
-    position: 14,
     muscles: [
       { regionId: "latissimus", kategorie: "primaer" },
       { regionId: "bizeps", kategorie: "sekundaer" },
@@ -1091,7 +1070,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 6,
     workWeight: 0,
     recoveryHours: 48,
-    position: 15,
     muscles: [
       { regionId: "latissimus", kategorie: "primaer" },
       { regionId: "bizeps", kategorie: "sekundaer" },
@@ -1113,7 +1091,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 12,
     workWeight: 0,
     recoveryHours: 48,
-    position: 16,
     muscles: [
       { regionId: "latissimus", kategorie: "primaer" },
       { regionId: "bizeps", kategorie: "sekundaer" },
@@ -1136,7 +1113,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 15,
     workWeight: 0,
     recoveryHours: 48,
-    position: 17,
     muscles: [
       { regionId: "brust", kategorie: "primaer" },
       { regionId: "schultern_vorne", kategorie: "sekundaer" },
@@ -1158,7 +1134,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 15,
     workWeight: 0,
     recoveryHours: 48,
-    position: 18,
     muscles: [
       { regionId: "brust", kategorie: "primaer" },
       { regionId: "schultern_vorne", kategorie: "sekundaer" },
@@ -1180,7 +1155,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: 35,
     workWeight: 0,
     recoveryHours: 48,
-    position: 19,
     muscles: [
       { regionId: "brust", kategorie: "primaer" },
       { regionId: "schultern_vorne", kategorie: "sekundaer" },
@@ -1203,7 +1177,6 @@ export const exerciseSeeds: SeedExercise[] = [
     repRangeMax: null,
     workWeight: 0,
     recoveryHours: 24,
-    position: 20,
     muscles: [
       { regionId: "bauch", kategorie: "primaer" },
       { regionId: "bauch_seitlich", kategorie: "sekundaer" },

@@ -29,7 +29,7 @@ describe("Uebungskatalog im Seed", () => {
   });
 
   it("ergibt je Uebung eine gueltige Schreib-Form", () => {
-    for (const e of exerciseSeeds) {
+    exerciseSeeds.forEach((e, i) => {
       const geprueft = exerciseInsert.safeParse({
         user_id: NUTZER,
         key: e.key,
@@ -51,12 +51,12 @@ describe("Uebungskatalog im Seed", () => {
         rm: null,
         rm_as_of: null,
         rm_stale: false,
-        position: e.position,
+        position: i,
       });
       expect(geprueft.success, `${e.key}: ${geprueft.error?.message ?? ""}`).toBe(
         true,
       );
-    }
+    });
   });
 
   it("nennt nur Stangen, die es im Seed auch gibt", () => {
@@ -105,15 +105,13 @@ describe("Uebungskatalog im Seed", () => {
     }
   });
 
-  it("uebernimmt die beiden Schoenheitsfehler des Bestands unveraendert", () => {
-    // Bewusst festgehalten, damit der Seed den Bestand abbildet statt ihn
-    // nebenbei umzusortieren. Wird getrennt aufgeraeumt - dann faellt dieser
-    // Test auf und wird mit angepasst.
-    expect(exerciseSeeds.map((e) => e.key)).toContain("dumbbell-curl");
-    const aufSieben = exerciseSeeds
-      .filter((e) => e.position === 7)
-      .map((e) => e.key);
-    expect(aufSieben.sort()).toEqual(["dumbbell-curl", "plate_situps"]);
+  it("schreibt jeden Schluessel in snake_case", () => {
+    // Bis Vorhaben #396 war 'dumbbell-curl' der einzige mit Bindestrich.
+    for (const e of exerciseSeeds) {
+      expect(e.key, `${e.key} faellt aus der Schreibweise`).toMatch(
+        /^[a-z][a-z0-9_]*$/,
+      );
+    }
   });
 });
 

@@ -322,6 +322,11 @@ async function ensureExercisesSeeded(
   const fehlende = exerciseSeeds.filter((e) => !vorhanden.has(e.key));
   if (fehlende.length === 0) return 0;
 
+  // Die Position ergibt sich aus der Reihenfolge in exerciseSeeds, nicht aus
+  // dem Index der gefilterten Liste: wer nur einzelne Uebungen nachgereicht
+  // bekommt, soll sie an ihrem angestammten Platz im Katalog vorfinden.
+  const positionByKey = new Map(exerciseSeeds.map((e, i) => [e.key, i]));
+
   const inserts: ExerciseInsert[] = fehlende.map((e) => ({
     user_id: userId,
     key: e.key,
@@ -340,7 +345,7 @@ async function ensureExercisesSeeded(
     rep_range_max: e.repRangeMax,
     work_weight: e.workWeight,
     recovery_hours: e.recoveryHours,
-    position: e.position,
+    position: positionByKey.get(e.key) ?? 0,
   }));
 
   const { data: angelegt, error: insError } = await supabase
