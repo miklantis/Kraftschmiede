@@ -1,21 +1,12 @@
 import { useMemo } from "react";
-import { workSets } from "@/engine";
-import {
-  suggestWithBar,
-  coachScopeFor,
-  coachStatusFromSuggestion,
-  planOutlook,
-  type CoachBuildExercise,
-} from "@/lib/coach";
-import { activeRepTarget } from "@/lib/liveBuild";
+import { coachViewFor, type CoachStandExercise } from "@/lib/coachStand";
 import { buildLastEntries } from "@/lib/lastEntries";
 import { derivePhaseContext } from "@/lib/phaseContext";
-import { buildPlanSource, planContextFor } from "@/lib/planContext";
+import { buildPlanSource } from "@/lib/planContext";
 import {
   isBlockComplete,
   liveEntryToSetEntry,
   liveWorkWeight,
-  previewWorkWeight,
   type LiveCoachPreview,
 } from "@/lib/livePreview";
 import { todayISO } from "@/lib/format";
@@ -29,22 +20,21 @@ import { useBars, usePlates, useDumbbells } from "./useInventory";
 
 // Coach-Vorschau waehrend der laufenden Kraft-Einheit (#190): was der Coach aus
 // dem bisher Geleisteten eines Uebungsblocks machen wuerde - steigern, halten,
-// senken. Zwilling von useCoachStatuses, nur mit der laufenden Einheit als
-// Vordaten statt der zuletzt gespeicherten.
+// senken. Dieselbe Kette wie auf der Uebungsseite (useCoachStatuses), nur mit
+// der laufenden Einheit als Vordaten statt der zuletzt gespeicherten.
 //
 // Gerechnet wird ab dem ersten abgehakten Satz und danach nach jedem weiteren
 // neu (#193); solange offene Saetze im Block stehen, ist der Stand vorlaeufig.
 // Die Lesart ist durchgehend "was kaeme heraus, wenn ich jetzt beende" - offene
 // Saetze verfallen beim Beenden ohnehin.
 //
-// Keine neue Rechnung: dieselbe Naht (suggestWithBar), dieselben gecachten
-// Daten-Hooks wie der Live-Aufbau, kein zusaetzlicher Netz-Zugriff, kein
-// Schreibvorgang.
-//
-// Bewusst NICHT angewandt wird phaseEntryOverride (anders als in
-// useCoachStatuses): ob nach dieser Einheit ein Phasenwechsel ansteht, ist
-// waehrend des Trainings noch nicht entschieden - das Override wuerde ein
-// Gewicht anzeigen, das so nicht zwingend eintritt.
+// Keine eigene Rechnung: dieselbe Coach-Kette (coachViewFor in lib/coachStand)
+// wie Live-Aufbau und Uebungsseite, dieselben gecachten Daten-Hooks wie der
+// Live-Aufbau, kein zusaetzlicher Netz-Zugriff, kein Schreibvorgang. Was diese
+// Lage unterscheidet, steht als `running` in der Eingabe: gerechnet wird auf dem
+// heute Abgehakten, und der Phasenwechsel-Einstieg ruht - ob nach dieser Einheit
+// ein Phasenwechsel ansteht, ist waehrend des Trainings noch nicht entschieden,
+// das Override wuerde ein Gewicht anzeigen, das so nicht zwingend eintritt.
 //
 // In einer Phase mit Wochenplan zerfaellt die Vorschau in zwei Aussagen
 // (#268, Schritt 2): die Vorgabe DIESER Woche steht fest und wird wie beim
@@ -142,22 +132,10 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
       const judged = liveEntryToSetEntry(entry);
       const workedWeight = liveWorkWeight(entry);
 
-      // Wochenplan-Bezug wie beim Aufbau der Einheit: aus dem gespeicherten
-      // Stand, nicht aus den Saetzen, die gerade laufen.
-      const plan = planContextFor(planSource, {
+      // Der Katalogstand der Uebung; womit die Vorschau tatsaechlich rechnet,
+      // entscheidet die Kette anhand von `running`.
+      const exo: CoachStandExercise = {
         id: e.id,
-        referenceWeight: e.reference_weight,
-        referencePhaseId: e.reference_phase_id,
-        planStartWeight: e.plan_start_weight,
-        rm: e.rm,
-      });
-      const scope = coachScopeFor({ profile: e.profile, tier: e.tier }, plan);
-      // Grundlage der Rechnung; null heisst: die Doppelprogression hat ohne
-      // abgehakten Satz nichts zu bewerten, die Karte bleibt ohne Coach-Zeichen.
-      const workWeight = previewWorkWeight(scope, e.work_weight, workedWeight);
-      if (workWeight == null) return;
-
-      const exo: CoachBuildExercise = {
         key: e.key,
         profile: e.profile,
         tier: e.tier,
@@ -166,64 +144,41 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
           e.rep_range_min != null && e.rep_range_max != null
             ? [e.rep_range_min, e.rep_range_max]
             : null,
-        workWeight,
+        workWeight: e.work_weight,
         barId: e.bar_id,
+        rm: e.rm,
         referenceWeight: e.reference_weight,
         referencePhaseId: e.reference_phase_id,
         planStartWeight: e.plan_start_weight,
       };
-      const prevEntry = prevEntryByExercise[e.id] ?? null;
-      const { suggestion, bar } = suggestWithBar(exo, {
+      const view = coachViewFor({
+        exo,
+        // Wochenplan-Bezug wie beim Aufbau der Einheit: aus dem gespeicherten
+        // Stand, nicht aus den Saetzen, die gerade laufen.
+        planSource,
         phaseFocus: ph.phaseFocus,
-        lastEntry: judged,
-        prevEntry,
+        phaseRepTarget: ph.phaseRepTarget,
+        hasPhase,
+        freeMode,
+        loadFactor: ph.loadFactor,
         weightStep,
         bars,
         plates,
         dumbbells,
-        repTarget: activeRepTarget(exo, ph.phaseRepTarget, hasPhase, plan),
-        freeMode,
-        loadFactor: ph.loadFactor,
-        plan,
-      });
-      // Begleit-/Koerpergewichtsuebungen und freies Training rechnen nicht
-      // progressiv - dort gibt es nichts zu bewerten, also auch kein Icon.
-      if (suggestion.decision === "carry") return;
-      out[ei] = {
-        // Vordaten: was heute schon abgehakt ist, sonst der zuletzt
+        // Vordaten: was heute schon abgehakt ist, davor der zuletzt
         // gespeicherte Eintrag der Uebung. Ohne beides bleibt es beim
         // Startzustand - dieselbe Lesart wie auf der Uebungsseite
         // (useCoachStatuses), damit dort und hier dasselbe Zeichen steht.
-        status: coachStatusFromSuggestion(
-          suggestion,
-          judged != null || workSets(prevEntry).length > 0,
-          unit,
-        ),
-        scope,
-        // Ausblick: was aus dieser Woche wird, wenn die laufende Einheit die
-        // letzte dieser Uebung in der Woche bleibt. Ohne abgehakten Satz gibt es
-        // nichts zu bewerten - dann bleibt es bei der Wochenvorgabe allein.
-        outlook: judged
-          ? planOutlook(
-              exo,
-              {
-                phase: ph.phaseFocus,
-                lastEntry: judged,
-                weightStep,
-                bar: bar ? { weight: bar.weight } : undefined,
-                plates,
-                dumbbells,
-                plan,
-              },
-              {
-                weekWeight: suggestion.weight,
-                workedWeight,
-                judged,
-              },
-            )
-          : null,
-        provisional: !isBlockComplete(entry),
-      };
+        lastEntry: judged,
+        prevEntry: prevEntryByExercise[e.id] ?? null,
+        running: { workedWeight },
+        unit,
+      });
+      // null heisst: die Doppelprogression hat ohne abgehakten Satz nichts zu
+      // bewerten. Begleit-/Koerpergewichtsuebungen und freies Training rechnen
+      // gar nicht progressiv ("carry"). Beides ohne Coach-Zeichen.
+      if (!view || view.status.decision === "carry") return;
+      out[ei] = { ...view, provisional: !isBlockComplete(entry) };
     });
     return out;
   }, [

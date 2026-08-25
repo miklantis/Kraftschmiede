@@ -1,25 +1,22 @@
 // Sitzungsaufbau (Phase 11, Lieferung 2). Reine Funktion ohne DB-/DOM-Bezug:
 // nimmt Vorlage, Uebungen, Phase und Inventar als Daten herein und gibt die
 // fertigen Live-Eintraege heraus (1:1 aus V1 live.js buildLive). Die einzelnen
-// Coach-Entscheidungen (Vorschlag, Aufwaermen, Satzzahl) liegen in lib/coach.ts;
-// hier nur das Zusammensetzen. Die Zustandsbeschaffung (letzter Eintrag, Phase,
-// Stangen/Scheiben) macht der Daten-Hook useLiveBuilder.
+// Coach-Entscheidungen (Vorschlag, Aufwaermen, Satzzahl) liegen in lib/coach.ts,
+// die Kette dahinter (Plan-Bezug, Repband, Vorschlag, Phasenwechsel-Einstieg) in
+// lib/coachStand.ts; hier nur das Zusammensetzen. Die Zustandsbeschaffung
+// (letzter Eintrag, Phase, Stangen/Scheiben) macht der Daten-Hook useLiveBuilder.
 
-import { workWeightForPhase } from "@/engine";
 import type { PhaseMark, SetEntry, VolumePhase } from "@/engine/types";
 import {
-  suggestWithBar,
   warmupFor,
   plannedSets,
   lastWorkSetCount,
-  rampLoad,
-  planGovernsExercise,
   planSetCount,
   planTargetScore,
   type CoachBuildExercise,
-  type PlanContext,
 } from "./coach";
-import { planContextFor, type PlanSource } from "./planContext";
+import { coachStandFor } from "./coachStand";
+import { type PlanSource } from "./planContext";
 import { fmtNum } from "./format";
 import type {
   LiveEntry,
@@ -81,127 +78,6 @@ export interface LiveBuildResult {
   entries: LiveEntry[];
 }
 
-// Ziel-Repband, das gerade gilt: das Band der Phase ueberstimmt das
-// Uebungs-Repband - aber nur fuer Kraftuebungen. Gerechnet wird das Band nicht
-// mehr hier, sondern einmal in derivePhaseContext (ueber phaseRepBand); hier
-// bleibt nur das Tor. Exportiert, damit die Uebungs-Statusanzeige dieselbe
-// Abgrenzung nutzt.
-export function activeRepTarget(
-  exo: { profile: "strength" | "core" | "bodyweight"; tier: "main" | "accessory" },
-  phaseRepTarget: [number, number] | null,
-  hasPhase: boolean,
-  plan?: PlanContext | null,
-): [number, number] | null {
-  // Gibt der Wochenplan die Wiederholungen vor, ruht das Band der Phase.
-  if (planGovernsExercise(exo, plan)) return null;
-  if (!hasPhase || exo.profile !== "strength") return null;
-  return phaseRepTarget;
-}
-
-// Repband, in dem die letzte Einheit gerechnet wurde: Spanne der Ziel-Wdh der
-// Arbeitssaetze (Aufwaermen ausgenommen); faellt auf die tatsaechlichen Wdh
-// zurueck, wenn keine Ziel-Wdh gespeichert sind. null ohne verwertbaren Satz.
-function lastBand(lastEntry: SetEntry | null): [number, number] | null {
-  const ws = (lastEntry?.sets ?? []).filter((s) => s.type !== "warmup");
-  const reps = ws
-    .map((s) => (s.targetReps != null && s.targetReps > 0 ? s.targetReps : s.reps))
-    .filter((n): n is number => typeof n === "number" && n > 0);
-  if (!reps.length) return null;
-  return [Math.min(...reps), Math.max(...reps)];
-}
-
-// Zwei Repbaender sind echt getrennt, wenn sie sich nicht einmal an einer
-// Wiederholung beruehren (Ueberlappung -> kein Sprung).
-function bandsSeparated(a: [number, number], b: [number, number]): boolean {
-  return Math.max(a[0], b[0]) > Math.min(a[1], b[1]);
-}
-
-// Schwerster Arbeitssatz der letzten Einheit (getragenes Gewicht) als Bezug fuer
-// die Aufwaerts-Deckelung des Einstiegs. null ohne verwertbaren Satz.
-function topWorkWeight(lastEntry: SetEntry | null): number | null {
-  const ws = (lastEntry?.sets ?? []).filter((s) => s.type !== "warmup");
-  let top: number | null = null;
-  for (const st of ws) {
-    const w = typeof st.weight === "number" ? st.weight : null;
-    if (w != null && (top == null || w > top)) top = w;
-  }
-  return top;
-}
-
-/** Eingabe fuer den Phasenwechsel-Einstieg: der fertige Vorschlag samt der
- *  Vordaten, aus denen der Einstieg entschieden wird. */
-export interface PhaseEntryInput {
-  exo: CoachBuildExercise;
-  /** Getestetes 1RM der Uebung (null = keins). */
-  rm: number | null;
-  /** Ziel-Repband, das gerade gilt (activeRepTarget). */
-  repTarget: [number, number] | null;
-  /** Gewaehlte Stange; null ohne Langhantel. */
-  bar: { weight: number } | null;
-  lastEntry: SetEntry | null;
-  plates: number[];
-  loadFactor: number | null;
-  /** Vorschlag des Coaches (suggestWithBar), der ueberschrieben werden kann. */
-  suggestion: { weight: number; targetReps: number };
-}
-
-export interface PhaseEntryResult {
-  weight: number;
-  targetReps: number;
-  /** true = der Einstieg hat gegriffen (Kartenhinweis in der Einheit). */
-  phaseEntry: boolean;
-}
-
-// Phasenwechsel-Einstieg: springt die Zielzone der neuen Phase deutlich (echt
-// getrennt) vom Repband der letzten Einheit weg und liegt ein sauberes 1RM
-// vor, zieht die erste Einheit ihr Startgewicht einmalig aus dem 1RM statt aus
-// der Doppelprogression. Nur Langhantel (Scheiben-Rechnung). Verletzungs-
-// bewusst gedeckelt und abgerundet (workWeightForPhase). Selbstbegrenzt: ab
-// der zweiten Einheit liegt das letzte Band in der neuen Zone -> kein Sprung.
-// Gibt die Journey die Last selbst vor (Lastliste an der Phase), steuert sie den
-// Phasenwechsel bereits im Vorschlag - der 1RM-Umweg wuerde dagegenhalten.
-//
-// Exportiert, damit die Uebungs-Statusanzeige (useCoachStatuses) denselben
-// Einstieg anwendet wie die gestartete Einheit; greift der Einstieg nicht,
-// kommt der Vorschlag unveraendert zurueck.
-export function phaseEntryOverride(input: PhaseEntryInput): PhaseEntryResult {
-  const unchanged: PhaseEntryResult = {
-    weight: input.suggestion.weight,
-    targetReps: input.suggestion.targetReps,
-    phaseEntry: false,
-  };
-
-  const ramp = rampLoad(input.exo, input.loadFactor);
-  if (
-    ramp ||
-    input.exo.profile !== "strength" ||
-    !input.repTarget ||
-    !input.bar ||
-    input.rm == null ||
-    !(input.rm > 0)
-  ) {
-    return unchanged;
-  }
-
-  const prev = lastBand(input.lastEntry);
-  if (!prev || !bandsSeparated(prev, input.repTarget)) return unchanged;
-
-  const carried = topWorkWeight(input.lastEntry) ?? input.suggestion.weight;
-  const res = workWeightForPhase(input.rm, input.repTarget, {
-    bar: { weight: input.bar.weight },
-    plates: input.plates,
-    currentWeight: carried,
-  });
-  if (res.decision === "hold") return unchanged;
-
-  return {
-    weight: res.weight,
-    // konservativ am leichteren (oberen) Bandende einsteigen
-    targetReps: input.repTarget[1],
-    phaseEntry: true,
-  };
-}
-
 // Kartenkopf-Tag: getestetes 1RM, sonst die Muskelgruppen.
 function tagFor(exo: LiveBuildExercise, unit: string): string {
   if (exo.rm != null) return "1RM " + fmtNum(exo.rm) + " " + unit;
@@ -222,52 +98,32 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
     const exo = input.exercisesById[id];
     if (!exo) return;
 
-    // Stange + Vorschlag. Henne-Ei: Die Senk-/Halte-/Steiger-Entscheidung haengt
-    // nur am Arbeitsgewicht und am letzten Eintrag, nicht an der Stange (die wirkt
-    // erst beim Ladbar-Machen). Darum bei Langhantel in drei Schritten: (1) rohes
-    // Zielgewicht mit der LEICHTESTEN Stange bestimmen, damit die schwerste Stange
-    // den Boden nicht hochzieht; (2) die passende Stange dazu waehlen - die
-    // schwerste, die noch <= Ziel ist, sonst die leichteste; (3) mit dieser Stange
-    // endgueltig rechnen (Gewicht ladbar + Aufwaermrampe). So klebt eine leichte
-    // Uebung nicht mehr am Gewicht der schwersten Stange.
-    const plan = planContextFor(input.planSource, {
-      id,
-      referenceWeight: exo.referenceWeight,
-      referencePhaseId: exo.referencePhaseId,
-      planStartWeight: exo.planStartWeight ?? null,
-      rm: exo.rm,
-    });
-    const repTarget = activeRepTarget(exo, input.phaseRepTarget, hasPhase, plan);
+    // Die ganze Coach-Kette (Plan-Bezug, geltendes Repband, Vorschlag samt
+    // Stange, Phasenwechsel-Einstieg) liegt in lib/coachStand.ts - dieselbe
+    // Fassung, die Uebungsseite und Trainings-Vorschau lesen.
     const lastEntry = input.lastEntryByExercise[id] ?? null;
-
-    const { suggestion: sug, bar } = suggestWithBar(exo, {
+    const stand = coachStandFor({
+      exo: { ...exo, id },
+      planSource: input.planSource,
       phaseFocus: input.phaseFocus,
-      lastEntry,
-      prevEntry: input.prevEntryByExercise?.[id] ?? null,
+      phaseRepTarget: input.phaseRepTarget,
+      hasPhase,
+      freeMode: input.freeMode,
+      loadFactor: input.loadFactor,
       weightStep: input.weightStep ?? null,
       bars: input.bars,
       plates: input.plates,
       dumbbells: input.dumbbells,
-      repTarget,
-      freeMode: input.freeMode,
-      loadFactor: input.loadFactor,
-      plan,
-    });
-
-    // Phasenwechsel-Einstieg (Regel s. phaseEntryOverride).
-    const entry = phaseEntryOverride({
-      exo,
-      rm: exo.rm,
-      repTarget,
-      bar: bar ? { weight: bar.weight } : null,
       lastEntry,
-      plates: input.plates,
-      loadFactor: input.loadFactor,
-      suggestion: sug,
+      prevEntry: input.prevEntryByExercise?.[id] ?? null,
     });
-    const wWeight = entry.weight;
-    const wReps = entry.targetReps;
-    const phaseEntry = entry.phaseEntry;
+    // Ohne laufende Einheit rechnet die Kette immer - der Zweig kann hier nicht
+    // eintreten (s. coachStandFor).
+    if (!stand) return;
+    const { plan, bar } = stand;
+    const wWeight = stand.weight;
+    const wReps = stand.targetReps;
+    const phaseEntry = stand.phaseEntry;
 
     // Satzzahl: Core fix 3; im freien Training die Satzzahl der letzten Einheit
     // dieser Uebung (ohne Vordaten der Standard); gibt der Wochenplan sie vor,

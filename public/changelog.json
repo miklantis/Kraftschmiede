@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.48.4",
+      "date": "2026-08-25",
+      "changes": [
+        "Die Rechnung hinter jedem Gewichtsvorschlag steht jetzt nur noch an einer Stelle in der App. Bisher gab es sie dreifach - einmal fürs Starten einer Einheit, einmal für die Übungsseite und einmal für die Vorschau während des Trainings -, und die drei Fassungen konnten unbemerkt auseinanderlaufen. Angezeigt wird unverändert dasselbe; neue Coach-Regeln greifen künftig aber überall gleichzeitig und sind besser abgesichert."
+      ]
+    },
+    {
       "version": "1.48.3",
       "date": "2026-08-25",
       "changes": [

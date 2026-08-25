@@ -8,8 +8,9 @@ an der ein Modul flach ist (das interface fast so komplex wie die implementation
 dieselbe Regel mehrfach steht, oder an der eine Regel dort liegt, wo kein Test sie
 erreicht. Dazu je ein Vorschlag, wie sich das zu einem tieferen Modul zusammenziehen liesse.
 
-**Was dieses Dokument nicht ist:** keine Entscheidung und kein Auftrag. Umgesetzt ist
-davon bisher nur Kandidat 1 (Issue #379, siehe Vermerk dort); alles Übrige steht offen. Entschiedenes steht in [`docs/adr/`](./adr/README.md), der Ist-Zustand in
+**Was dieses Dokument nicht ist:** keine Entscheidung und kein Auftrag. Umgesetzt sind
+davon bisher Kandidat 1 (Issue #379) und Kandidat 2 (Issue #380), siehe Vermerk dort;
+alles Übrige steht offen. Entschiedenes steht in [`docs/adr/`](./adr/README.md), der Ist-Zustand in
 [`docs/Architektur.md`](./Architektur.md). Wird ein Kandidat gebaut, bekommt er vorher ein
 Issue nach [`docs/Issue-Konventionen.md`](./Issue-Konventionen.md).
 
@@ -97,6 +98,9 @@ zwei Fassungen derselben Regel. Kein Widerspruch zur ADR, sondern ihr Grenzfall.
 ---
 
 ## 2. Die Coach-Vorschau einmal verdrahten
+
+> **Umgesetzt** mit Issue #380. Der Abschnitt beschreibt ab „Problem" den Stand vor der
+> Umsetzung; der heutige Stand steht in [`docs/Architektur.md`](./Architektur.md).
 
 **Empfehlung: stark** · Abhängigkeit: in-process
 
@@ -458,5 +462,5 @@ Kommentar im anderen Store beschreibt den Schaden bereits. Er ist klein, er ber�
 ADR-Entscheidung im Kern, und er macht eine Regel prüfbar, die heute an zwei Stellen
 unterschiedlich steht.
 
-Danach: Kandidat 5 (Frequenzziel) – dieselbe Art Befund, noch kleiner. Dann Kandidat 2
-(Coach-Vorschau) – der grösste Gewinn an locality und test surface.
+Danach: Kandidat 5 (Frequenzziel) – dieselbe Art Befund, noch kleiner. Kandidat 2
+(Coach-Vorschau) – der grösste Gewinn an locality und test surface – ist umgesetzt.

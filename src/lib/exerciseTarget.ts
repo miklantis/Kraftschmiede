@@ -51,7 +51,7 @@ export function lockedTarget(
     };
   }
   // Ohne Wochenplan gilt das Band der Phase – aber nur fuer Kraftuebungen,
-  // dieselbe Abgrenzung wie beim Coach (activeRepTarget in lib/liveBuild).
+  // dieselbe Abgrenzung wie beim Coach (activeRepTarget in lib/coachStand).
   if (exo.profile !== "strength" || !input.repBand) return null;
   // Ausserhalb des Wochenplans ist die Ziel-Anstrengung systemweit fest
   // (Issue #298) - dieselbe Zahl, mit der der Coach dort rechnet.

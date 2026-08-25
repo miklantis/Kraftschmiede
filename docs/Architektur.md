@@ -263,6 +263,19 @@ Eindampfen, sonst wären die alten Felder schon weg.
   Glue-/Coach-Schicht greift darauf zu.
 - **Coach als eigenes, testbares Modul** (`coach.ts`): nimmt Zustand explizit herein,
   gibt Entscheidungen heraus – gleiche Form wie die Engine. Kein DOM-Bezug.
+- **Die Coach-Kette liegt an einer Stelle** (`lib/coachStand.ts`, Issue #380). Plan-Bezug,
+  geltendes Repband, Vorschlag samt Stange, Phasenwechsel-Einstieg und daraus die
+  Anzeigeform (`coachStandFor` / `coachViewFor`): einmal geschrieben, von allen drei
+  Anzeigeorten gelesen – Aufbau einer Einheit (`lib/liveBuild.ts`), Übungs-Statusanzeige
+  (`useCoachStatuses`) und Coach-Vorschau im Training (`useLiveCoachPreview`). Vorher lag
+  die Kette dreimal von Hand gelegt im Code, zwei Fassungen davon in Hooks und damit
+  außerhalb der Testlinie; sie waren bereits auseinandergelaufen (der
+  Phasenwechsel-Einstieg musste nachträglich in die Statusanzeige kopiert werden, weil
+  sie sonst ein anderes Gewicht zeigte als die gestartete Einheit). Die Hooks beschaffen
+  seither nur noch Daten. Die eine Lage, die abweicht – die laufende Einheit im Training
+  –, sagt das über ein benanntes Eingabefeld (`running`) statt über eine eigene Fassung:
+  gerechnet wird auf dem heute Abgehakten, und der Phasenwechsel-Einstieg ruht, weil
+  während des Trainings noch nicht entschieden ist, ob ein Phasenwechsel ansteht.
 - **Eine Textquelle für alle Coach-Begründungen.** Engine und Rechnung geben keine
   fertigen deutschen Sätze mehr aus, sondern eine Kennung samt der Zahlen, die der Text
   braucht (`CoachReason` in `engine/coachReason.ts`: Kennung, tatsächliche Differenz zum
@@ -320,7 +333,7 @@ Eindampfen, sonst wären die alten Felder schon weg.
   Bodyweight-Übungen behalten ihr eigenes Band. Gerechnet wird das Band der Phase an
   einer Stelle (`phaseRepBand` in `engine/journey.ts`, angewandt in
   `derivePhaseContext`); ob es die Übung überstimmt, entscheidet allein das Profil-Tor
-  `activeRepTarget` in `lib/liveBuild.ts`. Genutzt wird das von Trainingsbildschirm,
+  `activeRepTarget` in `lib/coachStand.ts`. Genutzt wird das von Trainingsbildschirm,
   Übungs-Statusanzeige und Coach-Export – der Export weist beide Bänder getrennt
   aus (`repBand` = Katalog, `activeRepBand` = was gerade gilt), damit von außen nicht das
   falsche für maßgeblich gehalten wird.
