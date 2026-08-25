@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.49.1",
+      "date": "2026-08-25",
+      "changes": [
+        "Die Rückschau einer abgeschlossenen Journey zeigt jetzt den Abschnitt „Workouts in dieser Journey“: je Workout eine Zeile mit der Zahl der Einheiten, die du darin absolviert hast, das häufigste zuerst. Gezählt wird nur, was du tatsächlich trainiert hast – ein Workout, das der Journey nur zugewiesen war, steht dort nicht."
+      ]
+    },
+    {
       "version": "1.49.0",
       "date": "2026-08-25",
       "changes": [

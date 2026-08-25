@@ -129,6 +129,90 @@ describe("buildJourneyReview", () => {
     expect(r.groups).toHaveLength(2);
   });
 });
+describe("buildJourneyReview \u2013 Workouts in dieser Journey", () => {
+  it("zaehlt die absolvierten Einheiten je Workout, haeufigstes zuerst", () => {
+    const r = buildJourneyReview(
+      "j1",
+      phases,
+      [
+        s({ id: "a", templateId: "t2", templateName: "Ganzkörper B" }),
+        s({ id: "b", templateId: "t1", templateName: "Ganzkörper A" }),
+        s({ id: "c", templateId: "t1", templateName: "Ganzkörper A" }),
+      ],
+      lk,
+    );
+    expect(r.workouts).toEqual([
+      { id: "Ganzkörper A", name: "Ganzkörper A", meta: "2 Einheiten" },
+      { id: "Ganzkörper B", name: "Ganzkörper B", meta: "1 Einheit" },
+    ]);
+  });
+
+  it("zaehlt nur die eigenen abgeschlossenen Einheiten", () => {
+    const r = buildJourneyReview(
+      "j1",
+      phases,
+      [
+        s({ id: "a", templateName: "Ganzkörper A" }),
+        s({ id: "fremd", journeyId: "j2", templateName: "Ganzkörper A" }),
+        s({ id: "laeuft", status: "live", templateName: "Ganzkörper A" }),
+      ],
+      lk,
+    );
+    expect(r.workouts).toEqual([
+      { id: "Ganzkörper A", name: "Ganzkörper A", meta: "1 Einheit" },
+    ]);
+  });
+
+  it("nimmt den eingebrannten Namen, nicht den heutigen", () => {
+    // t1 heisst heute "Ganzkörper A" \u2013 in dieser Journey hiess es anders.
+    const r = buildJourneyReview(
+      "j1",
+      phases,
+      [s({ id: "a", templateId: "t1", templateName: "Ganzkörper A (alt)" })],
+      lk,
+    );
+    expect(r.workouts.map((w) => w.name)).toEqual(["Ganzkörper A (alt)"]);
+  });
+
+  it("fuehrt Einheiten ohne Workout-Namen als stille Restzeile ganz unten", () => {
+    const r = buildJourneyReview(
+      "j1",
+      phases,
+      [
+        s({ id: "a", templateId: null, templateName: null }),
+        s({ id: "b", templateId: "t1", templateName: "Ganzkörper A" }),
+      ],
+      lk,
+    );
+    expect(r.workouts).toEqual([
+      { id: "Ganzkörper A", name: "Ganzkörper A", meta: "1 Einheit" },
+      { id: "", name: "Ohne Workout", meta: "1 Einheit" },
+    ]);
+  });
+
+  it("deckt sich in der Summe mit der Einheitenzahl im Kopf", () => {
+    const r = buildJourneyReview(
+      "j1",
+      phases,
+      [
+        s({ id: "a", templateName: "Ganzkörper A" }),
+        s({ id: "b", templateName: "Ganzkörper B" }),
+        s({ id: "c", templateId: null, templateName: null }),
+      ],
+      lk,
+    );
+    const summe = r.workouts.reduce(
+      (n, w) => n + Number(w.meta.split(" ")[0]),
+      0,
+    );
+    expect(summe).toBe(r.totalUnits);
+  });
+
+  it("bleibt leer, solange die Journey keine Einheit hat", () => {
+    expect(buildJourneyReview("j1", phases, [], lk).workouts).toEqual([]);
+  });
+});
+
 describe("buildJourneyReview \u2013 Lastliste", () => {
   it("haelt die vorgegebene Last in der Meta-Zeile fest", () => {
     const r = buildJourneyReview(
