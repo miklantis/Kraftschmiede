@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.48.6",
+      "date": "2026-08-25",
+      "changes": [
+        "In der Journey-Seite steht bei den Workouts jetzt in Klammern hinter dem Namen, wie oft du dieses Workout in der laufenden Journey schon abgeschlossen hast, zum Beispiel „Push A (3)“. Laufende Einheiten zählen erst mit, wenn sie beendet sind; Workouts ohne Einheit in dieser Journey bleiben ohne Zahl."
+      ]
+    },
+    {
       "version": "1.48.5",
       "date": "2026-08-25",
       "changes": [

@@ -7,8 +7,10 @@ import { useTemplates } from "@/hooks/useTemplates";
 import { useExercises } from "@/hooks/useExercises";
 import { useJourneyWorkouts } from "@/hooks/useJourneyWorkouts";
 import { useJourneyWorkoutActions } from "@/hooks/useJourneyWorkoutActions";
+import { useSessions } from "@/hooks/useSessions";
 import {
   buildJourneyAssignment,
+  countJourneyWorkoutSessions,
   type WorkoutExerciseInfo,
   type WorkoutInput,
 } from "@/lib/workouts";
@@ -18,13 +20,17 @@ import {
 // (natuerlicher Toggle-Fall, offline unkritisch). Nur mit aktiver Journey
 // sichtbar. Bis Lieferung 5 aendert die Zuordnung noch nichts an der
 // Trainingsempfehlung. Datenzugriff ueber Hooks gekapselt; die Journey-Faehigkeit
-// wird aus den Uebungsprofilen abgeleitet (lib/workouts.ts).
+// wird aus den Uebungsprofilen abgeleitet (lib/workouts.ts). Hinter dem Namen
+// steht die Zahl der abgeschlossenen Einheiten dieses Workouts in dieser Journey
+// (nichts bei null); sie kommt aus den ohnehin geladenen Einheiten, kostet also
+// keine zusaetzliche Abfrage.
 export function JourneyWorkoutsSection(): React.ReactElement | null {
   const journeyQ = useActiveJourney();
   const templatesQ = useTemplates();
   const exercisesQ = useExercises();
   const journeyId = journeyQ.data?.id ?? null;
   const assignedQ = useJourneyWorkouts(journeyId);
+  const sessionsQ = useSessions();
   const actions = useJourneyWorkoutActions();
 
   if (journeyId === null) return null;
@@ -41,11 +47,22 @@ export function JourneyWorkoutsSection(): React.ReactElement | null {
   const ready = Boolean(
     templatesQ.data && exercisesQ.data && assignedQ.data !== undefined,
   );
+  // Die Zahlen haengen bewusst nicht an "ready": stehen die Einheiten noch aus,
+  // erscheint die Liste trotzdem sofort und bekommt ihre Zahlen nach.
+  const doneCounts = countJourneyWorkoutSessions(
+    (sessionsQ.data ?? []).map((s) => ({
+      journeyId: s.journey_id,
+      templateId: s.template_id,
+      status: s.status,
+    })),
+    journeyId,
+  );
   const rows = ready
     ? buildJourneyAssignment(
         templatesQ.data as WorkoutInput[],
         lookup,
         new Set(assignedIds),
+        doneCounts,
       )
     : [];
 
@@ -62,7 +79,25 @@ export function JourneyWorkoutsSection(): React.ReactElement | null {
           {rows.map((r) => (
             <ListRow
               key={r.id}
-              title={r.name}
+              title={
+                r.doneCount > 0 ? (
+                  <>
+                    {r.name}{" "}
+                    <span
+                      className="font-normal text-foreground-subtle"
+                      title={
+                        r.doneCount === 1
+                          ? "1 Einheit in dieser Journey"
+                          : r.doneCount + " Einheiten in dieser Journey"
+                      }
+                    >
+                      ({r.doneCount})
+                    </span>
+                  </>
+                ) : (
+                  r.name
+                )
+              }
               subtitle={r.summary.length > 0 ? r.summary : undefined}
               leading={<WorkoutIcon />}
               trailing={

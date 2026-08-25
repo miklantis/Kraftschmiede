@@ -90,6 +90,36 @@ export interface JourneyAssignmentRow {
   summary: string;
   /** Aktuell der Journey zugewiesen (Eintrag in journey_workouts). */
   assigned: boolean;
+  /** Wie oft dieses Workout in dieser Journey bereits abgeschlossen wurde
+   *  (0 = noch nie). */
+  doneCount: number;
+}
+
+// Eine Einheit, so weit die Zaehlung sie braucht – bewusst schmal, damit die
+// Rechnung nicht an der Datenbank-Zeile haengt.
+export interface JourneySessionInput {
+  journeyId: string | null;
+  templateId: string | null;
+  status: string;
+}
+
+// Wie oft welches Workout in einer Journey abgeschlossen wurde: Workout-Id ->
+// Anzahl. Gezaehlt werden nur abgeschlossene Einheiten (Status "done") dieser
+// Journey mit gesetzter Workout-Id; laufende Einheiten bleiben aussen vor,
+// sonst spraenge die Zahl waehrend des Trainings hoch. Nie gemachte Workouts
+// fehlen im Ergebnis (der Aufrufer liest sie als 0).
+export function countJourneyWorkoutSessions(
+  sessions: readonly JourneySessionInput[],
+  journeyId: string,
+): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const s of sessions) {
+    if (s.journeyId !== journeyId) continue;
+    if (s.status !== "done") continue;
+    if (s.templateId === null) continue;
+    counts[s.templateId] = (counts[s.templateId] ?? 0) + 1;
+  }
+  return counts;
 }
 
 // Liste der zuweisbaren Workouts fuer die aktive Journey: nur aktive und
@@ -98,10 +128,13 @@ export interface JourneyAssignmentRow {
 // zugewiesenen. Archivierte oder nicht journey-faehige Workouts erscheinen hier
 // bewusst nicht (Konzept 5.3); eine bestehende Zuordnung eines spaeter nicht
 // mehr journey-faehigen Workouts bleibt in der DB und wird beim Lesen gefiltert.
+// doneCounts (aus countJourneyWorkoutSessions) liefert die Einheiten je Workout
+// in dieser Journey; fehlt ein Workout darin, ist seine Zahl 0.
 export function buildJourneyAssignment(
   workouts: WorkoutInput[],
   lookup: Lookup,
   assignedIds: ReadonlySet<string>,
+  doneCounts: Readonly<Record<string, number>>,
 ): JourneyAssignmentRow[] {
   return workouts
     .filter((w) => w.active && isJourneyCapable(w, lookup))
@@ -110,6 +143,7 @@ export function buildJourneyAssignment(
       name: w.name,
       summary: workoutSummary(w, lookup),
       assigned: assignedIds.has(w.id),
+      doneCount: doneCounts[w.id] ?? 0,
     }));
 }
 
