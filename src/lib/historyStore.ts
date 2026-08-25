@@ -1,10 +1,13 @@
 // Naht zum Verlauf-Speicher: die schmale Schnittstelle, ueber die alle drei
 // Verlauf-Schreiber (Kraft beenden, Skill beenden, Einheit bearbeiten) ihre
-// Datenbank-Handgriffe abspielen. Zwei Gesichter dieser Naht: der echte
-// Supabase-Speicher im Betrieb und ein Speicher im Arbeitsspeicher fuer Tests –
-// damit ist der Schreibpfad erstmals automatisch pruefbar. Die Pruefung "lief
-// der Schritt durch?" sitzt hier an genau einer Stelle (`must`), statt verstreut
-// bei jedem Aufrufer.
+// Datenbank-Handgriffe abspielen. Nur der Verlauf: das Ende einer Journey
+// (archivieren, Anker wegraeumen) laeuft ueber den Journey-Speicher, damit die
+// Regel nicht in zwei Fassungen dasteht (Issue #379).
+//
+// Zwei Gesichter dieser Naht: der echte Supabase-Speicher im Betrieb und ein
+// Speicher im Arbeitsspeicher fuer Tests – damit ist der Schreibpfad
+// automatisch pruefbar. Die Pruefung "lief der Schritt durch?" sitzt hier an
+// genau einer Stelle (`must`), statt verstreut bei jedem Aufrufer.
 //
 // Unterste Schicht: kennt nur Supabase und die Schema-Typen, niemals die
 // Mutationen oder Hooks darueber. Der einzige Bezug nach oben ist der reine
@@ -43,10 +46,6 @@ export interface HistoryStore {
   updateSessionExercise(id: string, patch: Record<string, unknown>): Promise<void>;
   /** Katalog-Zeile fortschreiben (Arbeitsgewicht, optional 1RM). */
   updateExercise(id: string, patch: Record<string, unknown>): Promise<void>;
-  /** Journey abschliessen: inaktiv, Status archiviert, Enddatum setzen. */
-  archiveJourney(id: string, endDate: string): Promise<void>;
-  /** Eingefrorene Referenzgewichte wegraeumen (Ende einer Lastfaktor-Journey). */
-  clearReferenceWeights(): Promise<void>;
   /** Skill-Fortschritt schreiben: anlegen (isNew) oder fortschreiben. */
   writeSkillProgress(write: SkillProgressWrite): Promise<void>;
 }
@@ -96,24 +95,6 @@ export const supabaseHistoryStore: HistoryStore = {
   async updateExercise(id, patch) {
     must(await supabase.from("exercises").update(patch).eq("id", id));
   },
-  async archiveJourney(id, endDate) {
-    must(
-      await supabase
-        .from("journeys")
-        .update({ active: false, status: "archived", end_date: endDate })
-        .eq("id", id),
-    );
-  },
-  async clearReferenceWeights() {
-    must(
-      await supabase
-        .from("exercises")
-        // Mit dem Anker verschwindet auch das Startgewicht der Phase: es haengt
-        // an derselben Bindung und hat ohne sie keine Bedeutung.
-        .update({ reference_weight: null, plan_start_weight: null })
-        .not("reference_weight", "is", null),
-    );
-  },
   async writeSkillProgress(write) {
     if (write.isNew) {
       must(
@@ -156,8 +137,6 @@ export interface MemoryHistoryLog {
   sessionExercisePatches: Array<{ id: string; patch: Record<string, unknown> }>;
   exercisePatches: Array<{ id: string; patch: Record<string, unknown> }>;
   skillProgress: SkillProgressWrite[];
-  archivedJourneys: Array<{ id: string; endDate: string }>;
-  clearedReferenceWeights: number;
 }
 
 /** Erzeugt einen Verlauf-Speicher, der nichts schreibt, sondern jeden Handgriff
@@ -176,8 +155,6 @@ export function createMemoryHistoryStore(): {
     sessionExercisePatches: [],
     exercisePatches: [],
     skillProgress: [],
-    archivedJourneys: [],
-    clearedReferenceWeights: 0,
   };
   const store: HistoryStore = {
     async insertSession(row) {
@@ -206,12 +183,6 @@ export function createMemoryHistoryStore(): {
     },
     async writeSkillProgress(write) {
       log.skillProgress.push(write);
-    },
-    async archiveJourney(id, endDate) {
-      log.archivedJourneys.push({ id, endDate });
-    },
-    async clearReferenceWeights() {
-      log.clearedReferenceWeights += 1;
     },
   };
   return { store, log };

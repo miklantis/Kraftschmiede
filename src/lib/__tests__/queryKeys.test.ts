@@ -126,7 +126,7 @@ describe("INVALIDATE", () => {
       // writeFinishStrength: Einheit samt Uebungen und Saetzen anlegen und
       // den Katalog fortschreiben. Die Journey bleibt unberuehrt.
       finishStrength: ["sessions", "session_exercises", "sets", "exercises"],
-      // writeArchiveJourney: Journey ins Archiv legen, Referenzgewichte raeumen.
+      // writeJourneyAbschluss: Journey ins Archiv legen, Anker wegraeumen.
       journeyDone: ["journeys", "exercises"],
       // writeEditSession: Einheit-Felder, Arbeitssaetze ersetzen, tested_1rm
       // setzen, Katalog nachziehen.

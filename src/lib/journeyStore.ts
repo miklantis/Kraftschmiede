@@ -76,7 +76,9 @@ export interface JourneyStore {
   /** Id der derzeit aktiven Journey, oder null. ADR-0004: dass es hoechstens
    *  eine gibt, sichert die Datenbank – hier wird nur gelesen. */
   findActiveJourneyId(): Promise<string | null>;
-  /** Die abgeloeste Journey ins Archiv legen: nicht mehr aktiv, Enddatum. */
+  /** Eine Journey ins Archiv legen: nicht mehr aktiv, Enddatum. Beide Wege, auf
+   *  denen eine Journey endet, laufen hier durch: der Wechsel loest die
+   *  bisherige ab, der Kalender-Abschluss beendet die durchlaufene. */
   archiveJourney(id: string, endDatum: string): Promise<void>;
   /** Neue Journey anlegen und ihre Id zurueckgeben. */
   insertJourney(row: JourneyRowIns): Promise<string>;
@@ -88,7 +90,9 @@ export interface JourneyStore {
   /** Arbeitsgewichte des Uebungskatalogs eines Nutzers lesen. */
   listArbeitsgewichte(userId: string): Promise<ArbeitsgewichtRow[]>;
   setReferenzgewicht(exerciseId: string, gewicht: number): Promise<void>;
-  /** Alle gesetzten Referenzgewichte eines Nutzers wegraeumen. */
+  /** Alle gesetzten Referenzgewichte eines Nutzers wegraeumen – samt
+   *  Phasenbezug und Startgewicht. Der eine Handgriff fuers Ende einer Journey,
+   *  gleich welcher Weg dorthin gefuehrt hat (Issue #379). */
   clearReferenzgewichte(userId: string): Promise<void>;
   /** Die zugewiesenen Workout-Ids einer Journey. */
   listZuordnungen(journeyId: string): Promise<string[]>;

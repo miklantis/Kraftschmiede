@@ -8,8 +8,8 @@ an der ein Modul flach ist (das interface fast so komplex wie die implementation
 dieselbe Regel mehrfach steht, oder an der eine Regel dort liegt, wo kein Test sie
 erreicht. Dazu je ein Vorschlag, wie sich das zu einem tieferen Modul zusammenziehen liesse.
 
-**Was dieses Dokument nicht ist:** keine Entscheidung und kein Auftrag. Nichts hiervon ist
-umgesetzt. Entschiedenes steht in [`docs/adr/`](./adr/README.md), der Ist-Zustand in
+**Was dieses Dokument nicht ist:** keine Entscheidung und kein Auftrag. Umgesetzt ist
+davon bisher nur Kandidat 1 (Issue #379, siehe Vermerk dort); alles Übrige steht offen. Entschiedenes steht in [`docs/adr/`](./adr/README.md), der Ist-Zustand in
 [`docs/Architektur.md`](./Architektur.md). Wird ein Kandidat gebaut, bekommt er vorher ein
 Issue nach [`docs/Issue-Konventionen.md`](./Issue-Konventionen.md).
 
@@ -42,6 +42,9 @@ folgenden Kandidaten sind Ausprägungen genau davon.
 ---
 
 ## 1. Das Ende einer Journey an eine seam legen
+
+> **Umgesetzt** mit Issue #379. Der Abschnitt beschreibt ab „Problem" den Stand vor der
+> Umsetzung; der heutige Stand steht in [`docs/Architektur.md`](./Architektur.md).
 
 **Empfehlung: stark** · Abhängigkeit: ports & adapters
 
