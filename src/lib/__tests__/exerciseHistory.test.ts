@@ -171,30 +171,44 @@ describe("exSixWeekPct", () => {
 });
 
 describe("exMetricOptions / exDefaultMetric", () => {
-  it("Hauptuebung: fuenf Metriken (1RM, Trend, ...), Standard 1RM", () => {
-    expect(exMetricOptions("strength", null).map((o) => o.key)).toEqual([
+  it("Uebung mit Gewicht: fuenf Metriken (1RM, Trend, ...), Standard 1RM", () => {
+    expect(exMetricOptions(null).map((o) => o.key)).toEqual([
       "rm",
       "trend",
       "weight",
       "reps",
       "volume",
     ]);
-    expect(exDefaultMetric("strength", null)).toBe("rm");
+    expect(exDefaultMetric(null)).toBe("rm");
   });
 
-  it("Koerpergewicht mit Wdh: Wdh + Volumen, Standard Wdh", () => {
-    expect(exMetricOptions("bodyweight", "reps").map((o) => o.key)).toEqual([
+  it("Metrik Wdh: Wdh + Volumen, Standard Wdh", () => {
+    expect(exMetricOptions("reps").map((o) => o.key)).toEqual([
       "reps",
       "volume",
     ]);
-    expect(exDefaultMetric("bodyweight", "reps")).toBe("reps");
+    expect(exDefaultMetric("reps")).toBe("reps");
   });
 
-  it("Koerpergewicht mit Haltezeit: nur Haltezeit", () => {
-    expect(exMetricOptions("bodyweight", "duration").map((o) => o.key)).toEqual([
-      "duration",
-    ]);
-    expect(exDefaultMetric("bodyweight", "duration")).toBe("duration");
+  it("Metrik Haltezeit: nur Haltezeit", () => {
+    expect(exMetricOptions("duration").map((o) => o.key)).toEqual(["duration"]);
+    expect(exDefaultMetric("duration")).toBe("duration");
+  });
+
+  // Der Fall, an dem die alte Regel scheiterte: Plank ist eine Core-Uebung, die
+  // auf Haltezeit laeuft. Ueber das Profil bekam sie 1RM-Metriken ohne einen
+  // einzigen Wert; ueber die Metrik bekommt sie ihre Haltezeit.
+  it("Core-Uebung auf Haltezeit (Plank) bekommt die Haltezeit, kein 1RM", () => {
+    expect(exMetricOptions("duration").map((o) => o.key)).not.toContain("rm");
+    expect(exDefaultMetric("duration")).toBe("duration");
+  });
+
+  // Der Standard muss immer in der Auswahl stehen, sonst startet die Karte auf
+  // einer Metrik, die es gar nicht gibt.
+  it("Standard steht bei jeder Metrik auch in der Auswahl", () => {
+    for (const m of [null, "reps", "duration"] as const) {
+      expect(exMetricOptions(m).map((o) => o.key)).toContain(exDefaultMetric(m));
+    }
   });
 });
 

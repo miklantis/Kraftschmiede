@@ -15,15 +15,17 @@ function ex(
   name: string,
   tier = "main",
   profile = "strength",
+  metric: "reps" | "duration" | null = null,
 ): TestWeekCandidate {
-  return { id, name, tier, profile };
+  return { id, name, tier, profile, metric };
 }
 
 const KNIEBEUGE = ex("e1", "Kniebeuge");
 const BANKDRUECKEN = ex("e2", "Bankdrücken");
 const KREUZHEBEN = ex("e3", "Kreuzheben");
 const BIZEPS = ex("e4", "Bizepscurl", "accessory");
-const KLIMMZUG = ex("e5", "Klimmzug", "main", "bodyweight");
+// Koerpergewichts-Uebungen tragen im Katalog immer eine eigene Metrik.
+const KLIMMZUG = ex("e5", "Klimmzug", "main", "bodyweight", "reps");
 
 describe("fuehrtRekord", () => {
   it("nimmt Hauptuebungen mit Gewicht", () => {
@@ -34,6 +36,17 @@ describe("fuehrtRekord", () => {
   it("laesst Zusatzuebungen und reines Koerpergewicht weg", () => {
     expect(fuehrtRekord(BIZEPS)).toBe(false);
     expect(fuehrtRekord(KLIMMZUG)).toBe(false);
+  });
+
+  // Eine Hauptuebung auf Haltezeit kann nie einen Rekord tragen. Ueber das
+  // Profil waere sie auf der 1RM-Testliste gelandet.
+  it("laesst eine Hauptuebung auf Haltezeit weg, egal welches Profil", () => {
+    expect(fuehrtRekord(ex("e7", "Wall Sit", "main", "core", "duration"))).toBe(
+      false,
+    );
+    expect(
+      fuehrtRekord(ex("e8", "Farmers Walk", "main", "strength", "duration")),
+    ).toBe(false);
   });
 });
 

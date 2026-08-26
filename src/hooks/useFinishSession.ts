@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { journeyWeekForDate } from "@/engine/journey";
 import { buildsRisingPlan } from "@/engine/weekPlan";
 import { todayISO } from "@/lib/format";
+import { misstGewicht } from "@/lib/exercises";
 import { asRmFormula } from "@/lib/rmTest";
 import { buildFinishRows } from "@/lib/liveFinish";
 import { katalogPatch } from "@/lib/katalogPatch";
@@ -110,7 +111,7 @@ export function useFinishSession(): UseFinishSession {
         return katalogPatch({
           exerciseId: u.exerciseId,
           workWeight: u.workWeight,
-          tracksRm: exo ? exo.profile !== "bodyweight" : false,
+          tracksRm: exo ? misstGewicht(exo.metric) : false,
           currentRm: exo?.rm ?? null,
           record1RM: u.record1RM,
           est1RM: u.est1RM,

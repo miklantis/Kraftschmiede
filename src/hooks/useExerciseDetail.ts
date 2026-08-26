@@ -20,6 +20,7 @@ import {
 import { fmtNum } from "@/lib/format";
 import type { ExerciseRow } from "@/schemas";
 import type { StatCell } from "@/components/ui/stat-row";
+import { misstGewicht } from "@/lib/exercises";
 
 export interface VerlaufSatz {
   line: string; // Leistung des Satzes, z. B. "80 kg × 5" oder "45 s"
@@ -38,7 +39,8 @@ export interface ExerciseDetailView {
   isError: boolean;
   error: unknown;
   exercise: ExerciseRow | null;
-  isBodyweight: boolean;
+  /** Uebung ohne Gewicht (eigene Metrik): kein 1RM, keine Meilensteine. */
+  ohneGewicht: boolean;
   stats: StatCell[];
   verlauf: VerlaufRow[];
   // Chart-Daten (Schritt 3): Verlaufseintraege + Metrik-Umschalter.
@@ -167,16 +169,22 @@ export function useExerciseDetail(exerciseId: string): ExerciseDetailView {
         )
       : [];
 
-  const isBodyweight = exercise?.profile === "bodyweight";
+  // Traegt die Uebung ein Gewicht? Entscheidet ueber die Statistik-Kacheln und
+  // (in der Route) ueber 1RM-Block und Meilensteine. Frueher hing das am Profil
+  // und ging bei Plank daneben – siehe misstGewicht.
+  const ohneGewicht = exercise != null && !misstGewicht(exercise.metric);
 
   let stats: StatCell[] = [];
   if (exercise) {
-    if (isBodyweight) {
+    if (ohneGewicht) {
       const u = exercise.metric === "duration" ? "Sek." : "Wdh";
-      const min = exercise.rep_range_min ?? 0;
-      const max = exercise.rep_range_max ?? 0;
+      const min = exercise.rep_range_min;
+      const max = exercise.rep_range_max;
+      // Ohne hinterlegtes Zielband (Plank) bleibt die Kachel leer statt "0–0"
+      // zu behaupten.
+      const ziel = min == null || max == null ? "–" : `${min}–${max} ${u}`;
       stats = [
-        { value: `${min}–${max} ${u}`, label: "Ziel" },
+        { value: ziel, label: "Ziel" },
         {
           value: exercise.metric === "duration" ? "Dauer" : "Wiederholungen",
           label: "Metrik",
@@ -225,10 +233,10 @@ export function useExerciseDetail(exerciseId: string): ExerciseDetailView {
     );
 
   const metricOptions = exercise
-    ? exMetricOptions(exercise.profile, exercise.metric)
+    ? exMetricOptions(exercise.metric)
     : [];
   const defaultMetric: ExMetric = exercise
-    ? exDefaultMetric(exercise.profile, exercise.metric)
+    ? exDefaultMetric(exercise.metric)
     : "rm";
 
   // Feine Beteiligung der aktuellen Uebung (region_id -> kategorie) in die
@@ -245,7 +253,7 @@ export function useExerciseDetail(exerciseId: string): ExerciseDetailView {
     isError,
     error,
     exercise,
-    isBodyweight,
+    ohneGewicht,
     stats,
     verlauf,
     chartHistory: history,

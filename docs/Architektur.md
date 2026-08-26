@@ -96,7 +96,10 @@ Zwei Arten von Erstbefüllung liegen dabei nebeneinander:
   einen `key`); ein Nachziehen würde Weggeräumtes beim nächsten Start zurückbringen.
 
 - **exercises** – key, name, profile (strength/core/bodyweight), tier (main/accessory),
-  equipment, bar_id (FK), description, metric (reps/duration bei Körpergewicht),
+  equipment, bar_id (FK), description, metric (reps/duration – die Mess-Art ohne
+  Gewicht; leer = Gewicht × Wiederholungen. Maßgeblich für „trägt diese Übung ein
+  1RM?“ ist dieses Feld, **nicht** das Profil: Plank ist eine Core-Übung auf
+  Haltezeit. Die gemeinsame Regel dafür ist `misstGewicht` in `lib/exercises.ts`),
   muscle_groups (grobe Tags als text[]), rep_range_min/max, work_weight,
   reference_weight (nullable, eingefrorenes Arbeitsgewicht zum Start einer
   Journey mit Lastliste), reference_phase_id (FK auf phases, nullable – zu welcher Phase

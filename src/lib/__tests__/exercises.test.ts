@@ -3,6 +3,7 @@ import {
   groupExercises,
   exerciseRowMeta,
   exerciseRowSub,
+  misstGewicht,
 } from "@/lib/exercises";
 import type { ExerciseRow } from "@/schemas";
 
@@ -73,8 +74,46 @@ describe("exerciseRowMeta", () => {
     ).toBe("45 s");
   });
 
+  // Der Fall, an dem die alte Profil-Regel scheiterte: Plank ist Core, laeuft
+  // aber auf Haltezeit. Ueber das Profil landete sie in der Gewichtszeile und
+  // zeigte "0 kg × 0".
+  it("zeigt bei einer Core-Uebung auf Haltezeit die Haltezeit, kein Gewicht", () => {
+    expect(
+      exerciseRowMeta(
+        ex({ profile: "core", metric: "duration", rep_range_max: 60 }),
+        "kg",
+      ),
+    ).toBe("60 s");
+  });
+
+  it("zeigt ohne hinterlegtes Zielband die Mess-Art statt einer Null", () => {
+    expect(
+      exerciseRowMeta(
+        ex({ profile: "core", metric: "duration", rep_range_max: null }),
+        "kg",
+      ),
+    ).toBe("Dauer");
+    expect(
+      exerciseRowMeta(
+        ex({ profile: "bodyweight", metric: "reps", rep_range_max: null }),
+        "kg",
+      ),
+    ).toBe("Wdh");
+  });
+
   it("respektiert die Einheit", () => {
     expect(exerciseRowMeta(ex({ rm: 250 }), "lb")).toBe("1RM 250 lb");
+  });
+});
+
+describe("misstGewicht", () => {
+  it("ohne Metrik: die Uebung misst sich in Gewicht", () => {
+    expect(misstGewicht(null)).toBe(true);
+  });
+
+  it("mit Metrik: kein Gewicht – unabhaengig vom Profil", () => {
+    expect(misstGewicht("reps")).toBe(false);
+    expect(misstGewicht("duration")).toBe(false);
   });
 });
 
