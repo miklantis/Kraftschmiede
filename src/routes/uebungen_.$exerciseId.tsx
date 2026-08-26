@@ -45,7 +45,7 @@ function ExerciseDetailPage(): React.ReactElement {
     isError,
     error,
     exercise,
-    isBodyweight,
+    ohneGewicht,
     stats,
     verlauf,
     chartHistory,
@@ -155,13 +155,13 @@ function ExerciseDetailPage(): React.ReactElement {
             </div>
           )}
 
-          {!isBodyweight && (
+          {!ohneGewicht && (
             <div className="order-3 min-w-0 min-[960px]:order-none">
               <RmSection exercise={exercise} unit={unit} />
             </div>
           )}
 
-          {!isBodyweight && (
+          {!ohneGewicht && (
             <div className="order-4 min-w-0 min-[960px]:order-none">
               <MilestonesSection
                 exerciseId={exercise.id}

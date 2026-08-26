@@ -7,6 +7,7 @@
 
 import type { HistorySessionInput } from "./history";
 import { best1RMFromSets, record1RMFromSets } from "@/engine/oneRM";
+import { misstGewicht } from "./exercises";
 import type { EngineSet, RmFormula } from "@/engine/types";
 
 export interface ExHistorySet {
@@ -322,12 +323,17 @@ export const EX_METRIC_SHORT: Record<ExMetric, string> = {
   volume: "Volumen",
 };
 
-// Waehlbare Metriken je Uebungstyp (V1 exMetricOptions).
+// Waehlbare Metriken je Uebung (V1 exMetricOptions).
+//
+// Entscheidend ist die Metrik der Uebung, nicht ihr Profil (siehe
+// lib/exercises.ts misstGewicht): eine Uebung ohne Gewicht kann kein 1RM, kein
+// Top-Gewicht und keinen Trend tragen, und diese Metriken anzubieten hiesse,
+// leere Charts zur Auswahl zu stellen. Bei Haltezeit bleibt genau eine sinnvolle
+// Kurve uebrig, bei Wiederholungen sind es Wdh und Volumen.
 export function exMetricOptions(
-  profile: string,
   metric: "reps" | "duration" | null,
 ): ExMetricOption[] {
-  if (profile === "bodyweight") {
+  if (!misstGewicht(metric)) {
     if (metric === "duration") return [{ key: "duration", label: "Haltezeit" }];
     return [
       { key: "reps", label: "Wdh" },
@@ -343,12 +349,13 @@ export function exMetricOptions(
   ];
 }
 
-// Standard-Metrik je Uebungstyp (V1 exDetailParts.metric).
+// Standard-Metrik je Uebung (V1 exDetailParts.metric). Immer die erste aus
+// exMetricOptions – beide muessen dieselbe Weiche nehmen, sonst startet die
+// Karte auf einer Metrik, die gar nicht zur Auswahl steht.
 export function exDefaultMetric(
-  profile: string,
   metric: "reps" | "duration" | null,
 ): ExMetric {
-  if (profile === "bodyweight") return metric === "duration" ? "duration" : "reps";
+  if (!misstGewicht(metric)) return metric === "duration" ? "duration" : "reps";
   return "rm";
 }
 

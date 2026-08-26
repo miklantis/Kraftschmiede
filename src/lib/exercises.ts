@@ -20,15 +20,34 @@ export interface ExerciseGroup {
   items: ExerciseRowModel[];
 }
 
+// Misst sich diese Uebung in Gewicht (und traegt damit ein 1RM)?
+//
+// Massgeblich ist die METRIK der Uebung, nicht ihr Profil. Ein gesetztes
+// `metric` (reps/duration) ist laut Schema genau die "Mess-Art ohne Gewicht":
+// die Uebung wird nicht in Gewicht x Wiederholungen gemessen, unabhaengig
+// davon, ob sie als Koerpergewicht, Core oder Kraft einsortiert ist.
+//
+// Das Profil taugt hier nicht als Ersatz, obwohl es lange dafuer benutzt wurde:
+// es steuert etwas anderes (Satzzahl im Live-Aufbau, Art des Coach-Vorschlags)
+// und stimmte nur zufaellig ueberein, solange jede Dauer-Uebung auch
+// Koerpergewicht war. Plank ist eine Core-Uebung auf Haltezeit und bekam ueber
+// die Profil-Regel Gewichts- und 1RM-Ansichten ohne einen einzigen Wert.
+export function misstGewicht(metric: "reps" | "duration" | null): boolean {
+  return metric == null;
+}
+
 // Meta-Text rechts in der Listenzeile, je nach Uebungstyp (V1 exRowMeta).
-// - Koerpergewicht: Zielwiederholungen bzw. Haltezeit
+// - ohne Gewicht (eigene Metrik): Zielwiederholungen bzw. Haltezeit
 // - Core / Assistenz: Arbeitsgewicht x Zielwiederholungen
 // - sonst (Hauptuebung): geschaetztes 1RM, ersatzweise Arbeitsgewicht
 export function exerciseRowMeta(e: ExerciseRow, unit: string): string {
   const max = e.rep_range_max;
-  if (e.profile === "bodyweight") {
+  if (!misstGewicht(e.metric)) {
+    // Ohne hinterlegtes Zielband (Plank) steht die Mess-Art selbst da statt
+    // einer erfundenen Null.
+    if (max == null) return e.metric === "duration" ? "Dauer" : "Wdh";
     const u = e.metric === "duration" ? " s" : " Wdh";
-    return (max ?? 0) + u;
+    return max + u;
   }
   if (e.profile === "core" || e.tier === "accessory") {
     return fmtWeight(e.work_weight, unit) + " × " + (max ?? 0);

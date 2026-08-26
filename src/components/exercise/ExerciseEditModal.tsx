@@ -6,6 +6,7 @@ import { useUpdateExercise } from "@/hooks/useUpdateExercise";
 import { useActivePhaseTarget } from "@/hooks/useActivePhaseTarget";
 import { useSettings } from "@/hooks/useSettings";
 import { lockedTarget } from "@/lib/exerciseTarget";
+import { misstGewicht } from "@/lib/exercises";
 import { fmtScore } from "@/lib/format";
 import type { ExerciseRow } from "@/schemas";
 
@@ -61,7 +62,10 @@ export function ExerciseEditModal({
   const phaseTarget = useActivePhaseTarget();
 
   const step = settingsQ.data?.weight_step || 2.5;
-  const isWeight = exercise.profile !== "bodyweight";
+  // Arbeitsgewicht nur bei Uebungen, die sich ueberhaupt in Gewicht messen.
+  // Frueher hing das am Profil und bot Plank (Core auf Haltezeit) einen
+  // Gewichts-Stepper an – siehe misstGewicht.
+  const isWeight = misstGewicht(exercise.metric);
   // Die Vorgabe der Journey; null heisst: es gibt keine, das Repband bleibt
   // bedienbar.
   const locked = lockedTarget(exercise, {
@@ -69,10 +73,7 @@ export function ExerciseEditModal({
     repBand: phaseTarget.repBand,
   });
   const repLocked = locked !== null;
-  const repUnit =
-    exercise.profile === "bodyweight" && exercise.metric === "duration"
-      ? "Sekunden"
-      : "Wdh";
+  const repUnit = exercise.metric === "duration" ? "Sekunden" : "Wdh";
 
   const [draft, setDraft] = useState<Draft>({
     workWeight: exercise.work_weight,

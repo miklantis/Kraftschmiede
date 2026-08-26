@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { asRmFormula } from "@/lib/rmTest";
+import { misstGewicht } from "@/lib/exercises";
 import {
   buildEditPayload,
   buildSkillEditPayload,
@@ -72,12 +73,13 @@ export function useEditSession(): UseEditSession {
       if (!userId) return;
       const rmFormula = asRmFormula(settingsQ.data?.rm_formula);
 
-      // 1RM-Tracking je Uebung (alles ausser reinem Koerpergewicht) aus dem
-      // Katalog.
+      // 1RM-Tracking je Uebung aus dem Katalog: nur Uebungen, die sich in
+      // Gewicht messen (siehe misstGewicht). Frueher stand hier das Profil,
+      // was Dauer-Uebungen ausserhalb des Bodyweight-Profils uebersah.
       const byId = new Map((exercisesQ.data ?? []).map((e) => [e.id, e]));
       const tracksRm = (exerciseId: string): boolean => {
         const exo = byId.get(exerciseId);
-        return exo ? exo.profile !== "bodyweight" : false;
+        return exo ? misstGewicht(exo.metric) : false;
       };
       const currentRm = (exerciseId: string): number | null => {
         return byId.get(exerciseId)?.rm ?? null;

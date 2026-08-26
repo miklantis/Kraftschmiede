@@ -7,14 +7,18 @@
 // nirgends in den Abschluss oder in die Wochenerfuellung hineinreichen.
 
 import { isoWeekKey } from "@/engine";
+import { misstGewicht } from "./exercises";
 
-// Uebung, soweit die Testliste sie braucht. Rang und Profil entscheiden, ob sie
-// ueberhaupt ein 1RM fuehrt; die Reihenfolge kommt aus der Abfrage (position).
+// Uebung, soweit die Testliste sie braucht. Rang und Mess-Art entscheiden, ob
+// sie ueberhaupt ein 1RM fuehrt; die Reihenfolge kommt aus der Abfrage
+// (position).
 export interface TestWeekCandidate {
   id: string;
   name: string;
   tier: string;
   profile: string;
+  /** Mess-Art ohne Gewicht (reps/duration); null = misst sich in Gewicht. */
+  metric: "reps" | "duration" | null;
 }
 
 // 1RM-Test, soweit die Liste ihn braucht (Engine-Form, camelCase).
@@ -31,11 +35,15 @@ export interface TestWeekExercise {
   tested: boolean;
 }
 
-/** Fuehrt diese Uebung ueberhaupt ein 1RM? Hauptuebung mit Gewicht: reine
- *  Koerpergewichtsuebungen kennen keinen Rekord und gehoeren nicht auf die
- *  Liste. */
+/** Fuehrt diese Uebung ueberhaupt ein 1RM? Hauptuebung, die sich in Gewicht
+ *  misst: Uebungen mit eigener Metrik (Wiederholungen oder Haltezeit) kennen
+ *  keinen Rekord und gehoeren nicht auf die Liste.
+ *
+ *  Massgeblich ist die Metrik, nicht das Profil (siehe lib/exercises.ts
+ *  misstGewicht): eine Hauptuebung auf Haltezeit waere ueber das Profil auf der
+ *  1RM-Testliste gelandet, obwohl sie nie einen Rekord tragen kann. */
 export function fuehrtRekord(ex: TestWeekCandidate): boolean {
-  return ex.tier === "main" && ex.profile !== "bodyweight";
+  return ex.tier === "main" && misstGewicht(ex.metric);
 }
 
 /** Testliste der laufenden Kalenderwoche: alle Hauptuebungen mit 1RM, in der

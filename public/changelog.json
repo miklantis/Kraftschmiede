@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.50.3",
+      "date": "2026-08-26",
+      "changes": [
+        "Die Übungsseite von Plank zeigt jetzt ihre Haltezeit. Bisher bot sie dort 1RM, Trend und Top-Gewicht an – Werte, die eine Plank nie hat – und der Verlauf blieb leer. Der Grund: die App hat an mehreren Stellen danach gefragt, wie eine Übung einsortiert ist, statt danach, wie sie gemessen wird. Plank zählt in Sekunden, ist aber als Core-Übung geführt und fiel deshalb durch. Das ist jetzt an allen Stellen umgestellt: im Verlaufsdiagramm, in den Kennzahlen darüber, in der Übungsliste, im Bearbeiten-Dialog (dort steht jetzt Sekunden statt Wiederholungen und kein Arbeitsgewicht mehr) und in der Testwochen-Liste. Für alle anderen Übungen ändert sich nichts, Dead Hang eingeschlossen."
+      ]
+    },
+    {
       "version": "1.50.2",
       "date": "2026-08-25",
       "changes": [
