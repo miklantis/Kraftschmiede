@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Trash2 } from "lucide-react";
 import { Overlay } from "@/components/ui/overlay";
+import { DeleteConfirmButton } from "@/components/ui/delete-confirm-button";
 import { FieldLabel } from "@/components/ui/field-label";
 import { Select } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -35,13 +35,11 @@ export function ZeitraumFormModal({
   const [laeuftNoch, setLaeuftNoch] = useState(false);
   const [endDatum, setEndDatum] = useState(todayISO());
   const [notiz, setNotiz] = useState("");
-  const [loeschenBestaetigen, setLoeschenBestaetigen] = useState(false);
 
   // Beim Oeffnen den Entwurf setzen: aus dem Zeitraum (Bearbeiten) oder frische
   // Vorgaben (Anlegen).
   useEffect(() => {
     if (!open) return;
-    setLoeschenBestaetigen(false);
     if (zeitraum) {
       setTyp(zeitraum.typ);
       setName(zeitraum.name ?? "");
@@ -183,27 +181,14 @@ export function ZeitraumFormModal({
           {zeitraum ? "Speichern" : "Anlegen"}
         </Button>
 
-        {zeitraum &&
-          (loeschenBestaetigen ? (
-            <button
-              type="button"
-              onClick={() => void loeschen()}
-              disabled={isPending}
-              className="flex w-full items-center justify-center gap-2 rounded-[13px] border border-danger/40 py-3 text-[14px] font-semibold text-danger transition-[filter] hover:brightness-95 disabled:opacity-50"
-            >
-              <Trash2 className="size-4" />
-              Wirklich löschen?
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setLoeschenBestaetigen(true)}
-              className="flex w-full items-center justify-center gap-2 rounded-[13px] py-3 text-[14px] font-medium text-muted-foreground transition-colors hover:text-danger"
-            >
-              <Trash2 className="size-4" />
-              Zeitraum löschen
-            </button>
-          ))}
+        {zeitraum && (
+          <DeleteConfirmButton
+            label="Zeitraum löschen"
+            onDelete={() => void loeschen()}
+            open={open}
+            disabled={isPending}
+          />
+        )}
 
         <button
           type="button"

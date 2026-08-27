@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Check, Trash2 } from "lucide-react";
+import { Check } from "lucide-react";
 import { Overlay } from "@/components/ui/overlay";
+import { DeleteConfirmButton } from "@/components/ui/delete-confirm-button";
 import { Input } from "@/components/ui/input";
 import { FieldLabel } from "@/components/ui/field-label";
 import type { CompositionMilestoneRow } from "@/schemas";
@@ -33,7 +34,6 @@ export function MetricMilestoneEditModal({
   const [name, setName] = useState("");
   const [target, setTarget] = useState("");
   const [saved, setSaved] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
 
   // Beim Oeffnen die Felder frisch setzen (Bearbeiten vorbefuellt, Anlegen leer).
   useEffect(() => {
@@ -41,7 +41,6 @@ export function MetricMilestoneEditModal({
       setName(milestone?.name ?? "");
       setTarget(milestone != null ? String(milestone.target) : "");
       setSaved(false);
-      setConfirmDelete(false);
     }
   }, [open, milestone]);
 
@@ -128,27 +127,15 @@ export function MetricMilestoneEditModal({
             </button>
           </div>
 
-          {isEdit &&
-            (confirmDelete ? (
-              <button
-                type="button"
-                onClick={() => void doDelete()}
-                disabled={isPending}
-                className="mt-3 flex w-full items-center justify-center gap-2 rounded-[13px] border border-danger/40 py-3 text-[14px] font-semibold text-danger transition-[filter] hover:brightness-95 disabled:opacity-50"
-              >
-                <Trash2 className="size-4" />
-                Wirklich löschen?
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(true)}
-                className="mt-3 flex w-full items-center justify-center gap-2 rounded-[13px] py-3 text-[14px] font-medium text-muted-foreground transition-colors hover:text-danger"
-              >
-                <Trash2 className="size-4" />
-                Meilenstein löschen
-              </button>
-            ))}
+          {isEdit && (
+            <DeleteConfirmButton
+              label="Meilenstein löschen"
+              onDelete={() => void doDelete()}
+              open={open}
+              disabled={isPending}
+              className="mt-3"
+            />
+          )}
         </>
       )}
     </Overlay>

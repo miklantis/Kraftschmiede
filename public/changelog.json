@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.50.5",
+      "date": "2026-08-27",
+      "changes": [
+        "Weiter aufgeräumt hinter den Kulissen: Der Löschen-Knopf mit Sicherheitsfrage – erst der graue Anstoss, nach dem Klick die rote Rückfrage „Wirklich löschen?“ – war viermal einzeln nachgebaut: beim Übungs-Meilenstein, beim Körper-Meilenstein, bei der Messung und beim Zeitraum. Jetzt ist es ein gemeinsamer Baustein. Sichtbar und im Verhalten ändert sich nichts, es braucht weiterhin zwei Klicks zum Löschen."
+      ]
+    },
+    {
       "version": "1.50.4",
       "date": "2026-08-27",
       "changes": [

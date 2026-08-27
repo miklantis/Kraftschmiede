@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Trash2 } from "lucide-react";
 import { Overlay } from "@/components/ui/overlay";
+import { DeleteConfirmButton } from "@/components/ui/delete-confirm-button";
 import { FieldLabel } from "@/components/ui/field-label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -89,13 +89,11 @@ export function BodyMeasureDialog({
   const { add, update, remove, isPending } = useCompositionActions();
   const [date, setDate] = useState(todayISO());
   const [werte, setWerte] = useState<WerteEntwurf>(LEER_ENTWURF);
-  const [loeschenBestaetigen, setLoeschenBestaetigen] = useState(false);
 
   // Beim Oeffnen den Entwurf setzen: aus dem Eintrag (Bearbeiten) oder frisch
   // (Anlegen, Datum = heute).
   useEffect(() => {
     if (!open) return;
-    setLoeschenBestaetigen(false);
     if (row) {
       setDate(row.date);
       setWerte({
@@ -216,27 +214,14 @@ export function BodyMeasureDialog({
           {row ? "Speichern" : "Hinzufügen"}
         </Button>
 
-        {row &&
-          (loeschenBestaetigen ? (
-            <button
-              type="button"
-              onClick={() => void loeschen()}
-              disabled={isPending}
-              className="flex w-full items-center justify-center gap-2 rounded-[13px] border border-danger/40 py-3 text-[14px] font-semibold text-danger transition-[filter] hover:brightness-95 disabled:opacity-50"
-            >
-              <Trash2 className="size-4" />
-              Wirklich löschen?
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setLoeschenBestaetigen(true)}
-              className="flex w-full items-center justify-center gap-2 rounded-[13px] py-3 text-[14px] font-medium text-muted-foreground transition-colors hover:text-danger"
-            >
-              <Trash2 className="size-4" />
-              Messung löschen
-            </button>
-          ))}
+        {row && (
+          <DeleteConfirmButton
+            label="Messung löschen"
+            onDelete={() => void loeschen()}
+            open={open}
+            disabled={isPending}
+          />
+        )}
 
         <button
           type="button"
