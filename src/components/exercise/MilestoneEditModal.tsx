@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Check, Trash2 } from "lucide-react";
 import { Overlay } from "@/components/ui/overlay";
 import { Input } from "@/components/ui/input";
+import { FieldLabel } from "@/components/ui/field-label";
 import type { ExerciseMilestoneRow } from "@/schemas";
 import { useMilestoneActions } from "@/hooks/useMilestoneActions";
 
@@ -10,14 +11,6 @@ const FEEDBACK_MS = 850;
 // Anlegen/Bearbeiten eines Meilensteins ueber das generische Overlay. Zwei
 // Felder: Name und Ziel-1RM (kg). Im Bearbeiten-Modus zusaetzlich Loeschen (mit
 // Rueckfrage im selben Dialog). milestone == null => Anlegen.
-function FieldLabel({ children }: { children: string }): React.ReactElement {
-  return (
-    <div className="mb-2 text-[12px] font-semibold tracking-[0.3px] text-muted-foreground">
-      {children}
-    </div>
-  );
-}
-
 export function MilestoneEditModal({
   exerciseId,
   milestone,
@@ -76,7 +69,7 @@ export function MilestoneEditModal({
       onClose={onClose}
       title={isEdit ? "Meilenstein bearbeiten" : "Meilenstein hinzufügen"}
     >
-      <FieldLabel>Name</FieldLabel>
+      <FieldLabel className="mb-2">Name</FieldLabel>
       <Input
         value={name}
         onChange={(e) => setName(e.target.value)}
@@ -85,7 +78,7 @@ export function MilestoneEditModal({
         className="mb-[18px]"
       />
 
-      <FieldLabel>Ziel-1RM</FieldLabel>
+      <FieldLabel className="mb-2">Ziel-1RM</FieldLabel>
       <div className="mb-[18px] flex items-center gap-2">
         <Input
           type="number"

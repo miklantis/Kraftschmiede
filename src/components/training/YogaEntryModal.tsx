@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Overlay } from "@/components/ui/overlay";
+import { FieldLabel } from "@/components/ui/field-label";
 import { NoteBlock } from "@/components/ui/note-block";
 import { useAddYoga } from "@/hooks/useAddYoga";
 import { todayISO } from "@/lib/format";
@@ -54,9 +55,7 @@ export function YogaEntryModal({
 
   return (
     <Overlay open={open} onClose={onClose} title="Yoga eintragen">
-      <div className="text-[12px] font-semibold tracking-[0.3px] text-muted-foreground">
-        Datum
-      </div>
+      <FieldLabel>Datum</FieldLabel>
       <div className="mt-2 mb-[18px] flex gap-2">
         {DAYS.map((label, off) => {
           const active = dayOffset === off;
@@ -78,9 +77,7 @@ export function YogaEntryModal({
         })}
       </div>
 
-      <div className="text-[12px] font-semibold tracking-[0.3px] text-muted-foreground">
-        Dauer
-      </div>
+      <FieldLabel>Dauer</FieldLabel>
       <div className="mt-2 mb-5 flex items-center justify-between rounded-control bg-muted px-4 py-3">
         <button
           type="button"

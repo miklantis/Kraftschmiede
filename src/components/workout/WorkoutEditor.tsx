@@ -4,6 +4,7 @@ import { GripVertical, Plus, Trash2 } from "lucide-react";
 import { BackLink } from "@/components/ui/back-link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
+import { FieldLabel } from "@/components/ui/field-label";
 import { SortableList } from "@/components/ui/sortable-list";
 import { ExercisePicker } from "@/components/exercise/ExercisePicker";
 import { useWorkoutEditor } from "@/hooks/useWorkoutEditor";
@@ -71,9 +72,7 @@ export function WorkoutEditor({
       />
 
       {/* Name */}
-      <div className="mb-1.5 text-[12px] font-semibold tracking-[0.3px] text-muted-foreground">
-        Name
-      </div>
+      <FieldLabel className="mb-1.5">Name</FieldLabel>
       <Input
         value={ed.name}
         onChange={(e) => ed.setName(e.target.value)}
@@ -95,9 +94,7 @@ export function WorkoutEditor({
       </p>
 
       {/* Uebungsliste */}
-      <div className="mb-1.5 text-[12px] font-semibold tracking-[0.3px] text-muted-foreground">
-        Übungen
-      </div>
+      <FieldLabel className="mb-1.5">Übungen</FieldLabel>
       {ed.rows.length === 0 ? (
         <p className="mb-3 rounded-[14px] border border-dashed border-border px-4 py-6 text-center text-[13px] text-muted-foreground">
           Noch keine Übung. Füge unten mindestens eine hinzu.

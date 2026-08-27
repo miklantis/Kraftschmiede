@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Check, Search } from "lucide-react";
 import { Overlay } from "@/components/ui/overlay";
+import { FieldLabel } from "@/components/ui/field-label";
 import { Input } from "@/components/ui/input";
 import { groupExercises } from "@/lib/exercises";
 import type { ExerciseRow } from "@/schemas";
@@ -62,9 +63,7 @@ export function ExercisePicker({
         <div className="flex flex-col gap-4">
           {groups.map((g) => (
             <div key={g.title}>
-              <div className="mb-1.5 text-[12px] font-semibold tracking-[0.3px] text-muted-foreground">
-                {g.title}
-              </div>
+              <FieldLabel className="mb-1.5">{g.title}</FieldLabel>
               <div className="flex flex-col">
                 {g.items.map((it) => {
                   const on = selectedIds.has(it.id);

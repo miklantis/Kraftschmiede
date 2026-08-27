@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.50.4",
+      "date": "2026-08-27",
+      "changes": [
+        "Aufräumen hinter den Kulissen: Die kleine graue Beschriftung über einem Eingabefeld – etwa „Name“, „Datum“ oder „Dauer“ – war bisher in acht Dateien einzeln von Hand nachgebaut, an 15 Stellen. Jetzt gibt es sie einmal als gemeinsamen Baustein, den alle benutzen. Sichtbar ändert sich nichts; künftige Anpassungen an dieser Beschriftung wirken aber überall auf einmal statt Stelle für Stelle."
+      ]
+    },
+    {
       "version": "1.50.3",
       "date": "2026-08-26",
       "changes": [
