@@ -21,7 +21,13 @@ import { cn } from "@/lib/utils";
 //
 // Bewusst generisch und domaenenfrei: Titel + Inhalt kommen vom Aufrufer. Der
 // primaere Aktionsknopf und ein mobiles "Abbrechen" gehoeren in den Inhalt, weil
-// sie je Dialog unterschiedlich sind.
+// sie je Dialog unterschiedlich sind. Das gilt weiter fuer die Mehrheit: die
+// Bestandsaufnahme zu Issue #399 hat unter den 16 Dialogen hier drei
+// Fussleisten-Familien gefunden, sechs davon haben gar keine. Wo die Leiste sich
+// doch wiederholt - Abbrechen schmal neben breitem Primaerknopf, drei Dialoge -
+// nimmt sie der Baustein ui/dialog-footer.tsx auf, der neben dem Overlay steht
+// statt darin. Deshalb gibt es hier bewusst keinen footer-Slot: er wuerde den
+// uebrigen 13 einen ungenutzten Anbau aufdruecken.
 
 const EXIT_MS = 320; // muss zur laengsten Transition unten passen
 
