@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Lock, Check } from "lucide-react";
+import { Lock } from "lucide-react";
 import { Overlay } from "@/components/ui/overlay";
+import { DialogFooter } from "@/components/ui/dialog-footer";
 import { Stepper } from "@/components/ui/stepper";
 import { FieldLabel } from "@/components/ui/field-label";
 import { useUpdateExercise } from "@/hooks/useUpdateExercise";
@@ -22,8 +23,6 @@ import type { ExerciseRow } from "@/schemas";
 // #297): die Wochenzeile des Plans ("4 × 4 · RIR 1"), wenn er die Uebung
 // regiert, sonst das Band der Phase ("4–6 Wdh · RIR 2"). Die Entscheidung faellt
 // in lib/exerciseTarget ueber dieselbe Weiche wie beim Coach.
-
-const FEEDBACK_MS = 850;
 
 interface Draft {
   workWeight: number;
@@ -111,7 +110,6 @@ export function ExerciseEditModal({
         : { rep_range_min: draft.repmin, rep_range_max: draft.repmax }),
     });
     setSaved(true);
-    window.setTimeout(onClose, FEEDBACK_MS);
   };
 
   // Regiert der Wochenplan die Uebung, haengt die Last am Anker vom Phasenstart:
@@ -212,30 +210,14 @@ export function ExerciseEditModal({
         </>
       )}
 
-      {saved ? (
-        <div className="flex w-full items-center justify-center gap-2 rounded-[13px] bg-primary py-3.5 text-[15px] font-semibold text-primary-foreground">
-          <Check className="size-[17px]" strokeWidth={2.6} />
-          Übernommen
-        </div>
-      ) : (
-        <div className="flex gap-2.5">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-none rounded-[13px] border border-border bg-card px-5 py-3.5 text-[15px] font-semibold text-foreground transition-[filter] hover:brightness-95"
-          >
-            Abbrechen
-          </button>
-          <button
-            type="button"
-            onClick={() => void save()}
-            disabled={isPending}
-            className="flex-1 rounded-[13px] bg-primary py-3.5 text-[15px] font-semibold text-primary-foreground transition-[filter] hover:brightness-105 disabled:opacity-50"
-          >
-            Übernehmen
-          </button>
-        </div>
-      )}
+      <DialogFooter
+        saved={saved}
+        savedLabel="Übernommen"
+        actionLabel="Übernehmen"
+        onAction={() => void save()}
+        onClose={onClose}
+        disabled={isPending}
+      />
     </Overlay>
   );
 }

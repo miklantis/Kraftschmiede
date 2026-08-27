@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.50.6",
+      "date": "2026-08-27",
+      "changes": [
+        "Letzter Aufräum-Schritt an den Bearbeiten-Dialogen: Die Knopfleiste unten – „Abbrechen“ links, der grüne Hauptknopf rechts – und der grüne Bestätigungsbalken danach waren dreimal einzeln nachgebaut, in „Übung anpassen“ und in den beiden Meilenstein-Dialogen. Jetzt ist beides ein gemeinsamer Baustein, samt der Wartezeit, nach der sich der Dialog von selbst schliesst. Sichtbar und im Ablauf ändert sich nichts. Die übrigen Dialoge der App haben absichtlich andere Knopfleisten und bleiben, wie sie sind."
+      ]
+    },
+    {
       "version": "1.50.5",
       "date": "2026-08-27",
       "changes": [

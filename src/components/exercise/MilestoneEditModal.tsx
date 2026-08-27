@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
-import { Check } from "lucide-react";
 import { Overlay } from "@/components/ui/overlay";
+import { DialogFooter } from "@/components/ui/dialog-footer";
 import { DeleteConfirmButton } from "@/components/ui/delete-confirm-button";
 import { Input } from "@/components/ui/input";
 import { FieldLabel } from "@/components/ui/field-label";
 import type { ExerciseMilestoneRow } from "@/schemas";
 import { useMilestoneActions } from "@/hooks/useMilestoneActions";
-
-const FEEDBACK_MS = 850;
 
 // Anlegen/Bearbeiten eines Meilensteins ueber das generische Overlay. Zwei
 // Felder: Name und Ziel-1RM (kg). Im Bearbeiten-Modus zusaetzlich Loeschen (mit
@@ -53,7 +51,6 @@ export function MilestoneEditModal({
       await add(exerciseId, name.trim(), parsedTarget);
     }
     setSaved(true);
-    window.setTimeout(onClose, FEEDBACK_MS);
   };
 
   const doDelete = async (): Promise<void> => {
@@ -100,42 +97,24 @@ export function MilestoneEditModal({
         erreicht markiert.
       </p>
 
-      {saved ? (
-        <div className="flex w-full items-center justify-center gap-2 rounded-[13px] bg-primary py-3.5 text-[15px] font-semibold text-primary-foreground">
-          <Check className="size-[17px]" strokeWidth={2.6} />
-          {isEdit ? "Gespeichert" : "Angelegt"}
-        </div>
-      ) : (
-        <>
-          <div className="flex gap-2.5">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-none rounded-[13px] border border-border bg-card px-5 py-3.5 text-[15px] font-semibold text-foreground transition-[filter] hover:brightness-95"
-            >
-              Abbrechen
-            </button>
-            <button
-              type="button"
-              onClick={() => void save()}
-              disabled={!canSave || isPending}
-              className="flex-1 rounded-[13px] bg-primary py-3.5 text-[15px] font-semibold text-primary-foreground transition-[filter] hover:brightness-105 disabled:opacity-50"
-            >
-              {isEdit ? "Speichern" : "Anlegen"}
-            </button>
-          </div>
-
-          {isEdit && (
-            <DeleteConfirmButton
-              label="Meilenstein löschen"
-              onDelete={() => void doDelete()}
-              open={open}
-              disabled={isPending}
-              className="mt-3"
-            />
-          )}
-        </>
-      )}
+      <DialogFooter
+        saved={saved}
+        savedLabel={isEdit ? "Gespeichert" : "Angelegt"}
+        actionLabel={isEdit ? "Speichern" : "Anlegen"}
+        onAction={() => void save()}
+        onClose={onClose}
+        disabled={!canSave || isPending}
+      >
+        {isEdit && (
+          <DeleteConfirmButton
+            label="Meilenstein löschen"
+            onDelete={() => void doDelete()}
+            open={open}
+            disabled={isPending}
+            className="mt-3"
+          />
+        )}
+      </DialogFooter>
     </Overlay>
   );
 }
