@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Check, Trash2 } from "lucide-react";
 import { Overlay } from "@/components/ui/overlay";
 import { Input } from "@/components/ui/input";
+import { FieldLabel } from "@/components/ui/field-label";
 import type { CompositionMilestoneRow } from "@/schemas";
 import { useCompositionMilestoneActions } from "@/hooks/useCompositionMilestoneActions";
 
@@ -11,14 +12,6 @@ const FEEDBACK_MS = 850;
 // Zwei Felder: Name und Zielwert (Einheit der Metrik). Im Bearbeiten-Modus
 // zusaetzlich Loeschen (mit Rueckfrage im selben Dialog). milestone == null =>
 // Anlegen; die Metrik kommt dann von der gerade gewaehlten Mess-Metrik.
-function FieldLabel({ children }: { children: string }): React.ReactElement {
-  return (
-    <div className="mb-2 text-[12px] font-semibold tracking-[0.3px] text-muted-foreground">
-      {children}
-    </div>
-  );
-}
-
 export function MetricMilestoneEditModal({
   metric,
   metricLabel,
@@ -79,7 +72,7 @@ export function MetricMilestoneEditModal({
       onClose={onClose}
       title={isEdit ? "Meilenstein bearbeiten" : "Meilenstein hinzufügen"}
     >
-      <FieldLabel>Name</FieldLabel>
+      <FieldLabel className="mb-2">Name</FieldLabel>
       <Input
         value={name}
         onChange={(e) => setName(e.target.value)}
@@ -88,7 +81,7 @@ export function MetricMilestoneEditModal({
         className="mb-[18px]"
       />
 
-      <FieldLabel>{"Ziel · " + metricLabel}</FieldLabel>
+      <FieldLabel className="mb-2">{"Ziel · " + metricLabel}</FieldLabel>
       <div className="mb-[18px] flex items-center gap-2">
         <Input
           type="number"

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { Overlay } from "@/components/ui/overlay";
+import { FieldLabel } from "@/components/ui/field-label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useCompositionActions } from "@/hooks/useCompositionActions";
@@ -21,9 +22,6 @@ import type { CompositionRow } from "@/schemas";
 //
 // Beim Bearbeiten steht unten das Loeschen: erst der dezente Anstoss, nach
 // Klick die rote Rueckfrage, erst der zweite Klick loescht und schliesst.
-
-const FELD_LABEL =
-  "text-[12px] font-semibold tracking-[0.3px] text-muted-foreground";
 
 // Wertfelder der Messung mit Label und Einheit, in Eingabe-Reihenfolge. Deckt
 // die composition-Spalten ab (inkl. der Wasserwerte ECW/ICW).
@@ -169,7 +167,7 @@ export function BodyMeasureDialog({
     >
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <span className={FELD_LABEL}>Datum</span>
+          <FieldLabel>Datum</FieldLabel>
           <Input
             type="date"
             aria-label="Datum"
@@ -188,14 +186,14 @@ export function BodyMeasureDialog({
         <div className="grid grid-cols-1 gap-x-4 gap-y-4 min-[520px]:grid-cols-2">
           {WERT_FELDER.map(({ key, label, suffix }) => (
             <div key={key} className="flex flex-col gap-2">
-              <span className={FELD_LABEL}>
+              <FieldLabel>
                 {label}
                 {suffix !== "" && (
                   <span className="ml-1 font-normal text-muted-foreground/70">
                     ({suffix})
                   </span>
                 )}
-              </span>
+              </FieldLabel>
               <Input
                 type="text"
                 inputMode="decimal"

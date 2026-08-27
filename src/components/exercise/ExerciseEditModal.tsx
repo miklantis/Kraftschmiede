@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Lock, Check } from "lucide-react";
 import { Overlay } from "@/components/ui/overlay";
 import { Stepper } from "@/components/ui/stepper";
+import { FieldLabel } from "@/components/ui/field-label";
 import { useUpdateExercise } from "@/hooks/useUpdateExercise";
 import { useActivePhaseTarget } from "@/hooks/useActivePhaseTarget";
 import { useSettings } from "@/hooks/useSettings";
@@ -28,15 +29,6 @@ interface Draft {
   workWeight: number;
   repmin: number;
   repmax: number;
-}
-
-// Kleiner Eyebrow-Titel ueber einem Abschnitt.
-function FieldLabel({ children }: { children: string }): React.ReactElement {
-  return (
-    <div className="mb-2 text-[12px] font-semibold tracking-[0.3px] text-muted-foreground">
-      {children}
-    </div>
-  );
 }
 
 // Hilfetext unter einem Abschnitt.
@@ -142,7 +134,7 @@ export function ExerciseEditModal({
 
       {isWeight && (
         <>
-          <FieldLabel>Arbeitsgewicht</FieldLabel>
+          <FieldLabel className="mb-2">Arbeitsgewicht</FieldLabel>
           <Stepper
             onDecrement={() => adjWeight(-1)}
             onIncrement={() => adjWeight(1)}
@@ -162,7 +154,9 @@ export function ExerciseEditModal({
         </>
       )}
 
-      <FieldLabel>{locked ? locked.label : "Repband"}</FieldLabel>
+      <FieldLabel className="mb-2">
+        {locked ? locked.label : "Repband"}
+      </FieldLabel>
       {locked ? (
         <>
           <div className="flex items-center justify-between rounded-[14px] bg-muted px-4 py-3">

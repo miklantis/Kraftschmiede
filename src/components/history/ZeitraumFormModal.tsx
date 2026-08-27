@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { Overlay } from "@/components/ui/overlay";
+import { FieldLabel } from "@/components/ui/field-label";
 import { Select } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,9 +18,6 @@ import type { ZeitraumRow, ZeitraumTyp } from "@/schemas";
 // darf nicht vor dem Start liegen. Nutzt das generische Overlay-Fundament.
 // Beim Bearbeiten steht unten das Loeschen: erst der dezente Anstoss, nach
 // Klick die rote Rueckfrage, erst der zweite Klick loescht und schliesst.
-
-const FELD_LABEL =
-  "text-[12px] font-semibold tracking-[0.3px] text-muted-foreground";
 
 export function ZeitraumFormModal({
   open,
@@ -93,7 +91,7 @@ export function ZeitraumFormModal({
     >
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <span className={FELD_LABEL}>Typ</span>
+          <FieldLabel>Typ</FieldLabel>
           <Select
             ariaLabel="Typ"
             value={typ}
@@ -104,7 +102,7 @@ export function ZeitraumFormModal({
         </div>
 
         <div className="flex flex-col gap-2">
-          <span className={FELD_LABEL}>Name</span>
+          <FieldLabel>Name</FieldLabel>
           <Input
             type="text"
             aria-label="Name"
@@ -115,7 +113,7 @@ export function ZeitraumFormModal({
         </div>
 
         <div className="flex flex-col gap-2">
-          <span className={FELD_LABEL}>Start</span>
+          <FieldLabel>Start</FieldLabel>
           <Input
             type="date"
             aria-label="Startdatum"
@@ -149,7 +147,7 @@ export function ZeitraumFormModal({
 
           {!laeuftNoch && (
             <>
-              <span className={FELD_LABEL}>Ende</span>
+              <FieldLabel>Ende</FieldLabel>
               <Input
                 type="date"
                 aria-label="Enddatum"
@@ -167,7 +165,7 @@ export function ZeitraumFormModal({
         </div>
 
         <div className="flex flex-col gap-2">
-          <span className={FELD_LABEL}>Notiz</span>
+          <FieldLabel>Notiz</FieldLabel>
           <Input
             type="text"
             aria-label="Notiz"
