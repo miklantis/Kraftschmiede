@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.50.7",
+      "date": "2026-08-31",
+      "changes": [
+        "Im laufenden Training führt ein Tipp auf den Übungsnamen jetzt direkt zur Übungsseite: Das Live-Panel fährt nach unten in den bekannten Mini-Streifen, dahinter liegt die Detailseite mit Coach-Hinweis, Verlauf, Diagramm und Muskelkarte. Die Einheit läuft dabei ungestört weiter – Uhr, Pause und abgehakte Sätze bleiben unberührt. Zurück geht es wie gewohnt, indem du das Panel wieder hochziehst.",
+        "Der Name sieht dabei aus wie bisher, er ist nur zusätzlich antippbar. Das gilt im Workout, im 1RM-Test und in der Skill-Einheit – bei Skill-Übungen ohne hinterlegte Katalog-Übung bleibt der Name wie bisher reiner Text, weil es dort keine Detailseite gibt."
+      ]
+    },
+    {
       "version": "1.50.6",
       "date": "2026-08-27",
       "changes": [
