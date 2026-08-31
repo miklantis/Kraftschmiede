@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { ChevronDown } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { useLiveSession, type UseLiveSession } from "@/hooks/useLiveSession";
 import { useLiveCoachPreview } from "@/hooks/useLiveCoachPreview";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
@@ -35,6 +36,19 @@ import { NoteBlock } from "@/components/ui/note-block";
 // Scheiben, +/-), der aktive Satz ist hervorgehoben, nach einem abgehakten
 // Arbeitssatz startet die Auto-Pause (Pausen-Leiste unten).
 
+// Nachschlagen waehrend der Einheit (#412): Panel einklappen, dann zur
+// Uebungsseite. Die Einheit laeuft weiter - eingeklappt bleibt sie als
+// Mini-Streifen (mobil) bzw. Mini-Pille (Desktop) stehen, von dort holt der
+// Nutzer sie wie gewohnt selbst wieder hoch.
+function useToExercise(): (exerciseId: string) => void {
+  const navigate = useNavigate();
+  const live = useLiveSession();
+  return (exerciseId: string): void => {
+    live.collapse();
+    void navigate({ to: "/uebungen/$exerciseId", params: { exerciseId } });
+  };
+}
+
 function PanelContent({
   session,
   live,
@@ -52,6 +66,7 @@ function PanelContent({
   // Coach-Vorschau je fertigem Uebungsblock (#191). Nur hier, nicht im
   // 1RM-Test: dort gibt es keine Progression zu bewerten.
   const { byEntry: coachPreview } = useLiveCoachPreview();
+  const toExercise = useToExercise();
   return (
     <div className="flex flex-col gap-3">
       {session.loadNote !== null && <LoadNoteBanner text={session.loadNote} />}
@@ -83,6 +98,7 @@ function PanelContent({
           onChangeBar={(bar) => live.changeBar(i, bar)}
           onCyclePlate={() => live.cyclePlateMode(i)}
           onNote={(note) => live.setEntryNote(i, note)}
+          onOpen={() => toExercise(entry.exerciseId)}
           coach={coachPreview[i]}
         />
       ))}
@@ -122,6 +138,7 @@ function RmTestPanelContent({
   formula: RmFormula;
 }): React.ReactElement {
   const active = computeActive(session.entries, session.focusEi);
+  const toExercise = useToExercise();
   const entry = session.entries[0];
   const result = testResult(
     (entry?.sets ?? []).map((x) => ({
@@ -159,6 +176,7 @@ function RmTestPanelContent({
           onChangeBar={(bar) => live.changeBar(0, bar)}
           onCyclePlate={() => live.cyclePlateMode(0)}
           onNote={(note) => live.setEntryNote(0, note)}
+          onOpen={() => toExercise(entry.exerciseId)}
           hideScore
         />
       )}
@@ -211,6 +229,7 @@ function SkillPanelContent({
   live: UseLiveSession;
 }): React.ReactElement {
   const watch = live.skillWatch;
+  const toExercise = useToExercise();
   return (
     <div className="flex flex-col gap-3">
       {session.mastered && (
@@ -218,18 +237,24 @@ function SkillPanelContent({
           Skill gemeistert – Erhaltungstraining der letzten Phase.
         </div>
       )}
-      {session.exercises.map((ex, i) => (
-        <SkillLiveCard
-          key={ex.name + i}
-          exercise={ex}
-          watchSi={watch && watch.ei === i ? watch.si : null}
-          onToggleSet={(si) => live.toggleSkillSet(i, si)}
-          onValue={(si, v) => live.commitSkillValue(i, si, v)}
-          onStartWatch={(si) => live.startSkillWatch(i, si)}
-          onStopWatch={live.stopSkillWatch}
-          onNote={(note) => live.setSkillNote(i, note)}
-        />
-      ))}
+      {session.exercises.map((ex, i) => {
+        // Ohne verknuepfte Katalog-Uebung gibt es keine Detailseite - dann
+        // bleibt der Name reiner Text.
+        const exId = ex.exerciseId;
+        return (
+          <SkillLiveCard
+            key={ex.name + i}
+            exercise={ex}
+            watchSi={watch && watch.ei === i ? watch.si : null}
+            onToggleSet={(si) => live.toggleSkillSet(i, si)}
+            onValue={(si, v) => live.commitSkillValue(i, si, v)}
+            onStartWatch={(si) => live.startSkillWatch(i, si)}
+            onStopWatch={live.stopSkillWatch}
+            onNote={(note) => live.setSkillNote(i, note)}
+            onOpen={exId ? () => toExercise(exId) : undefined}
+          />
+        );
+      })}
       {/* Notiz zur ganzen Skill-Einheit: wie beim Workout ohne Karte. */}
       <NoteBlock
         value={session.note}

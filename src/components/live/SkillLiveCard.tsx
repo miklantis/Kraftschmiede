@@ -16,6 +16,14 @@ const ROW = "grid grid-cols-[34px_1fr_1.4fr_30px] items-center gap-2";
 // Bearbeiten-Modus (Verlauf): ohne Haken-Spalte.
 const ROW_EDIT = "grid grid-cols-[34px_1fr_1.4fr] items-center gap-2";
 
+// Uebungsname im Kartenkopf - gleiche Optik wie in der Kraft-Karte, als Knopf
+// (#412) unveraendert dank `block w-full text-left`.
+const NAME = "text-[18px] font-bold text-foreground";
+const NAME_LINK =
+  " block w-full cursor-pointer rounded-[8px] text-left transition-colors" +
+  " hover:text-primary focus-visible:outline-none focus-visible:ring-2" +
+  " focus-visible:ring-primary/50";
+
 function rowCls(grid: string, done: boolean): string {
   const base = grid + " my-0.5 rounded-[11px] border-2 px-1.5 py-2 text-[14px]";
   return done ? base + " border-transparent bg-primary/[0.07]" : base + " border-transparent";
@@ -31,6 +39,7 @@ export function SkillLiveCard({
   editMode = false,
   onAddSet,
   onDelSet,
+  onOpen,
   onNote,
 }: {
   exercise: SkillLiveExercise;
@@ -45,6 +54,10 @@ export function SkillLiveCard({
   editMode?: boolean;
   onAddSet?: () => void;
   onDelSet?: () => void;
+  /** Uebungsseite oeffnen (#412). Gibt es keine verknuepfte Katalog-Uebung,
+   *  laesst die laufende Einheit den Rueckruf weg und der Name bleibt reiner
+   *  Text; der Bearbeiten-Modus im Verlauf reicht ihn nie durch. */
+  onOpen?: () => void;
   /** Notiz der Uebung setzen (Vorhaben #136). Ohne diese Naht bleibt die Karte
    *  unveraendert - dann gibt es keinen „+ Notiz“-Knopf. */
   onNote?: (note: string) => void;
@@ -82,7 +95,18 @@ export function SkillLiveCard({
     <div className="overflow-hidden rounded-[14px] bg-card shadow-card">
       <div className="flex items-center gap-2 border-b border-border px-4 py-3">
         <div className="min-w-0 flex-1">
-          <div className="text-[18px] font-bold text-foreground">{exercise.name}</div>
+          {onOpen ? (
+            <button
+              type="button"
+              onClick={onOpen}
+              aria-label={exercise.name + " öffnen"}
+              className={NAME + NAME_LINK}
+            >
+              {exercise.name}
+            </button>
+          ) : (
+            <div className={NAME}>{exercise.name}</div>
+          )}
           {exercise.tempo && (
             <div className="mt-0.5 text-[12px] text-muted-foreground">{exercise.tempo}</div>
           )}

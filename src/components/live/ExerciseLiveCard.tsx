@@ -28,6 +28,14 @@ const ROW_EDIT = "grid grid-cols-[34px_1fr_1fr_minmax(46px,58px)] items-center g
 // zur Laufzeit zusammengesetzten Klassennamen).
 const ROW_TEST = "grid grid-cols-[34px_1fr_1fr_30px] items-center gap-2";
 const RIR_VALUES = [1, 2, 3, 4, 5];
+// Uebungsname im Kartenkopf. Als Knopf (#412) bleibt die Optik dieselbe -
+// `block w-full text-left` haelt den Zeilenumbruch und die darunter stehenden
+// Zusaetze (Einstieg-Pille, Tag) genau da, wo sie beim reinen Text sassen.
+const NAME = "text-[18px] font-bold text-foreground";
+const NAME_LINK =
+  " block w-full cursor-pointer rounded-[8px] text-left transition-colors" +
+  " hover:text-primary focus-visible:outline-none focus-visible:ring-2" +
+  " focus-visible:ring-primary/50";
 
 // Zeilenstil wie V1: 2px-Rahmen (transparent als Basis, damit aktiv kein Sprung),
 // aktiver Satz weisser Grund + gruener Rahmen, erledigter Satz leicht gruen.
@@ -55,6 +63,7 @@ export function ExerciseLiveCard({
   onDelSet,
   onChangeBar,
   onCyclePlate,
+  onOpen,
   onNote,
   coach,
   editMode = false,
@@ -75,6 +84,11 @@ export function ExerciseLiveCard({
   onDelSet: () => void;
   onChangeBar: (bar: LiveBarChoice) => void;
   onCyclePlate: () => void;
+  /** Uebungsseite oeffnen (#412). Nur die laufende Einheit reicht das durch:
+   *  das Panel klappt ein und die Detailseite liegt dahinter. Fehlt der
+   *  Rueckruf, bleibt der Name reiner Text - so ist der Bearbeiten-Modus im
+   *  Verlauf unveraendert. */
+  onOpen?: () => void;
   /** Notiz zur Uebung uebernehmen (Vorhaben #136). Fehlt der Rueckruf, zeigt die
    *  Karte gar keine Notiz - so bleibt der Verlaufs-Bearbeiten-Modus vorerst
    *  unveraendert (Schritt 3 haengt ihn an). */
@@ -146,9 +160,18 @@ export function ExerciseLiveCard({
     <div className="overflow-hidden rounded-[14px] bg-card shadow-card">
       <div className="flex items-center gap-2 border-b border-border px-4 py-3">
         <div className="min-w-0 flex-1">
-          <div className="text-[18px] font-bold text-foreground">
-            {entry.exerciseName}
-          </div>
+          {onOpen ? (
+            <button
+              type="button"
+              onClick={onOpen}
+              aria-label={entry.exerciseName + " öffnen"}
+              className={NAME + NAME_LINK}
+            >
+              {entry.exerciseName}
+            </button>
+          ) : (
+            <div className={NAME}>{entry.exerciseName}</div>
+          )}
           {entry.phaseEntry && (
             <span className="mt-1 inline-flex items-center rounded-full bg-primary/12 px-2 py-0.5 text-[11px] font-semibold text-primary">
               Einstieg
