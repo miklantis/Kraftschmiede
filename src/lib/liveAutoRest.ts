@@ -7,12 +7,14 @@
 // ist. Nur im regulaeren Fall entscheidet der Auto-Start darueber, ob eine neue
 // Pause startet; ist er aus, bleibt eine laufende Pause unberuehrt (V1).
 //
-// Die Skill-Variante ist bewusst NICHT vereinheitlicht: sie kennt weder
-// restAfterSet noch das Abbrechen. Dieser Unterschied bleibt erhalten und
-// bekommt deshalb eine eigene Funktion mit eigenem Test.
+// Die Skill-Variante bleibt bewusst einfacher: sie kennt keine Aufwaermsaetze
+// und keine Uebungspause, sondern immer nur die Satzpause. Eine Regel teilt sie
+// aber mit dem Workout (Vorhaben #414): ist nach dem Haken nichts mehr offen,
+// startet keine Pause mehr - und eine laufende wird abgebrochen. Nach dem
+// letzten Satz gibt es nichts mehr zu ueben, ein Countdown waere sinnlos.
 
 import { restAfterSet } from "./liveFlow";
-import type { LiveEntry } from "./liveSession";
+import type { LiveEntry, SkillLiveExercise } from "./liveSession";
 import type { RestState } from "./liveRest";
 
 /** Die Einstellungen, die fuer die Entscheidung gebraucht werden. Sie kommen
@@ -53,10 +55,23 @@ export function autoRestAfterWorkSet(
 }
 
 /**
- * Entscheidung nach einem abgehakten Skill-Satz. Bewusst einfacher als die
- * Kraft-Variante: immer eine Satzpause, kein Abbrechen.
+ * Entscheidung nach einem abgehakten Skill-Satz. `exercises` muss bereits den
+ * abgehakten Stand tragen.
+ *
+ * Ist die Einheit damit durch, wird abgebrochen - wie im Workout auch dann,
+ * wenn der Auto-Start ausgeschaltet ist. Sonst bleibt es bei der Satzpause:
+ * die Skill-Einheit kennt weder Aufwaermsaetze noch die laengere Uebungspause.
  */
-export function autoRestAfterSkillSet(prefs: AutoRestPrefs): AutoRestDecision {
+export function autoRestAfterSkillSet(
+  exercises: SkillLiveExercise[],
+  prefs: AutoRestPrefs,
+): AutoRestDecision {
+  if (allSkillSetsDone(exercises)) return CLEAR;
   if (!prefs.autoStart) return NONE;
   return { kind: "start", type: "set", sec: prefs.setRestSec };
+}
+
+/** Kein offener Satz mehr in der ganzen Skill-Einheit. */
+function allSkillSetsDone(exercises: SkillLiveExercise[]): boolean {
+  return exercises.every((e) => e.sets.every((x) => x.done));
 }

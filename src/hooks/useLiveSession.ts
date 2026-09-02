@@ -501,8 +501,12 @@ function toggleSkillSet(ei: number, si: number): void {
   const nextDone = !cur.done;
   ensureAudio();
   clickTick(nextDone, audioPrefs());
-  applySkillExercises((exercises) => withSkillDone(exercises, ei, si, nextDone));
-  if (nextDone) applyAutoRest(autoRestAfterSkillSet(prefs));
+  // Bewusst ohne applySkillExercises: die Pausen-Entscheidung braucht den neuen
+  // Stand (ist jetzt alles abgehakt?). Der Haken kehrt `done` immer um, ein
+  // Kurzschluss auf unveraenderte Uebungen waere hier also tote Logik.
+  const exercises = withSkillDone(s.exercises, ei, si, nextDone);
+  set({ session: { ...s, exercises } });
+  if (nextDone) applyAutoRest(autoRestAfterSkillSet(exercises, prefs));
 }
 
 /** Ergebniswert eines Skill-Satzes uebernehmen (Wdh oder Sekunden, ganzzahlig). */

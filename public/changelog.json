@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.50.8",
+      "date": "2026-09-02",
+      "changes": [
+        "In der Skill-Einheit startete nach dem Abhaken des letzten Satzes noch einmal die Pause – obwohl gar nichts mehr zu üben war. Der Countdown bleibt jetzt aus, sobald alle Sätze abgehakt sind; eine noch laufende Pause verschwindet mit dem letzten Haken. Solange noch etwas offen ist, kommt die Satzpause wie gewohnt.",
+        "Im Workout und im 1RM-Test war das schon vorher richtig – dort ändert sich nichts."
+      ]
+    },
+    {
       "version": "1.50.7",
       "date": "2026-08-31",
       "changes": [
