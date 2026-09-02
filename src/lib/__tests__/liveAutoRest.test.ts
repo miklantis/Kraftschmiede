@@ -4,7 +4,12 @@ import {
   autoRestAfterWorkSet,
   type AutoRestPrefs,
 } from "../liveAutoRest";
-import type { LiveEntry, LiveSet, LiveWarmupSet } from "../liveSession";
+import type {
+  LiveEntry,
+  LiveSet,
+  LiveWarmupSet,
+  SkillLiveExercise,
+} from "../liveSession";
 
 const PREFS: AutoRestPrefs = { setRestSec: 90, exerciseRestSec: 150, autoStart: true };
 const PREFS_AUS: AutoRestPrefs = { ...PREFS, autoStart: false };
@@ -103,12 +108,44 @@ describe("autoRestAfterWorkSet", () => {
   });
 });
 
+function skillEx(done: boolean[]): SkillLiveExercise {
+  return {
+    name: "Handstand",
+    exerciseId: null,
+    metric: "reps",
+    target: 5,
+    tempo: null,
+    sets: done.map((d) => ({ value: null, done: d, met: false })),
+    note: "",
+  };
+}
+
 describe("autoRestAfterSkillSet", () => {
-  it("startet immer eine Satzpause", () => {
-    expect(autoRestAfterSkillSet(PREFS)).toEqual({ kind: "start", type: "set", sec: 90 });
+  it("startet eine Satzpause, solange noch ein Satz offen ist", () => {
+    expect(autoRestAfterSkillSet([skillEx([true, false])], PREFS)).toEqual({
+      kind: "start",
+      type: "set",
+      sec: 90,
+    });
   });
 
-  it("tut bei ausgeschaltetem Auto-Start nichts - und bricht bewusst nicht ab", () => {
-    expect(autoRestAfterSkillSet(PREFS_AUS)).toEqual({ kind: "none" });
+  it("startet auch dann, wenn der offene Satz in einer anderen Uebung steht", () => {
+    const ex = [skillEx([true]), skillEx([false])];
+    expect(autoRestAfterSkillSet(ex, PREFS)).toEqual({ kind: "start", type: "set", sec: 90 });
+  });
+
+  // Vorhaben #414: nach dem letzten Haken gibt es nichts mehr zu ueben.
+  it("bricht ab, wenn alles erledigt ist", () => {
+    expect(autoRestAfterSkillSet([skillEx([true, true])], PREFS)).toEqual({ kind: "clear" });
+  });
+
+  it("bricht bei ausgeschaltetem Auto-Start trotzdem ab, wenn alles erledigt ist", () => {
+    expect(autoRestAfterSkillSet([skillEx([true])], PREFS_AUS)).toEqual({ kind: "clear" });
+  });
+
+  it("tut bei ausgeschaltetem Auto-Start nichts, solange etwas offen ist", () => {
+    expect(autoRestAfterSkillSet([skillEx([true, false])], PREFS_AUS)).toEqual({
+      kind: "none",
+    });
   });
 });
