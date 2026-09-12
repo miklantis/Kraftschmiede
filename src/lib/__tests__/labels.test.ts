@@ -54,8 +54,8 @@ describe("skillTargetLabel", () => {
 
 describe("barBuildLabel", () => {
   it("nennt Laenge und Form der Stange", () => {
-    expect(barBuildLabel("long", "straight")).toBe("lang · gerade");
-    expect(barBuildLabel("short", "curved")).toBe("kurz · gekrümmt");
+    expect(barBuildLabel("long", "straight")).toBe("Lang · Gerade");
+    expect(barBuildLabel("short", "curved")).toBe("Kurz · Gekrümmt");
   });
 
   it("faellt bei fehlender Angabe auf den Strich zurueck", () => {

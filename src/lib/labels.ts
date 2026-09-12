@@ -70,8 +70,8 @@ export function equipmentLabel(equipment: string | null | undefined): string {
 // Anzeigename der Stangen-Laenge und der Stangen-Form (Migration 0059). Zwei
 // unabhaengige Eigenschaften; jede Kombination ist moeglich.
 const BAR_LENGTH_LABELS: Record<string, string> = {
-  long: "lang",
-  short: "kurz",
+  long: "Lang",
+  short: "Kurz",
 };
 export function barLengthLabel(length: string | null | undefined): string {
   if (!length) return "–";
@@ -79,15 +79,15 @@ export function barLengthLabel(length: string | null | undefined): string {
 }
 
 const BAR_SHAPE_LABELS: Record<string, string> = {
-  straight: "gerade",
-  curved: "gekrümmt",
+  straight: "Gerade",
+  curved: "Gekrümmt",
 };
 export function barShapeLabel(shape: string | null | undefined): string {
   if (!shape) return "–";
   return BAR_SHAPE_LABELS[shape] ?? shape;
 }
 
-// Bauart einer Stange als ein Text ("lang · gerade") fuer Listenzeilen.
+// Bauart einer Stange als ein Text ("Lang · Gerade") fuer Listenzeilen.
 export function barBuildLabel(
   length: string | null | undefined,
   shape: string | null | undefined,

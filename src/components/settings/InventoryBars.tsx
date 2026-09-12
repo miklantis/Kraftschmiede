@@ -4,7 +4,7 @@ import { fmtKg } from "@/lib/format";
 import { barBuildLabel } from "@/lib/labels";
 
 // Inventar - Stangen. Fester Satz Langhantel-Typen: Name links mit der Bauart
-// darunter ("lang · gerade"), Gewicht rechts. Das Set ist abgeschlossen - kein
+// darunter ("Lang · Gerade"), Gewicht rechts. Das Set ist abgeschlossen - kein
 // Loeschen, kein Hinzufuegen in der Oberflaeche; der Bestand wird ueber die
 // Datenbank gepflegt (feste Stangen mit key), und dasselbe gilt fuer die Bauart.
 // Optik wie Scheiben/Kettlebells: alles in einer Karte. unit kommt aus den
