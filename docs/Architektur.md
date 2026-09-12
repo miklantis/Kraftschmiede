@@ -336,7 +336,11 @@ Eindampfen, sonst wären die alten Felder schon weg.
   eine unzulässige auszuweichen, und das Auswahlfeld der Einheit bleibt leer („Keine
   passende Stange im Bestand"). Auswahlfeld (`ExerciseLiveCard`) und Coach
   (`suggestWithBar`) lesen dieselbe Fassung der Regel, damit angebotene Liste und
-  Vorschlag nie auseinanderlaufen.
+  Vorschlag nie auseinanderlaufen. Seit Vorhaben #440 liest auch der Inventar-Abschnitt
+  der Übungs-Detailseite dieselbe Fassung (`lib/uebungInventar.ts` →
+  `exercise/InventarSection`): eine dritte Anzeige, keine dritte Regel – die Seite kann
+  keine Stange zeigen, die die Einheit dann nicht anbietet, und im leeren Fall steht dort
+  wortgleich dieselbe Aussage.
 - **Eine Textquelle für alle Coach-Begründungen.** Engine und Rechnung geben keine
   fertigen deutschen Sätze mehr aus, sondern eine Kennung samt der Zahlen, die der Text
   braucht (`CoachReason` in `engine/coachReason.ts`: Kennung, tatsächliche Differenz zum

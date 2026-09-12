@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.53.5",
+      "date": "2026-09-12",
+      "changes": [
+        "Die Übungsseite zeigt jetzt oben rechts, womit die Übung aus dem eigenen Bestand ausführbar ist: bei Langhantel-Übungen nur die passenden Stangen mit Gewicht und Bauart, die bevorzugte oben und als solche markiert.",
+        "Je nach Übung stehen dort außerdem die Scheiben pro Seite, die vorhandenen Kurzhantel-Stufen, Scheiben und Kettlebells als Zusatzlast oder die vorhandene Ausstattung (Klimmzugstange, Bänder).",
+        "Passt nichts im Bestand, sagt der Abschnitt das offen – mit derselben Aussage wie in der laufenden Einheit – und verweist in die Inventar-Einstellungen. Reine Körpergewicht-Übungen wie Plank bekommen den Abschnitt nicht."
+      ]
+    },
+    {
       "version": "1.53.4",
       "date": "2026-09-12",
       "changes": [
