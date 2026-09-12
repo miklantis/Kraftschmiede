@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.53.6",
+      "date": "2026-09-12",
+      "changes": [
+        "Die Gewichte im Inventar-Abschnitt der Übungsseite stehen jetzt als Chips wie im Inventar der Einstellungen – Scheiben, Kettlebells und Kurzhantel-Stufen – nur ohne das Löschen-x, weil dort nichts bearbeitet wird. Die Einheit steht wie dort in der Beschriftung der Zeile."
+      ]
+    },
+    {
       "version": "1.53.5",
       "date": "2026-09-12",
       "changes": [
