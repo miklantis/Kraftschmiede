@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import { CHIP_BASE } from "./chip-list";
 import { cn } from "@/lib/utils";
 
 // Generischer Chip-Editor, domaenenfrei. Oben die vorhandenen Eintraege als
@@ -6,7 +7,8 @@ import { cn } from "@/lib/utils";
 // "+ Label"-Knoepfe zum Hinzufuegen. Werte sind Strings (z. B. Gewichte); die
 // aufrufende Karte parst und schreibt. Genutzt fuer Scheiben und Kettlebells in
 // den Einstellungen, spaeter ueberall, wo aus festen Optionen eine Mehrfachauswahl
-// gepflegt wird.
+// gepflegt wird. Die Pillen-Optik selbst steht in chip-list.tsx (CHIP_BASE) und
+// wird von der reinen Anzeige (ChipList) mitbenutzt.
 export interface ChipItem {
   id: string;
   label: string;
@@ -47,7 +49,7 @@ export function ChipEditor({
           chips.map((c) => (
             <span
               key={c.id}
-              className="inline-flex items-center gap-1 rounded-pill bg-muted py-1 pr-1 pl-3 text-sm font-medium text-foreground tabular-nums"
+              className={cn(CHIP_BASE, "gap-1 py-1 pr-1 pl-3")}
             >
               {c.label}
               <button

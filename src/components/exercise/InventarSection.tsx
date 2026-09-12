@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Section } from "@/components/ui/section";
+import { ChipList } from "@/components/ui/chip-list";
 import { SettingsGroup, SettingRow } from "@/components/ui/setting-list";
 import {
   useBars,
@@ -25,7 +26,10 @@ import { uebungInventar, type InventarUebung } from "@/lib/uebungInventar";
 // Was gezeigt wird, entscheidet lib/uebungInventar.ts; die Stangen-Zulassung
 // kommt von dort aus lib/stangen.ts, derselben Fassung wie in der Einheit.
 // Optik der Reihen wie im Inventar der Einstellungen (SettingsGroup), damit
-// beide Orte dieselbe Liste gleich zeigen.
+// beide Orte dieselbe Liste gleich zeigen. Gewichte stehen darum auch hier als
+// Chips (ChipList, #444) - nur ohne x und ohne Hinzufuegen-Knoepfe, weil dieser
+// Abschnitt nichts pflegt. Die Einheit steht wie dort in der Beschriftung der
+// Reihe, nicht an jedem Wert.
 export function InventarSection({
   exercise,
   unit,
@@ -54,8 +58,12 @@ export function InventarSection({
   // Koerpergewicht-Uebungen haben keinen Bezug zum Bestand - kein Abschnitt.
   if (!ansicht) return null;
 
-  const liste = (werte: number[]): string =>
-    werte.map((w) => fmtKg(w)).join(" · ") + " " + unit;
+  const chips = (werte: number[]): React.ReactElement => (
+    <ChipList values={werte.map((w) => fmtKg(w))} className="mt-1" />
+  );
+  // Einheit in der Beschriftung, wie in den Eyebrows der Einstellungen
+  // ("Inventar · Scheiben · pro Seite (kg)").
+  const mitEinheit = (text: string): string => `${text} (${unit})`;
 
   // Solange die Bestaende laden, waere jede Liste leer - und der Abschnitt
   // wuerde faelschlich "nichts im Bestand" behaupten.
@@ -112,8 +120,8 @@ export function InventarSection({
               ))}
               {ansicht.inhalt.scheiben.length > 0 && (
                 <SettingRow
-                  label="Scheiben · pro Seite"
-                  description={liste(ansicht.inhalt.scheiben)}
+                  label={mitEinheit("Scheiben · pro Seite")}
+                  description={chips(ansicht.inhalt.scheiben)}
                 />
               )}
             </>
@@ -121,8 +129,8 @@ export function InventarSection({
 
           {ansicht.inhalt.art === "kurzhanteln" && (
             <SettingRow
-              label="Kurzhanteln · je Hand"
-              description={liste(ansicht.inhalt.gewichte)}
+              label={mitEinheit("Kurzhanteln · je Hand")}
+              description={chips(ansicht.inhalt.gewichte)}
             />
           )}
 
@@ -130,14 +138,14 @@ export function InventarSection({
             <>
               {ansicht.inhalt.scheiben.length > 0 && (
                 <SettingRow
-                  label="Scheiben"
-                  description={liste(ansicht.inhalt.scheiben)}
+                  label={mitEinheit("Scheiben")}
+                  description={chips(ansicht.inhalt.scheiben)}
                 />
               )}
               {ansicht.inhalt.kettlebells.length > 0 && (
                 <SettingRow
-                  label="Kettlebells"
-                  description={liste(ansicht.inhalt.kettlebells)}
+                  label={mitEinheit("Kettlebells")}
+                  description={chips(ansicht.inhalt.kettlebells)}
                 />
               )}
             </>
