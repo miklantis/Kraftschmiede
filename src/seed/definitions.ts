@@ -729,6 +729,12 @@ export interface SeedExercise {
   tier: ExerciseTier;
   equipment: ExerciseEquipment;
   barKey: string | null;
+  // Voraussetzung an die Stange: je Eigenschaft die zugelassenen Werte. Eine
+  // Stange kommt durch, wenn ihre Laenge zugelassen ist UND ihre Form. Leer =
+  // keine Angabe und damit keine Einschraenkung; Uebungen ohne Stange lassen
+  // beide Listen leer. Regel: lib/stangen.ts.
+  allowedBarLengths: BarLength[];
+  allowedBarShapes: BarShape[];
   description: string;
   metric: Metric | null;
   muscleGroups: string[];
@@ -751,6 +757,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "main",
     equipment: "barbell",
     barKey: "standard",
+    allowedBarLengths: ["long"],
+    allowedBarShapes: ["straight"],
     description:
       "Kniebeuge mit der Langhantel auf dem oberen Rücken bis in die volle Tiefe (Hüfte unter Kniehöhe); Hüfte und Knie gemeinsam beugen und strecken.",
     metric: null,
@@ -774,6 +782,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "main",
     equipment: "barbell",
     barKey: "standard",
+    allowedBarLengths: ["long"],
+    allowedBarShapes: ["straight"],
     description:
       "Bankdrücken auf der Flachbank: Langhantel kontrolliert zur Brust senken und senkrecht nach oben drücken.",
     metric: null,
@@ -795,6 +805,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "main",
     equipment: "barbell",
     barKey: "standard",
+    allowedBarLengths: ["long"],
+    allowedBarShapes: ["straight"],
     description:
       "Rumänisches Kreuzheben: aus dem aufrechten Stand mit leicht gebeugten Knien die Hüfte nach hinten schieben, die Langhantel eng an den Beinen bis etwa Mitte Schienbein senken, Rücken gerade, dann aus der Hüfte zurück in den Stand.",
     metric: null,
@@ -821,6 +833,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "main",
     equipment: "barbell",
     barKey: "standard",
+    allowedBarLengths: ["long"],
+    allowedBarShapes: ["straight"],
     description:
       "Klassisches Kreuzheben: Langhantel vom Boden, Hüfte und Knie strecken sich gemeinsam, Rücken gerade und Stange eng am Körper, bis zum aufrechten Stand; danach kontrolliert zurück auf den Boden.",
     metric: null,
@@ -847,6 +861,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "main",
     equipment: "barbell",
     barKey: "standard",
+    allowedBarLengths: ["long"],
+    allowedBarShapes: ["straight"],
     description:
       "Vorgebeugtes Langhantelrudern: Oberkörper geneigt, Hantel zum unteren Brustkorb beziehungsweise Bauch ziehen.",
     metric: null,
@@ -870,6 +886,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "main",
     equipment: "barbell",
     barKey: "standard",
+    allowedBarLengths: ["long"],
+    allowedBarShapes: ["straight"],
     description:
       "Schulterdrücken mit leichtem Bein-Impuls: Langhantel von den Schultern über den Kopf drücken.",
     metric: null,
@@ -892,6 +910,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "accessory",
     equipment: "barbell",
     barKey: "standard",
+    allowedBarLengths: ["long", "short"],
+    allowedBarShapes: ["straight", "curved"],
     description:
       "Langhantel-Bizepscurl im Stand: Hantel aus gestreckten Armen nach oben curlen, Oberarme bleiben fixiert.",
     metric: null,
@@ -909,6 +929,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "accessory",
     equipment: "dumbbell",
     barKey: null,
+    allowedBarLengths: [],
+    allowedBarShapes: [],
     description:
       "Langhantel-Bizepscurl im Stand: Hantel aus gestreckten Armen nach oben curlen, Oberarme bleiben fixiert.",
     metric: null,
@@ -926,6 +948,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "main",
     equipment: "plate",
     barKey: null,
+    allowedBarLengths: [],
+    allowedBarShapes: [],
     description:
       "Situps mit Zusatzlast (Hantelscheibe oder Kettlebell) vor der Brust oder über dem Kopf gehalten.",
     metric: null,
@@ -943,6 +967,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "main",
     equipment: "plate",
     barKey: null,
+    allowedBarLengths: [],
+    allowedBarShapes: [],
     description:
       "Sitzende Rumpfrotation (Russian Twist): Zusatzlast (Scheibe oder Kettlebell) in beiden Händen seitlich neben der Hüfte antippen.",
     metric: null,
@@ -963,6 +989,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "main",
     equipment: "plate",
     barKey: null,
+    allowedBarLengths: [],
+    allowedBarShapes: [],
     description:
       "Aus gestreckter Rückenlage Knie und Oberkörper gleichzeitig zusammenziehen (V- beziehungsweise Crunch-artig), Zusatzlast (Scheibe oder Kettlebell) in den Händen.",
     metric: null,
@@ -983,6 +1011,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "main",
     equipment: "barbell",
     barKey: "standard",
+    allowedBarLengths: ["long"],
+    allowedBarShapes: ["straight"],
     description:
       "Ausfallschritt mit Langhantel auf dem Rücken: pro Wiederholung ein Bein nach vorn, hinteres Knie bis knapp über den Boden senken.",
     metric: null,
@@ -1004,6 +1034,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "accessory",
     equipment: "barbell",
     barKey: "leicht",
+    allowedBarLengths: ["long", "short"],
+    allowedBarShapes: ["straight", "curved"],
     description:
       "Überzug auf der Bank: Langhantel mit nahezu gestreckten Armen hinter den Kopf absenken und über die Brust zurückführen.",
     metric: null,
@@ -1025,6 +1057,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "accessory",
     equipment: "bar",
     barKey: null,
+    allowedBarLengths: [],
+    allowedBarShapes: [],
     description:
       "Passiver Hang an der Stange mit gestreckten Armen; Schultern aktiv, Griff und Rumpf halten die Position auf Zeit.",
     metric: "duration",
@@ -1046,6 +1080,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "accessory",
     equipment: "bar",
     barKey: null,
+    allowedBarLengths: [],
+    allowedBarShapes: [],
     description:
       "Aus dem Hang nur die Schulterblätter nach unten und hinten ziehen, Arme bleiben gestreckt; baut die Ansteuerung für den Klimmzug.",
     metric: "reps",
@@ -1066,6 +1102,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "accessory",
     equipment: "band",
     barKey: null,
+    allowedBarLengths: [],
+    allowedBarShapes: [],
     description:
       "Klimmzug mit Widerstandsband als Unterstützung; sauber bis Kinn über die Stange, kontrolliert ablassen. Im Skill von starkem zu leichtem Band.",
     metric: "reps",
@@ -1087,6 +1125,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "accessory",
     equipment: "bar",
     barKey: null,
+    allowedBarLengths: [],
+    allowedBarShapes: [],
     description:
       "Nur die absenkende Phase des Klimmzugs: oben starten und langsam (etwa 5 Sekunden) kontrolliert ablassen.",
     metric: "reps",
@@ -1108,6 +1148,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "main",
     equipment: "bar",
     barKey: null,
+    allowedBarLengths: [],
+    allowedBarShapes: [],
     description:
       "Strenger Klimmzug aus vollem Hang ohne Schwung; Kinn über die Stange, kontrolliert in den Hang zurück.",
     metric: "reps",
@@ -1130,6 +1172,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "accessory",
     equipment: "bodyweight",
     barKey: null,
+    allowedBarLengths: [],
+    allowedBarShapes: [],
     description:
       "Liegestütz auf den Knien; Körper von Knie bis Kopf gerade, Brust kontrolliert absenken und drücken.",
     metric: "reps",
@@ -1151,6 +1195,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "accessory",
     equipment: "bodyweight",
     barKey: null,
+    allowedBarLengths: [],
+    allowedBarShapes: [],
     description:
       "Liegestütz mit erhöhten Händen (Bank oder Erhöhung); leichter als am Boden, gleiche gerade Körperlinie.",
     metric: "reps",
@@ -1172,6 +1218,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "main",
     equipment: "bodyweight",
     barKey: null,
+    allowedBarLengths: [],
+    allowedBarShapes: [],
     description:
       "Voller Liegestütz am Boden; Körper gerade, Brust bis knapp über den Boden senken und kontrolliert drücken.",
     metric: "reps",
@@ -1194,6 +1242,8 @@ export const exerciseSeeds: SeedExercise[] = [
     tier: "accessory",
     equipment: "bodyweight",
     barKey: null,
+    allowedBarLengths: [],
+    allowedBarShapes: [],
     description:
       "Unterarmstütz: Ellenbogen unter den Schultern, Unterarme flach am Boden, Füße hüftbreit auf den Zehen. Körper eine gerade Linie von Kopf bis Ferse, Bauch und Gesäß angespannt, Blick nach unten.",
     metric: "duration",

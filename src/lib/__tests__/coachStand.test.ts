@@ -19,7 +19,9 @@ import type { LiveBuildExercise, LiveBuildInput } from "../liveBuild";
 import type { PlanSource } from "../planContext";
 
 const PLATES = [1.25, 2.5, 5, 10, 15, 20, 25];
-const BARS = [{ id: "bar1", name: "Olympia", weight: 20 }];
+const BARS = [
+  { id: "bar1", name: "Olympia", weight: 20, barLength: "long" as const, barShape: "straight" as const },
+];
 const PHASE = "phase-kraft";
 const PLAN = buildStrengthWeekPlan(5);
 

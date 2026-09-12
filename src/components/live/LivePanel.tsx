@@ -1,7 +1,11 @@
 import { useEffect, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
-import { useLiveSession, type UseLiveSession } from "@/hooks/useLiveSession";
+import {
+  useLiveSession,
+  type LiveBarChoice,
+  type UseLiveSession,
+} from "@/hooks/useLiveSession";
 import { useLiveCoachPreview } from "@/hooks/useLiveCoachPreview";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { usePlates, useBars } from "@/hooks/useInventory";
@@ -59,7 +63,7 @@ function PanelContent({
   session: WorkoutSession;
   live: UseLiveSession;
   plates: number[];
-  bars: { id: string; name: string; weight: number }[];
+  bars: LiveBarChoice[];
   unit: string;
 }): React.ReactElement {
   const active = computeActive(session.entries, session.focusEi);
@@ -133,7 +137,7 @@ function RmTestPanelContent({
   session: RmTestSession;
   live: UseLiveSession;
   plates: number[];
-  bars: { id: string; name: string; weight: number }[];
+  bars: LiveBarChoice[];
   unit: string;
   formula: RmFormula;
 }): React.ReactElement {
@@ -342,7 +346,13 @@ export function LivePanel(): React.ReactElement | null {
   if (!live.session) return null;
   const s = live.session;
   const plates = (platesQ.data ?? []).map((p) => p.weight);
-  const bars = (barsQ.data ?? []).map((b) => ({ id: b.id, name: b.name, weight: b.weight }));
+  const bars = (barsQ.data ?? []).map((b) => ({
+    id: b.id,
+    name: b.name,
+    weight: b.weight,
+    barLength: b.bar_length,
+    barShape: b.bar_shape,
+  }));
   const unit = settingsQ.data?.unit ?? "kg";
   const audioPrefs = {
     sound: timers?.sound ?? true,

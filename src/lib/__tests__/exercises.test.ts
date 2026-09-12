@@ -18,6 +18,8 @@ function ex(overrides: Partial<ExerciseRow>): ExerciseRow {
     tier: "main",
     equipment: "barbell",
     bar_id: null,
+    allowed_bar_lengths: [],
+    allowed_bar_shapes: [],
     description: "",
     metric: null,
     muscle_groups: [],

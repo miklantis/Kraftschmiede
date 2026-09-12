@@ -40,6 +40,7 @@ import type {
 import { isoWeekKey } from "@/engine/journey";
 import { coachNote } from "./coachText";
 import { isNeutralLoad } from "./loadFactor";
+import type { StangenVoraussetzung } from "./stangen";
 
 // Eine abgeschlossene Krafteinheit, reduziert auf das fuer das Ranking Noetige:
 // Datum und die enthaltenen Uebungs-Ids.
@@ -174,7 +175,7 @@ export function rankWorkouts<T extends RankableTemplate>(
 
 // Uebung in der vom Aufbau benoetigten Form. `key` traegt die Text-Kennung der
 // Uebung (z. B. "deadlift") fuer die Deadlift-Erkennung der Aufwaermrampe.
-export interface CoachBuildExercise {
+export interface CoachBuildExercise extends StangenVoraussetzung {
   key: string | null;
   profile: "strength" | "core" | "bodyweight";
   // Rolle der Uebung in der Einheit. Der Wochenplan der Kraftphase gilt nur fuer

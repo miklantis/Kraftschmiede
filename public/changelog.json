@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.53.2",
+      "date": "2026-09-12",
+      "changes": [
+        "Jede Langhantel-Übung sagt jetzt, welche Länge und welche Form die Stange haben muss – das Auswahlfeld in der laufenden Einheit zeigt nur noch Stangen, mit denen die Übung ausführbar ist.",
+        "Back Squat, Bench Press, Deadlift, RDL, Bent Row, Push Press und Lunge bieten damit nur noch Standard und Leicht an; Barbell Curl und Pull Over zusätzlich die SZ-Stange.",
+        "Passt keine Stange im Bestand, wird keine angeboten und die Karte sagt es offen („Keine passende Stange im Bestand“) – Gewicht und Wiederholungen lassen sich weiter von Hand eintragen."
+      ]
+    },
+    {
       "version": "1.53.1",
       "date": "2026-09-12",
       "changes": [

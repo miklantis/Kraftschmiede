@@ -1,7 +1,14 @@
 // Abschnitt 2 – Uebungen. Spiegelt exercises und exercise_muscles.
 
 import { z } from "zod";
-import { metricEnum, muscleKategorieEnum, isoDate, uuid } from "./shared";
+import {
+  barLengthEnum,
+  barShapeEnum,
+  metricEnum,
+  muscleKategorieEnum,
+  isoDate,
+  uuid,
+} from "./shared";
 
 // CHECK-Listen, die nur die exercises-Tabelle nutzt.
 export const exerciseProfileEnum = z.enum(["strength", "core", "bodyweight"]);
@@ -31,6 +38,13 @@ export const exerciseRow = z.object({
   tier: exerciseTierEnum,
   equipment: exerciseEquipmentEnum,
   bar_id: uuid.nullable(),
+  // Voraussetzung an die Stange (Migration 0060): je Eigenschaft die
+  // zugelassenen Werte. Eine Stange kommt durch, wenn ihre Laenge zugelassen
+  // ist UND ihre Form. Leere Liste = keine Angabe und damit keine
+  // Einschraenkung; Uebungen ohne Stange lassen beide leer. Die Regel steht in
+  // lib/stangen.ts.
+  allowed_bar_lengths: z.array(barLengthEnum),
+  allowed_bar_shapes: z.array(barShapeEnum),
   description: z.string(),
   metric: metricEnum.nullable(),
   muscle_groups: z.array(z.string()),
@@ -62,6 +76,8 @@ export const exerciseInsert = exerciseRow.omit({ id: true }).partial({
   tier: true,
   equipment: true,
   bar_id: true,
+  allowed_bar_lengths: true,
+  allowed_bar_shapes: true,
   description: true,
   metric: true,
   muscle_groups: true,

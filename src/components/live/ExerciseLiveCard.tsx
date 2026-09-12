@@ -8,6 +8,7 @@ import { isActive } from "@/lib/liveFlow";
 import { previewProvisional, type LiveCoachPreview } from "@/lib/livePreview";
 import { coachLineLabel, coachOutlookLabel } from "@/lib/coachText";
 import type { LiveBarChoice } from "@/hooks/useLiveSession";
+import { zugelasseneStangen } from "@/lib/stangen";
 import { PlateChips } from "./PlateChips";
 import { LiveNumberInput } from "./LiveNumberInput";
 import { SetCheck } from "./SetCheck";
@@ -108,6 +109,12 @@ export function ExerciseLiveCard({
 }): React.ReactElement {
   const isBar = entry.equipment === "barbell" && entry.barWeight != null;
   const hasPlates = isBar && plates.length > 0;
+  // Nur die Stangen, mit denen diese Uebung ausfuehrbar ist (Vorhaben #433).
+  // Kein Rueckfall auf den Gesamtbestand: eine Stange anzubieten, mit der die
+  // Uebung nicht geht, waere schlechter als gar keine - bleibt nichts uebrig,
+  // sagt die Karte das offen.
+  const barChoices = zugelasseneStangen(bars, entry);
+  const ohnePassendeStange = entry.equipment === "barbell" && barChoices.length === 0;
   const grid = editMode ? ROW_EDIT : hideScore ? ROW_TEST : ROW;
   // Das Coach-Zeichen zeigt nur die Richtung; das Konkrete steht in der Zeile,
   // die beim Antippen aufklappt (bewusst kein Popup - im Bodenblatt der
@@ -198,22 +205,27 @@ export function ExerciseLiveCard({
             <CoachStatusDot state={coach.status.state} provisional={coachOffen} />
           </button>
         )}
-        {!editMode && isBar && bars.length > 0 && (
+        {!editMode && isBar && barChoices.length > 0 && (
           <select
             aria-label="Stange wählen"
             className="h-[34px] max-w-[150px] flex-none rounded-[8px] border border-border bg-background px-2.5 text-[12px] text-foreground outline-none focus:border-primary"
             value={entry.barId ?? ""}
             onChange={(e) => {
-              const b = bars.find((x) => x.id === e.target.value);
+              const b = barChoices.find((x) => x.id === e.target.value);
               if (b) onChangeBar(b);
             }}
           >
-            {bars.map((b) => (
+            {barChoices.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name} · {fmtNum(b.weight)} {unit}
               </option>
             ))}
           </select>
+        )}
+        {!editMode && ohnePassendeStange && (
+          <span className="flex-none text-[12px] text-muted-foreground">
+            Keine passende Stange im Bestand
+          </span>
         )}
         {!editMode && isBar && (
           <button
