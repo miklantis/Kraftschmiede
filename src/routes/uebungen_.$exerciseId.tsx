@@ -11,6 +11,7 @@ import { CoachBlock } from "@/components/exercise/CoachBlock";
 import { ExerciseChartCard } from "@/components/exercise/ExerciseChartCard";
 import { ExerciseHistoryList } from "@/components/exercise/ExerciseHistoryList";
 import { ExerciseEditModal } from "@/components/exercise/ExerciseEditModal";
+import { InventarSection } from "@/components/exercise/InventarSection";
 import { MilestonesSection } from "@/components/exercise/MilestonesSection";
 import { RmSection } from "@/components/exercise/RmSection";
 import { useExerciseDetail } from "@/hooks/useExerciseDetail";
@@ -22,6 +23,11 @@ import { profileLabel, equipmentLabel, tierLabel } from "@/lib/labels";
 // Rahmen-Button rechts in der Coach-Card: mobil oben (an der Statuszeile), ab
 // 960px vertikal zentriert. Oeffnet das Popup.
 // Der Anheften-Umschalter sitzt im Kopf der Chartkarte.
+//
+// Der Inventar-Abschnitt (#440) sitzt in der rechten Spalte ueber den Muskeln,
+// mobil direkt unter dem Coach-Kasten (order-1) - er gehoert zur Vorbereitung
+// und soll ohne Scrollen sichtbar sein. Bei Koerpergewicht-Uebungen faellt er
+// ganz weg.
 //
 // Der Coach-Kasten spricht dieselbe Sprache wie die Uebungskarte im Training
 // (#268, Schritt 4): "Diese Woche" bei Hauptuebungen im Wochenplan, sonst "Beim
@@ -128,7 +134,7 @@ function ExerciseDetailPage(): React.ReactElement {
       )}
 
       <PageReveal>
-        {/* Mobil ein Stapel in fester Reihenfolge (Statistik, Diagramm, 1RM,
+        {/* Mobil ein Stapel in fester Reihenfolge (Inventar, Diagramm, 1RM,
           Meilensteine, Muskeln, Verlauf). Ab 960px zwei unabhaengig fliessende Spalten wie V1: links
           (breiter) Diagramm + Verlauf, rechts Statistik + Muskeln. Bewusst KEIN
           gemeinsames Zeilenraster - jede Spalte stapelt ihre Bloecke fuer sich,
@@ -179,9 +185,16 @@ function ExerciseDetailPage(): React.ReactElement {
           </Section>
         </div>
 
-        {/* Rechte Spalte: nur Muskeln (Statistik wanderte in den Coach-Block
-            oben, "Uebung anpassen" sitzt jetzt als Stift-Icon in der Coach-Card). */}
+        {/* Rechte Spalte: Inventar + Muskeln (Statistik wanderte in den
+            Coach-Block oben, "Uebung anpassen" sitzt jetzt als Stift-Icon in der
+            Coach-Card). */}
         <div className="contents min-w-0 min-[960px]:flex min-[960px]:flex-1 min-[960px]:flex-col min-[960px]:gap-7">
+          <InventarSection
+            exercise={exercise}
+            unit={unit}
+            className="order-1 min-w-0 min-[960px]:order-none"
+          />
+
           <Section
             eyebrow="Beanspruchte Muskeln"
             className="order-5 min-[960px]:order-none"
