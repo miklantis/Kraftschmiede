@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.53.7",
+      "date": "2026-09-12",
+      "changes": [
+        "Die Verlaufsgrafik auf der Übungsseite öffnet jetzt direkt beim letzten Stand: bei langer Historie scrollt sie von selbst ans rechte Ende, statt am Anfang zu starten. Das gilt auch beim Umschalten zwischen 1RM, Trend, Top-Gewicht, Wdh und Volumen.",
+        "Am letzten Punkt steht der Wert von Anfang an als Sprechblase im Bild. Tippt man einen anderen Punkt an, zeigt sie dessen Wert und springt danach wieder auf den letzten zurück.",
+        "Angeheftete Verlaufs-Kacheln scrollen ebenfalls ans rechte Ende, bleiben aber ohne dauerhafte Sprechblase – dort würde sie zu viel der kleinen Kachel verdecken."
+      ]
+    },
+    {
       "version": "1.53.6",
       "date": "2026-09-12",
       "changes": [
