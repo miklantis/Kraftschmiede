@@ -50,6 +50,16 @@ export const phaseTypeKeyEnum = focusEnum;
 // Mess-Art ohne Gewicht (exercises.metric, skill_phase_exercises.metric).
 export const metricEnum = z.enum(["reps", "duration"]);
 
+// Bauart einer Stange (Migration 0059). Zwei unabhaengige Eigenschaften: die
+// Laenge (inventory_bars.bar_length) und die Form (inventory_bars.bar_shape).
+// Jede Kombination ist moeglich. Dieselben Werte stehen an der Uebung in den
+// zugelassenen und bevorzugten Listen (exercises.allowed_bar_*), darum liegen
+// die Enums hier und nicht in einem der beiden Abschnitte.
+export const barLengthEnum = z.enum(["long", "short"]);
+export const barShapeEnum = z.enum(["straight", "curved"]);
+export type BarLength = z.infer<typeof barLengthEnum>;
+export type BarShape = z.infer<typeof barShapeEnum>;
+
 // Aus den Enums abgeleitete Typen (einzige Pflegequelle bleibt das Enum).
 export type Focus = z.infer<typeof focusEnum>;
 export type PhaseTypeKey = z.infer<typeof phaseTypeKeyEnum>;

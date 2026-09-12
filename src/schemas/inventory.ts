@@ -2,9 +2,11 @@
 // inventory_kettlebells, inventory_equipment.
 
 import { z } from "zod";
-import { uuid } from "./shared";
+import { barLengthEnum, barShapeEnum, uuid } from "./shared";
 
 // inventory_bars – Stangen (Langhantel-Typen). is_default markiert die Standardstange.
+// bar_length/bar_shape beschreiben die Bauart (Migration 0059): erst damit laesst
+// sich sagen, ob eine Uebung mit dieser Stange ueberhaupt ausfuehrbar ist.
 export const inventoryBarRow = z.object({
   id: uuid,
   user_id: uuid,
@@ -12,13 +14,21 @@ export const inventoryBarRow = z.object({
   name: z.string(),
   weight: z.number(),
   is_default: z.boolean(),
+  bar_length: barLengthEnum,
+  bar_shape: barShapeEnum,
   position: z.number().int(),
 });
 export type InventoryBarRow = z.infer<typeof inventoryBarRow>;
 
 export const inventoryBarInsert = inventoryBarRow
   .omit({ id: true })
-  .partial({ key: true, is_default: true, position: true });
+  .partial({
+    key: true,
+    is_default: true,
+    bar_length: true,
+    bar_shape: true,
+    position: true,
+  });
 export type InventoryBarInsert = z.infer<typeof inventoryBarInsert>;
 
 // inventory_plates – verfuegbare Scheiben-Typen (kein Bestandszaehler).

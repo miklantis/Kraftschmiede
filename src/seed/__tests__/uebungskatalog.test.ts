@@ -206,6 +206,15 @@ describe("Inventar im Seed", () => {
     }
   });
 
+  // Ohne Bauart faellt eine Stange aus jeder Uebungs-Zulassung heraus - die
+  // Angabe darf darum an keiner Stange fehlen.
+  it("beschreibt jede Stange nach Laenge und Form", () => {
+    for (const b of barSeeds) {
+      expect(["long", "short"], b.key).toContain(b.length);
+      expect(["straight", "curved"], b.key).toContain(b.shape);
+    }
+  });
+
   it("fuehrt Scheiben und Kettlebells aufsteigend und ohne Dopplung", () => {
     for (const liste of [plateSeeds, kettlebellSeeds]) {
       expect(liste.length).toBeGreaterThan(0);

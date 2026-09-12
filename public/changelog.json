@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.53.1",
+      "date": "2026-09-12",
+      "changes": [
+        "Jede Stange ist jetzt nach Länge (lang oder kurz) und Form (gerade oder gekrümmt) beschrieben – im Stangen-Inventar steht die Bauart unter dem Namen.",
+        "Standard und Leicht sind lang und gerade, die SZ-Stange ist kurz und gekrümmt. Gesteuert wird damit noch nichts, die Angabe wird erst erfasst."
+      ]
+    },
+    {
       "version": "1.53.0",
       "date": "2026-09-12",
       "changes": [

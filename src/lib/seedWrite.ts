@@ -196,6 +196,8 @@ async function ensureStangen(
     name: b.name,
     weight: b.weight,
     is_default: b.isDefault,
+    bar_length: b.length,
+    bar_shape: b.shape,
     position: i,
   }));
 

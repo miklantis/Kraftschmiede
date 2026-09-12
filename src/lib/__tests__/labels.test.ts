@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { dauerLabel, skillTargetLabel } from "@/lib/labels";
+import {
+  barBuildLabel,
+  dauerLabel,
+  skillTargetLabel,
+} from "@/lib/labels";
 
 describe("dauerLabel", () => {
   it("zeigt kurze Haltezeiten in Sekunden", () => {
@@ -45,5 +49,16 @@ describe("skillTargetLabel", () => {
 
   it("gibt bei unbekannter Metrik nur den Wert zurueck", () => {
     expect(skillTargetLabel(5, null)).toBe("5");
+  });
+});
+
+describe("barBuildLabel", () => {
+  it("nennt Laenge und Form der Stange", () => {
+    expect(barBuildLabel("long", "straight")).toBe("lang · gerade");
+    expect(barBuildLabel("short", "curved")).toBe("kurz · gekrümmt");
+  });
+
+  it("faellt bei fehlender Angabe auf den Strich zurueck", () => {
+    expect(barBuildLabel(null, null)).toBe("– · –");
   });
 });

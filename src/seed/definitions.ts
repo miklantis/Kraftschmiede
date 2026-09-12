@@ -10,6 +10,8 @@ import {
   type PhaseAdjustments,
 } from "@/engine/phaseBuild";
 import type {
+  BarLength,
+  BarShape,
   ExerciseEquipment,
   ExerciseProfile,
   ExerciseTier,
@@ -654,14 +656,39 @@ export interface SeedBar {
   name: string;
   weight: number;
   isDefault: boolean;
+  // Bauart der Stange (Migration 0059). Zwei unabhaengige Eigenschaften: erst
+  // sie sagen, ob eine Uebung mit dieser Stange ausfuehrbar ist.
+  length: BarLength;
+  shape: BarShape;
 }
 
 // Stangen des Grundbestands. `isDefault` markiert die Stange, die der Coach
 // nimmt, wenn eine Uebung keine eigene nennt.
 export const barSeeds: SeedBar[] = [
-  { key: "standard", name: "Standard", weight: 20, isDefault: true },
-  { key: "leicht", name: "Leicht", weight: 10, isDefault: false },
-  { key: "sz", name: "SZ", weight: 12.5, isDefault: false },
+  {
+    key: "standard",
+    name: "Standard",
+    weight: 20,
+    isDefault: true,
+    length: "long",
+    shape: "straight",
+  },
+  {
+    key: "leicht",
+    name: "Leicht",
+    weight: 10,
+    isDefault: false,
+    length: "long",
+    shape: "straight",
+  },
+  {
+    key: "sz",
+    name: "SZ",
+    weight: 12.5,
+    isDefault: false,
+    length: "short",
+    shape: "curved",
+  },
 ];
 
 // Verfuegbare Scheiben-Gewichte in kg. Ohne sie kann der Coach kein ladbares
