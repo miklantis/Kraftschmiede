@@ -32,6 +32,7 @@ import {
   type CoachView,
   type PlanContext,
 } from "./coach";
+import type { StangenBauart } from "./stangen";
 import { planContextFor, type PlanSource } from "./planContext";
 import { previewWorkWeight } from "./livePreview";
 
@@ -178,7 +179,7 @@ export interface RunningEntry {
   workedWeight: number | null;
 }
 
-export interface CoachStandInput<B extends { weight: number }> {
+export interface CoachStandInput<B extends { weight: number } & StangenBauart> {
   exo: CoachStandExercise;
   /** Wochenplan-Stand der laufenden Phase (buildPlanSource); null/undefined =
    *  die Phase laeuft ueber die Doppelprogression. */
@@ -238,7 +239,7 @@ export interface CoachStand<B> {
 /** Der Coach-Stand einer Uebung. null nur im Training, solange die
  *  Doppelprogression nichts zu bewerten hat (kein abgehakter Arbeitssatz) -
  *  dort bleibt die Karte ohne Coach-Zeichen. */
-export function coachStandFor<B extends { weight: number }>(
+export function coachStandFor<B extends { weight: number } & StangenBauart>(
   input: CoachStandInput<B>,
 ): CoachStand<B> | null {
   const plan = planContextFor(input.planSource, {
@@ -314,7 +315,7 @@ export function coachStandFor<B extends { weight: number }>(
   };
 }
 
-export interface CoachViewInput<B extends { weight: number }>
+export interface CoachViewInput<B extends { weight: number } & StangenBauart>
   extends CoachStandInput<B> {
   /** Einheit aus den Einstellungen ("kg"/"lb") - nur fuer die Saetze mit
    *  Gewichtsdifferenz. */
@@ -324,7 +325,7 @@ export interface CoachViewInput<B extends { weight: number }>
 /** Der Coach-Stand in der Anzeigeform, die Trainingskarte und Uebungsseite
  *  beide lesen (CoachView): Zahlen, Geltungsbereich, Ausblick. null unter
  *  derselben Bedingung wie coachStandFor. */
-export function coachViewFor<B extends { weight: number }>(
+export function coachViewFor<B extends { weight: number } & StangenBauart>(
   input: CoachViewInput<B>,
 ): CoachView | null {
   const stand = coachStandFor(input);

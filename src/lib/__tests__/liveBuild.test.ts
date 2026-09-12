@@ -48,7 +48,15 @@ function input(overrides: Partial<LiveBuildInput> = {}): LiveBuildInput {
     freeMode: false,
     loadFactor: null,
     lastEntryByExercise: {},
-    bars: [{ id: "bar1", name: "Olympia", weight: 20 }],
+    bars: [
+      {
+        id: "bar1",
+        name: "Olympia",
+        weight: 20,
+        barLength: "long" as const,
+        barShape: "straight" as const,
+      },
+    ],
     plates: PLATES,
     dumbbells: [],
     unit: "kg",
@@ -157,9 +165,9 @@ describe("buildLiveEntries", () => {
         exerciseIds: ["curl"],
         exercisesById: { curl },
         bars: [
-          { id: "b20", name: "Olympia", weight: 20 },
-          { id: "b125", name: "12,5er", weight: 12.5 },
-          { id: "b10", name: "10er", weight: 10 },
+          { id: "b20", name: "Olympia", weight: 20, barLength: "long" as const, barShape: "straight" as const },
+          { id: "b125", name: "12,5er", weight: 12.5, barLength: "short" as const, barShape: "curved" as const },
+          { id: "b10", name: "10er", weight: 10, barLength: "long" as const, barShape: "straight" as const },
         ],
         lastEntryByExercise: {
           curl: {

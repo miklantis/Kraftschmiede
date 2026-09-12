@@ -77,6 +77,8 @@ export function useStartRmTest(): {
         barId: bar?.id ?? null,
         barName: bar?.name ?? null,
         barWeight: bar?.weight ?? null,
+        allowedBarLengths: exercise.allowed_bar_lengths,
+        allowedBarShapes: exercise.allowed_bar_shapes,
         warmupSets: [],
         sets: buildTestSets(weight).map((s) => toLiveSet(s.reps, s.weight)),
         note: "",

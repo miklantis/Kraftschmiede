@@ -29,6 +29,8 @@ const SESSION: WorkoutSession = {
       barId: "bar-1",
       barName: "Olympia",
       barWeight: 20,
+      allowedBarLengths: ["long"],
+      allowedBarShapes: ["straight"],
       warmupSets: [{ reps: 5, weight: 20, done: false }],
       note: "Ellenbogen zwickt",
       sets: [
@@ -259,6 +261,10 @@ describe("liveSession", () => {
           barId: null,
           barName: null,
           barWeight: null,
+          // Vor Vorhaben #433 begonnene Einheiten kennen die Voraussetzung
+          // nicht - leer heisst "keine Angabe" und schraenkt nichts ein.
+          allowedBarLengths: [],
+          allowedBarShapes: [],
           warmupSets: [],
           sets: [],
           note: "",

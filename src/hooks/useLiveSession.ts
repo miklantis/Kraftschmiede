@@ -42,6 +42,7 @@ import {
   type StartSkillInput,
   type StartWorkoutInput,
 } from "@/lib/liveStart";
+import type { StangenBauart } from "@/lib/stangen";
 import { clickTick, ensureAudio } from "@/lib/liveAudio";
 import { istDesktopJetzt } from "@/hooks/useIsDesktop";
 
@@ -530,7 +531,7 @@ function stopSkillWatch(): void {
   if (state.skillWatch) set({ skillWatch: null });
 }
 
-export interface LiveBarChoice {
+export interface LiveBarChoice extends StangenBauart {
   id: string;
   name: string;
   weight: number;

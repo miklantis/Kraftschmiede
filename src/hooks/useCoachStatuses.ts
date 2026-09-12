@@ -11,6 +11,7 @@ import { useSessionsDetailed } from "./useSessionsDetailed";
 import { useActiveJourney } from "./useJourney";
 import { useSettings } from "./useSettings";
 import { useBars, usePlates, useDumbbells } from "./useInventory";
+import type { StangenBauart } from "@/lib/stangen";
 
 // Coach-Status je Uebung fuer die Uebungsseite (Liste + Detail): was der Coach
 // fuer die naechste Einheit dieser Uebung entscheiden wuerde - steigern, halten,
@@ -31,7 +32,7 @@ import { useBars, usePlates, useDumbbells } from "./useInventory";
 // nichts, gibt es nichts zu bewerten und damit keinen Ausblick - dieselbe Regel
 // wie auf der Karte vor dem ersten abgehakten Satz.
 
-interface CoachBar {
+interface CoachBar extends StangenBauart {
   id: string;
   name: string;
   weight: number;
@@ -77,6 +78,8 @@ export function useCoachStatuses(): UseCoachStatuses {
       id: b.id,
       name: b.name,
       weight: b.weight,
+      barLength: b.bar_length,
+      barShape: b.bar_shape,
     }));
     const plates = (platesQ.data ?? []).map((p) => p.weight);
     const dumbbells = (dumbbellsQ.data ?? []).map((d) => d.weight);
@@ -120,6 +123,10 @@ export function useCoachStatuses(): UseCoachStatuses {
             : null,
         workWeight: e.work_weight,
         barId: e.bar_id,
+        allowedBarLengths: e.allowed_bar_lengths,
+        allowedBarShapes: e.allowed_bar_shapes,
+        preferredBarLength: e.preferred_bar_length,
+        preferredBarShape: e.preferred_bar_shape,
         rm: e.rm,
         referenceWeight: e.reference_weight,
         referencePhaseId: e.reference_phase_id,

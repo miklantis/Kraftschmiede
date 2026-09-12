@@ -16,6 +16,7 @@ import {
   type CoachBuildExercise,
 } from "./coach";
 import { coachStandFor } from "./coachStand";
+import type { StangenBauart } from "./stangen";
 import { type PlanSource } from "./planContext";
 import { fmtNum } from "./format";
 import type {
@@ -32,7 +33,7 @@ export interface LiveBuildExercise extends CoachBuildExercise {
   muscleGroups: string[];
 }
 
-export interface LiveBuildBar {
+export interface LiveBuildBar extends StangenBauart {
   id: string;
   name: string;
   weight: number;
@@ -167,6 +168,10 @@ export function buildLiveEntries(input: LiveBuildInput): LiveBuildResult {
       barId: bar?.id ?? null,
       barName: bar?.name ?? null,
       barWeight: bar?.weight ?? null,
+      // Die Voraussetzung wandert mit in den Eintrag: das Auswahlfeld der
+      // Karte filtert den Bestand damit, ohne den Katalog erneut zu lesen.
+      allowedBarLengths: [...(exo.allowedBarLengths ?? [])],
+      allowedBarShapes: [...(exo.allowedBarShapes ?? [])],
       warmupSets: warm,
       sets,
       note: "",

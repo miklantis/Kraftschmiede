@@ -15,6 +15,7 @@
 // Format-Logik testbar bleibt - dieselbe Trennung wie im uebrigen Projekt.
 
 import type { PlanNote } from "@/lib/planNote";
+import type { BarLength, BarShape } from "@/schemas";
 
 /** Zweistellig auffuellen (Sekunden/Minuten in der Uhr). */
 export function pad2(n: number): string {
@@ -115,6 +116,13 @@ export interface LiveEntry {
   barId: string | null;
   barName: string | null;
   barWeight: number | null;
+  /** Voraussetzung der Uebung an die Stange (Vorhaben #433): je Eigenschaft die
+   *  zugelassenen Werte. Leer oder fehlend = keine Angabe und damit keine
+   *  Einschraenkung - fehlen kann sie in Eintraegen, die keinen Katalogbezug
+   *  haben (Bearbeiten-Modus). Das Auswahlfeld der Karte filtert damit
+   *  (Regel: lib/stangen.ts). */
+  allowedBarLengths?: BarLength[];
+  allowedBarShapes?: BarShape[];
   warmupSets: LiveWarmupSet[];
   sets: LiveSet[];
   /** Freie Notiz zur Uebung (Vorhaben #136). Leerer Text = keine Notiz. */
@@ -316,6 +324,17 @@ function str(v: unknown, fallback = ""): string {
   return typeof v === "string" ? v : fallback;
 }
 
+const BAR_LENGTHS: readonly BarLength[] = ["long", "short"];
+const BAR_SHAPES: readonly BarShape[] = ["straight", "curved"];
+
+/** Zugelassene Stangen-Werte aus dem Speicher: nur bekannte Werte zaehlen,
+ *  alles andere faellt weg. Eine leere Liste ist ein gueltiges Ergebnis - sie
+ *  heisst "keine Angabe" und schraenkt nichts ein (lib/stangen.ts). */
+function barValues<T extends string>(v: unknown, erlaubt: readonly T[]): T[] {
+  if (!Array.isArray(v)) return [];
+  return v.filter((x): x is T => erlaubt.includes(x as T));
+}
+
 /** Fokus-Index aus dem Speicher: nur eine ganze Zahl ab 0 zaehlt, alles andere
  *  (fehlend, alte Einheit vor Vorhaben #100, Unsinn) wird zu null und damit zum
  *  rein linearen Verhalten. Ob der Index noch in die Uebungsliste passt, prueft
@@ -393,6 +412,10 @@ function parseEntries(v: unknown): LiveEntry[] {
         barId: typeof o.barId === "string" ? o.barId : null,
         barName: typeof o.barName === "string" ? o.barName : null,
         barWeight: typeof o.barWeight === "number" ? o.barWeight : null,
+        // Fehlt in Einheiten, die vor Vorhaben #433 begonnen wurden - dann
+        // keine Angabe und damit keine Einschraenkung.
+        allowedBarLengths: barValues(o.allowedBarLengths, BAR_LENGTHS),
+        allowedBarShapes: barValues(o.allowedBarShapes, BAR_SHAPES),
         warmupSets,
         sets,
         // Fehlt in Eintraegen aus der Zeit vor den Notizen (#136) - dann leer.

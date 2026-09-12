@@ -58,10 +58,14 @@ Recovery-Fenster, Timer).
 
 ### 3.1 Inventar
 
-- **inventory_bars** – Stangen: key, name, weight, is_default, position. Fester Satz
-  (Standard/Leicht/SZ/SZ-Curl/Kurz), in der Oberflaeche nicht editierbar; per `key`
-  markiert, per Migration 0008 gesetzt. Neue Konten bekommen ihn über den Seed (3.2) –
-  er muss vor dem Übungskatalog stehen, weil `exercises.bar_id` hierher zeigt.
+- **inventory_bars** – Stangen: key, name, weight, is_default, bar_length, bar_shape,
+  position. Fester Satz (Standard 20/Leicht 10/SZ 12,5), in der Oberfläche nicht
+  editierbar; per `key` markiert, per Migration 0008 gesetzt. Neue Konten bekommen ihn
+  über den Seed (3.2) – er muss vor dem Übungskatalog stehen, weil `exercises.bar_id`
+  hierher zeigt. `bar_length` (long/short) und `bar_shape` (straight/curved)
+  beschreiben die Bauart (Migration 0059, Vorhaben #433): zwei unabhängige
+  Eigenschaften, jede Kombination möglich. Erst mit ihnen lässt sich sagen, ob eine
+  Übung mit dieser Stange überhaupt ausführbar ist.
 - **inventory_plates** – Scheiben: je Zeile ein verfügbares Gewicht (kein Stück-Zähler;
   der Plate-Loader rechnet ohne Limit)
 - **inventory_kettlebells** – Kettlebells: je Zeile ein Gewicht
@@ -96,7 +100,10 @@ Zwei Arten von Erstbefüllung liegen dabei nebeneinander:
   einen `key`); ein Nachziehen würde Weggeräumtes beim nächsten Start zurückbringen.
 
 - **exercises** – key, name, profile (strength/core/bodyweight), tier (main/accessory),
-  equipment, bar_id (FK), description, metric (reps/duration – die Mess-Art ohne
+  equipment, bar_id (FK), allowed_bar_lengths/allowed_bar_shapes (text[], zugelassene
+  Bauart der Stange – Migration 0060), preferred_bar_length/preferred_bar_shape
+  (nullable, bevorzugte Bauart – Migration 0061; zur Regel s. 4.1 „Stangenwahl an einer Stelle“),
+  description, metric (reps/duration – die Mess-Art ohne
   Gewicht; leer = Gewicht × Wiederholungen. Maßgeblich für „trägt diese Übung ein
   1RM?“ ist dieses Feld, **nicht** das Profil: Plank ist eine Core-Übung auf
   Haltezeit. Die gemeinsame Regel dafür ist `misstGewicht` in `lib/exercises.ts`),
@@ -313,6 +320,23 @@ Eindampfen, sonst wären die alten Felder schon weg.
   –, sagt das über ein benanntes Eingabefeld (`running`) statt über eine eigene Fassung:
   gerechnet wird auf dem heute Abgehakten, und der Phasenwechsel-Einstieg ruht, weil
   während des Trainings noch nicht entschieden ist, ob ein Phasenwechsel ansteht.
+- **Stangenwahl an einer Stelle** (`lib/stangen.ts`, Vorhaben #433). Zwei streng
+  getrennte Ebenen: Die **Voraussetzung** (`allowed_bar_lengths`/`allowed_bar_shapes` an
+  der Übung) entscheidet, **ob** eine Stange überhaupt erscheint – eine Stange kommt
+  durch, wenn ihre Länge zugelassen ist *und* ihre Form. Was dort nicht steht, ist für
+  diese Übung nicht ausführbar; eine leere Liste heißt dagegen „keine Angabe" und
+  schränkt nicht ein (Übungen ohne Stange lassen sie leer). Die **Bevorzugung**
+  (`preferred_bar_*`) entscheidet nur, **in welcher Reihenfolge**: zuerst wird unter den
+  bevorzugten Stangen gesucht, und erst wenn dort keine brauchbare steht (die leichteste
+  bevorzugte ist schon schwerer als das Ziel), fällt die Wahl auf die übrigen
+  zugelassenen. Sie kann nie eine zugelassene Stange ausschließen. Innerhalb einer
+  Gruppe gilt unverändert: schwerste Stange unterhalb des Zielgewichts, sonst die
+  leichteste (`pickBarForTarget`, mit Bevorzugung `pickBarForExercise`). Erfüllt keine
+  Stange im Bestand die Voraussetzung, schlägt der Coach **keine** Stange vor statt auf
+  eine unzulässige auszuweichen, und das Auswahlfeld der Einheit bleibt leer („Keine
+  passende Stange im Bestand"). Auswahlfeld (`ExerciseLiveCard`) und Coach
+  (`suggestWithBar`) lesen dieselbe Fassung der Regel, damit angebotene Liste und
+  Vorschlag nie auseinanderlaufen.
 - **Eine Textquelle für alle Coach-Begründungen.** Engine und Rechnung geben keine
   fertigen deutschen Sätze mehr aus, sondern eine Kennung samt der Zahlen, die der Text
   braucht (`CoachReason` in `engine/coachReason.ts`: Kennung, tatsächliche Differenz zum

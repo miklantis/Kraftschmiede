@@ -101,6 +101,7 @@ import {
   warmupFor,
   plannedSets,
   pickBarForTarget,
+  pickBarForExercise,
   planSuggestion,
   planOutlook,
   entryWorkWeight,
@@ -111,6 +112,12 @@ import {
 } from "../coach";
 import type { SetEntry } from "@/engine/types";
 import type { WeekPlanWeek } from "@/engine";
+
+// Bauart der Stangen im Bestand (Vorhaben #433). Solange eine Uebung nichts
+// voraussetzt, schraenkt sie nichts ein - die Faelle hier verhalten sich darum
+// genau wie vor der Zulassung.
+const LANG_GERADE = { barLength: "long", barShape: "straight" } as const;
+const KURZ_GEKRUEMMT = { barLength: "short", barShape: "curved" } as const;
 
 const STRENGTH: CoachBuildExercise = {
   key: "squat",
@@ -251,8 +258,8 @@ describe("suggestWithBar", () => {
       phaseFocus: { focus: "hypertrophy" },
       lastEntry: null,
       bars: [
-        { id: "b20", name: "20er", weight: 20 },
-        { id: "b12", name: "12,5er", weight: 12.5 },
+        { id: "b20", name: "20er", weight: 20, ...LANG_GERADE },
+        { id: "b12", name: "12,5er", weight: 12.5, ...LANG_GERADE },
       ],
       plates: [1.25, 2.5, 5, 10, 20],
       dumbbells: [],
@@ -267,7 +274,7 @@ describe("suggestWithBar", () => {
     const r = suggestWithBar(CORE, {
       phaseFocus: null,
       lastEntry: null,
-      bars: [{ id: "b20", name: "20er", weight: 20 }],
+      bars: [{ id: "b20", name: "20er", weight: 20, ...LANG_GERADE }],
       plates: [2.5],
       dumbbells: [],
       repTarget: null,
@@ -565,5 +572,96 @@ describe("coachStatusFromSuggestion – Satz aus der Kennung", () => {
       "Vorwoche sauber durchgezogen – deshalb liegen jetzt 2,5 kg mehr drauf.",
     );
     expect(st.reason.code).toBe("plan-raised");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Zulassung und Bevorzugung der Stangen (Vorhaben #433, Schritt 4)
+// ---------------------------------------------------------------------------
+
+// Der Bestand nach dem Vorhaben: zwei lange gerade Stangen und die kurze,
+// gekruemmte SZ-Stange.
+const BESTAND = [
+  { id: "standard", name: "Standard", weight: 20, ...LANG_GERADE },
+  { id: "leicht", name: "Leicht", weight: 10, ...LANG_GERADE },
+  { id: "sz", name: "SZ", weight: 12.5, ...KURZ_GEKRUEMMT },
+];
+
+// Die sieben grossen Uebungen: nur lange gerade Stangen.
+const NUR_LANG_GERADE = {
+  allowedBarLengths: ["long"],
+  allowedBarShapes: ["straight"],
+} as const;
+
+// Barbell Curl: alles zugelassen, die gekruemmte Form bevorzugt.
+const CURL = {
+  allowedBarLengths: ["long", "short"],
+  allowedBarShapes: ["straight", "curved"],
+  preferredBarShape: "curved",
+} as const;
+
+describe("pickBarForExercise", () => {
+  it("waehlt ohne Bevorzugung wie bisher die schwerste Stange <= Ziel", () => {
+    expect(pickBarForExercise(15, BESTAND, {}).id).toBe("sz");
+    expect(pickBarForExercise(25, BESTAND, {}).id).toBe("standard");
+  });
+
+  it("nimmt die bevorzugte Stange, solange das Ziel dazu passt", () => {
+    expect(pickBarForExercise(15, BESTAND, CURL).id).toBe("sz");
+    expect(pickBarForExercise(12.5, BESTAND, CURL).id).toBe("sz");
+  });
+
+  // Die Bevorzugung entscheidet nur die Reihenfolge: ist die bevorzugte Stange
+  // schon schwerer als das Ziel, greifen die uebrigen zugelassenen.
+  it("faellt auf die uebrigen zugelassenen zurueck, wenn die bevorzugte zu schwer ist", () => {
+    expect(pickBarForExercise(10, BESTAND, CURL).id).toBe("leicht");
+    expect(pickBarForExercise(5, BESTAND, CURL).id).toBe("leicht");
+  });
+
+  it("bleibt bei der bevorzugten, wenn es keine andere gibt", () => {
+    const nurSz = BESTAND.filter((b) => b.id === "sz");
+    expect(pickBarForExercise(5, nurSz, CURL).id).toBe("sz");
+  });
+});
+
+describe("suggestWithBar – Zulassung und Bevorzugung", () => {
+  function vorschlag(exo: CoachBuildExercise) {
+    return suggestWithBar(exo, {
+      phaseFocus: null,
+      lastEntry: null,
+      bars: BESTAND,
+      plates: [1.25, 2.5, 5, 10, 20],
+      dumbbells: [],
+      repTarget: null,
+    });
+  }
+
+  // Der Fehler, den das Vorhaben behebt: bei kleiner Vorgabe landete die kurze
+  // SZ-Stange unter einer Kniebeuge.
+  it("legt keine kurze Stange unter eine Uebung, die eine lange verlangt", () => {
+    const r = vorschlag({ ...STRENGTH, workWeight: 13, ...NUR_LANG_GERADE });
+    expect(r.bar?.id).toBe("leicht");
+  });
+
+  it("schlaegt beim Curl die gekruemmte Stange vor, solange das Ziel passt", () => {
+    const r = vorschlag({ ...STRENGTH, workWeight: 15, ...CURL });
+    expect(r.bar?.id).toBe("sz");
+  });
+
+  it("weicht beim Curl auf die gerade Stange aus, wenn die gekruemmte zu schwer ist", () => {
+    const r = vorschlag({ ...STRENGTH, workWeight: 10, ...CURL });
+    expect(r.bar?.id).toBe("leicht");
+  });
+
+  // Kein Rueckfall auf den Gesamtbestand: lieber keine Stange als eine, mit der
+  // die Uebung nicht ausfuehrbar ist. Das Gewicht bleibt trotzdem stehen.
+  it("schlaegt keine Stange vor, wenn keine die Voraussetzung erfuellt", () => {
+    const r = vorschlag({
+      ...STRENGTH,
+      allowedBarLengths: ["short"],
+      allowedBarShapes: ["straight"],
+    });
+    expect(r.bar).toBeNull();
+    expect(r.suggestion.weight).toBeGreaterThan(0);
   });
 });

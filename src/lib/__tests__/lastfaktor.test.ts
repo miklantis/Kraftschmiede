@@ -291,7 +291,15 @@ function input(overrides: Partial<LiveBuildInput> = {}): LiveBuildInput {
     freeMode: false,
     loadFactor: 0.65,
     lastEntryByExercise: {},
-    bars: [{ id: "bar1", name: "Langhantel", weight: 20 }],
+    bars: [
+      {
+        id: "bar1",
+        name: "Langhantel",
+        weight: 20,
+        barLength: "long" as const,
+        barShape: "straight" as const,
+      },
+    ],
     plates: PLATES,
     dumbbells: [],
     unit: "kg",

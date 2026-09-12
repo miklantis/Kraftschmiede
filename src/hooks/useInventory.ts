@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { leseZeilen } from "@/lib/tabelleLesen";
 import { queryKeys } from "@/lib/queryKeys";
 import { useUserId } from "./useUserId";
+import type { BarLength, BarShape } from "@/schemas";
 
 export interface EquipmentItem {
   key: string;
@@ -44,12 +45,16 @@ export function useOwnedEquipmentKeys() {
 }
 
 // Stangen (Langhantel-Typen), nach position sortiert. id+name+weight fuer Liste
-// und Loeschen; is_default markiert die Standardstange.
+// und Loeschen; is_default markiert die Standardstange. bar_length/bar_shape
+// beschreiben die Bauart - sie entscheiden, welche Uebung mit dieser Stange
+// ueberhaupt ausfuehrbar ist.
 export interface BarItem {
   id: string;
   name: string;
   weight: number;
   is_default: boolean;
+  bar_length: BarLength;
+  bar_shape: BarShape;
 }
 export function useBars() {
   const userId = useUserId();
@@ -59,7 +64,7 @@ export function useBars() {
     queryFn: (): Promise<BarItem[]> =>
       leseZeilen<BarItem>({
         tabelle: "inventory_bars",
-        spalten: "id, name, weight, is_default",
+        spalten: "id, name, weight, is_default, bar_length, bar_shape",
         sortierung: [{ spalte: "position" }],
       }),
   });

@@ -1,6 +1,40 @@
 {
   "versions": [
     {
+      "version": "1.53.3",
+      "date": "2026-09-12",
+      "changes": [
+        "Der Coach schlägt keine Stange mehr vor, mit der die Übung gar nicht ausführbar ist – Back Squat bekommt auch bei kleinen Gewichten eine lange Stange statt der kurzen SZ-Stange.",
+        "Unter mehreren passenden Stangen nimmt er die, die der Übung lieber ist: Barbell Curl bekommt die SZ-Stange vorgeschlagen, solange das Zielgewicht dazu passt. Ist sie zu schwer, weicht er auf die gerade Stange aus.",
+        "Passt keine Stange im Bestand zur Übung, schlägt er keine vor, statt auf eine unpassende auszuweichen – das Gewicht lässt sich weiterhin von Hand eintragen."
+      ]
+    },
+    {
+      "version": "1.53.2",
+      "date": "2026-09-12",
+      "changes": [
+        "Jede Langhantel-Übung sagt jetzt, welche Länge und welche Form die Stange haben muss – das Auswahlfeld in der laufenden Einheit zeigt nur noch Stangen, mit denen die Übung ausführbar ist.",
+        "Back Squat, Bench Press, Deadlift, RDL, Bent Row, Push Press und Lunge bieten damit nur noch Standard und Leicht an; Barbell Curl und Pull Over zusätzlich die SZ-Stange.",
+        "Passt keine Stange im Bestand, wird keine angeboten und die Karte sagt es offen („Keine passende Stange im Bestand“) – Gewicht und Wiederholungen lassen sich weiter von Hand eintragen."
+      ]
+    },
+    {
+      "version": "1.53.1",
+      "date": "2026-09-12",
+      "changes": [
+        "Jede Stange ist jetzt nach Länge (lang oder kurz) und Form (gerade oder gekrümmt) beschrieben – im Stangen-Inventar steht die Bauart unter dem Namen.",
+        "Standard und Leicht sind lang und gerade, die SZ-Stange ist kurz und gekrümmt. Gesteuert wird damit noch nichts, die Angabe wird erst erfasst."
+      ]
+    },
+    {
+      "version": "1.53.0",
+      "date": "2026-09-12",
+      "changes": [
+        "Die Stangen „SZ-Curl“ (8 kg) und „Kurz“ (15 kg) sind aus dem Bestand entfernt – beide gibt es real nicht.",
+        "Im Stangen-Inventar und im Auswahlfeld der laufenden Einheit stehen damit nur noch Standard (20 kg), Leicht (10 kg) und SZ (12,5 kg)."
+      ]
+    },
+    {
       "version": "1.52.2",
       "date": "2026-09-08",
       "changes": [

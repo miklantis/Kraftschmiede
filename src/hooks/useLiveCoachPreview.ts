@@ -17,6 +17,7 @@ import { useSessionsDetailed } from "./useSessionsDetailed";
 import { useActiveJourney } from "./useJourney";
 import { useSettings } from "./useSettings";
 import { useBars, usePlates, useDumbbells } from "./useInventory";
+import type { StangenBauart } from "@/lib/stangen";
 
 // Coach-Vorschau waehrend der laufenden Kraft-Einheit (#190): was der Coach aus
 // dem bisher Geleisteten eines Uebungsblocks machen wuerde - steigern, halten,
@@ -49,7 +50,7 @@ import { useBars, usePlates, useDumbbells } from "./useInventory";
 // darum von Beginn der Einheit an, der Ausblick kommt erst dazu, wenn der erste
 // Satz steht. Ausserhalb des Wochenplans bleibt es beim ersten abgehakten Satz.
 
-interface CoachBar {
+interface CoachBar extends StangenBauart {
   id: string;
   name: string;
   weight: number;
@@ -95,6 +96,8 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
       id: b.id,
       name: b.name,
       weight: b.weight,
+      barLength: b.bar_length,
+      barShape: b.bar_shape,
     }));
     const plates = (platesQ.data ?? []).map((p) => p.weight);
     const dumbbells = (dumbbellsQ.data ?? []).map((d) => d.weight);
@@ -146,6 +149,10 @@ export function useLiveCoachPreview(): UseLiveCoachPreview {
             : null,
         workWeight: e.work_weight,
         barId: e.bar_id,
+        allowedBarLengths: e.allowed_bar_lengths,
+        allowedBarShapes: e.allowed_bar_shapes,
+        preferredBarLength: e.preferred_bar_length,
+        preferredBarShape: e.preferred_bar_shape,
         rm: e.rm,
         referenceWeight: e.reference_weight,
         referencePhaseId: e.reference_phase_id,

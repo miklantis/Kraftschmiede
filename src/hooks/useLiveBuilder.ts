@@ -79,6 +79,10 @@ export function useLiveBuilder(): UseLiveBuilder {
             : null,
         workWeight: e.work_weight,
         barId: e.bar_id,
+        allowedBarLengths: e.allowed_bar_lengths,
+        allowedBarShapes: e.allowed_bar_shapes,
+        preferredBarLength: e.preferred_bar_length,
+        preferredBarShape: e.preferred_bar_shape,
         referenceWeight: e.reference_weight,
         referencePhaseId: e.reference_phase_id,
         planStartWeight: e.plan_start_weight,
@@ -91,6 +95,8 @@ export function useLiveBuilder(): UseLiveBuilder {
       id: b.id,
       name: b.name,
       weight: b.weight,
+      barLength: b.bar_length,
+      barShape: b.bar_shape,
     }));
     const plates = (platesQ.data ?? []).map((p) => p.weight);
     const dumbbells = (dumbbellsQ.data ?? []).map((d) => d.weight);

@@ -19,7 +19,9 @@ import type { LiveBuildExercise, LiveBuildInput } from "../liveBuild";
 import type { PlanSource } from "../planContext";
 
 const PLATES = [1.25, 2.5, 5, 10, 15, 20, 25];
-const BARS = [{ id: "bar1", name: "Olympia", weight: 20 }];
+const BARS = [
+  { id: "bar1", name: "Olympia", weight: 20, barLength: "long" as const, barShape: "straight" as const },
+];
 const PHASE = "phase-kraft";
 const PLAN = buildStrengthWeekPlan(5);
 
@@ -77,8 +79,8 @@ function planSource(over: Partial<PlanSource> = {}): PlanSource {
 }
 
 function standInput(
-  over: Partial<CoachStandInput<{ id: string; name: string; weight: number }>> = {},
-): CoachStandInput<{ id: string; name: string; weight: number }> {
+  over: Partial<CoachStandInput<(typeof BARS)[number]>> = {},
+): CoachStandInput<(typeof BARS)[number]> {
   return {
     exo: squat,
     planSource: null,
@@ -99,8 +101,8 @@ function standInput(
 }
 
 function viewInput(
-  over: Partial<CoachViewInput<{ id: string; name: string; weight: number }>> = {},
-): CoachViewInput<{ id: string; name: string; weight: number }> {
+  over: Partial<CoachViewInput<(typeof BARS)[number]>> = {},
+): CoachViewInput<(typeof BARS)[number]> {
   return { ...standInput(over), unit: "kg", ...over };
 }
 
