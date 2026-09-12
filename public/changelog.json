@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.53.4",
+      "date": "2026-09-12",
+      "changes": [
+        "Die Bauart der Stangen im Inventar steht jetzt groß geschrieben („Lang · Gerade“, „Kurz · Gekrümmt“) – wie alle übrigen Etiketten in der App."
+      ]
+    },
+    {
       "version": "1.53.3",
       "date": "2026-09-12",
       "changes": [
