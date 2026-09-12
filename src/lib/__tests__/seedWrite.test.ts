@@ -123,7 +123,7 @@ describe("writeSeed – Umfang eines neuen Kontos", () => {
       equipment: log.equipment.length,
     }).toEqual({
       bausteine: 8,
-      stangen: 5,
+      stangen: 3,
       scheiben: 5,
       kettlebells: 8,
       uebungen: 22,

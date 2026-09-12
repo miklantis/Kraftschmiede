@@ -662,8 +662,6 @@ export const barSeeds: SeedBar[] = [
   { key: "standard", name: "Standard", weight: 20, isDefault: true },
   { key: "leicht", name: "Leicht", weight: 10, isDefault: false },
   { key: "sz", name: "SZ", weight: 12.5, isDefault: false },
-  { key: "sz-curl", name: "SZ-Curl", weight: 8, isDefault: false },
-  { key: "kurz", name: "Kurz", weight: 15, isDefault: false },
 ];
 
 // Verfuegbare Scheiben-Gewichte in kg. Ohne sie kann der Coach kein ladbares

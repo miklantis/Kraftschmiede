@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.53.0",
+      "date": "2026-09-12",
+      "changes": [
+        "Die Stangen „SZ-Curl“ (8 kg) und „Kurz“ (15 kg) sind aus dem Bestand entfernt – beide gibt es real nicht.",
+        "Im Stangen-Inventar und im Auswahlfeld der laufenden Einheit stehen damit nur noch Standard (20 kg), Leicht (10 kg) und SZ (12,5 kg)."
+      ]
+    },
+    {
       "version": "1.52.2",
       "date": "2026-09-08",
       "changes": [
