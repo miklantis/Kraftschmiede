@@ -63,6 +63,11 @@ export interface ExerciseChartProps {
   // Gespeicherter Rekord der Uebung (exercises.rm). Bindet das Ende der
   // 1RM-Treppe an die Zahl im 1RM-Block. Nur fuer metric="rm" relevant.
   recordRm?: number | null;
+  // Laesst den Tooltip des letzten Punkts im Ruhezustand dauerhaft stehen (wie
+  // der "jetzt"-Tooltip der Journey-Periodisierungskurve). Fuer die
+  // Detailseite gedacht; in der flachen angehefteten Kachel wuerde er zu viel
+  // verdecken, dort bleibt es beim Tooltip auf Tippen/Hovern.
+  lastPointTip?: boolean;
 }
 
 export function ExerciseChart({
@@ -73,6 +78,7 @@ export function ExerciseChart({
   milestoneLines,
   rmTests,
   recordRm,
+  lastPointTip = false,
 }: ExerciseChartProps): React.ReactElement {
   const isVolume = metric === "volume";
   const isRecord = metric === "rm";
@@ -236,15 +242,24 @@ export function ExerciseChart({
       const last = co[n - 1];
       appendEndpointRing(g, last.cx, Y(last.y), dotColor(last));
 
-      // Tooltip je Punkt (Tippen/Hovern).
+      // Tooltip je Punkt (Tippen/Hovern). Mit lastPointTip ist der letzte Punkt
+      // der Ruhezustand: sein Tooltip steht von Anfang an und kommt zurueck,
+      // sobald Hovern bzw. Tippen vorbei ist. Ohne lastPointTip bleibt die
+      // Grafik im Ruhezustand wie bisher ohne Tooltip.
       let tipTO: ReturnType<typeof setTimeout> | null = null;
-      const showTip = (i: number) => {
+      const stopTimer = () => {
         if (tipTO) {
           clearTimeout(tipTO);
           tipTO = null;
         }
-        g.selectAll(".ex-tip").remove();
-        const tip = g.append("g").attr("class", "ex-tip");
+      };
+      const drawTip = (i: number) => {
+        // Ohne Zeigerereignisse: der Kasten liegt ueber den Trefferflaechen und
+        // darf den Punkt darunter nicht blockieren.
+        const tip = g
+          .append("g")
+          .attr("class", "ex-tip")
+          .style("pointer-events", "none");
         appendTooltip(tip, {
           cx: co[i].cx,
           cy: Y(co[i].y),
@@ -258,7 +273,16 @@ export function ExerciseChart({
           height: 26,
         });
       };
-      const hideTip = () => g.selectAll(".ex-tip").remove();
+      const showTip = (i: number) => {
+        stopTimer();
+        g.selectAll(".ex-tip").remove();
+        drawTip(i);
+      };
+      const restTip = () => {
+        stopTimer();
+        g.selectAll(".ex-tip").remove();
+        if (lastPointTip) drawTip(n - 1);
+      };
       co.forEach((p, i) => {
         g.append("circle")
           .attr("cx", p.cx)
@@ -267,16 +291,19 @@ export function ExerciseChart({
           .attr("fill", "transparent")
           .style("cursor", "pointer")
           .on("mouseenter", () => showTip(i))
-          .on("mouseleave", hideTip)
+          .on("mouseleave", restTip)
           .on("touchstart", () => {
             showTip(i);
-            if (tipTO) clearTimeout(tipTO);
-            tipTO = setTimeout(hideTip, 1800);
+            tipTO = setTimeout(restTip, 1800);
           });
       });
+
+      // Stehender Tooltip zuletzt gezeichnet, damit er ueber den
+      // Trefferflaechen liegt.
+      if (lastPointTip) drawTip(n - 1);
     },
     // rmTests wirkt ueber linePoints mit hinein.
-    [linePoints, n, metric, unit, milestoneLines],
+    [linePoints, n, metric, unit, milestoneLines, lastPointTip],
   );
 
   const drawBars = useCallback(
@@ -359,6 +386,7 @@ export function ExerciseChart({
         margin={BAR_MARGIN}
         minInnerWidth={n * PER_BAR}
         draw={drawBars}
+        focusFraction={1}
         ariaLabel="Wochenvolumen"
       />
     );
@@ -373,6 +401,10 @@ export function ExerciseChart({
       margin={MARGIN}
       minInnerWidth={Math.max(n * PER_POINT, Math.round(spanWeeks * PER_WEEK))}
       draw={drawLine}
+      // Beim Oeffnen (und beim Umschalten der Metrik) am rechten Ende stehen:
+      // interessant ist der aktuelle Stand, nicht der Anfang der Historie.
+      // Passt alles ins Bild, gibt es nichts zu scrollen.
+      focusFraction={1}
       ariaLabel="Verlauf"
     />
   );

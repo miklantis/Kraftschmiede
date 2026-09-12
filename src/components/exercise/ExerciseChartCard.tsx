@@ -144,6 +144,9 @@ export function ExerciseChartCard({
         recordRm={currentRm}
         unit={unit}
         milestoneLines={milestoneLines}
+        // Auf der Detailseite steht der Wert des letzten Punkts dauerhaft im
+        // Bild; die Grafik ist dort hoch genug dafuer.
+        lastPointTip
       />
       {active === "rm" && (
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-muted-foreground">
