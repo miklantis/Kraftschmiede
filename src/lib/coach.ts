@@ -40,7 +40,14 @@ import type {
 import { isoWeekKey } from "@/engine/journey";
 import { coachNote } from "./coachText";
 import { isNeutralLoad } from "./loadFactor";
-import type { StangenVoraussetzung } from "./stangen";
+import {
+  hatBevorzugung,
+  stangeIstBevorzugt,
+  zugelasseneStangen,
+  type StangenBauart,
+  type StangenBevorzugung,
+  type StangenVoraussetzung,
+} from "./stangen";
 
 // Eine abgeschlossene Krafteinheit, reduziert auf das fuer das Ranking Noetige:
 // Datum und die enthaltenen Uebungs-Ids.
@@ -175,7 +182,9 @@ export function rankWorkouts<T extends RankableTemplate>(
 
 // Uebung in der vom Aufbau benoetigten Form. `key` traegt die Text-Kennung der
 // Uebung (z. B. "deadlift") fuer die Deadlift-Erkennung der Aufwaermrampe.
-export interface CoachBuildExercise extends StangenVoraussetzung {
+export interface CoachBuildExercise
+  extends StangenVoraussetzung,
+    StangenBevorzugung {
   key: string | null;
   profile: "strength" | "core" | "bodyweight";
   // Rolle der Uebung in der Einheit. Der Wochenplan der Kraftphase gilt nur fuer
@@ -565,6 +574,38 @@ export function pickBarForTarget<T extends { weight: number }>(
   return chosen;
 }
 
+// Traegt die Gruppe eine Stange, die das Ziel nicht schon allein ueberschreitet?
+function gruppeBrauchbar(target: number, bars: { weight: number }[]): boolean {
+  return bars.some((b) => b.weight <= target + 1e-9);
+}
+
+// Stangenwahl mit Bevorzugung (Vorhaben #433, Schritt 4). Die Liste ist bereits
+// auf die zugelassenen Stangen gefiltert - hier faellt nur noch die Reihenfolge:
+//
+//   1. Gibt es eine Bevorzugung, wird zuerst unter den bevorzugten Stangen
+//      gesucht.
+//   2. Steht dort keine brauchbare (die leichteste bevorzugte ist schon
+//      schwerer als das Ziel), faellt die Wahl auf die uebrigen zugelassenen.
+//   3. Innerhalb einer Gruppe bleibt die Regel unveraendert: schwerste Stange
+//      unterhalb des Zielgewichts, sonst die leichteste.
+//
+// Die Bevorzugung kann damit nie eine zugelassene Stange ausschliessen - ohne
+// Bevorzugung verhaelt sich die Wahl genau wie bisher.
+export function pickBarForExercise<T extends { weight: number } & StangenBauart>(
+  target: number,
+  bars: T[],
+  exo: StangenBevorzugung,
+): T {
+  if (!hatBevorzugung(exo)) return pickBarForTarget(target, bars);
+  const bevorzugt = bars.filter((b) => stangeIstBevorzugt(b, exo));
+  const uebrige = bars.filter((b) => !stangeIstBevorzugt(b, exo));
+  if (bevorzugt.length > 0 && gruppeBrauchbar(target, bevorzugt)) {
+    return pickBarForTarget(target, bevorzugt);
+  }
+  if (uebrige.length > 0) return pickBarForTarget(target, uebrige);
+  return pickBarForTarget(target, bevorzugt);
+}
+
 // Vorschlag inklusive Stangenwahl - die gemeinsame Naht fuer den Live-Aufbau
 // (liveBuild) und die Uebungs-Statusanzeige (Coach-Label auf der Uebungsseite).
 // Henne-Ei wie im Aufbau: bei Langhantel erst das rohe Ziel mit der LEICHTESTEN
@@ -598,41 +639,49 @@ export interface SuggestWithBarResult<B> {
   bar: B | null;
 }
 
-export function suggestWithBar<B extends { weight: number }>(
+export function suggestWithBar<B extends { weight: number } & StangenBauart>(
   exo: CoachBuildExercise,
   input: SuggestWithBarInput<B>,
 ): SuggestWithBarResult<B> {
-  if (exo.equipment === "barbell" && input.bars.length > 0) {
-    const lightest = input.bars.reduce(
-      (a, b) => (b.weight < a.weight ? b : a),
-      input.bars[0]!,
-    );
-    const rawSug = suggestForExercise(exo, {
-      phase: input.phaseFocus,
-      lastEntry: input.lastEntry,
-      prevEntry: input.prevEntry ?? null,
-      weightStep: input.weightStep ?? null,
-      bar: { weight: lightest.weight },
-      plates: input.plates,
-      repTarget: input.repTarget,
-      freeMode: input.freeMode,
-      loadFactor: input.loadFactor,
-      plan: input.plan ?? null,
-    });
-    const bar = pickBarForTarget(rawSug.weight, input.bars);
-    const suggestion = suggestForExercise(exo, {
-      phase: input.phaseFocus,
-      lastEntry: input.lastEntry,
-      prevEntry: input.prevEntry ?? null,
-      weightStep: input.weightStep ?? null,
-      bar: { weight: bar.weight },
-      plates: input.plates,
-      repTarget: input.repTarget,
-      freeMode: input.freeMode,
-      loadFactor: input.loadFactor,
-      plan: input.plan ?? null,
-    });
-    return { suggestion, bar };
+  if (exo.equipment === "barbell") {
+    // Der Coach sieht nur die Stangen, mit denen die Uebung ausfuehrbar ist.
+    // Erfuellt keine im Bestand die Voraussetzung, schlaegt er gar keine
+    // Stange vor, statt auf eine unzulaessige auszuweichen - das Gewicht bleibt
+    // von Hand eintragbar (Vorhaben #433). Kein Rueckfall auf den
+    // Gesamtbestand; die Uebung faellt dann in den Zweig ohne Stange.
+    const erlaubt = zugelasseneStangen(input.bars, exo);
+    if (erlaubt.length > 0) {
+      const lightest = erlaubt.reduce(
+        (a, b) => (b.weight < a.weight ? b : a),
+        erlaubt[0]!,
+      );
+      const rawSug = suggestForExercise(exo, {
+        phase: input.phaseFocus,
+        lastEntry: input.lastEntry,
+        prevEntry: input.prevEntry ?? null,
+        weightStep: input.weightStep ?? null,
+        bar: { weight: lightest.weight },
+        plates: input.plates,
+        repTarget: input.repTarget,
+        freeMode: input.freeMode,
+        loadFactor: input.loadFactor,
+        plan: input.plan ?? null,
+      });
+      const bar = pickBarForExercise(rawSug.weight, erlaubt, exo);
+      const suggestion = suggestForExercise(exo, {
+        phase: input.phaseFocus,
+        lastEntry: input.lastEntry,
+        prevEntry: input.prevEntry ?? null,
+        weightStep: input.weightStep ?? null,
+        bar: { weight: bar.weight },
+        plates: input.plates,
+        repTarget: input.repTarget,
+        freeMode: input.freeMode,
+        loadFactor: input.loadFactor,
+        plan: input.plan ?? null,
+      });
+      return { suggestion, bar };
+    }
   }
   if (exo.equipment === "dumbbell") {
     // Kurzhantel: keine Stange, keine Scheiben. Der Vorschlag wird auf die

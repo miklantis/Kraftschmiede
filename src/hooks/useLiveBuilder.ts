@@ -81,6 +81,8 @@ export function useLiveBuilder(): UseLiveBuilder {
         barId: e.bar_id,
         allowedBarLengths: e.allowed_bar_lengths,
         allowedBarShapes: e.allowed_bar_shapes,
+        preferredBarLength: e.preferred_bar_length,
+        preferredBarShape: e.preferred_bar_shape,
         referenceWeight: e.reference_weight,
         referencePhaseId: e.reference_phase_id,
         planStartWeight: e.plan_start_weight,

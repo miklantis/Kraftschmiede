@@ -227,7 +227,7 @@ describe("Wochenvorgabe vor dem ersten abgehakten Satz", () => {
       lastEntry,
       prevEntry: null,
       weightStep: 2.5,
-      bars: [{ weight: 20 }],
+      bars: [{ weight: 20, barLength: "long" as const, barShape: "straight" as const }],
       plates: PLATES,
       dumbbells: [],
       repTarget: [4, 6],

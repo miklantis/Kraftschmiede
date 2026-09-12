@@ -45,6 +45,12 @@ export const exerciseRow = z.object({
   // lib/stangen.ts.
   allowed_bar_lengths: z.array(barLengthEnum),
   allowed_bar_shapes: z.array(barShapeEnum),
+  // Bevorzugung unter mehreren zugelassenen Stangen (Migration 0061). Sie
+  // schraenkt nie ein: sie entscheidet allein, welche zuerst genommen wird.
+  // null = keine Bevorzugung, dann gilt die bisherige Regel (schwerste Stange
+  // unterhalb des Zielgewichts).
+  preferred_bar_length: barLengthEnum.nullable(),
+  preferred_bar_shape: barShapeEnum.nullable(),
   description: z.string(),
   metric: metricEnum.nullable(),
   muscle_groups: z.array(z.string()),
@@ -78,6 +84,8 @@ export const exerciseInsert = exerciseRow.omit({ id: true }).partial({
   bar_id: true,
   allowed_bar_lengths: true,
   allowed_bar_shapes: true,
+  preferred_bar_length: true,
+  preferred_bar_shape: true,
   description: true,
   metric: true,
   muscle_groups: true,

@@ -66,3 +66,40 @@ export function zugelasseneStangen<B extends StangenBauart>(
 ): B[] {
   return bars.filter((b) => stangeErfuelltVoraussetzung(b, exo));
 }
+
+/**
+ * Was einer Uebung unter mehreren zugelassenen Stangen am liebsten ist - je
+ * Eigenschaft ein bevorzugter Wert, der leer bleiben darf.
+ *
+ * Die Bevorzugung schraenkt NIE ein: sie kann keine Stange ausschliessen, die
+ * die Voraussetzung erfuellt, sondern entscheidet allein die Reihenfolge. Die
+ * beiden Ebenen sind streng getrennt - die Voraussetzung sagt, OB eine Stange
+ * erscheint, die Bevorzugung nur, IN WELCHER REIHENFOLGE.
+ */
+export interface StangenBevorzugung {
+  preferredBarLength?: BarLength | null;
+  preferredBarShape?: BarShape | null;
+}
+
+/** Gibt es ueberhaupt eine Bevorzugung? Ohne sie bleibt es bei der bisherigen
+ *  Regel (schwerste Stange unterhalb des Zielgewichts). */
+export function hatBevorzugung(exo: StangenBevorzugung): boolean {
+  return exo.preferredBarLength != null || exo.preferredBarShape != null;
+}
+
+/** Ist diese Stange eine der bevorzugten? Gesetzte Werte muessen alle
+ *  zutreffen; eine nicht gesetzte Eigenschaft sagt nichts und schliesst nichts
+ *  aus. Ohne jede Bevorzugung ist jede Stange "bevorzugt" - die Gruppe ist dann
+ *  der ganze Bestand und die Reihenfolge bleibt unveraendert. */
+export function stangeIstBevorzugt(
+  bar: StangenBauart,
+  exo: StangenBevorzugung,
+): boolean {
+  if (exo.preferredBarLength != null && bar.barLength !== exo.preferredBarLength) {
+    return false;
+  }
+  if (exo.preferredBarShape != null && bar.barShape !== exo.preferredBarShape) {
+    return false;
+  }
+  return true;
+}

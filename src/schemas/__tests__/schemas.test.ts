@@ -26,6 +26,8 @@ describe("Lese-Form (Row) verlangt alle Spalten", () => {
     bar_id: null,
     allowed_bar_lengths: ["long"],
     allowed_bar_shapes: ["straight"],
+    preferred_bar_length: null,
+    preferred_bar_shape: null,
     description: "",
     metric: null,
     muscle_groups: ["legs", "glutes"],

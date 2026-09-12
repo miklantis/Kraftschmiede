@@ -286,6 +286,8 @@ async function ensureUebungen(
     bar_id: e.barKey === null ? null : (barIdByKey.get(e.barKey) ?? null),
     allowed_bar_lengths: e.allowedBarLengths,
     allowed_bar_shapes: e.allowedBarShapes,
+    preferred_bar_length: e.preferredBarLength,
+    preferred_bar_shape: e.preferredBarShape,
     description: e.description,
     metric: e.metric,
     muscle_groups: e.muscleGroups,

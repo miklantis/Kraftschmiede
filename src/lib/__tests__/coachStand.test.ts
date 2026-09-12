@@ -79,8 +79,8 @@ function planSource(over: Partial<PlanSource> = {}): PlanSource {
 }
 
 function standInput(
-  over: Partial<CoachStandInput<{ id: string; name: string; weight: number }>> = {},
-): CoachStandInput<{ id: string; name: string; weight: number }> {
+  over: Partial<CoachStandInput<(typeof BARS)[number]>> = {},
+): CoachStandInput<(typeof BARS)[number]> {
   return {
     exo: squat,
     planSource: null,
@@ -101,8 +101,8 @@ function standInput(
 }
 
 function viewInput(
-  over: Partial<CoachViewInput<{ id: string; name: string; weight: number }>> = {},
-): CoachViewInput<{ id: string; name: string; weight: number }> {
+  over: Partial<CoachViewInput<(typeof BARS)[number]>> = {},
+): CoachViewInput<(typeof BARS)[number]> {
   return { ...standInput(over), unit: "kg", ...over };
 }
 
