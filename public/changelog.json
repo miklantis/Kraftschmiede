@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.54.10",
+      "date": "2026-09-13",
+      "changes": [
+        "Im Meilenstein-Dialog hießen die drei Auswahlfelder unter „Art des Ziels“ so lang, dass die Texte am Handy fast aneinanderstießen. Sie heißen jetzt kurz „Fest“, „Körper“ und „Fettfrei“.",
+        "Ausgeschrieben steht der Begriff weiterhin dort, wo er zählt: auf der Meilenstein-Karte, neben dem Faktor-Feld und im Hilfetext darunter."
+      ]
+    },
+    {
       "version": "1.54.9",
       "date": "2026-09-13",
       "changes": [
