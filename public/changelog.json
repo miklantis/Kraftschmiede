@@ -1,6 +1,22 @@
 {
   "versions": [
     {
+      "version": "1.54.3",
+      "date": "2026-09-13",
+      "changes": [
+        "Im Popup „Workouts zuweisen“ bleiben Überschrift und Suchfeld jetzt fest stehen, nur die Liste dazwischen scrollt, und „Fertig“ sitzt unten am Rand. Solange die Tastatur offen ist, behält das Blatt seine Höhe – es springt also nicht mehr, wenn beim Tippen nur noch ein Treffer übrig bleibt.",
+        "Das Suchfeld erscheint erst ab fünf zuweisbaren Workouts. Bei weniger sieht man die Liste ohnehin auf einen Blick und die Tastatur bleibt aus dem Weg."
+      ]
+    },
+    {
+      "version": "1.54.2",
+      "date": "2026-09-13",
+      "changes": [
+        "Popups mit Tippfeld bleiben am Handy jetzt über der Tastatur stehen: Das Blatt endet genau an der Tastatur-Oberkante, statt zur Hälfte dahinter zu verschwinden. Man sieht also weiter, was man gerade sucht oder einträgt.",
+        "Das gilt für alle Dialoge mit Eingabefeld – die Workout-Auswahl der Journey, den Yoga-Eintrag, Messungen, den Journey-Namen und Notizen."
+      ]
+    },
+    {
       "version": "1.54.1",
       "date": "2026-09-13",
       "changes": [

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { useEnterExit } from "@/hooks/useEnterExit";
+import { useKeyboardInset } from "@/hooks/useKeyboardInset";
 import { useScrollLock } from "@/hooks/useScrollLock";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +15,12 @@ import { cn } from "@/lib/utils";
 //   - Mobile (< 960px): von unten hereinfahrendes Bodenblatt mit Greif-Leiste,
 //     volle Breite, oben abgerundet.
 // Schliessen per Hintergrundklick, X im Kopf oder Escape. Solange offen, wird
-// der Hintergrund gegen Scrollen gesperrt. Das Reinfahren/Rausfahren laeuft per
+// der Hintergrund gegen Scrollen gesperrt.
+//
+// Tastatur: Faehrt am Handy die Bildschirmtastatur hoch, endet die fixierte
+// Schicht an deren Oberkante (useKeyboardInset). Ohne das reicht sie unter die
+// Tastatur - iOS verkleinert das Layout-Fenster naemlich nicht - und das
+// Bodenblatt samt Inhalt unter dem getippten Feld verschwindet dahinter. Das Reinfahren/Rausfahren laeuft per
 // CSS-Transition; das Aushaengen aus dem DOM ist bis zum Ende der Ausblende-
 // Animation verzoegert (kein Springen). Gerendert wird per Portal an <body>,
 // damit das Overlay ueber allem liegt, unabhaengig vom Aufrufort.
@@ -36,6 +42,7 @@ export function Overlay({
   onClose,
   title,
   headerTrailing,
+  contentScrolls = false,
   children,
   className,
 }: {
@@ -45,6 +52,14 @@ export function Overlay({
   /** Optionales Element im Kopf, zwischen Titel und Schliessen-Knopf
    *  (z. B. der laufende Uhr-Chip im Sitzungsende-Dialog). */
   headerTrailing?: ReactNode;
+  /** true: Der Inhalt teilt sich die Blatthoehe selbst auf. Das Blatt scrollt
+   *  dann nicht als Ganzes - der Aufrufer bestimmt den scrollenden Bereich
+   *  (`min-h-0 overflow-y-auto`), Kopf und Fussknopf bleiben stehen. Solange
+   *  die Tastatur offen ist, bekommt das Blatt dabei eine feste Hoehe, damit es
+   *  beim Tippen nicht mit dem Inhalt springt. Fuer Dialoge mit Suchfeld ueber
+   *  einer Liste; Standard ist aus, alle uebrigen Dialoge bleiben wie sie
+   *  sind. */
+  contentScrolls?: boolean;
   children: ReactNode;
   className?: string;
 }): React.ReactElement | null {
@@ -67,11 +82,18 @@ export function Overlay({
   // verschachtelte Sperren mit - etwa Popup ueber laufendem Live-Panel).
   useScrollLock(mounted);
 
+  // Hoehe der Bildschirmtastatur; die Schicht endet an deren Oberkante.
+  const keyboardInset = useKeyboardInset(mounted);
+
   if (!mounted || typeof document === "undefined") return null;
 
   return createPortal(
     <div
       ref={rootRef}
+      // Unterkante auf die Oberkante der Tastatur: sonst reicht die fixierte
+      // Schicht darunter weiter und das Bodenblatt verschwindet dahinter (iOS
+      // verkleinert das Layout-Fenster nicht). Ohne Tastatur bleibt es bei 0.
+      style={keyboardInset > 0 ? { bottom: keyboardInset } : undefined}
       className={cn(
         "fixed inset-0 z-[95] flex items-end justify-center transition-colors duration-300 min-[960px]:items-center min-[960px]:p-8",
         shown ? "bg-[rgba(20,24,40,0.42)]" : "bg-[rgba(20,24,40,0)]",
@@ -85,7 +107,11 @@ export function Overlay({
         aria-modal="true"
         aria-label={title}
         className={cn(
-          "flex max-h-[90%] w-full flex-col overflow-x-hidden overflow-y-auto bg-background",
+          "flex max-h-[90%] w-full flex-col overflow-x-hidden bg-background",
+          contentScrolls ? "overflow-y-hidden" : "overflow-y-auto",
+          // Mit offener Tastatur bleibt die Hoehe fest, sonst wuerde das Blatt
+          // bei jeder Aenderung der Trefferzahl unter dem Finger springen.
+          contentScrolls && keyboardInset > 0 && "h-[90%]",
           "rounded-t-[26px] px-[22px] pt-3.5 pb-[max(22px,env(safe-area-inset-bottom))]",
           "shadow-pop will-change-transform",
           "transition-[transform,translate,scale,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
