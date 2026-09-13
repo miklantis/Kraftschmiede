@@ -6,6 +6,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
 import { FieldLabel } from "@/components/ui/field-label";
 import { SortableList } from "@/components/ui/sortable-list";
+import { Section } from "@/components/ui/section";
+import { MuscleMap } from "@/components/ui/muscle-map";
 import { ExercisePicker } from "@/components/exercise/ExercisePicker";
 import { useWorkoutEditor } from "@/hooks/useWorkoutEditor";
 
@@ -141,6 +143,19 @@ export function WorkoutEditor({
         <Plus className="size-[18px]" />
         Übung hinzufügen
       </button>
+
+      {/* Beanspruchte Muskeln des Entwurfs: Schwerpunkt ueber alle Uebungen der
+          Liste, rechnet live mit (auch vor dem Speichern). Erscheint nur, wenn
+          mindestens eine enthaltene Uebung eine Muskel-Zuordnung hat. */}
+      {Object.keys(ed.muscleValues).length > 0 && (
+        <Section eyebrow="Beanspruchte Muskeln" className="mb-6">
+          {/* Gleiche Breite wie auf der Uebungs-Detailseite (~78 %, zentriert). */}
+          <MuscleMap
+            values={ed.muscleValues}
+            className="mx-auto mt-1 w-[78%] max-w-[300px]"
+          />
+        </Section>
+      )}
 
       {/* Fuss: Speichern (+ Archivieren beim Bearbeiten) */}
       <div className="flex flex-col gap-2.5">

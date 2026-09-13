@@ -151,3 +151,33 @@ export function muscleValuesFromRows(
   }
   return out;
 }
+
+// Mehrere Uebungen zu EINER Werte-Karte zusammenfassen ("Schwerpunkt" eines
+// Workouts): die Beteiligungswerte je Region ueber alle Uebungen addieren und
+// anschliessend an der staerksten Region messen (normiert auf 0..1). So wird
+// ein Muskel, der in mehreren Uebungen vorkommt, deutlich kraeftiger gefaerbt
+// als einer, der nur einmal stabilisierend mitlaeuft.
+//
+// Bei genau einer Uebung faellt das Ergebnis mit der Uebungs-Detailseite
+// zusammen (Hauptmuskel = 1.0 ist dort schon das Maximum). Uebungen ohne
+// hinterlegte Zuordnung tragen nichts bei; ist nichts hinterlegt, kommt eine
+// leere Karte zurueck (= nur graue Silhouette). Eingaben duerfen wie ueberall
+// Region-, Gruppen- oder Sektions-Keys mischen, expand() loest sie auf.
+export function aggregateMuscleValues(
+  perExercise: readonly Record<string, number>[],
+): Record<string, number> {
+  const sums: Record<string, number> = {};
+  for (const values of perExercise) {
+    for (const [region, v] of Object.entries(expand(values))) {
+      if (!(v > 0)) continue;
+      sums[region] = (sums[region] ?? 0) + v;
+    }
+  }
+  const werte = Object.values(sums);
+  if (werte.length === 0) return {};
+  const max = Math.max(...werte);
+  if (max <= 0) return {};
+  const out: Record<string, number> = {};
+  for (const [region, sum] of Object.entries(sums)) out[region] = sum / max;
+  return out;
+}

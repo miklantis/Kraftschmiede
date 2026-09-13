@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.54.6",
+      "date": "2026-09-13",
+      "changes": [
+        "Im Workout-Editor steht jetzt unter der Übungsliste der Abschnitt „Beanspruchte Muskeln“: zwei Figuren (Rücken und Vorderseite) zeigen auf einen Blick, worauf dieses Workout hinausläuft.",
+        "Die Figur rechnet live mit – jede hinzugefügte oder entfernte Übung färbt sofort um, schon vor dem Speichern. Am kräftigsten ist der Muskel, der insgesamt am meisten abbekommt; alle anderen werden daran gemessen.",
+        "Gibt es zu keiner der gewählten Übungen eine hinterlegte Muskel-Zuordnung, bleibt der Abschnitt einfach weg."
+      ]
+    },
+    {
       "version": "1.54.5",
       "date": "2026-09-13",
       "changes": [

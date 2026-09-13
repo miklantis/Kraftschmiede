@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTemplates } from "./useTemplates";
 import { useExercises } from "./useExercises";
 import { useTemplateActions } from "./useTemplateActions";
+import { useExerciseMuscles } from "./useExerciseMuscles";
 import {
   addExercise as addEx,
   canSaveDraft,
@@ -13,6 +14,10 @@ import {
   type NameStatus,
   type WorkoutDraft,
 } from "@/lib/workoutEditor";
+import {
+  aggregateMuscleValues,
+  muscleValuesFromRows,
+} from "@/lib/muscles";
 import type { ExerciseRow } from "@/schemas";
 
 // Eine Zeile in der Editor-Uebungsliste (Name aus dem Katalog, Position = Index).
@@ -36,6 +41,12 @@ export interface UseWorkoutEditor {
   canSave: boolean;
   isSaving: boolean;
 
+  /**
+   * Region->Intensitaet (0..1) fuer die MuscleMap: Schwerpunkt des Entwurfs
+   * ueber alle enthaltenen Uebungen. Leer = kein Abschnitt (nichts hinterlegt).
+   */
+  muscleValues: Record<string, number>;
+
   /** Aktiver Katalog fuer den Auswaehler und die schon gewaehlten Ids. */
   catalog: ExerciseRow[];
   selectedIds: Set<string>;
@@ -55,6 +66,7 @@ export interface UseWorkoutEditor {
 export function useWorkoutEditor(templateId: string | null): UseWorkoutEditor {
   const templatesQ = useTemplates();
   const exercisesQ = useExercises();
+  const musclesQ = useExerciseMuscles();
   const actions = useTemplateActions();
 
   const isLoading = templatesQ.isLoading || exercisesQ.isLoading;
@@ -125,6 +137,27 @@ export function useWorkoutEditor(templateId: string | null): UseWorkoutEditor {
     name: names[e.exerciseId] ?? "Unbekannte Übung",
   }));
 
+  // Beanspruchte Muskeln des Entwurfs: Beteiligung jeder enthaltenen Uebung
+  // (Tabelle exercise_muscles) zu einer Karte zusammenfassen, Schwerpunkt-Regel
+  // in aggregateMuscleValues. Bewusst NICHT Teil von isLoading/isError: laedt
+  // die Zuordnung nicht, bleibt der Editor voll bedienbar und der Abschnitt
+  // faellt still weg (leere Karte).
+  const muscleRows = musclesQ.data;
+  const muscleValues = useMemo(() => {
+    if (!muscleRows) return {};
+    const byExercise = new Map<string, typeof muscleRows>();
+    for (const r of muscleRows) {
+      const list = byExercise.get(r.exercise_id);
+      if (list) list.push(r);
+      else byExercise.set(r.exercise_id, [r]);
+    }
+    return aggregateMuscleValues(
+      draft.exercises.map((e) =>
+        muscleValuesFromRows(byExercise.get(e.exerciseId) ?? []),
+      ),
+    );
+  }, [muscleRows, draft.exercises]);
+
   const catalog = exercisesQ.data ?? [];
   const selectedIds = new Set(draft.exercises.map((e) => e.exerciseId));
 
@@ -160,6 +193,7 @@ export function useWorkoutEditor(templateId: string | null): UseWorkoutEditor {
     nameState,
     canSave,
     isSaving: actions.isSaving,
+    muscleValues,
     catalog,
     selectedIds,
     addExercise: (id) => setDraft((d) => addEx(d, id)),
