@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.54.7",
+      "date": "2026-09-13",
+      "changes": [
+        "Auswahlfelder sehen jetzt überall gleich aus: Die Tageswahl im Yoga-Dialog und „Art des Ziels“ beim Meilenstein nutzen dieselbe graue Schiene mit weißer Markierung wie die Spanne in den Einstellungen unter „Für Coaching“.",
+        "Damit markiert Grün keine Auswahl mehr, sondern bleibt dem Aktionsknopf und echten Hinweisen vorbehalten.",
+        "Die Metrik-Umschalter über den Diagrammen auf der Übungs- und der Körperseite bleiben bewusst kleine Chips – dort sind es zu viele Werte für eine Reihe gleich breiter Felder."
+      ]
+    },
+    {
       "version": "1.54.6",
       "date": "2026-09-13",
       "changes": [

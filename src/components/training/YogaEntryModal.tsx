@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Overlay } from "@/components/ui/overlay";
 import { FieldLabel } from "@/components/ui/field-label";
 import { NoteBlock } from "@/components/ui/note-block";
-import { OptionRow } from "@/components/ui/option-row";
+import { SegmentedControl } from "@/components/ui/segmented";
 import { useAddYoga } from "@/hooks/useAddYoga";
 import { todayISO } from "@/lib/format";
 
@@ -10,7 +10,9 @@ import { todayISO } from "@/lib/format";
 // Keine freie Kalenderwahl – bewusst schlicht. Die Notiz laeuft ueber denselben
 // Baustein wie bei allen anderen Einheiten-Arten: ohne Notiz nur ein schlanker
 // "+ Notiz"-Knopf, damit die Optik schlicht bleibt.
-// Akzent durchgehend Yoga-Lila. Nutzt das generische Overlay-Fundament.
+// Die Tageswahl nutzt den app-weiten Segment-Umschalter (graue Schiene,
+// weisse Markierung), nicht mehr eine eigene gruene Knopfreihe. Nutzt das
+// generische Overlay-Fundament.
 const DAYS = [
   { value: "0", label: "Heute" },
   { value: "1", label: "Gestern" },
@@ -60,11 +62,11 @@ export function YogaEntryModal({
   return (
     <Overlay open={open} onClose={onClose} title="Yoga eintragen">
       <FieldLabel>Datum</FieldLabel>
-      <OptionRow
+      <SegmentedControl
         options={DAYS}
         value={String(dayOffset) as "0" | "1" | "2"}
         onChange={(v) => setDayOffset(Number(v))}
-        accent="yoga"
+        size="lg"
         ariaLabel="Datum"
         className="mt-2 mb-[18px]"
       />
