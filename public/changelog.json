@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.54.1",
+      "date": "2026-09-13",
+      "changes": [
+        "Im Popup „Workouts zuweisen“ steht jetzt ein Suchfeld über der Liste: Beim Tippen bleiben nur die Workouts stehen, deren Name passt – Groß- und Kleinschreibung egal, Umlaute egal („Rücken“ findet man auch als „ruecken“ oder „rucken“).",
+        "Ein- und Ausschalten funktioniert in der gefilterten Liste genauso; ein zugewiesenes Workout, das gerade nicht zum Suchbegriff passt, bleibt zugewiesen und ist nur nicht sichtbar.",
+        "Passt gar nichts, steht statt der leeren Liste ein kurzer Hinweis. Beim nächsten Öffnen ist die Suche wieder leer."
+      ]
+    },
+    {
       "version": "1.54.0",
       "date": "2026-09-13",
       "changes": [

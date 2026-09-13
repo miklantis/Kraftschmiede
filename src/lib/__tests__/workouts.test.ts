@@ -6,7 +6,9 @@ import {
   buildJourneyAssignment,
   countJourneyWorkoutSessions,
   filterCopyableAssignments,
+  filterJourneyAssignment,
   selectRecommendationTemplates,
+  type JourneyAssignmentRow,
   type WorkoutInput,
 } from "@/lib/workouts";
 
@@ -134,6 +136,67 @@ describe("buildJourneyAssignment", () => {
   });
 });
 
+describe("filterJourneyAssignment", () => {
+  const row = (
+    id: string,
+    name: string,
+    assigned = false,
+  ): JourneyAssignmentRow => ({
+    id,
+    name,
+    summary: "",
+    assigned,
+    doneCount: 0,
+  });
+
+  const rows = [
+    row("a", "Push Day"),
+    row("b", "Rücken & Bizeps", true),
+    row("c", "Beine"),
+  ];
+
+  it("laesst die Liste bei leerem Begriff unveraendert", () => {
+    expect(filterJourneyAssignment(rows, "").map((r) => r.id)).toEqual([
+      "a",
+      "b",
+      "c",
+    ]);
+  });
+
+  it("filtert nach dem Namen, ohne Ruecksicht auf Gross-/Kleinschreibung", () => {
+    expect(filterJourneyAssignment(rows, "push").map((r) => r.id)).toEqual([
+      "a",
+    ]);
+  });
+
+  it("findet Umlaute auch ausgeschrieben oder ohne Punkte", () => {
+    expect(filterJourneyAssignment(rows, "ruecken").map((r) => r.id)).toEqual([
+      "b",
+    ]);
+    expect(filterJourneyAssignment(rows, "rucken").map((r) => r.id)).toEqual([
+      "b",
+    ]);
+  });
+
+  it("blendet auch zugewiesene Workouts aus, die nicht passen", () => {
+    expect(filterJourneyAssignment(rows, "beine").map((r) => r.id)).toEqual([
+      "c",
+    ]);
+  });
+
+  it("behaelt die Katalog-Reihenfolge der Treffer", () => {
+    const many = [row("x", "Beine A"), row("y", "Push"), row("z", "Beine B")];
+    expect(filterJourneyAssignment(many, "beine").map((r) => r.id)).toEqual([
+      "x",
+      "z",
+    ]);
+  });
+
+  it("liefert nichts bei Begriff ohne Treffer", () => {
+    expect(filterJourneyAssignment(rows, "yoga")).toEqual([]);
+  });
+});
+
 describe("filterCopyableAssignments", () => {
   const strengthWk = (id: string, active = true): WorkoutInput =>
     wk({
@@ -254,11 +317,7 @@ describe("countJourneyWorkoutSessions", () => {
 
   it("zaehlt abgeschlossene Einheiten je Workout in dieser Journey", () => {
     const counts = countJourneyWorkoutSessions(
-      [
-        se("j1", "a", "done"),
-        se("j1", "a", "done"),
-        se("j1", "b", "done"),
-      ],
+      [se("j1", "a", "done"), se("j1", "a", "done"), se("j1", "b", "done")],
       "j1",
     );
     expect(counts).toEqual({ a: 2, b: 1 });
