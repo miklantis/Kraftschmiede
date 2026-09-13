@@ -434,7 +434,7 @@ export function SessionEditPanel({
           </div>
 
           {/* Dauer (Minuten) */}
-          <div className="flex items-center justify-between rounded-control bg-muted px-4 py-2.5">
+          <div className="flex items-center justify-between rounded-control bg-marker-idle px-4 py-2.5">
             <span className="text-[13px] font-semibold text-muted-foreground">Dauer</span>
             <span className="flex items-baseline gap-1.5">
               <input

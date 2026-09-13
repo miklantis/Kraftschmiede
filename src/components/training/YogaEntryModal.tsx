@@ -67,12 +67,13 @@ export function YogaEntryModal({
         value={String(dayOffset) as "0" | "1" | "2"}
         onChange={(v) => setDayOffset(Number(v))}
         size="lg"
+        surface="canvas"
         ariaLabel="Datum"
         className="mt-2 mb-[18px]"
       />
 
       <FieldLabel>Dauer</FieldLabel>
-      <div className="mt-2 mb-5 flex items-center justify-between rounded-control bg-muted px-4 py-3">
+      <div className="mt-2 mb-5 flex items-center justify-between rounded-control bg-marker-idle px-4 py-3">
         <button
           type="button"
           aria-label="Weniger"

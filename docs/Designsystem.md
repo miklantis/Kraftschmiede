@@ -53,11 +53,17 @@ reicht – „ein bisschen heller" ist kein Grund.
 | Gedeckte Fläche | `muted` | `#f0f0f2` | Chips, Hover, Sekundärknöpfe, feine Trennlinien in Listen |
 | Canvas | `background` | `#edeef1` | App-Hintergrund hinter den Karten, Grund des Live-Panels |
 | Rahmen / Linie | `border` | `#e4e4e8` | alle sichtbaren Trennlinien und Rahmen |
-| Heller Marker | `marker-idle` | `#d8d8dc` | nicht erreichte Punkte, Schalter im Aus-Zustand, Griffe, neutrale Chart-Flächen |
+| Heller Marker | `marker-idle` | `#d8d8dc` | nicht erreichte Punkte, Schalter im Aus-Zustand, Griffe, neutrale Chart-Flächen, gedeckte Flächen auf dem Canvas-/Dialog-Grund |
 | Abgeschwächter Text | `foreground-subtle` | `#a0a0a5` | gesperrte/künftige Einträge, Chevrons, Zier-Symbole |
 | Gedeckter Text | `muted-foreground` | `#8a8a8e` | Labels, Nebeninfos |
 | Sekundärtext | `foreground-secondary` | `#5c5c61` | Erklärtext, Seitenleisten-Navigation, Markenschriftzug |
 | Primärtext | `foreground` | `#1c1c1e` | normale Schrift |
+
+**Gedeckte Fläche hängt vom Untergrund ab.** `muted` (`#f0f0f2`) ist minimal heller als
+der Canvas (`#edeef1`) – auf einer weißen Karte trägt es, auf dem Canvas- oder Dialog-Grund
+verschwindet es. Dort ist die gedeckte Fläche darum `marker-idle`: die Schiene des
+`SegmentedControl` (`surface="canvas"`) und graue Zeilen, die direkt auf dem Dialog-Grund
+liegen. Graue Flächen **innerhalb** einer weißen Karte im Dialog bleiben `muted`.
 
 Zwei Sonderfälle mit eigener Rolle, bewusst außerhalb der Leiter, weil die Silhouette sich
 gegen die weiße Karte behaupten muss: `body-base` (`#cfd3d8`, Körperform) und `body-idle`
@@ -202,7 +208,7 @@ Doku nur als Beispiel im Text stehen – samt Farben, die es in der App gar nich
 | **Select** | Auswahlfeld aus wenigen festen Werten (natives Dropdown), passend zum Eingabefeld. |
 | **Switch** | An/Aus-Schalter; Ein-Farbe je Bereich über die Tokens `primary`, `skill`, `yoga` (heute alle drei Akzentgrün). |
 | **Stepper** | Zwei ±-Knöpfe mit beliebigem Wert in der Mitte; kennt selbst keine Einheit oder Grenzen. |
-| **SegmentedControl** | Der eine Auswahl-Umschalter der App: zwei oder mehr gleichwertige Optionen, genau eine aktiv. Graue Schiene, aktives Feld weiß mit feinem Schatten – bewusst **ohne Akzentfarbe**, damit Grün dem Aktionsknopf und echten Signalen vorbehalten bleibt. Zwei Größen bei gleicher Optik: `md` in Karten und Abschnitten (Spanne im Coaching-Export), `lg` in Dialogen, wo die Reihe ein Formularfeld ist und bequem zu treffen sein muss (Tageswahl im Yoga-Dialog, Zielart beim Meilenstein). Kennt `disabled` (ganze Reihe gesperrt, z. B. nach dem Speichern). Semantik ist eine Gruppe aus Schaltern (`role="group"` + `aria-pressed`), keine Tabs – dahinter liegen keine Panels. **Verbindlich für alle Einfachauswahlen aus wenigen Optionen.** |
+| **SegmentedControl** | Der eine Auswahl-Umschalter der App: zwei oder mehr gleichwertige Optionen, genau eine aktiv. Graue Schiene, aktives Feld weiß mit feinem Schatten – bewusst **ohne Akzentfarbe**, damit Grün dem Aktionsknopf und echten Signalen vorbehalten bleibt. Zwei Größen bei gleicher Optik: `md` in Karten und Abschnitten (Spanne im Coaching-Export), `lg` in Dialogen, wo die Reihe ein Formularfeld ist und bequem zu treffen sein muss (Tageswahl im Yoga-Dialog, Zielart beim Meilenstein). Davon getrennt die Fläche, auf der die Reihe liegt: `surface="card"` (Standard) trägt die gedeckte Schiene, `surface="canvas"` die dunklere – sonst verschmilzt sie mit dem Dialog-Grund. Kennt `disabled` (ganze Reihe gesperrt, z. B. nach dem Speichern). Semantik ist eine Gruppe aus Schaltern (`role="group"` + `aria-pressed`), keine Tabs – dahinter liegen keine Panels. **Verbindlich für alle Einfachauswahlen aus wenigen Optionen.** |
 | **ChipSwitch** | Einfachauswahl als kleine Chips, genau einer aktiv. Nur noch für Umschalter mit **vielen** Optionen, die als Reihe gleich breiter Segmente am Handy nicht aufgehen – heute die Metrik-Umschalter über den Diagrammen (Körperseite sieben Metriken, Übungsseite bis sechs). Bei wenigen Optionen stattdessen SegmentedControl. |
 | **ChipEditor** | Mehrfachauswahl als Chips zum Hinzufügen und Entfernen (z. B. Scheiben, Kettlebells). |
 | **RatingScale** | Bewertungs-Skala: Reihe gleichwertiger Buttons, einer aktiv; Farbe je Wert frei vorgebbar (Kater, Readiness). |
