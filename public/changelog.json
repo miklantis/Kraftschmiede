@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.54.11",
+      "date": "2026-09-13",
+      "changes": [
+        "In der Testwoche wurden Tests zu Übungen angeboten, die in der laufenden Journey gar nicht vorkommen (zum Beispiel Lunge oder Deadlift). Die Liste zeigt jetzt nur noch die Hauptübungen aus den Workouts, die der Journey zugewiesen sind.",
+        "Die Core-Übungen (Situps, Twist, Cocoon) stehen nicht mehr auf der Testliste: sie werden mit Zusatzlast auf viele Wiederholungen trainiert, ein 1RM-Test ergibt dort keinen Sinn.",
+        "Ist der Journey kein Workout zugewiesen, bleibt die Liste leer – der Hinweis auf die Frist der Testwoche steht weiterhin da."
+      ]
+    },
+    {
       "version": "1.54.10",
       "date": "2026-09-13",
       "changes": [
