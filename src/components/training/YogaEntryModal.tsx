@@ -73,7 +73,7 @@ export function YogaEntryModal({
       />
 
       <FieldLabel>Dauer</FieldLabel>
-      <div className="mt-2 mb-5 flex items-center justify-between rounded-control bg-marker-idle px-4 py-3">
+      <div className="mt-2 mb-5 flex items-center justify-between rounded-control bg-muted-canvas px-4 py-3">
         <button
           type="button"
           aria-label="Weniger"

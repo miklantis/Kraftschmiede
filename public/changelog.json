@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.54.9",
+      "date": "2026-09-13",
+      "changes": [
+        "Die grauen Flächen in Popups waren nach der letzten Änderung zu dunkel geraten und haben sich vorgedrängt. Sie heben sich jetzt genauso dezent ab wie auf einer weißen Karte in den Einstellungen.",
+        "Betrifft die Auswahl-Schiene im Yoga- und im Meilenstein-Dialog, die Dauer-Zeile beim Yoga-Eintrag und bei „Einheit bearbeiten“ sowie die gesperrte Zeile im Popup „Übung anpassen“."
+      ]
+    },
+    {
       "version": "1.54.8",
       "date": "2026-09-13",
       "changes": [

@@ -35,7 +35,7 @@ const PAD: Record<SegmentedSize, string> = {
 
 const TRACK: Record<SegmentedSurface, string> = {
   card: "bg-muted",
-  canvas: "bg-marker-idle",
+  canvas: "bg-muted-canvas",
 };
 
 export function SegmentedControl<T extends string>({
