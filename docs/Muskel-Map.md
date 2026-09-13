@@ -327,3 +327,20 @@ Dieselbe Komponente mit anderer `colorFn` (und ggf. `idle`) für Muskelkater-Sha
 die Werte-Map kommt dann aus dem Erholungs-/Belastungszustand statt aus
 `exercise_muscles`. Kein Neubau nötig – das ist der Grund für den injizierbaren
 `colorFn`-Vertrag.
+
+### Zweiter Einsatzort: Workout-Editor
+
+Der Workout-Editor (`src/components/workout/WorkoutEditor.tsx`, beide Modi: neu und
+bearbeiten) zeigt unter der Übungsliste denselben Abschnitt „Beanspruchte Muskeln“ –
+dieselbe `MuscleMap`, unverändert, nur mit einer anderen Werte-Karte.
+
+Zusammenfassungsregel („Schwerpunkt“, `aggregateMuscleValues` in `src/lib/muscles.ts`):
+die Beteiligungswerte aller enthaltenen Übungen werden je Region addiert und
+anschließend an der stärksten Region gemessen (normiert auf 0..1). Ein Muskel, der in
+mehreren Übungen vorkommt, wird dadurch deutlich kräftiger; bei genau einer Übung
+entspricht das Bild exakt der Übungs-Detailseite.
+
+Die Karte kommt aus `useWorkoutEditor` und rechnet mit dem Entwurf, also live beim
+Hinzufügen/Entfernen und vor dem Speichern. Die Muskel-Zuordnung (`exercise_muscles`)
+hängt bewusst nicht an `isLoading`/`isError` des Editors: lädt sie nicht, bleibt der
+Editor voll bedienbar und der Abschnitt fällt still weg (leere Karte = kein Abschnitt).

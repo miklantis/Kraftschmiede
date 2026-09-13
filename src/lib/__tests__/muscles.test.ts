@@ -7,6 +7,7 @@ import {
   regionsForSection,
   expand,
   muscleValuesFromRows,
+  aggregateMuscleValues,
 } from "@/lib/muscles";
 
 describe("Registry", () => {
@@ -96,5 +97,49 @@ describe("muscleValuesFromRows", () => {
       trizeps: 0.55,
       schultern_vorne: 0.55,
     });
+  });
+});
+
+describe("aggregateMuscleValues", () => {
+  it("liefert bei einer Uebung dasselbe Bild wie die Uebungsseite", () => {
+    const bank = muscleValuesFromRows([
+      { region_id: "brust", kategorie: "primaer" },
+      { region_id: "trizeps", kategorie: "sekundaer" },
+    ]);
+    expect(aggregateMuscleValues([bank])).toEqual(bank);
+  });
+
+  it("hebt Regionen hervor, die in mehreren Uebungen vorkommen", () => {
+    const kniebeuge = muscleValuesFromRows([
+      { region_id: "quadrizeps", kategorie: "primaer" },
+      { region_id: "bauch", kategorie: "stabilisierend" },
+    ]);
+    const ausfallschritt = muscleValuesFromRows([
+      { region_id: "quadrizeps", kategorie: "primaer" },
+    ]);
+    const bank = muscleValuesFromRows([
+      { region_id: "brust", kategorie: "primaer" },
+    ]);
+    const out = aggregateMuscleValues([kniebeuge, ausfallschritt, bank]);
+    // Quadrizeps ist zweimal Hauptmuskel -> Schwerpunkt, voll gefaerbt.
+    expect(out.quadrizeps).toBe(1);
+    // Brust einmal Hauptmuskel -> halb so stark wie der Schwerpunkt.
+    expect(out.brust).toBeCloseTo(0.5, 10);
+    // Bauch nur stabilisierend -> deutlich schwaecher.
+    expect(out.bauch).toBeCloseTo(0.125, 10);
+  });
+
+  it("loest Gruppen-/Sektions-Keys auf und summiert sie mit", () => {
+    const out = aggregateMuscleValues([
+      { beine: 0.5 },
+      { quadrizeps: 0.5 },
+    ]);
+    expect(out.quadrizeps).toBe(1); // 0.5 aus der Gruppe + 0.5 direkt
+    expect(out.waden).toBeCloseTo(0.5, 10); // nur aus der Gruppe
+  });
+
+  it("liefert eine leere Karte, wenn nichts hinterlegt ist", () => {
+    expect(aggregateMuscleValues([])).toEqual({});
+    expect(aggregateMuscleValues([{}, {}])).toEqual({});
   });
 });
