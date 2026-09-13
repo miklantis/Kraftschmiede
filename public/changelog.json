@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.54.5",
+      "date": "2026-09-13",
+      "changes": [
+        "Die Workouts-Seite hat jetzt ein Suchfeld ganz oben: Beim Tippen bleiben nur die Workouts stehen, deren Name passt – Groß- und Kleinschreibung egal, Umlaute egal („Rücken“ findet man auch als „ruecken“ oder „rucken“).",
+        "Das Suchfeld erscheint erst ab fünf aktiven Workouts; darunter sieht man die Liste ohnehin auf einen Blick. Passt nichts, steht ein kurzer Hinweis, und „Neues Workout“ bleibt immer erreichbar.",
+        "Der Archiv-Abschnitt wird mitgesucht: Die Zahl hinter „Archivierte“ zeigt beim Suchen die Treffer im Archiv. Aufklappen muss man ihn weiterhin selbst. Beim nächsten Besuch der Seite ist die Suche wieder leer."
+      ]
+    },
+    {
       "version": "1.54.4",
       "date": "2026-09-13",
       "changes": [

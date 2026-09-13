@@ -7,7 +7,9 @@ import { Section } from "@/components/ui/section";
 import { List, ListRow } from "@/components/ui/list";
 import { Button } from "@/components/ui/button";
 import { JourneyChip } from "@/components/ui/journey-chip";
+import { SearchField } from "@/components/ui/search-field";
 import { WorkoutIcon } from "@/components/ui/training-icons";
+import { filterWorkoutRows, SUCHE_AB_WORKOUTS } from "@/lib/workouts";
 import { useWorkoutsView } from "@/hooks/useWorkoutsView";
 import { useTemplateActions } from "@/hooks/useTemplateActions";
 
@@ -15,6 +17,13 @@ import { useTemplateActions } from "@/hooks/useTemplateActions";
 // in Kurzform, Hinweis "journey-faehig"); tippen fuehrt auf die lesende
 // Detailseite. Unter der Liste "Neues Workout" (Editor), darunter ein
 // ausklappbarer Archiv-Abschnitt mit Reaktivieren.
+//
+// Ab SUCHE_AB_WORKOUTS aktiven Workouts steht ganz oben ein Suchfeld (Schwelle
+// geteilt mit dem Auswahl-Popup der Journey-Seite). Gefiltert wird ueber den
+// Workout-Namen, aktive Liste und Archiv getrennt: die Zahl an "Archivierte"
+// zeigt beim Suchen die Treffer darin, aufklappen muss man weiterhin selbst.
+// Der Suchbegriff ist reiner Ansichtszustand – nicht in der URL, nicht
+// gespeichert; nach einem Seitenwechsel faengt man leer an.
 export const Route = createFileRoute("/workouts")({
   component: WorkoutsPage,
 });
@@ -24,6 +33,16 @@ function WorkoutsPage(): React.ReactElement {
   const { isLoading, isError, error, workouts, archived } = useWorkoutsView();
   const { reactivateWorkout, isSaving } = useTemplateActions();
   const [showArchived, setShowArchived] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const zeigtSuche = workouts.length >= SUCHE_AB_WORKOUTS;
+  const sucht = zeigtSuche && query.trim().length > 0;
+  const gezeigteWorkouts = sucht
+    ? filterWorkoutRows(workouts, query)
+    : workouts;
+  const gezeigteArchivierte = sucht
+    ? filterWorkoutRows(archived, query)
+    : archived;
 
   if (isLoading) {
     return (
@@ -50,14 +69,25 @@ function WorkoutsPage(): React.ReactElement {
     <div>
       <PageHeader title="Workouts" />
       <PageReveal>
+        {zeigtSuche && (
+          <SearchField
+            value={query}
+            onChange={setQuery}
+            placeholder="Workout suchen …"
+            ariaLabel="Workout suchen"
+            className="mb-6 min-[960px]:mb-[30px]"
+          />
+        )}
         <Section>
-          {workouts.length === 0 ? (
+          {gezeigteWorkouts.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Noch keine aktiven Workouts. Lege unten ein neues an.
+              {sucht
+                ? "Kein passendes Workout."
+                : "Noch keine aktiven Workouts. Lege unten ein neues an."}
             </p>
           ) : (
             <List bordered>
-              {workouts.map((w) => (
+              {gezeigteWorkouts.map((w) => (
                 <ListRow
                   key={w.id}
                   title={w.name}
@@ -89,7 +119,7 @@ function WorkoutsPage(): React.ReactElement {
           </Link>
         </Button>
 
-        {archived.length > 0 && (
+        {gezeigteArchivierte.length > 0 && (
           <div className="mt-6">
             <button
               type="button"
@@ -101,13 +131,13 @@ function WorkoutsPage(): React.ReactElement {
               ) : (
                 <ChevronRight className="size-4" />
               )}
-              Archivierte ({archived.length})
+              Archivierte ({gezeigteArchivierte.length})
             </button>
 
             {showArchived && (
               <div className="mt-3">
                 <List bordered>
-                  {archived.map((w) => (
+                  {gezeigteArchivierte.map((w) => (
                     <ListRow
                       key={w.id}
                       title={w.name}

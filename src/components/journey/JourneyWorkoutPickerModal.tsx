@@ -6,14 +6,9 @@ import { SearchField } from "@/components/ui/search-field";
 import { JourneyWorkoutRow } from "@/components/journey/JourneyWorkoutRow";
 import {
   filterJourneyAssignment,
+  SUCHE_AB_WORKOUTS,
   type JourneyAssignmentRow,
 } from "@/lib/workouts";
-
-// Ab so vielen zuweisbaren Workouts erscheint das Suchfeld. Darunter sieht man
-// die Liste ohnehin auf einen Blick, und die Tastatur waere nur im Weg. Die
-// Zahl steht bewusst an genau dieser Stelle: sie soll spaeter voraussichtlich
-// auf 10 steigen, sobald die Bibliothek gewachsen ist.
-const SUCHE_AB_WORKOUTS = 5;
 
 // Popup zum Zuweisen der Workouts zur aktiven Journey. Auf dem generischen
 // Overlay aufgesetzt (Desktop zentriert, Mobile Bodenblatt).
@@ -29,7 +24,8 @@ const SUCHE_AB_WORKOUTS = 5;
 // Blatt seine Hoehe - sonst schrumpfte es beim Tippen mit der Trefferzahl und
 // spraenge unter dem Finger weg.
 //
-// Das Suchfeld erscheint erst ab SUCHE_AB_WORKOUTS Eintraegen. Es wird beim
+// Das Suchfeld erscheint erst ab SUCHE_AB_WORKOUTS Eintraegen (die Schwelle
+// liegt in lib/workouts.ts, geteilt mit der Workouts-Seite). Es wird beim
 // Oeffnen zurueckgesetzt – nicht beim Schliessen, sonst waere der Sprung auf die
 // volle Liste waehrend der Ausblende-Animation sichtbar.
 //
