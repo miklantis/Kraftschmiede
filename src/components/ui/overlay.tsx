@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { useEnterExit } from "@/hooks/useEnterExit";
+import { useKeyboardInset } from "@/hooks/useKeyboardInset";
 import { useScrollLock } from "@/hooks/useScrollLock";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +15,12 @@ import { cn } from "@/lib/utils";
 //   - Mobile (< 960px): von unten hereinfahrendes Bodenblatt mit Greif-Leiste,
 //     volle Breite, oben abgerundet.
 // Schliessen per Hintergrundklick, X im Kopf oder Escape. Solange offen, wird
-// der Hintergrund gegen Scrollen gesperrt. Das Reinfahren/Rausfahren laeuft per
+// der Hintergrund gegen Scrollen gesperrt.
+//
+// Tastatur: Faehrt am Handy die Bildschirmtastatur hoch, endet die fixierte
+// Schicht an deren Oberkante (useKeyboardInset). Ohne das reicht sie unter die
+// Tastatur - iOS verkleinert das Layout-Fenster naemlich nicht - und das
+// Bodenblatt samt Inhalt unter dem getippten Feld verschwindet dahinter. Das Reinfahren/Rausfahren laeuft per
 // CSS-Transition; das Aushaengen aus dem DOM ist bis zum Ende der Ausblende-
 // Animation verzoegert (kein Springen). Gerendert wird per Portal an <body>,
 // damit das Overlay ueber allem liegt, unabhaengig vom Aufrufort.
@@ -67,11 +73,18 @@ export function Overlay({
   // verschachtelte Sperren mit - etwa Popup ueber laufendem Live-Panel).
   useScrollLock(mounted);
 
+  // Hoehe der Bildschirmtastatur; die Schicht endet an deren Oberkante.
+  const keyboardInset = useKeyboardInset(mounted);
+
   if (!mounted || typeof document === "undefined") return null;
 
   return createPortal(
     <div
       ref={rootRef}
+      // Unterkante auf die Oberkante der Tastatur: sonst reicht die fixierte
+      // Schicht darunter weiter und das Bodenblatt verschwindet dahinter (iOS
+      // verkleinert das Layout-Fenster nicht). Ohne Tastatur bleibt es bei 0.
+      style={keyboardInset > 0 ? { bottom: keyboardInset } : undefined}
       className={cn(
         "fixed inset-0 z-[95] flex items-end justify-center transition-colors duration-300 min-[960px]:items-center min-[960px]:p-8",
         shown ? "bg-[rgba(20,24,40,0.42)]" : "bg-[rgba(20,24,40,0)]",

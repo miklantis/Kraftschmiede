@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.54.2",
+      "date": "2026-09-13",
+      "changes": [
+        "Popups mit Tippfeld bleiben am Handy jetzt über der Tastatur stehen: Das Blatt endet genau an der Tastatur-Oberkante, statt zur Hälfte dahinter zu verschwinden. Man sieht also weiter, was man gerade sucht oder einträgt.",
+        "Das gilt für alle Dialoge mit Eingabefeld – die Workout-Auswahl der Journey, den Yoga-Eintrag, Messungen, den Journey-Namen und Notizen."
+      ]
+    },
+    {
       "version": "1.54.1",
       "date": "2026-09-13",
       "changes": [
