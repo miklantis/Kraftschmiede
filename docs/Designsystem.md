@@ -42,7 +42,8 @@ eine Rolle, wird hier eine neue Zeile ergänzt statt im Code eine Farbe zu setze
 #### Flächen, Text und Linien
 
 Die Grau-Leiter ist bewusst kurz: **vier Textstufen, ein heller Marker-Ton, zwei
-Linien-/Flächentöne.** Eine neue Zwischenstufe kommt nur dazu, wenn keine bestehende
+Linien-/Flächentöne** – die gedeckte Fläche davon in zwei Untergrund-Varianten (siehe die
+Regel unter der Tabelle). Eine neue Zwischenstufe kommt nur dazu, wenn keine bestehende
 reicht – „ein bisschen heller" ist kein Grund.
 
 | Rolle | Token | Wert | Verwendung |
@@ -51,9 +52,10 @@ reicht – „ein bisschen heller" ist kein Grund.
 | Karte / Panel | `card` | `#ffffff` | Flächen, auf denen Inhalt liegt |
 | Eingabefeld-Füllung | `input` | `#fafafa` | Hintergrund von Eingabefeldern |
 | Gedeckte Fläche | `muted` | `#f0f0f2` | Chips, Hover, Sekundärknöpfe, feine Trennlinien in Listen |
+| Gedeckte Fläche auf Canvas | `muted-canvas` | `#e0e0e4` | dieselbe Rolle, aber auf dem Canvas-/Dialog-Grund |
 | Canvas | `background` | `#edeef1` | App-Hintergrund hinter den Karten, Grund des Live-Panels |
 | Rahmen / Linie | `border` | `#e4e4e8` | alle sichtbaren Trennlinien und Rahmen |
-| Heller Marker | `marker-idle` | `#d8d8dc` | nicht erreichte Punkte, Schalter im Aus-Zustand, Griffe, neutrale Chart-Flächen, gedeckte Flächen auf dem Canvas-/Dialog-Grund |
+| Heller Marker | `marker-idle` | `#d8d8dc` | nicht erreichte Punkte, Schalter im Aus-Zustand, Griffe, neutrale Chart-Flächen |
 | Abgeschwächter Text | `foreground-subtle` | `#a0a0a5` | gesperrte/künftige Einträge, Chevrons, Zier-Symbole |
 | Gedeckter Text | `muted-foreground` | `#8a8a8e` | Labels, Nebeninfos |
 | Sekundärtext | `foreground-secondary` | `#5c5c61` | Erklärtext, Seitenleisten-Navigation, Markenschriftzug |
@@ -61,9 +63,15 @@ reicht – „ein bisschen heller" ist kein Grund.
 
 **Gedeckte Fläche hängt vom Untergrund ab.** `muted` (`#f0f0f2`) ist minimal heller als
 der Canvas (`#edeef1`) – auf einer weißen Karte trägt es, auf dem Canvas- oder Dialog-Grund
-verschwindet es. Dort ist die gedeckte Fläche darum `marker-idle`: die Schiene des
-`SegmentedControl` (`surface="canvas"`) und graue Zeilen, die direkt auf dem Dialog-Grund
-liegen. Graue Flächen **innerhalb** einer weißen Karte im Dialog bleiben `muted`.
+verschwindet es. Dort gilt darum `muted-canvas`: die Schiene des `SegmentedControl`
+(`surface="canvas"`) und graue Zeilen, die direkt auf dem Dialog-Grund liegen. Graue Flächen
+**innerhalb** einer weißen Karte im Dialog bleiben `muted`.
+
+Der Wert von `muted-canvas` ist nicht frei gewählt, sondern macht denselben kleinen Schritt
+wie `muted` auf der weißen Karte: Kontrastverhältnis 1,135 gegenüber 1,138. So heben sich
+graue Flächen im Dialog genauso dezent ab wie auf einer Karte. Wird an einem der beiden Töne
+gedreht, wird der andere mitgerechnet – ein sichtbar größerer Schritt lässt die Fläche sich
+vordrängen (`marker-idle` lag bei 1,225 und war zu viel).
 
 Zwei Sonderfälle mit eigener Rolle, bewusst außerhalb der Leiter, weil die Silhouette sich
 gegen die weiße Karte behaupten muss: `body-base` (`#cfd3d8`, Körperform) und `body-idle`

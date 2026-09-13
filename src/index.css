@@ -25,6 +25,11 @@
 
   /* Gedeckte Flaeche fuer Chips, Hover und Sekundaerknoepfe (V1 --panel2). */
   --muted: #f0f0f2;
+  /* Dieselbe Rolle, aber auf dem dunkleren Canvas-/Dialog-Grund: --muted ist
+     heller als --background und verschwindet dort. Der Wert macht denselben
+     kleinen Schritt wie --muted auf der weissen Karte (Kontrastverhaeltnis
+     1,135 zu 1,138) - die Flaeche traegt, ohne sich vorzudraengen. */
+  --muted-canvas: #e0e0e4;
   --muted-foreground: #8a8a8e; /* V1 --muted */
 
   /* Linien/Rahmen (V1 --line2 sichtbar, Eingabefeld-Fuellung wie V1 input). */
@@ -42,7 +47,7 @@
      Zwischenstufen nur, wenn eine bestehende wirklich nicht reicht. */
   --foreground-secondary: #5c5c61; /* Sekundaertext, Seitenleiste, Marken-Schriftzug */
   --foreground-subtle: #a0a0a5; /* abgeschwaecht: gesperrt/kuenftig, Chevrons, Zier-Symbole */
-  --marker-idle: #d8d8dc; /* helle Marker, neutrale Chart-Flaechen, gedeckte Flaechen auf Canvas-/Dialog-Grund */
+  --marker-idle: #d8d8dc; /* helle Marker und neutrale Chart-Flaechen */
 
   /* Muskel-Silhouette: eigene Rolle, weil sie sich vom Canvas absetzen muss und
      nicht mit den Linien-/Marker-Toenen mitwandern soll. */
@@ -134,6 +139,7 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-muted: var(--muted);
+  --color-muted-canvas: var(--muted-canvas);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-input: var(--input);

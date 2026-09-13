@@ -157,7 +157,7 @@ export function ExerciseEditModal({
       </FieldLabel>
       {locked ? (
         <>
-          <div className="flex items-center justify-between rounded-[14px] bg-marker-idle px-4 py-3">
+          <div className="flex items-center justify-between rounded-[14px] bg-muted-canvas px-4 py-3">
             <span className="flex items-center gap-2 text-[13px] font-semibold text-muted-foreground">
               <Lock className="size-[14px]" />
               {locked.source}
