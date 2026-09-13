@@ -8,7 +8,7 @@ import { SegmentedControl } from "@/components/ui/segmented";
 import type { ExerciseMilestoneRow, MeilensteinBasis } from "@/schemas";
 import { useMilestoneActions } from "@/hooks/useMilestoneActions";
 import { useMeilensteinBasis } from "@/hooks/useMeilensteinBasis";
-import { BASIS_NAME, zielWert } from "@/lib/meilensteinBasis";
+import { BASIS_KURZ, BASIS_NAME, zielWert } from "@/lib/meilensteinBasis";
 import { fmtWeight } from "@/lib/format";
 
 // Anlegen/Bearbeiten eines Meilensteins ueber das generische Overlay. Drei
@@ -22,7 +22,7 @@ import { fmtWeight } from "@/lib/format";
 
 const ARTEN: { value: MeilensteinBasis; label: string }[] = (
   ["fix", "koerpergewicht", "ffm"] as const
-).map((art) => ({ value: art, label: BASIS_NAME[art] }));
+).map((art) => ({ value: art, label: BASIS_KURZ[art] }));
 
 export function MilestoneEditModal({
   exerciseId,

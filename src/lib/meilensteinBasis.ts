@@ -99,10 +99,22 @@ export function anzeigeZiel(
   return zielWert(meilenstein, werte);
 }
 
-/** Kurzname der Basis fuer die Anzeige. "fix" hat keine Kennung – ein festes
- *  Ziel braucht keine Erklaerung. */
+/** Ausgeschriebener Name der Basis fuer die Anzeige. "fix" hat keine Kennung –
+ *  ein festes Ziel braucht keine Erklaerung. */
 export const BASIS_NAME: Record<MeilensteinBasis, string> = {
   fix: "Festes Gewicht",
   koerpergewicht: "Körpergewicht",
   ffm: "Fettfreie Masse",
+};
+
+/** Kurzform der Basis fuer enge Stellen, heute der Zielart-Umschalter im
+ *  Meilenstein-Dialog. Dort stehen drei gleich breite Segmente nebeneinander,
+ *  in denen die vollen Namen fast bis an den Rand reichen und optisch
+ *  zusammenruecken. Ein Wort pro Segment schafft Luft, ohne unverstaendlich zu
+ *  werden: der ausgeschriebene Name steht im selben Dialog direkt darunter am
+ *  Faktor-Feld und im Hilfetext. */
+export const BASIS_KURZ: Record<MeilensteinBasis, string> = {
+  fix: "Fest",
+  koerpergewicht: "Körper",
+  ffm: "Fettfrei",
 };
