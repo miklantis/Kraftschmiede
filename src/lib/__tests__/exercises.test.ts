@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  filterExercises,
   groupExercises,
   exerciseRowMeta,
   exerciseRowSub,
@@ -132,9 +133,73 @@ describe("exerciseRowSub", () => {
     expect(exerciseRowSub(ex({ tier: "accessory", muscle_groups: [] }))).toBe(
       "Assistenz",
     );
-    expect(exerciseRowSub(ex({ profile: "core", muscle_groups: ["core"] }))).toBe(
-      "Core",
+    expect(
+      exerciseRowSub(ex({ profile: "core", muscle_groups: ["core"] })),
+    ).toBe("Core");
+  });
+});
+
+describe("filterExercises", () => {
+  const katalog = [
+    ex({ id: "a", name: "Kniebeuge", position: 0 }),
+    ex({ id: "b", name: "Rückenstrecker", position: 1 }),
+    ex({ id: "c", name: "Bankdrücken", position: 2 }),
+  ];
+
+  it("findet Uebungen ohne Ruecksicht auf Gross-/Kleinschreibung", () => {
+    expect(filterExercises(katalog, "knie").map((e) => e.id)).toEqual(["a"]);
+    expect(filterExercises(katalog, "KNIEBEUGE").map((e) => e.id)).toEqual([
+      "a",
+    ]);
+  });
+
+  it("findet Umlaute in beiden Tippweisen", () => {
+    // Gesucht wird an jeder Stelle des Namens, deshalb passt "rücken" auch auf
+    // "Bankdrücken" – in allen drei Tippweisen gleich.
+    for (const q of ["rücken", "ruecken", "rucken"]) {
+      expect(filterExercises(katalog, q).map((e) => e.id)).toEqual(["b", "c"]);
+    }
+    for (const q of ["rückenstrecker", "rueckenstrecker"]) {
+      expect(filterExercises(katalog, q).map((e) => e.id)).toEqual(["b"]);
+    }
+  });
+
+  it("laesst die Liste bei leerem Begriff unveraendert", () => {
+    expect(filterExercises(katalog, "").map((e) => e.id)).toEqual([
+      "a",
+      "b",
+      "c",
+    ]);
+    expect(filterExercises(katalog, "   ").map((e) => e.id)).toEqual([
+      "a",
+      "b",
+      "c",
+    ]);
+  });
+
+  it("liefert nichts, wenn nichts passt", () => {
+    expect(filterExercises(katalog, "Klimmzug")).toEqual([]);
+  });
+
+  it("behaelt die Katalog-Reihenfolge der Treffer", () => {
+    const treffer = filterExercises(
+      [
+        ex({ id: "a", name: "Beinpresse", position: 0 }),
+        ex({ id: "b", name: "Kniebeuge", position: 1 }),
+        ex({ id: "c", name: "Beinbeuger", position: 2 }),
+      ],
+      "bein",
     );
+    expect(treffer.map((e) => e.id)).toEqual(["a", "c"]);
+  });
+
+  it("laesst Gruppen ohne Treffer beim Gruppieren wegfallen", () => {
+    const list = [
+      ex({ id: "a", name: "Kniebeuge", tier: "main", profile: "strength" }),
+      ex({ id: "b", name: "Plank", profile: "core" }),
+    ];
+    const groups = groupExercises(filterExercises(list, "plank"), "kg");
+    expect(groups.map((g) => g.title)).toEqual(["Core"]);
   });
 });
 

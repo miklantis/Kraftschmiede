@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/ui/page-header";
 import { PageReveal } from "@/components/ui/page-reveal";
 import { Section } from "@/components/ui/section";
 import { List, ListRow } from "@/components/ui/list";
 import { CoachStatusPill } from "@/components/ui/coach-status-pill";
+import { SearchField } from "@/components/ui/search-field";
 import { PinnedCharts } from "@/components/exercise/PinnedCharts";
 import { useExercisesView } from "@/hooks/useExercisesView";
 import { usePinnedView } from "@/hooks/usePinnedView";
@@ -11,14 +13,22 @@ import { usePinnedView } from "@/hooks/usePinnedView";
 // Uebungen – Liste. Reine Lese-/Navigationsseite: zeigt den Katalog gruppiert
 // (Hauptuebungen, Assistenz, Core, Koerpergewicht) und fuehrt per
 // Tippen auf die Detailseite. Mobile gestapelt, Desktop zweispaltig (V1 ub-grid).
+//
+// Ganz oben steht ein Suchfeld ueber dem Namen. Der Suchbegriff ist reiner
+// Ansichtszustand: er steht nicht in der URL und wird nicht gespeichert, nach
+// einem Seitenwechsel faengt man leer an. Solange gesucht wird, treten die
+// angehefteten Verlaufs-Kacheln zurueck, damit die Treffer oben stehen.
 export const Route = createFileRoute("/uebungen")({
   component: UebungenPage,
 });
 
 function UebungenPage(): React.ReactElement {
   const navigate = useNavigate();
-  const { isLoading, isError, error, groups } = useExercisesView();
+  const [query, setQuery] = useState("");
+  const { isLoading, isError, error, groups, hasExercises } =
+    useExercisesView(query);
   const pinned = usePinnedView();
+  const sucht = query.trim().length > 0;
 
   if (isLoading) {
     return (
@@ -41,7 +51,7 @@ function UebungenPage(): React.ReactElement {
     );
   }
 
-  if (groups.length === 0) {
+  if (!hasExercises) {
     return (
       <div>
         <PageHeader title="Übungen" />
@@ -57,9 +67,23 @@ function UebungenPage(): React.ReactElement {
     <div>
       <PageHeader title="Übungen" />
       <PageReveal>
-        <div className="mb-6 min-[960px]:mb-[30px]">
-          <PinnedCharts cards={pinned.cards} unit={pinned.unit} />
-        </div>
+        <SearchField
+          value={query}
+          onChange={setQuery}
+          placeholder="Übung suchen …"
+          ariaLabel="Übung suchen"
+          className="mb-6 min-[960px]:mb-[30px]"
+        />
+        {!sucht && (
+          <div className="mb-6 min-[960px]:mb-[30px]">
+            <PinnedCharts cards={pinned.cards} unit={pinned.unit} />
+          </div>
+        )}
+        {groups.length === 0 && (
+          <p className="py-6 text-[14px] leading-[1.5] text-muted-foreground">
+            Keine passende Übung.
+          </p>
+        )}
         <div
           data-reveal-flatten
           className="columns-1 [column-gap:24px] min-[960px]:columns-2"
