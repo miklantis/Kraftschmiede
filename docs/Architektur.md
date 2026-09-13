@@ -540,9 +540,15 @@ Eindampfen, sonst wären die alten Felder schon weg.
   getestet sind (`TestWeekPanel`). Erkannt wird die Woche an einer Stelle
   (`derivePhaseContext.testWeek`: Testfokus, Plan vorhanden, Woche verlangt nichts,
   Journey noch nicht durchlaufen). Die Liste ist reine Ableitung aus dem Bestand –
-  Übungen mit Rang `main` und `profile !== "bodyweight"`, abgeglichen mit `rm_tests` der
-  laufenden Kalenderwoche (`lib/testWeek.ts`) – und **entscheidet nichts**: die Woche
-  endet am Sonntag, unabhängig davon, was offen bleibt. Gestartet wird über die
+  Kraft-Hauptübungen (Rang `main`, Profil `strength`, misst sich in Gewicht), die in
+  einem aktiven, der Journey zugewiesenen Workout vorkommen (`journeyTestScope`),
+  abgeglichen mit `rm_tests` der laufenden Kalenderwoche (`lib/testWeek.ts`) – und
+  **entscheidet nichts**: die Woche endet am Sonntag, unabhängig davon, was offen bleibt.
+  Der Journey-Bezug ist Absicht: getestet wird nur, was in dieser Journey auch trainiert
+  und periodisiert wird. Core läuft mit Zusatzlast auf hohe Wiederholungen und trägt
+  deshalb kein 1RM, obwohl Gewicht in der Hand liegt. Einen Rückfall auf den Katalog gibt
+  es hier – anders als bei der Workout-Empfehlung – bewusst nicht: ist der Journey kein
+  Workout zugewiesen, bleibt die Liste leer und es steht nur die Frist da (Issue #470). Gestartet wird über die
   bestehende Mechanik (`useStartRmTest.startById`), Empfehlung und Workout-Liste bleiben
   unverändert darunter stehen, damit Trainieren in der Testwoche nicht verstellt ist. Ein
   neuer Phasentyp entsteht für all das nicht – die Testphase bleibt `test`, nur mit zwei

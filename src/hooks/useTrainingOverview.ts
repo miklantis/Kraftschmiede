@@ -21,6 +21,7 @@ import {
   selectRecommendationTemplates,
 } from "@/lib/workouts";
 import {
+  journeyTestScope,
   testWeekExercises,
   testWeekStand,
   type TestWeekExercise,
@@ -205,11 +206,24 @@ export function useTrainingOverview(): {
       // Reine Testwoche: keine Vorgabe, dafuer die Frist und die Liste der
       // Hauptuebungen. Beides ist nur Anzeige - die Woche endet am Sonntag,
       // egal was noch offen ist (#240).
+      //
+      // Getestet wird nur, was in dieser Journey auch trainiert wird: der Umfang
+      // kommt aus den zugewiesenen, aktiven Workouts (journeyTestScope). Ohne
+      // Zuweisung bleibt die Liste leer - hier bewusst ohne den Bibliotheks-
+      // Rueckfall, den die Workout-Empfehlung kennt (#470).
       if (ph.testWeek) {
         const rows = testWeekExercises(
           exercises,
           rmTests.map((t) => ({ exerciseId: t.exercise_id, date: t.date })),
           today,
+          journeyTestScope(
+            templates.map((t) => ({
+              id: t.id,
+              active: t.active,
+              exerciseIds: t.exerciseIds,
+            })),
+            assignedIds,
+          ),
         );
         testWeek = {
           untilLabel: longDateDE(sundayOfWeek(today)),
