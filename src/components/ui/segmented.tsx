@@ -11,6 +11,11 @@ import { cn } from "@/lib/utils";
 // "lg" in Dialogen, wo die Reihe ein Formularfeld ist und bequem zu treffen
 // sein muss.
 //
+// Davon getrennt die Flaeche, auf der die Reihe liegt: auf einer weissen Karte
+// ("card", Standard) traegt die Schiene den gedeckten Ton, auf dem Canvas- bzw.
+// Dialog-Grund ("canvas") eine Stufe dunkler. Ohne das verschmilzt die Schiene
+// mit dem Grund – der ist dunkler als die gedeckte Flaeche.
+//
 // Abgrenzung: ChipSwitch bleibt die kompakte Chip-Reihe fuer Umschalter mit
 // vielen Optionen (Metriken ueber den Diagrammen), die in einer Zeile gleich
 // breiter Segmente nicht aufgehen. Mehrfachauswahl ist der ChipEditor.
@@ -21,10 +26,16 @@ export interface SegmentOption<T extends string> {
 }
 
 export type SegmentedSize = "md" | "lg";
+export type SegmentedSurface = "card" | "canvas";
 
 const PAD: Record<SegmentedSize, string> = {
   md: "py-[9px]",
   lg: "py-[11px]",
+};
+
+const TRACK: Record<SegmentedSurface, string> = {
+  card: "bg-muted",
+  canvas: "bg-marker-idle",
 };
 
 export function SegmentedControl<T extends string>({
@@ -32,6 +43,7 @@ export function SegmentedControl<T extends string>({
   value,
   onChange,
   size = "md",
+  surface = "card",
   disabled = false,
   ariaLabel,
   className,
@@ -40,6 +52,7 @@ export function SegmentedControl<T extends string>({
   value: T;
   onChange: (value: T) => void;
   size?: SegmentedSize;
+  surface?: SegmentedSurface;
   disabled?: boolean;
   ariaLabel?: string;
   className?: string;
@@ -49,7 +62,8 @@ export function SegmentedControl<T extends string>({
       role="group"
       aria-label={ariaLabel}
       className={cn(
-        "flex gap-0 rounded-[13px] bg-muted p-[3px]",
+        "flex gap-0 rounded-[13px] p-[3px]",
+        TRACK[surface],
         disabled && "opacity-60",
         className,
       )}

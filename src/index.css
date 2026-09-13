@@ -42,7 +42,7 @@
      Zwischenstufen nur, wenn eine bestehende wirklich nicht reicht. */
   --foreground-secondary: #5c5c61; /* Sekundaertext, Seitenleiste, Marken-Schriftzug */
   --foreground-subtle: #a0a0a5; /* abgeschwaecht: gesperrt/kuenftig, Chevrons, Zier-Symbole */
-  --marker-idle: #d8d8dc; /* helle Marker und neutrale Chart-Flaechen */
+  --marker-idle: #d8d8dc; /* helle Marker, neutrale Chart-Flaechen, gedeckte Flaechen auf Canvas-/Dialog-Grund */
 
   /* Muskel-Silhouette: eigene Rolle, weil sie sich vom Canvas absetzen muss und
      nicht mit den Linien-/Marker-Toenen mitwandern soll. */

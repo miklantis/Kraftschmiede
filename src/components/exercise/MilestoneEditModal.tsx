@@ -116,6 +116,7 @@ export function MilestoneEditModal({
         value={basis}
         onChange={setBasis}
         size="lg"
+        surface="canvas"
         disabled={saved}
         ariaLabel="Art des Ziels"
         className="mb-[18px]"

@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.54.8",
+      "date": "2026-09-13",
+      "changes": [
+        "Graue Flächen in Popups sind jetzt sichtbar: Der Grund eines Popups ist dunkler als eine weiße Karte, darum waren die grauen Blöcke darauf praktisch unsichtbar – sie sind jetzt eine Stufe dunkler.",
+        "Betrifft die Auswahl-Schiene im Yoga- und im Meilenstein-Dialog, die Dauer-Zeile beim Yoga-Eintrag und bei „Einheit bearbeiten“ sowie die gesperrte Zeile im Popup „Übung anpassen“.",
+        "Auf weißen Karten bleibt alles wie bisher, also auch die Spanne in den Einstellungen unter „Für Coaching“."
+      ]
+    },
+    {
       "version": "1.54.7",
       "date": "2026-09-13",
       "changes": [
