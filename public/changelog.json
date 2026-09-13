@@ -1,6 +1,24 @@
 {
   "versions": [
     {
+      "version": "1.54.1",
+      "date": "2026-09-13",
+      "changes": [
+        "Im Popup „Workouts zuweisen“ steht jetzt ein Suchfeld über der Liste: Beim Tippen bleiben nur die Workouts stehen, deren Name passt – Groß- und Kleinschreibung egal, Umlaute egal („Rücken“ findet man auch als „ruecken“ oder „rucken“).",
+        "Ein- und Ausschalten funktioniert in der gefilterten Liste genauso; ein zugewiesenes Workout, das gerade nicht zum Suchbegriff passt, bleibt zugewiesen und ist nur nicht sichtbar.",
+        "Passt gar nichts, steht statt der leeren Liste ein kurzer Hinweis. Beim nächsten Öffnen ist die Suche wieder leer."
+      ]
+    },
+    {
+      "version": "1.54.0",
+      "date": "2026-09-13",
+      "changes": [
+        "Der Abschnitt „Workouts in dieser Journey“ auf der Journey-Seite zeigt jetzt nur noch die Workouts, die dieser Journey zugewiesen sind – ohne Schalter, rein zum Nachsehen. Die Liste bleibt damit kurz, auch wenn die Workout-Bibliothek wächst.",
+        "Zugewiesen wird über den Stift rechts neben der Überschrift: Er öffnet ein Popup mit allen journey-fähigen Workouts und dem gewohnten Schalter je Zeile. Jeder Schalter speichert weiterhin sofort, geschlossen wird mit × oder „Fertig“.",
+        "Ist der Journey noch kein Workout zugewiesen, steht an der Stelle ein kurzer Hinweis mit dem Knopf „Workouts auswählen“, der dasselbe Popup öffnet."
+      ]
+    },
+    {
       "version": "1.53.7",
       "date": "2026-09-12",
       "changes": [

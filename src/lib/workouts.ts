@@ -3,6 +3,8 @@
 // ab: Kurzform der enthaltenen Uebungen und Journey-Faehigkeit (mind. eine
 // Uebung mit Profil "strength").
 
+import { matchesQuery } from "@/lib/textSearch";
+
 // Minimales Nachschlagewerk je Uebung – nur, was die Ansicht braucht.
 export interface WorkoutExerciseInfo {
   name: string;
@@ -145,6 +147,19 @@ export function buildJourneyAssignment(
       assigned: assignedIds.has(w.id),
       doneCount: doneCounts[w.id] ?? 0,
     }));
+}
+
+// Treffer der Suche im Auswahl-Popup: filtert die zuweisbaren Workouts ueber
+// ihren Namen, ohne Ruecksicht auf Gross-/Kleinschreibung und Umlaut-Schreibweise
+// (lib/textSearch.ts). Die Reihenfolge bleibt die Katalog-Reihenfolge, ein leerer
+// Suchbegriff laesst die Liste unveraendert. Zugewiesene Workouts, die nicht zum
+// Begriff passen, fallen wie alle anderen heraus – sie bleiben zugewiesen, ihr
+// Schalter ist nur gerade nicht sichtbar.
+export function filterJourneyAssignment(
+  rows: readonly JourneyAssignmentRow[],
+  query: string,
+): JourneyAssignmentRow[] {
+  return rows.filter((r) => matchesQuery(r.name, query));
 }
 
 // Beim Journey-Wechsel uebernehmbare Zuweisungen: aus den zuvor zugewiesenen

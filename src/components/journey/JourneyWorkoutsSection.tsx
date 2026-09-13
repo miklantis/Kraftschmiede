@@ -1,7 +1,10 @@
+import { useState } from "react";
+import { Pencil } from "lucide-react";
 import { Section } from "@/components/ui/section";
-import { List, ListRow } from "@/components/ui/list";
-import { WorkoutIcon } from "@/components/ui/training-icons";
-import { Switch } from "@/components/ui/switch";
+import { List } from "@/components/ui/list";
+import { Button } from "@/components/ui/button";
+import { JourneyWorkoutRow } from "@/components/journey/JourneyWorkoutRow";
+import { JourneyWorkoutPickerModal } from "@/components/journey/JourneyWorkoutPickerModal";
 import { useActiveJourney } from "@/hooks/useJourney";
 import { useTemplates } from "@/hooks/useTemplates";
 import { useExercises } from "@/hooks/useExercises";
@@ -15,15 +18,16 @@ import {
   type WorkoutInput,
 } from "@/lib/workouts";
 
-// Abschnitt "Workouts in dieser Journey": An/Aus-Schalter je zuweisbarem
-// (aktivem, journey-faehigem) Workout. Jeder Schalter speichert sofort
-// (natuerlicher Toggle-Fall, offline unkritisch). Nur mit aktiver Journey
-// sichtbar. Bis Lieferung 5 aendert die Zuordnung noch nichts an der
-// Trainingsempfehlung. Datenzugriff ueber Hooks gekapselt; die Journey-Faehigkeit
-// wird aus den Uebungsprofilen abgeleitet (lib/workouts.ts). Hinter dem Namen
-// steht die Zahl der abgeschlossenen Einheiten dieses Workouts in dieser Journey
-// (nichts bei null); sie kommt aus den ohnehin geladenen Einheiten, kostet also
-// keine zusaetzliche Abfrage.
+// Abschnitt "Workouts in dieser Journey": zeigt die der aktiven Journey
+// zugewiesenen Workouts – rein informativ, ohne Schalter und ohne Klickziel.
+// Zugewiesen wird im Auswahl-Popup hinter dem Stift-Knopf am Abschnittskopf;
+// dort steht die volle Menge der zuweisbaren Workouts mit Schalter je Zeile.
+// So bleibt die Seite kurz, auch wenn die Workout-Bibliothek waechst.
+// Nur mit aktiver Journey sichtbar. Datenzugriff ueber Hooks gekapselt; die
+// Journey-Faehigkeit wird aus den Uebungsprofilen abgeleitet (lib/workouts.ts).
+// Hinter dem Namen steht die Zahl der abgeschlossenen Einheiten dieses Workouts
+// in dieser Journey (nichts bei null); sie kommt aus den ohnehin geladenen
+// Einheiten, kostet also keine zusaetzliche Abfrage.
 export function JourneyWorkoutsSection(): React.ReactElement | null {
   const journeyQ = useActiveJourney();
   const templatesQ = useTemplates();
@@ -32,6 +36,7 @@ export function JourneyWorkoutsSection(): React.ReactElement | null {
   const assignedQ = useJourneyWorkouts(journeyId);
   const sessionsQ = useSessions();
   const actions = useJourneyWorkoutActions();
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   if (journeyId === null) return null;
 
@@ -57,6 +62,8 @@ export function JourneyWorkoutsSection(): React.ReactElement | null {
     })),
     journeyId,
   );
+  // Volle Menge der zuweisbaren Workouts – Grundlage fuer das Popup; die
+  // Uebersicht darunter zeigt davon nur die zugewiesenen.
   const rows = ready
     ? buildJourneyAssignment(
         templatesQ.data as WorkoutInput[],
@@ -65,55 +72,55 @@ export function JourneyWorkoutsSection(): React.ReactElement | null {
         doneCounts,
       )
     : [];
+  const assignedRows = rows.filter((r) => r.assigned);
 
   return (
-    <Section eyebrow="Workouts in dieser Journey">
+    <Section
+      eyebrow="Workouts in dieser Journey"
+      action={
+        rows.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => setPickerOpen(true)}
+            aria-label="Workouts dieser Journey zuweisen"
+            className="-my-1 -mr-1 flex-none p-1 text-muted-foreground transition-colors hover:text-primary"
+          >
+            <Pencil className="size-4" />
+          </button>
+        ) : undefined
+      }
+    >
       {rows.length === 0 ? (
         <p className="max-w-[680px] text-[13px] leading-[1.55] text-muted-foreground">
           Noch keine journey-fähigen Workouts vorhanden. Lege in der
           Workouts-Bibliothek ein Workout mit mindestens einer Kraftübung an, um
           es hier zuzuweisen.
         </p>
+      ) : assignedRows.length === 0 ? (
+        <div className="flex flex-col items-start gap-3">
+          <p className="max-w-[680px] text-[13px] leading-[1.55] text-muted-foreground">
+            Dieser Journey ist noch kein Workout zugewiesen.
+          </p>
+          <Button variant="outline" onClick={() => setPickerOpen(true)}>
+            Workouts auswählen
+          </Button>
+        </div>
       ) : (
         <List bordered>
-          {rows.map((r) => (
-            <ListRow
-              key={r.id}
-              title={
-                r.doneCount > 0 ? (
-                  <>
-                    {r.name}{" "}
-                    <span
-                      className="font-normal text-foreground-subtle"
-                      title={
-                        r.doneCount === 1
-                          ? "1 Einheit in dieser Journey"
-                          : r.doneCount + " Einheiten in dieser Journey"
-                      }
-                    >
-                      ({r.doneCount})
-                    </span>
-                  </>
-                ) : (
-                  r.name
-                )
-              }
-              subtitle={r.summary.length > 0 ? r.summary : undefined}
-              leading={<WorkoutIcon />}
-              trailing={
-                <Switch
-                  checked={r.assigned}
-                  onChange={(next) =>
-                    void actions.toggle(journeyId, r.id, next)
-                  }
-                  tone="primary"
-                  label={r.name + " dieser Journey zuweisen"}
-                />
-              }
-            />
+          {assignedRows.map((r) => (
+            <JourneyWorkoutRow key={r.id} row={r} />
           ))}
         </List>
       )}
+
+      <JourneyWorkoutPickerModal
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        rows={rows}
+        onToggle={(templateId, next) =>
+          void actions.toggle(journeyId, templateId, next)
+        }
+      />
     </Section>
   );
 }
