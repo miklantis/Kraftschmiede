@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.54.4",
+      "date": "2026-09-13",
+      "changes": [
+        "Die Übungen-Seite hat jetzt ein Suchfeld ganz oben: Beim Tippen bleiben nur die Übungen stehen, deren Name passt – Groß- und Kleinschreibung egal, Umlaute egal („Rücken“ findet man auch als „ruecken“ oder „rucken“).",
+        "Gruppen ohne Treffer verschwinden dabei ganz, passt gar nichts, steht ein kurzer Hinweis. Solange etwas im Suchfeld steht, treten die angehefteten Diagramme zurück, damit die Treffer oben stehen.",
+        "Das Antippen einer Zeile führt wie bisher auf die Detailseite. Beim nächsten Besuch der Seite ist die Suche wieder leer."
+      ]
+    },
+    {
       "version": "1.54.3",
       "date": "2026-09-13",
       "changes": [

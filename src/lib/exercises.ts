@@ -5,6 +5,7 @@ import type { ExerciseRow } from "@/schemas";
 import { fmtWeight } from "@/lib/format";
 import { tierLabel } from "@/lib/labels";
 import type { CoachState } from "@/lib/coach";
+import { matchesQuery } from "@/lib/textSearch";
 
 export interface ExerciseRowModel {
   id: string;
@@ -96,6 +97,21 @@ export function exerciseGroupKey(
   if (e.profile === "core") return "core";
   if (e.tier === "accessory") return "accessory";
   return "main";
+}
+
+// Treffer der Suche auf der Uebungen-Seite: filtert den Katalog ueber den
+// Uebungsnamen, ohne Ruecksicht auf Gross-/Kleinschreibung und Umlaut-
+// Schreibweise (lib/textSearch.ts). Ein leerer Begriff laesst die Liste
+// unveraendert, die Katalog-Reihenfolge bleibt erhalten.
+//
+// Gefiltert wird bewusst VOR dem Gruppieren: `groupExercises` laesst leere
+// Gruppen ohnehin weg, damit verschwinden Gruppen ohne Treffer von selbst und
+// die Reihenfolge innerhalb der Gruppen bleibt, wie sie ist.
+export function filterExercises(
+  exercises: readonly ExerciseRow[],
+  query: string,
+): ExerciseRow[] {
+  return exercises.filter((e) => matchesQuery(e.name, query));
 }
 
 // Gruppiert den Uebungskatalog in die V1-Reihenfolge. Reihenfolge innerhalb
