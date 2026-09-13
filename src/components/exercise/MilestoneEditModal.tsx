@@ -4,7 +4,7 @@ import { DialogFooter } from "@/components/ui/dialog-footer";
 import { DeleteConfirmButton } from "@/components/ui/delete-confirm-button";
 import { Input } from "@/components/ui/input";
 import { FieldLabel } from "@/components/ui/field-label";
-import { OptionRow } from "@/components/ui/option-row";
+import { SegmentedControl } from "@/components/ui/segmented";
 import type { ExerciseMilestoneRow, MeilensteinBasis } from "@/schemas";
 import { useMilestoneActions } from "@/hooks/useMilestoneActions";
 import { useMeilensteinBasis } from "@/hooks/useMeilensteinBasis";
@@ -111,10 +111,11 @@ export function MilestoneEditModal({
       />
 
       <FieldLabel className="mb-2">Art des Ziels</FieldLabel>
-      <OptionRow
+      <SegmentedControl
         options={ARTEN}
         value={basis}
         onChange={setBasis}
+        size="lg"
         disabled={saved}
         ariaLabel="Art des Ziels"
         className="mb-[18px]"

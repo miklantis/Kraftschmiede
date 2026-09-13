@@ -39,6 +39,7 @@ export function CoachExport(): ReactElement {
         options={RANGE_OPTIONS}
         value={range}
         onChange={setRange}
+        ariaLabel="Spanne"
         className="max-w-xs"
       />
 
