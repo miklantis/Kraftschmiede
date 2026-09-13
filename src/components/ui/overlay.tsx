@@ -42,6 +42,7 @@ export function Overlay({
   onClose,
   title,
   headerTrailing,
+  contentScrolls = false,
   children,
   className,
 }: {
@@ -51,6 +52,14 @@ export function Overlay({
   /** Optionales Element im Kopf, zwischen Titel und Schliessen-Knopf
    *  (z. B. der laufende Uhr-Chip im Sitzungsende-Dialog). */
   headerTrailing?: ReactNode;
+  /** true: Der Inhalt teilt sich die Blatthoehe selbst auf. Das Blatt scrollt
+   *  dann nicht als Ganzes - der Aufrufer bestimmt den scrollenden Bereich
+   *  (`min-h-0 overflow-y-auto`), Kopf und Fussknopf bleiben stehen. Solange
+   *  die Tastatur offen ist, bekommt das Blatt dabei eine feste Hoehe, damit es
+   *  beim Tippen nicht mit dem Inhalt springt. Fuer Dialoge mit Suchfeld ueber
+   *  einer Liste; Standard ist aus, alle uebrigen Dialoge bleiben wie sie
+   *  sind. */
+  contentScrolls?: boolean;
   children: ReactNode;
   className?: string;
 }): React.ReactElement | null {
@@ -98,7 +107,11 @@ export function Overlay({
         aria-modal="true"
         aria-label={title}
         className={cn(
-          "flex max-h-[90%] w-full flex-col overflow-x-hidden overflow-y-auto bg-background",
+          "flex max-h-[90%] w-full flex-col overflow-x-hidden bg-background",
+          contentScrolls ? "overflow-y-hidden" : "overflow-y-auto",
+          // Mit offener Tastatur bleibt die Hoehe fest, sonst wuerde das Blatt
+          // bei jeder Aenderung der Trefferzahl unter dem Finger springen.
+          contentScrolls && keyboardInset > 0 && "h-[90%]",
           "rounded-t-[26px] px-[22px] pt-3.5 pb-[max(22px,env(safe-area-inset-bottom))]",
           "shadow-pop will-change-transform",
           "transition-[transform,translate,scale,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
