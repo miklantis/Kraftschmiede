@@ -5,6 +5,13 @@
 
 import { matchesQuery } from "@/lib/textSearch";
 
+// Ab so vielen Workouts erscheint ein Suchfeld ueber der Liste. Darunter sieht
+// man die Liste ohnehin auf einen Blick, und am Handy waere die Tastatur nur im
+// Weg. Die Zahl steht bewusst hier und nicht in der Ansicht: Auswahl-Popup
+// (Journey-Seite) und Workouts-Seite teilen sie sich, damit sie spaeter an
+// einer einzigen Stelle steigen kann.
+export const SUCHE_AB_WORKOUTS = 5;
+
 // Minimales Nachschlagewerk je Uebung – nur, was die Ansicht braucht.
 export interface WorkoutExerciseInfo {
   name: string;
@@ -81,6 +88,22 @@ export function buildArchivedList(
   lookup: Lookup,
 ): WorkoutRowModel[] {
   return workouts.filter((w) => !w.active).map((w) => toRowModel(w, lookup));
+}
+
+// Treffer der Suche auf der Workouts-Seite: filtert Zeilen der Bibliothek ueber
+// den Workout-Namen, ohne Ruecksicht auf Gross-/Kleinschreibung und Umlaut-
+// Schreibweise (lib/textSearch.ts). Die Katalog-Reihenfolge bleibt erhalten, ein
+// leerer Begriff laesst die Liste unveraendert.
+//
+// Gesucht wird bewusst nur im Namen, nicht in der Uebungs-Kurzform – gleiche
+// Regel wie im Auswahl-Popup, damit das Ergebnis vorhersehbar bleibt. Aktive und
+// archivierte Liste werden getrennt durchgereicht, so bleibt die Trennung der
+// beiden Abschnitte der Seite erhalten.
+export function filterWorkoutRows(
+  rows: readonly WorkoutRowModel[],
+  query: string,
+): WorkoutRowModel[] {
+  return rows.filter((r) => matchesQuery(r.name, query));
 }
 
 // Ein zuweisbares Workout auf der Journey-Seite: aktiv und journey-faehig, mit

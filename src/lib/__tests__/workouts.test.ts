@@ -7,9 +7,11 @@ import {
   countJourneyWorkoutSessions,
   filterCopyableAssignments,
   filterJourneyAssignment,
+  filterWorkoutRows,
   selectRecommendationTemplates,
   type JourneyAssignmentRow,
   type WorkoutInput,
+  type WorkoutRowModel,
 } from "@/lib/workouts";
 
 const lookup = {
@@ -194,6 +196,73 @@ describe("filterJourneyAssignment", () => {
 
   it("liefert nichts bei Begriff ohne Treffer", () => {
     expect(filterJourneyAssignment(rows, "yoga")).toEqual([]);
+  });
+});
+
+describe("filterWorkoutRows", () => {
+  const zeile = (id: string, name: string, summary = ""): WorkoutRowModel => ({
+    id,
+    name,
+    summary,
+    journeyCapable: false,
+  });
+
+  const aktive = [
+    zeile("a", "Push Day", "Bankdrücken · Schulterdrücken"),
+    zeile("b", "Rücken & Bizeps"),
+    zeile("c", "Beine"),
+  ];
+
+  it("laesst die Liste bei leerem Begriff unveraendert", () => {
+    expect(filterWorkoutRows(aktive, "").map((r) => r.id)).toEqual([
+      "a",
+      "b",
+      "c",
+    ]);
+    expect(filterWorkoutRows(aktive, "   ").map((r) => r.id)).toEqual([
+      "a",
+      "b",
+      "c",
+    ]);
+  });
+
+  it("filtert nach dem Namen, ohne Ruecksicht auf Gross-/Kleinschreibung", () => {
+    expect(filterWorkoutRows(aktive, "push").map((r) => r.id)).toEqual(["a"]);
+  });
+
+  it("findet Umlaute auch ausgeschrieben oder ohne Punkte", () => {
+    expect(filterWorkoutRows(aktive, "ruecken").map((r) => r.id)).toEqual([
+      "b",
+    ]);
+    expect(filterWorkoutRows(aktive, "rucken").map((r) => r.id)).toEqual(["b"]);
+  });
+
+  it("sucht nur im Namen, nicht in der Uebungs-Kurzform", () => {
+    expect(filterWorkoutRows(aktive, "bankdrücken")).toEqual([]);
+  });
+
+  it("behaelt die Katalog-Reihenfolge der Treffer", () => {
+    const viele = [
+      zeile("x", "Beine A"),
+      zeile("y", "Push"),
+      zeile("z", "Beine B"),
+    ];
+    expect(filterWorkoutRows(viele, "beine").map((r) => r.id)).toEqual([
+      "x",
+      "z",
+    ]);
+  });
+
+  it("liefert nichts bei Begriff ohne Treffer", () => {
+    expect(filterWorkoutRows(aktive, "yoga")).toEqual([]);
+  });
+
+  it("filtert Archiv getrennt von der aktiven Liste", () => {
+    const archiviert = [zeile("d", "Beine alt"), zeile("e", "Kraft alt")];
+    expect(filterWorkoutRows(aktive, "beine").map((r) => r.id)).toEqual(["c"]);
+    expect(filterWorkoutRows(archiviert, "beine").map((r) => r.id)).toEqual([
+      "d",
+    ]);
   });
 });
 
