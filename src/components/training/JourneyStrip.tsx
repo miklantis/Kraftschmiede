@@ -16,8 +16,8 @@ export function JourneyStrip({
   subtitle: string;
   filled: number;
   total: number;
-  /** Wochenpunkte anzeigen. Ohne aktive Journey gibt es kein Pensum, dann
-   *  bleibt der Streifen bewusst ohne Punkte. */
+  /** Wochenpunkte anzeigen. Ohne aktive Journey und in der Testwoche gibt es
+   *  kein Pensum, dann bleibt der Streifen bewusst ohne Punkte. */
   showDots?: boolean;
 }): React.ReactElement {
   return (
