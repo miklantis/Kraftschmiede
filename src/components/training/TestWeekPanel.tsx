@@ -15,6 +15,11 @@ import type { TestWeekView } from "@/hooks/useTrainingOverview";
 // ist, und kuerzt den Weg dorthin ab; die Woche endet am Sonntag, unabhaengig
 // davon, was noch offen steht. Eine schon getestete Uebung bleibt darum
 // startbar - ein zweiter Versuch ist erlaubt.
+//
+// Getestet ist der einzige Zustand, der sich in der Liste abheben muss (#472):
+// das Haekchen sitzt darum dick in einem weichen gruenen Kreis - derselbe
+// Marker-Gedanke wie beim JourneyChip - und die Unterzeile traegt die
+// Erfolgsfarbe statt Grau.
 export function TestWeekPanel({
   view,
   onStart,
@@ -56,14 +61,29 @@ export function TestWeekPanel({
               <ListRow
                 key={ex.id}
                 title={ex.name}
-                subtitle={ex.tested ? "Diese Woche getestet" : "1RM testen"}
+                subtitle={
+                  ex.tested ? (
+                    <span className="font-medium text-good">
+                      Diese Woche getestet
+                    </span>
+                  ) : (
+                    "1RM testen"
+                  )
+                }
                 leading={<Target />}
                 trailing={
                   ex.tested ? (
-                    <Check
-                      className="size-[18px] text-good"
+                    <span
+                      role="img"
                       aria-label="Diese Woche getestet"
-                    />
+                      className="inline-flex size-7 flex-none items-center justify-center rounded-full bg-good/12 text-good"
+                    >
+                      <Check
+                        className="size-[17px]"
+                        strokeWidth={3}
+                        aria-hidden
+                      />
+                    </span>
                   ) : undefined
                 }
                 chevron
