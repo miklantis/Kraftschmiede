@@ -78,7 +78,8 @@ export interface TestWeekView {
 export interface TrainingOverview {
   date: string;
   /** Journey-Streifen oben. Ohne aktive Journey der Hinweis auf das freie
-   *  Training - gleicher Baustein, nur ohne Wochenpunkte. */
+   *  Training - gleicher Baustein, nur ohne Wochenpunkte. In der Testwoche
+   *  ebenfalls ohne Punkte und ohne Einheiten-Zaehler (#474). */
   journey: {
     title: string;
     subtitle: string;
@@ -245,6 +246,9 @@ export function useTrainingOverview(): {
       // Namen seines Bausteins ("Maximalkraft"), sofern nicht abweichend
       // benannt - ein abgeleiteter Anzeigename ist damit ueberfluessig.
       const phasenName = currentPhase?.name ?? "";
+      // In der reinen Testwoche gilt kein Wochenpensum (#474): der Streifen
+      // zeigt dort weder Punkte noch den Einheiten-Zaehler, sonst liest er sich
+      // wie eine Vorgabe und widerspricht dem Hinweis direkt darunter.
       journeyView = {
         title: journey.name + (phasenName ? " · " + phasenName : ""),
         subtitle:
@@ -253,13 +257,12 @@ export function useTrainingOverview(): {
           " von " +
           phaseWeeks +
           " · " +
-          wp.units +
-          " von " +
-          wp.target +
-          " Einheiten diese Woche",
+          (ph.testWeek
+            ? "Testwoche"
+            : wp.units + " von " + wp.target + " Einheiten diese Woche"),
         filled: wp.units,
         total: wp.target,
-        showDots: true,
+        showDots: !ph.testWeek,
       };
     }
 

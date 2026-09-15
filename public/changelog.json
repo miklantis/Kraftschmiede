@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.54.13",
+      "date": "2026-09-15",
+      "changes": [
+        "In der Testwoche stand oben im Journey-Streifen weiterhin ein Wochenpensum („0 von 3 Einheiten diese Woche“) samt Punkten – obwohl in dieser Woche gar keine Vorgabe gilt. Dort steht jetzt nur noch „Woche X von Y · Testwoche“, ohne Punkte."
+      ]
+    },
+    {
       "version": "1.54.12",
       "date": "2026-09-15",
       "changes": [
