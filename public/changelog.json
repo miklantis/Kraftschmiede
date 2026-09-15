@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.54.12",
+      "date": "2026-09-15",
+      "changes": [
+        "In der Testwoche war kaum zu sehen, welche Hauptübung schon getestet ist. Das Häkchen sitzt jetzt kräftig in einem grünen Kreis, und die Zeile darunter („Diese Woche getestet“) ist grün statt grau."
+      ]
+    },
+    {
       "version": "1.54.11",
       "date": "2026-09-13",
       "changes": [
