@@ -13,8 +13,13 @@ import type { TestWeekView } from "@/hooks/useTrainingOverview";
 //
 // Die Liste entscheidet nichts. Sie zeigt nur, was diese Woche schon getestet
 // ist, und kuerzt den Weg dorthin ab; die Woche endet am Sonntag, unabhaengig
-// davon, was noch offen steht. Eine schon getestete Uebung bleibt darum
-// startbar - ein zweiter Versuch ist erlaubt.
+// davon, was noch offen steht.
+//
+// Was die Zeile tut, haengt am Stand (#476): offen startet den 1RM-Test, schon
+// getestet fuehrt auf die Uebungs-Detailseite, wo das Ergebnis steht. Der Weg
+// dorthin bleibt auch waehrend einer laufenden Einheit offen - er startet
+// nichts. Ein zweiter Test derselben Uebung laeuft damit nicht mehr ueber diese
+// Liste.
 //
 // Getestet ist der einzige Zustand, der sich in der Liste abheben muss (#472):
 // das Haekchen sitzt darum dick in einem weichen gruenen Kreis - derselbe
@@ -23,10 +28,13 @@ import type { TestWeekView } from "@/hooks/useTrainingOverview";
 export function TestWeekPanel({
   view,
   onStart,
+  onOpen,
   blocked,
 }: {
   view: TestWeekView;
   onStart: (exerciseId: string) => void;
+  /** Weg zur Uebungs-Detailseite - fuer schon getestete Uebungen. */
+  onOpen: (exerciseId: string) => void;
   /** Laeuft bereits eine Einheit? Dann ist der Test-Start gesperrt. */
   blocked: boolean;
 }): React.ReactElement {
@@ -37,8 +45,8 @@ export function TestWeekPanel({
           Testwoche – bis {view.untilLabel}
         </div>
         <div className="mt-1.5 text-[13px] leading-snug text-foreground">
-          Keine Vorgabe in dieser Woche. Am Sonntag ist die Journey durchlaufen –
-          ob getestet wurde oder nicht.
+          Keine Vorgabe in dieser Woche. Am Sonntag ist die Journey durchlaufen
+          – ob getestet wurde oder nicht.
         </div>
         <div className="mt-1.5 text-[12.5px] leading-snug text-muted-foreground">
           Trainieren ist erlaubt: die Einheit zählt zur Journey und ändert am
@@ -87,13 +95,23 @@ export function TestWeekPanel({
                   ) : undefined
                 }
                 chevron
-                disabled={blocked}
-                ariaLabel={"1RM testen: " + ex.name}
-                onClick={blocked ? undefined : () => onStart(ex.id)}
+                disabled={!ex.tested && blocked}
+                ariaLabel={
+                  ex.tested
+                    ? "Übung öffnen: " + ex.name
+                    : "1RM testen: " + ex.name
+                }
+                onClick={
+                  ex.tested
+                    ? () => onOpen(ex.id)
+                    : blocked
+                      ? undefined
+                      : () => onStart(ex.id)
+                }
               />
             ))}
           </List>
-          {blocked && (
+          {blocked && view.exercises.some((ex) => !ex.tested) && (
             <p className="mt-2 text-[13px] text-muted-foreground">
               Es läuft bereits eine Einheit – beende sie zuerst.
             </p>
