@@ -106,6 +106,12 @@ function TrainingPage(): React.ReactElement {
         <TestWeekPanel
           view={data.testWeek}
           onStart={rmTest.startById}
+          onOpen={(exerciseId) =>
+            void navigate({
+              to: "/uebungen/$exerciseId",
+              params: { exerciseId },
+            })
+          }
           blocked={rmTest.blocked}
         />
       )}

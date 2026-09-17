@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.54.14",
+      "date": "2026-09-17",
+      "changes": [
+        "In der Testwoche startete ein Tippen auf eine bereits getestete Hauptübung erneut den 1RM-Test. Jetzt führt sie direkt auf die Übungsseite mit Rekord, Diagramm und Verlauf; nur noch offene Übungen starten den Test."
+      ]
+    },
+    {
       "version": "1.54.13",
       "date": "2026-09-15",
       "changes": [
