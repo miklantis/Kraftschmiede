@@ -15,9 +15,15 @@ import {
   buildJourneySeries,
   journeyChartDates,
   journeyPhaseMarks,
+} from "@/lib/journeyChart";
+import {
+  buildJourneyTestView,
   journeyTestPoints,
   type JourneyRmTestInput,
-} from "@/lib/journeyChart";
+} from "@/lib/journeyTest";
+import { derivePhaseContext } from "@/lib/phaseContext";
+import { fuehrtRekord } from "@/lib/testWeek";
+import { todayISO } from "@/lib/format";
 import type { WorkoutExerciseInfo, WorkoutInput } from "@/lib/workouts";
 import { useExercises } from "./useExercises";
 import { useTemplates } from "./useTemplates";
@@ -25,6 +31,7 @@ import { useActiveJourney } from "./useJourney";
 import { useCoachStatuses } from "./useCoachStatuses";
 import { useJourneyWorkouts } from "./useJourneyWorkouts";
 import { useAllRmTests } from "./useRmTests";
+import { useSessions } from "./useSessions";
 import { useSessionsDetailed } from "./useSessionsDetailed";
 import { useSettings } from "./useSettings";
 
@@ -39,6 +46,9 @@ export interface JourneyExercisesView {
   groups: JourneyExerciseGroup[];
   /** Gewichtseinheit fuer die Werte im Chart-Tooltip. */
   unit: string;
+  /** Laeuft gerade die reine Testwoche dieser Journey? Dann steht in den
+   *  Kacheln das Testergebnis statt der Coach-Vorgabe (#480). */
+  testWeek: boolean;
 }
 
 // Ansichtsmodell des Abschnitts "Uebungen in dieser Journey": welche Uebungen
@@ -66,11 +76,13 @@ export function useJourneyExercises(
   const journeyQ = useActiveJourney();
   const assignedQ = useJourneyWorkouts(journeyId);
   const sessionsQ = useSessionsDetailed();
+  // Flache Einheitenliste – nur fuer den Standort in der Journey (Testwoche).
+  // Dieselbe Abfrage wie auf der uebrigen Journey-Seite, also aus dem Cache.
+  const placementSessionsQ = useSessions();
   const settingsQ = useSettings();
   // Bewusste 1RM-Tests: sie sind keine Einheiten und stehen deshalb in einer
-  // eigenen Quelle (rm_tests). Im Chart sind sie der Abschluss der Journey –
-  // die Testwoche plant keine Einheit, ohne sie braeche der Verlauf genau vor
-  // dem Ergebnis ab.
+  // eigenen Quelle (rm_tests). Im Verlauf tauchen sie nicht auf (#480); sie
+  // tragen den Block der Kachel waehrend der Testwoche.
   const rmTestsQ = useAllRmTests();
   // Coach-Stand je Uebung – dieselbe Quelle wie Uebungsliste und Uebungsseite,
   // damit in der Kachel nichts anderes steht als beim Nachschlagen. Er blockiert
@@ -88,9 +100,9 @@ export function useJourneyExercises(
   // Zuweisung (wie in JourneyWorkoutsSection).
   const assigned = Array.isArray(assignedQ.data) ? assignedQ.data : [];
 
-  // Die Tests gehoeren zur Zeitachse: kaemen sie nach, spraenge der Chart ein
-  // zweites Mal um. Anders als der Coach-Stand warten die Kacheln deshalb auf
-  // sie.
+  // Auf die Tests wird gewartet: in der Testwoche steht das Ergebnis im Block,
+  // und ein nachgereichter Test liesse die Kachel dort ein zweites Mal
+  // umspringen. Der Coach-Stand darf dagegen nachkommen.
   const ready =
     journeyId !== null &&
     exercisesQ.data != null &&
@@ -183,16 +195,24 @@ export function useJourneyExercises(
       );
       data[id] = {
         chart: {
-          dates: journeyChartDates(history, tests),
-          series: buildJourneySeries(history, exercise.metric, tests),
+          dates: journeyChartDates(history),
+          series: buildJourneySeries(history, exercise.metric),
           marks: journeyPhaseMarks(history, phaseNames),
-          tests,
         },
         sessionCount: history.length,
         // Statistikzeile aus derselben journey-gefilterten Liste: bestes Set,
         // Veraenderung seit Journey-Start, Einheiten in dieser Journey.
         stats: buildJourneyStats(history),
         coach: coachByExercise[id] ?? null,
+        // Ergebnis des 1RM-Tests dieser Journey. Gerechnet wird es nur fuer
+        // Uebungen, die ueberhaupt ein 1RM fuehren (dieselbe Regel wie die
+        // Testliste auf dem Trainingsbildschirm): Core, Haltezeit und
+        // Koerpergewicht werden nie getestet, dort waere ein "noch nicht
+        // getestet" eine falsche Offenheit. Gezeigt wird es nur in der
+        // Testwoche – dort steht es anstelle der Coach-Vorgabe (#480).
+        test: fuehrtRekord(exercise)
+          ? buildJourneyTestView(tests, history, unit)
+          : null,
       };
     }
 
@@ -215,7 +235,22 @@ export function useJourneyExercises(
     coachByExercise,
     rmTests,
     testRange,
+    unit,
   ]);
+
+  // Standort in der Journey kommt aus der einen Stelle (derivePhaseContext) –
+  // dieselbe Rechnung, die auch der Trainingsbildschirm fuer die Testwoche
+  // benutzt. Nur fuer die aktive Journey: eine abgeschlossene laeuft nicht mehr
+  // und hat keine laufende Testwoche.
+  const testWeek = useMemo<boolean>(() => {
+    if (journey == null || journey.id !== journeyId) return false;
+    return derivePhaseContext(
+      journey,
+      placementSessionsQ.data ?? [],
+      settingsQ.data?.weekly_frequency_target || 3,
+      todayISO(),
+    ).testWeek;
+  }, [journey, journeyId, placementSessionsQ.data, settingsQ.data]);
 
   return {
     isLoading,
@@ -224,5 +259,6 @@ export function useJourneyExercises(
     ready,
     groups,
     unit,
+    testWeek,
   };
 }

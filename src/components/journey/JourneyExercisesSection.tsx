@@ -23,7 +23,7 @@ export function JourneyExercisesSection(): React.ReactElement | null {
   const navigate = useNavigate();
   const journeyQ = useActiveJourney();
   const journeyId = journeyQ.data?.id ?? null;
-  const { ready, groups, unit } = useJourneyExercises(journeyId);
+  const { ready, groups, unit, testWeek } = useJourneyExercises(journeyId);
   const { active } = useJourneySeries();
 
   if (journeyId === null) return null;
@@ -64,6 +64,8 @@ export function JourneyExercisesSection(): React.ReactElement | null {
                         chart={it.chart}
                         stats={it.stats}
                         coach={it.coach}
+                        test={it.test}
+                        testWeek={testWeek}
                         activeKeys={active}
                         unit={unit}
                         removed={it.removed}

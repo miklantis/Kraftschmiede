@@ -1,10 +1,12 @@
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { JourneyExerciseChart } from "./JourneyExerciseChart";
+import { JourneyTestBlock } from "./JourneyTestBlock";
 import { CoachBlock } from "@/components/exercise/CoachBlock";
 import type { JourneyExerciseChart as JourneyChartData } from "@/lib/journeyExercises";
 import type { JourneyStat } from "@/lib/journeyStats";
 import type { CoachView } from "@/lib/coach";
+import type { JourneyTestView } from "@/lib/journeyTest";
 import type { JourneySeriesKey } from "@/lib/journeyChart";
 
 // Kachel einer Uebung im Abschnitt "Uebungen in dieser Journey": oben der Name,
@@ -24,6 +26,13 @@ import type { JourneySeriesKey } from "@/lib/journeyChart";
 // Statistikzeile rechnet auf die Journey (bestes Set in dieser Journey,
 // Veraenderung seit Journey-Start, Einheiten in dieser Journey).
 //
+// Waehrend der reinen Testwoche steht rechts nicht der Coach-Block, sondern
+// das Testergebnis (JourneyTestBlock, #480): dort gibt der Coach nichts vor,
+// eine Vorgabe fuer die naechste Einheit waere falscher Rat. Das gilt nur fuer
+// Uebungen, die ueberhaupt ein 1RM fuehren (test != null) – Core, Haltezeit und
+// Koerpergewicht werden nie getestet und behalten ihren Coach-Block. Ausserhalb
+// der Testwoche bleibt alles wie gehabt.
+//
 // removed = in dieser Journey trainiert, heute nicht mehr im Workout. Die
 // Kachel sieht dann gleich aus, tritt aber zurueck: gedimmt, mit dem Zusatz
 // "nicht mehr im Workout" neben dem Namen. Nur leicht gedimmt, denn der
@@ -35,6 +44,8 @@ export function JourneyExerciseTile({
   chart,
   stats,
   coach,
+  test,
+  testWeek,
   activeKeys,
   unit,
   removed = false,
@@ -44,6 +55,13 @@ export function JourneyExerciseTile({
   chart: JourneyChartData;
   stats: readonly JourneyStat[];
   coach: CoachView | null;
+  /** Testergebnis dieser Uebung in dieser Journey – gezeigt wird es nur in der
+   *  Testwoche. null = diese Uebung fuehrt kein 1RM (Core, Haltezeit,
+   *  Koerpergewicht); dann bleibt es auch dort beim Coach-Block. */
+  test: JourneyTestView | null;
+  /** Laeuft gerade die reine Testwoche? Dann steht rechts das Testergebnis
+   *  statt der Coach-Vorgabe. */
+  testWeek: boolean;
   /** Eingeschaltete Serien (Schalterreihe im Abschnittskopf). */
   activeKeys: readonly JourneySeriesKey[];
   unit: string;
@@ -87,16 +105,23 @@ export function JourneyExerciseTile({
             dates={chart.dates}
             series={series}
             marks={chart.marks}
-            tests={chart.tests}
             unit={unit}
           />
         </div>
-        <CoachBlock
-          coach={coach}
-          stats={stats}
-          unit={unit}
-          className="border-t border-border pt-3 min-[960px]:border-t-0 min-[960px]:pt-1"
-        />
+        {testWeek && test !== null ? (
+          <JourneyTestBlock
+            test={test}
+            stats={stats}
+            className="border-t border-border pt-3 min-[960px]:border-t-0 min-[960px]:pt-1"
+          />
+        ) : (
+          <CoachBlock
+            coach={coach}
+            stats={stats}
+            unit={unit}
+            className="border-t border-border pt-3 min-[960px]:border-t-0 min-[960px]:pt-1"
+          />
+        )}
       </div>
     </div>
   );

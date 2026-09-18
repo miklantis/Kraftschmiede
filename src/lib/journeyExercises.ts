@@ -28,22 +28,19 @@ import {
   type WorkoutInput,
 } from "./workouts";
 import type { HistorySessionInput } from "./history";
-import type {
-  JourneyChartSeries,
-  JourneyPhaseMark,
-  JourneyTestPoint,
-} from "./journeyChart";
+import type { JourneyChartSeries, JourneyPhaseMark } from "./journeyChart";
+import type { JourneyTestView } from "./journeyTest";
 import type { JourneyStat } from "./journeyStats";
 import type { CoachView } from "./coach";
 
 // Alles, was die Kachel einer Uebung zum Zeichnen braucht: die Zeitachse (ein
-// Eintrag je Tag mit Ereignis, aelteste zuerst), die Serien, die Phasengrenzen
-// und die bewussten 1RM-Tests dieser Journey.
+// Eintrag je Tag mit Einheit, aelteste zuerst), die Serien und die
+// Phasengrenzen. Bewusste 1RM-Tests stehen bewusst nicht darin – sie sind
+// keine Einheit und gehoeren in den Block neben dem Chart (#480).
 export interface JourneyExerciseChart {
   dates: string[];
   series: JourneyChartSeries[];
   marks: JourneyPhaseMark[];
-  tests: JourneyTestPoint[];
 }
 
 // Die volle Kachel einer Uebung: links der Verlauf, rechts der Coach-Block mit
@@ -59,6 +56,9 @@ export interface JourneyExerciseData {
   stats: JourneyStat[];
   /** Coach-Stand dieser Uebung; null, solange er nicht berechnet ist. */
   coach: CoachView | null;
+  /** Testergebnis dieser Uebung in dieser Journey. Gezeigt wird es nur in der
+   *  Testwoche, gerechnet wird es immer – ohne Test bleibt es leer. */
+  test: JourneyTestView | null;
 }
 
 // Eine Zeile des Abschnitts: die Uebung und wie oft sie in dieser Journey
@@ -72,6 +72,8 @@ export interface JourneyExerciseRow {
   chart: JourneyExerciseChart | null;
   stats: JourneyStat[];
   coach: CoachView | null;
+  /** Testergebnis dieser Uebung in dieser Journey; null ohne Einheit. */
+  test: JourneyTestView | null;
   /** true = in dieser Journey trainiert, steht aber nicht mehr im Plan
    *  (ausgetauscht, Workout deaktiviert oder aus der Journey genommen). Solche
    *  Zeilen stehen am Ende ihrer Gruppe, tragen den Zusatz "nicht mehr im
@@ -192,6 +194,7 @@ export function buildJourneyExerciseGroups(
       chart: hasEntries ? d.chart : null,
       stats: hasEntries ? d.stats : [],
       coach: hasEntries && !removed ? d.coach : null,
+      test: hasEntries ? d.test : null,
       removed,
     };
     (removed ? removedBuckets : buckets)[exerciseGroupKey(e)].push(row);

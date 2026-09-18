@@ -1,4 +1,5 @@
 import { CoachStatusPill } from "@/components/ui/coach-status-pill";
+import { StatLine } from "@/components/ui/stat-line";
 import type { StatCell } from "@/components/ui/stat-row";
 import type { CoachView } from "@/lib/coach";
 import { coachLineLabel, coachOutlookLabel } from "@/lib/coachText";
@@ -59,26 +60,10 @@ export function CoachBlock({
         </>
       )}
       {stats.length > 0 && (
-        <div
-          className={cn(
-            "flex flex-wrap items-baseline gap-x-[22px] gap-y-2 text-[15px] text-muted-foreground",
-            coach && "mt-3.5 border-t border-border pt-3.5",
-          )}
-        >
-          {stats.map((c, i) => (
-            <span key={i}>
-              <span
-                className={cn(
-                  "font-semibold tabular-nums",
-                  c.accent ? "text-primary" : "text-foreground",
-                )}
-              >
-                {c.value}
-              </span>{" "}
-              {c.label}
-            </span>
-          ))}
-        </div>
+        <StatLine
+          cells={stats}
+          className={cn(coach && "mt-3.5 border-t border-border pt-3.5")}
+        />
       )}
     </div>
   );
