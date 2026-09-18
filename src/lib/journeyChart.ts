@@ -12,6 +12,11 @@
 // Ein Datenpunkt ist eine absolvierte Einheit dieser Uebung in dieser Journey,
 // nicht die Journey-Woche: bei Hypertrophie fallen mehrere Entscheidungen pro
 // Woche, eine Wochen-Achse wuerde sie verschlucken.
+//
+// Bewusste 1RM-Tests kommen hier NICHT vor (#480). Ein Test ist keine Einheit;
+// im Verlauf riss er die Trendlinie am rechten Rand auf seinen Messwert hoch
+// und legte seine Marke neben die Phasengrenze. Das Ergebnis steht jetzt im
+// Block neben dem Chart (lib/journeyTest.ts).
 
 import { repsPerSet, type ExHistoryEntry } from "./exerciseHistory";
 import { fmtNum, fmtScore, fmtWeight } from "./format";
@@ -43,62 +48,6 @@ export interface JourneyChartPoint {
   /** Tag der Einheit (ISO). Traegt die Platzierung auf der x-Achse. */
   date: string;
   value: number;
-  /** Punkt stammt aus einem bewussten 1RM-Test, nicht aus einer Einheit
-   *  (nur auf der Trendlinie moeglich). Die Kachel hebt ihn hervor. */
-  test?: boolean;
-}
-
-// Ein bewusster 1RM-Test im Zeitraum der Journey (aus rm_tests). Er ist KEINE
-// Trainingseinheit (siehe Architektur 3.3) und taucht deshalb nur an zwei
-// Stellen im Chart auf: als Punkt auf der Trendlinie – der Test misst genau
-// das, was die Trendlinie schaetzt – und als senkrechte Marke auf der
-// Zeitachse. Gewicht, Wiederholungen und Score bleiben unberuehrt: ein
-// Testsatz ist kein Arbeitssatz, in diesen Linien wuerde er den Verlauf
-// verfaelschen (Gewicht springt, Wiederholungen knicken ein, eine
-// Anstrengung speichert der Test gar nicht).
-export interface JourneyTestPoint {
-  date: string;
-  /** Bestes Set des Tests. */
-  weight: number;
-  reps: number;
-  /** Daraus geschaetztes 1RM – der Wert, der auf der Trendlinie sitzt. */
-  estRm: number;
-}
-
-/** Test mit Uebungsbezug, wie er aus rm_tests hereinkommt. */
-export interface JourneyRmTestInput extends JourneyTestPoint {
-  exerciseId: string;
-}
-
-// Die Tests EINER Uebung, die in diese Journey fallen, aelteste zuerst.
-//
-// rm_tests traegt keinen Journey-Stempel (anders als eine Einheit), deshalb
-// entscheidet der Zeitraum: Journey-Start bis Journey-Ende, bei der laufenden
-// Journey offen nach hinten. Ob der Test in der Testwoche oder zwischendurch
-// gemacht wurde, spielt keine Rolle – er ist in dieser Journey passiert.
-// Ohne Startdatum ist keine Zuordnung moeglich; dann bleibt die Liste leer,
-// statt fremde Tests einzusammeln.
-export function journeyTestPoints(
-  tests: readonly JourneyRmTestInput[],
-  exerciseId: string,
-  startDate: string | null,
-  endDate: string | null,
-): JourneyTestPoint[] {
-  if (startDate == null) return [];
-  return tests
-    .filter(
-      (t) =>
-        t.exerciseId === exerciseId &&
-        t.date >= startDate &&
-        (endDate == null || t.date <= endDate),
-    )
-    .map((t) => ({
-      date: t.date,
-      weight: t.weight,
-      reps: t.reps,
-      estRm: t.estRm,
-    }))
-    .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 }
 
 export interface JourneyChartSeries {
@@ -157,25 +106,14 @@ function seriesValue(
 export function buildJourneySeries(
   history: readonly ExHistoryEntry[],
   metric: "reps" | "duration" | null,
-  tests: readonly JourneyTestPoint[] = [],
 ): JourneyChartSeries[] {
-  const testDates = new Set(tests.map((t) => t.date));
   const out: JourneyChartSeries[] = [];
   for (const key of JOURNEY_SERIES_KEYS) {
     const points: JourneyChartPoint[] = [];
     for (const e of history) {
-      // Am Testtag gilt der gemessene Wert: die Schaetzung aus der Einheit
-      // desselben Tages faellt weg, sonst staenden zwei 1RM uebereinander.
-      if (key === "trend" && testDates.has(e.date)) continue;
       const v = seriesValue(key, e, metric);
       if (v == null) continue;
       points.push({ date: e.date, value: v });
-    }
-    if (key === "trend") {
-      for (const t of tests) {
-        points.push({ date: t.date, value: t.estRm, test: true });
-      }
-      points.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
     }
     if (points.length === 0) continue;
     out.push({
@@ -188,31 +126,15 @@ export function buildJourneySeries(
   return out;
 }
 
-// Die Zeitachse der Kachel: ein Eintrag je TAG mit Ereignis in dieser Journey,
-// aelteste zuerst. Ereignis heisst Einheit oder Test – die Testwoche plant
-// keine Einheit, der Testtag liegt also in aller Regel hinter der letzten
-// Einheit und braucht seinen eigenen Platz auf der Achse. Mehrere Einheiten
-// desselben Tages teilen sich wie bisher einen Platz; die Zeit bleibt die
-// Wahrheit der Achse.
+// Die Zeitachse der Kachel: ein Eintrag je TAG mit Einheit in dieser Journey,
+// aelteste zuerst. Mehrere Einheiten desselben Tages teilen sich einen Platz;
+// die Zeit bleibt die Wahrheit der Achse.
 export function journeyChartDates(
   history: readonly ExHistoryEntry[],
-  tests: readonly JourneyTestPoint[] = [],
 ): string[] {
   const days = new Set<string>();
   for (const e of history) days.add(e.date);
-  for (const t of tests) days.add(t.date);
   return [...days].sort();
-}
-
-// Anzeigetext des getesteten Sets im Tooltip. Das geschaetzte 1RM steht schon
-// als Trendwert daneben – hier steht, woraus es kommt.
-export function testValueText(
-  test: JourneyTestPoint,
-  weightUnit: string,
-): string {
-  return (
-    "Test " + fmtWeight(test.weight, weightUnit) + " × " + fmtNum(test.reps)
-  );
 }
 
 // Anzeigetext eines Wertes im Tooltip. Der Trend ist ein geschaetztes 1RM und
@@ -234,8 +156,9 @@ export function seriesValueText(
 // Phase lag. Der erste Tag der Achse ist der Einstieg (keine Grenze davor),
 // jeder weitere eine Phasengrenze – dort setzt der Coach den Anker neu.
 //
-// Am Datum, nicht am Listenindex: die Achse traegt seit dem Test auch Tage
-// ohne Einheit, ein Index in die Verlaufsliste zeigte dort ins Leere.
+// Am Datum, nicht am Listenindex: mehrere Einheiten desselben Tages teilen
+// sich einen Platz auf der Achse, ein Index in die Verlaufsliste zeigte dort
+// auf den falschen Punkt.
 export interface JourneyPhaseMark {
   date: string;
   name: string;

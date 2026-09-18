@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.56.0",
+      "date": "2026-09-18",
+      "changes": [
+        "Der 1RM-Test steht nicht mehr in der Verlaufsgrafik der Journey-Seite: die Trendlinie schoss am rechten Rand auf den Testwert, und die Markierung „Test“ überlagerte sich mit der Phasengrenze. Die Grafik zeigt jetzt nur noch absolviertes Training.",
+        "Dafür steht das Testergebnis in der Testwoche dort, wo sonst der Coach spricht: statt „Halten – beim nächsten Mal 45 kg × 2“ nennt der Block das gemessene Set, das 1RM daraus und die Entwicklung in dieser Journey (z. B. „96 kg → 109 kg (+14%)“). Übungen ohne Test tragen den Hinweis „Noch nicht getestet“.",
+        "Außerhalb der Testwoche bleibt alles wie gehabt – dort gibt der Coach weiterhin Gewicht, Wiederholungen und Ausblick vor."
+      ]
+    },
+    {
       "version": "1.55.0",
       "date": "2026-09-18",
       "changes": [
