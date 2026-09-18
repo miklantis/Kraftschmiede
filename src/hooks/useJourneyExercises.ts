@@ -11,13 +11,20 @@ import {
   buildExerciseHistory,
   filterJourneySessions,
 } from "@/lib/exerciseHistory";
-import { buildJourneySeries, journeyPhaseMarks } from "@/lib/journeyChart";
+import {
+  buildJourneySeries,
+  journeyChartDates,
+  journeyPhaseMarks,
+  journeyTestPoints,
+  type JourneyRmTestInput,
+} from "@/lib/journeyChart";
 import type { WorkoutExerciseInfo, WorkoutInput } from "@/lib/workouts";
 import { useExercises } from "./useExercises";
 import { useTemplates } from "./useTemplates";
 import { useActiveJourney } from "./useJourney";
 import { useCoachStatuses } from "./useCoachStatuses";
 import { useJourneyWorkouts } from "./useJourneyWorkouts";
+import { useAllRmTests } from "./useRmTests";
 import { useSessionsDetailed } from "./useSessionsDetailed";
 import { useSettings } from "./useSettings";
 
@@ -60,13 +67,18 @@ export function useJourneyExercises(
   const assignedQ = useJourneyWorkouts(journeyId);
   const sessionsQ = useSessionsDetailed();
   const settingsQ = useSettings();
+  // Bewusste 1RM-Tests: sie sind keine Einheiten und stehen deshalb in einer
+  // eigenen Quelle (rm_tests). Im Chart sind sie der Abschluss der Journey –
+  // die Testwoche plant keine Einheit, ohne sie braeche der Verlauf genau vor
+  // dem Ergebnis ab.
+  const rmTestsQ = useAllRmTests();
   // Coach-Stand je Uebung – dieselbe Quelle wie Uebungsliste und Uebungsseite,
   // damit in der Kachel nichts anderes steht als beim Nachschlagen. Er blockiert
   // die Kacheln nicht: sie stehen, sobald der Verlauf da ist, der Block fuellt
   // sich nach.
   const coachStatuses = useCoachStatuses();
 
-  const queries = [exercisesQ, templatesQ, assignedQ, sessionsQ, settingsQ];
+  const queries = [exercisesQ, templatesQ, assignedQ, sessionsQ, settingsQ, rmTestsQ];
   const isLoading = queries.some((q) => q.isLoading);
   const isError = queries.some((q) => q.isError);
   const error = queries.find((q) => q.isError)?.error ?? null;
@@ -76,12 +88,16 @@ export function useJourneyExercises(
   // Zuweisung (wie in JourneyWorkoutsSection).
   const assigned = Array.isArray(assignedQ.data) ? assignedQ.data : [];
 
+  // Die Tests gehoeren zur Zeitachse: kaemen sie nach, spraenge der Chart ein
+  // zweites Mal um. Anders als der Coach-Stand warten die Kacheln deshalb auf
+  // sie.
   const ready =
     journeyId !== null &&
     exercisesQ.data != null &&
     templatesQ.data != null &&
     assignedQ.data !== undefined &&
-    sessionsQ.data != null;
+    sessionsQ.data != null &&
+    rmTestsQ.data != null;
 
   const rmFormula = settingsQ.data?.rm_formula ?? "mean";
   const unit = settingsQ.data?.unit ?? "kg";
@@ -97,6 +113,29 @@ export function useJourneyExercises(
     for (const p of journey.phases) out[p.id] = p.name;
     return out;
   }, [journey, journeyId]);
+
+  // Zeitraum der Journey – die Zuordnung der Tests haengt daran (rm_tests
+  // traegt keinen Journey-Stempel). Wie bei den Phasennamen nur fuer die
+  // gefragte Journey; ist sie nicht die aktive, bleibt der Zeitraum leer und
+  // es werden keine Tests zugeordnet, statt fremde einzusammeln.
+  const testRange = useMemo<{ start: string | null; end: string | null }>(() => {
+    if (journey == null || journey.id !== journeyId) {
+      return { start: null, end: null };
+    }
+    return { start: journey.start_date, end: journey.end_date };
+  }, [journey, journeyId]);
+
+  const rmTests = useMemo<JourneyRmTestInput[]>(
+    () =>
+      (rmTestsQ.data ?? []).map((t) => ({
+        exerciseId: t.exercise_id,
+        date: t.date,
+        weight: t.weight,
+        reps: t.reps,
+        estRm: t.est_rm,
+      })),
+    [rmTestsQ.data],
+  );
 
   const coachByExercise = coachStatuses.byExercise;
 
@@ -136,12 +175,20 @@ export function useJourneyExercises(
       const exercise = byId.get(id);
       if (!exercise) continue;
       const history = buildExerciseHistory(id, journeySessions, rmFormula);
+      const tests = journeyTestPoints(
+        rmTests,
+        id,
+        testRange.start,
+        testRange.end,
+      );
       data[id] = {
         chart: {
-          dates: history.map((e) => e.date),
-          series: buildJourneySeries(history, exercise.metric),
+          dates: journeyChartDates(history, tests),
+          series: buildJourneySeries(history, exercise.metric, tests),
           marks: journeyPhaseMarks(history, phaseNames),
+          tests,
         },
+        sessionCount: history.length,
         // Statistikzeile aus derselben journey-gefilterten Liste: bestes Set,
         // Veraenderung seit Journey-Start, Einheiten in dieser Journey.
         stats: buildJourneyStats(history),
@@ -166,6 +213,8 @@ export function useJourneyExercises(
     rmFormula,
     phaseNames,
     coachByExercise,
+    rmTests,
+    testRange,
   ]);
 
   return {

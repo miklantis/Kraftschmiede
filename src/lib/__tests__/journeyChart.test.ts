@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
   buildJourneySeries,
+  journeyChartDates,
   journeyPhaseMarks,
+  journeyTestPoints,
   parseSeriesKeys,
   seriesValueText,
   serializeSeriesKeys,
+  testValueText,
   toggleSeriesKey,
   JOURNEY_SERIES_KEYS,
+  type JourneyRmTestInput,
 } from "@/lib/journeyChart";
 import { repsPerSet, type ExHistoryEntry } from "@/lib/exerciseHistory";
 
@@ -179,20 +183,126 @@ describe("journeyPhaseMarks", () => {
       entry({ date: "2026-02-02", phaseId: "p2" }),
     ];
     expect(journeyPhaseMarks(history, names)).toEqual([
-      { index: 0, name: "Aufbau" },
-      { index: 2, name: "Kraft" },
+      { date: "2026-01-05", name: "Aufbau" },
+      { date: "2026-02-02", name: "Kraft" },
     ]);
   });
 
   it("schweigt ueber Phasen ohne Namen und Einheiten ohne Phase", () => {
     const history = [
-      entry({ phaseId: null }),
-      entry({ phaseId: "unbekannt" }),
-      entry({ phaseId: "p2" }),
+      entry({ date: "2026-01-05", phaseId: null }),
+      entry({ date: "2026-01-12", phaseId: "unbekannt" }),
+      entry({ date: "2026-01-19", phaseId: "p2" }),
     ];
     expect(journeyPhaseMarks(history, names)).toEqual([
-      { index: 2, name: "Kraft" },
+      { date: "2026-01-19", name: "Kraft" },
     ]);
+  });
+});
+
+// Ein bewusster 1RM-Test, wie er aus rm_tests hereinkommt.
+function test(
+  overrides: Partial<JourneyRmTestInput> = {},
+): JourneyRmTestInput {
+  return {
+    exerciseId: "kniebeuge",
+    date: "2026-02-16",
+    weight: 100,
+    reps: 3,
+    estRm: 109,
+    ...overrides,
+  };
+}
+
+describe("journeyTestPoints", () => {
+  const alle = [
+    test({ date: "2026-02-16" }),
+    test({ date: "2025-12-20", weight: 95, estRm: 103 }),
+    test({ exerciseId: "bankdruecken", date: "2026-02-16" }),
+  ];
+
+  it("nimmt nur die Tests dieser Uebung aus dem Zeitraum der Journey", () => {
+    const out = journeyTestPoints(alle, "kniebeuge", "2026-01-01", "2026-03-31");
+    expect(out).toEqual([
+      { date: "2026-02-16", weight: 100, reps: 3, estRm: 109 },
+    ]);
+  });
+
+  it("laesst das Ende der laufenden Journey offen", () => {
+    const out = journeyTestPoints(alle, "kniebeuge", "2025-01-01", null);
+    expect(out.map((t) => t.date)).toEqual(["2025-12-20", "2026-02-16"]);
+  });
+
+  it("ordnet ohne Startdatum nichts zu", () => {
+    expect(journeyTestPoints(alle, "kniebeuge", null, null)).toEqual([]);
+  });
+});
+
+describe("buildJourneySeries mit 1RM-Test", () => {
+  const history = [
+    entry({ date: "2026-01-05", est1RM: 96 }),
+    entry({ date: "2026-01-12", est1RM: 100 }),
+  ];
+  const tests = [
+    { date: "2026-01-26", weight: 100, reps: 3, estRm: 109 },
+  ];
+
+  it("setzt den gemessenen Wert als eigenen Punkt auf die Trendlinie", () => {
+    const trend = buildJourneySeries(history, "reps", tests).find(
+      (s) => s.key === "trend",
+    );
+    expect(trend?.points).toEqual([
+      { date: "2026-01-05", value: 96 },
+      { date: "2026-01-12", value: 100 },
+      { date: "2026-01-26", value: 109, test: true },
+    ]);
+  });
+
+  it("laesst Gewicht, Wiederholungen und Score unberuehrt", () => {
+    const out = buildJourneySeries(history, "reps", tests);
+    for (const key of ["weight", "reps", "score"] as const) {
+      const s = out.find((x) => x.key === key);
+      expect(s?.points.map((p) => p.date)).toEqual([
+        "2026-01-05",
+        "2026-01-12",
+      ]);
+    }
+  });
+
+  it("nimmt am Testtag den gemessenen Wert statt der Schaetzung der Einheit", () => {
+    const amGleichenTag = [
+      ...history,
+      entry({ date: "2026-01-26", est1RM: 102 }),
+    ];
+    const trend = buildJourneySeries(amGleichenTag, "reps", tests).find(
+      (s) => s.key === "trend",
+    );
+    expect(trend?.points.filter((p) => p.date === "2026-01-26")).toEqual([
+      { date: "2026-01-26", value: 109, test: true },
+    ]);
+  });
+});
+
+describe("journeyChartDates", () => {
+  it("fuehrt Einheiten und Tests zu einer Tagesliste zusammen", () => {
+    const history = [
+      entry({ date: "2026-01-05" }),
+      entry({ date: "2026-01-05" }),
+      entry({ date: "2026-01-12" }),
+    ];
+    const out = journeyChartDates(history, [
+      { date: "2026-01-26", weight: 100, reps: 3, estRm: 109 },
+      { date: "2026-01-12", weight: 90, reps: 5, estRm: 101 },
+    ]);
+    expect(out).toEqual(["2026-01-05", "2026-01-12", "2026-01-26"]);
+  });
+});
+
+describe("testValueText", () => {
+  it("nennt das getestete Set", () => {
+    expect(
+      testValueText({ date: "2026-01-26", weight: 100, reps: 3, estRm: 109 }, "kg"),
+    ).toBe("Test 100 kg × 3");
   });
 });
 

@@ -87,6 +87,7 @@ export function JourneyExerciseTile({
             dates={chart.dates}
             series={series}
             marks={chart.marks}
+            tests={chart.tests}
             unit={unit}
           />
         </div>

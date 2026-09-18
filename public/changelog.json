@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.55.0",
+      "date": "2026-09-18",
+      "changes": [
+        "Die Verlaufsgrafik einer Übung auf der Journey-Seite endete bisher mit der letzten Trainingseinheit – der 1RM-Test der Testwoche fehlte darin ganz. Jetzt steht er im Bild: als Punkt auf der Trendlinie, als senkrechte Markierung „Test“ auf dem Testtag und mit dem getesteten Satz (z. B. „Test 100 kg × 3“) beim Antippen. Gewicht, Wiederholungen und Anstrengung zeigen weiterhin nur echtes Training."
+      ]
+    },
+    {
       "version": "1.54.14",
       "date": "2026-09-17",
       "changes": [
