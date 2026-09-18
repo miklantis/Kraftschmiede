@@ -28,17 +28,22 @@ import {
   type WorkoutInput,
 } from "./workouts";
 import type { HistorySessionInput } from "./history";
-import type { JourneyChartSeries, JourneyPhaseMark } from "./journeyChart";
+import type {
+  JourneyChartSeries,
+  JourneyPhaseMark,
+  JourneyTestPoint,
+} from "./journeyChart";
 import type { JourneyStat } from "./journeyStats";
 import type { CoachView } from "./coach";
 
 // Alles, was die Kachel einer Uebung zum Zeichnen braucht: die Zeitachse (ein
-// Eintrag je absolvierter Einheit, aelteste zuerst), die Serien und die
-// Phasengrenzen.
+// Eintrag je Tag mit Ereignis, aelteste zuerst), die Serien, die Phasengrenzen
+// und die bewussten 1RM-Tests dieser Journey.
 export interface JourneyExerciseChart {
   dates: string[];
   series: JourneyChartSeries[];
   marks: JourneyPhaseMark[];
+  tests: JourneyTestPoint[];
 }
 
 // Die volle Kachel einer Uebung: links der Verlauf, rechts der Coach-Block mit
@@ -46,6 +51,11 @@ export interface JourneyExerciseChart {
 // Journey haben sie.
 export interface JourneyExerciseData {
   chart: JourneyExerciseChart;
+  /** Einheiten dieser Uebung in dieser Journey. Steht eigens hier und wird
+   *  nicht aus der Zeitachse abgelesen: die traegt auch Tage ohne Einheit
+   *  (ein 1RM-Test ist keine). Ohne Einheit bleibt es bei der
+   *  Platzhalter-Zeile – ein Test allein ergibt keinen Verlauf. */
+  sessionCount: number;
   stats: JourneyStat[];
   /** Coach-Stand dieser Uebung; null, solange er nicht berechnet ist. */
   coach: CoachView | null;
@@ -170,7 +180,7 @@ export function buildJourneyExerciseGroups(
     if (!inPlan && !removed) continue;
 
     const d = data[e.id];
-    const hasEntries = d != null && d.chart.dates.length > 0;
+    const hasEntries = d != null && d.sessionCount > 0;
     // Eine entfernte Uebung ohne Einheit haette hier nichts zu erzaehlen: sie
     // steht weder im Plan noch im Verlauf dieser Journey.
     if (removed && !hasEntries) continue;
@@ -178,7 +188,7 @@ export function buildJourneyExerciseGroups(
     const row: JourneyExerciseRow = {
       id: e.id,
       name: e.name,
-      sessionCount: hasEntries ? d.chart.dates.length : 0,
+      sessionCount: hasEntries ? d.sessionCount : 0,
       chart: hasEntries ? d.chart : null,
       stats: hasEntries ? d.stats : [],
       coach: hasEntries && !removed ? d.coach : null,

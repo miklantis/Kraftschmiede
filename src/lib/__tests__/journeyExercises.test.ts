@@ -13,7 +13,8 @@ import type { ExerciseRow } from "@/schemas";
 // Einheiten (Daten) sie traegt.
 function kachel(...dates: string[]): JourneyExerciseData {
   return {
-    chart: { dates, series: [], marks: [] },
+    chart: { dates, series: [], marks: [], tests: [] },
+    sessionCount: dates.length,
     stats: [{ value: String(dates.length), label: "Einheiten" }],
     coach: null,
   };
@@ -294,7 +295,12 @@ describe("buildJourneyExerciseGroups", () => {
         id: "kniebeuge",
         name: "kniebeuge",
         sessionCount: 2,
-        chart: { dates: ["2026-01-05", "2026-01-12"], series: [], marks: [] },
+        chart: {
+          dates: ["2026-01-05", "2026-01-12"],
+          series: [],
+          marks: [],
+          tests: [],
+        },
         stats: [{ value: "2", label: "Einheiten" }],
         coach: null,
         removed: true,

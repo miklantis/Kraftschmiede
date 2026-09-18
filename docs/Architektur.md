@@ -220,7 +220,12 @@ Begründung in ADR-0003.
 - **rm_tests** – bewusste 1RM-Tests je Übung: exercise_id (FK), date, weight, reps, est_rm,
   previous_rm (Rekord vor dem Test, nullable), notiz (Freitext-Notiz zum Test, Leerstring
   = keine Notiz, Migration 0025), created_at (Migration 0013). Bewusst ohne
-  Bezug zu `sessions`: ein Test ist keine Trainingseinheit und zählt nirgends als solche
+  Bezug zu `sessions`: ein Test ist keine Trainingseinheit und zählt nirgends als solche.
+  Im Verlauf erscheint er allein als Markierung – als Stufe der 1RM-Treppe auf der
+  Übungsseite und als Punkt auf der Trendlinie samt senkrechter Testmarke in der
+  Journey-Kachel (`journeyTestPoints` ordnet ihn über den Zeitraum der Journey zu,
+  da die Zeile keinen Journey-Stempel trägt). Gewicht-, Wiederholungs- und
+  Score-Linie bleiben ihm verschlossen: ein Testsatz ist kein Arbeitssatz
 - **settings** – user_id (PK), rm_formula, weekly_frequency_target, weight_step, unit,
   recovery_windows (jsonb), timers (jsonb), avatar (Profilbild als Data-URL, quadratisch
   mit 256 px Kante, im Browser erzeugt; Leerstring = kein Bild, Migration 0052)

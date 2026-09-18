@@ -15,15 +15,23 @@ import { timeSlots } from "@/lib/chartTime";
 import { longDateShort } from "@/lib/format";
 import {
   seriesValueText,
+  testValueText,
   type JourneyChartSeries,
   type JourneyPhaseMark,
   type JourneySeriesKey,
+  type JourneyTestPoint,
 } from "@/lib/journeyChart";
 
 // Verlaufschart einer Uebung innerhalb einer Journey: mehrere Linien
 // gleichzeitig statt einer umgeschalteten Metrik. Ein Punkt ist eine
 // absolvierte Einheit; die x-Achse laeuft tagesgenau, Pausen bleiben als
 // Luecke stehen.
+//
+// Ein bewusster 1RM-Test ist keine Einheit und steht deshalb anders im Bild:
+// als senkrechte Marke auf seinem Tag (mit "Test" am Fuss) und als
+// hervorgehobener Ring auf der Trendlinie. Die Marke haengt nicht an der
+// Schalterreihe – auch mit ausgeschaltetem Trend soll zu sehen sein, wann
+// getestet wurde.
 //
 // Jede Serie ist auf IHRE EIGENE Spanne gestreckt (0..1 ueber die Hoehe), damit
 // Gewicht, Wiederholungen, Score und Trend nebeneinander lesbar sind. Es gibt
@@ -78,11 +86,14 @@ const PER_POINT = 20;
 const PAD_Y = 10; // Luft ueber und unter den Extremwerten.
 
 export interface JourneyExerciseChartProps {
-  /** Tag je Einheit dieser Uebung in der Journey, aelteste zuerst. */
+  /** Tag je Ereignis dieser Uebung in der Journey (Einheit oder Test),
+   *  aelteste zuerst, jeder Tag genau einmal. */
   dates: readonly string[];
   /** Bereits auf die eingeschalteten Serien gefiltert. */
   series: readonly JourneyChartSeries[];
   marks: readonly JourneyPhaseMark[];
+  /** Bewusste 1RM-Tests dieser Uebung in dieser Journey. */
+  tests: readonly JourneyTestPoint[];
   unit: string;
   height?: number;
 }
@@ -91,6 +102,7 @@ export function JourneyExerciseChart({
   dates,
   series,
   marks,
+  tests,
   unit,
   height = 170,
 }: JourneyExerciseChartProps): React.ReactElement {
@@ -158,10 +170,11 @@ export function JourneyExerciseChart({
       // Phasengrenzen zuerst (liegen hinter den Linien). Der Strich sitzt
       // zwischen der letzten Einheit der alten und der ersten der neuen Phase.
       marks.forEach((m) => {
-        if (m.index >= n) return;
-        const at = px(m.index);
-        const lineX = m.index > 0 ? (px(m.index - 1) + at) / 2 : 0;
-        if (m.index > 0) {
+        const mi = indexOfDate.get(m.date);
+        if (mi === undefined) return;
+        const at = px(mi);
+        const lineX = mi > 0 ? (px(mi - 1) + at) / 2 : 0;
+        if (mi > 0) {
           g.append("line")
             .attr("x1", lineX)
             .attr("y1", 0)
@@ -185,6 +198,35 @@ export function JourneyExerciseChart({
           .text(m.name);
       });
 
+      // Testmarken: senkrecht auf dem Testtag, in der Farbe der Trendlinie.
+      // Feiner gestrichelt als die Phasengrenze, damit beide nebeneinander
+      // auseinanderzuhalten sind, und ebenfalls hinter den Linien.
+      const TEST_COLOR = readToken(JOURNEY_SERIES_VAR.trend);
+      tests.forEach((t) => {
+        const ti = indexOfDate.get(t.date);
+        if (ti === undefined) return;
+        const at = px(ti);
+        g.append("line")
+          .attr("x1", at)
+          .attr("y1", 0)
+          .attr("x2", at)
+          .attr("y2", ih)
+          .attr("stroke", TEST_COLOR)
+          .attr("stroke-width", 1)
+          .attr("stroke-dasharray", "2 3")
+          .attr("opacity", 0.55);
+        // Wort am Fuss, rechts der Marke; am rechten Rand nach links gekippt.
+        const toRight = at + 4 + 22 <= iw;
+        g.append("text")
+          .attr("x", toRight ? at + 4 : at - 4)
+          .attr("y", ih + 14)
+          .attr("text-anchor", toRight ? "start" : "end")
+          .attr("fill", TEST_COLOR)
+          .attr("font-family", CHART_MONO)
+          .attr("font-size", 10)
+          .text("Test");
+      });
+
       // Koordinaten je Serie einmal berechnen: Flaeche und Linie haengen an
       // denselben Punkten, gezeichnet wird aber in zwei Durchgaengen.
       const drawn = series.map((s) => {
@@ -198,6 +240,7 @@ export function JourneyExerciseChart({
           co: s.points.map((p) => ({
             cx: px(indexOfDate.get(p.date) ?? 0),
             cy: yOf(flat ? 0.5 : (p.value - lo) / (hi - lo)),
+            test: p.test === true,
           })),
         };
       });
@@ -241,6 +284,18 @@ export function JourneyExerciseChart({
           if (s.key === "score") path.attr("stroke-dasharray", SCORE_DASH);
         }
         s.co.forEach((p) => {
+          // Der Testpunkt ist ein Ring auf Kartengrund: gemessen statt
+          // geschaetzt, das soll man ohne Tooltip sehen.
+          if (p.test) {
+            g.append("circle")
+              .attr("cx", p.cx)
+              .attr("cy", p.cy)
+              .attr("r", 4)
+              .attr("fill", readToken("--card"))
+              .attr("stroke", s.color)
+              .attr("stroke-width", 2);
+            return;
+          }
           g.append("circle")
             .attr("cx", p.cx)
             .attr("cy", p.cy)
@@ -252,6 +307,7 @@ export function JourneyExerciseChart({
       // Tooltip je Einheit: senkrechte Fuehrungslinie plus alle Werte dieses
       // Tages. Getroffen wird ueber ein Band, das bis zur Mitte zu den
       // Nachbarn reicht – damit ist jeder Punkt auch auf dem Handy zu treffen.
+      const testByDate = new Map(tests.map((t) => [t.date, t]));
       const valuesAt = (i: number): { text: string; color: string }[] => {
         const date = dates[i];
         const out: { text: string; color: string }[] = [];
@@ -261,6 +317,16 @@ export function JourneyExerciseChart({
           out.push({
             text: seriesValueText(s, p.value, unit),
             color: readToken(JOURNEY_SERIES_VAR[s.key]),
+          });
+        }
+        // Das getestete Set als eigene Zeile – der Trendwert daneben ist das
+        // daraus geschaetzte 1RM. Sie steht auch dann, wenn der Trend
+        // abgeschaltet ist.
+        const t = testByDate.get(date);
+        if (t) {
+          out.push({
+            text: testValueText(t, unit),
+            color: readToken(JOURNEY_SERIES_VAR.trend),
           });
         }
         return out;
@@ -316,7 +382,7 @@ export function JourneyExerciseChart({
           });
       });
     },
-    [dates, series, marks, unit, n],
+    [dates, series, marks, tests, unit, n],
   );
 
   // Mindestbreite: Platz fuer die Zeitspanne (Wochen), mindestens aber fuer
