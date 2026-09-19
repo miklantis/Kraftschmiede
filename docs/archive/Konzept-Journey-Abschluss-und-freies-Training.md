@@ -1,9 +1,13 @@
 # Journey-Abschluss und freies Training – Konzept
 
-> Doku-Typ: Konzept. Hält den besprochenen Stand fest, bevor gebaut wird. Noch nicht in Umsetzung.
+> Doku-Typ: Konzept, abgeschlossen und archiviert. Hält den besprochenen Stand fest,
+> auf dem gebaut wurde. Alle vier Schritte aus Abschnitt 8 sind umgesetzt und live.
 
-Status: Arbeitsdokument. Inhaltliche Basis abgestimmt, Schritt-Zuschnitt als Vorschlag.
-Verwandt und als Referenz: `archive/Konzept-Workouts-und-Journey-Zuordnung.md`.
+Status: umgesetzt. Der Abschluss läuft über den Kalender (Issue #240), der journeylose
+Modus, die Archiv-Liste, die Rückschau und der Journey-Filter im Coach-Export stehen.
+Was die Journey am Ende in der Datenbank tut, liegt gebündelt in `journeyWrite` (Issue
+#379); das Einbrennen der Workout-Namen hält ADR-0022 fest.
+Verwandt und als Referenz: `Konzept-Workouts-und-Journey-Zuordnung.md`.
 
 ---
 
@@ -26,9 +30,10 @@ Erhaltungs- bzw. Übergangsphase.
 
 ---
 
-## 2. Ausgangslage (Ist-Zustand)
+## 2. Ausgangslage (Stand vor der Umsetzung)
 
-Wichtig, weil einige Punkte heute anders laufen als gewünscht.
+Historisch: So lief es, bevor gebaut wurde. Jeder Punkt hier ist inzwischen abgelöst –
+der heutige Stand steht in `../Architektur.md`.
 
 **Kein Abschluss vorgesehen.** Eine Journey wird heute nur deaktiviert, wenn eine
 neue aus einer Vorlage gestartet wird. Es gibt keinen Abschluss und keinen
@@ -59,6 +64,11 @@ Erweiterung, kein Neubau.
 ---
 
 ## 3. Journey-Abschluss (Automatik)
+
+> Abweichung beim Bauen: Ausgelöst wird über den Kalender, nicht über die erfüllende
+> Einheit. Sind alle geplanten Wochen erfüllt und vorbei, wandert die Journey beim
+> nächsten Öffnen der App ins Archiv. Der Grund steht am Ende von Abschnitt 8. Der
+> Rest dieses Abschnitts hält den ursprünglich besprochenen Weg fest.
 
 **Auslöser.** Der Abschluss hängt an einer konkreten Einheit, nicht an einem vagen
 Wochenende. Sind für die letzte Journey-Woche z. B. drei Einheiten vorgesehen, löst
@@ -126,22 +136,31 @@ einen Filter „nur diese Journey", nicht als parallele Neuentwicklung.
 
 ## 7. Bewusst offen / später
 
-- Expliziter Erhaltungsmodus mit aktiver „Halten"-Ansage (statt stillem Freifeld).
-- Tiefere Auswertung im Archiv (Bestwerte, Volumen, Fortschrittskurven je Journey).
-- Feinschliff der Rückschau-Detailansicht.
+- Expliziter Erhaltungsmodus mit aktiver „Halten"-Ansage (statt stillem Freifeld) –
+  weiterhin offen. Das stille Freifeld trägt bisher.
+- Tiefere Auswertung im Archiv (Bestwerte, Volumen, Fortschrittskurven je Journey) –
+  nachgezogen mit Issue #283: Verlaufschart je Übung innerhalb der Journey, Testblock
+  neben dem Chart (#480, #481), Periodisierungskurve.
+- Feinschliff der Rückschau-Detailansicht – mit demselben Vorhaben weitergegangen.
 
 ---
 
-## 8. Vorgeschlagener Schritt-Zuschnitt
+## 8. Schritt-Zuschnitt (alle umgesetzt)
 
-Klein und einzeln testbar. Reihenfolge so, dass das Fundament zuerst steht.
+Klein und einzeln testbar. Reihenfolge so, dass das Fundament zuerst steht. Gebaut
+wurde in genau dieser Reihenfolge; der Zuschnitt hat gehalten.
 
-1. **Abschluss und freies Training (Fundament).** Abschluss automatisch erkennen und
+1. **Abschluss und freies Training (Fundament).** Umgesetzt. Abschluss automatisch erkennen und
    auslösen (Einheit erfüllt letzte Journey-Woche), Journey schließen und archivieren,
    Meldung anzeigen. Journeylosen Modus als Coach-Verhalten umsetzen: Coach still,
    letzte geschaffte Werte als Vorbelegung, Zustand sichtbar benannt.
-2. **Archiv-Liste** abgeschlossener Journeys auf der Journey-Seite.
-3. **Rückschau-Detailansicht** (grob: Phasen und absolvierte Einheiten).
-4. **Journey-Filter im Coach-Export.**
+2. **Archiv-Liste** abgeschlossener Journeys auf der Journey-Seite. Umgesetzt.
+3. **Rückschau-Detailansicht** (grob: Phasen und absolvierte Einheiten). Umgesetzt;
+   inzwischen um die Auswertung je Übung erweitert (siehe Abschnitt 7).
+4. **Journey-Filter im Coach-Export.** Umgesetzt; aus der Rückschau heraus lässt sich
+   genau diese eine Journey exportieren.
 
-Zuschnitt wird beim Bauen angepasst, falls sich etwas verschiebt.
+Eine Abweichung gab es: Der Abschluss hängt nicht an der auslösenden Einheit, sondern
+am Kalender – die letzte geplante Woche muss vorbei sein. Grund war die reine Testwoche,
+die planmäßig gar keine Einheit verlangt und deshalb nie eine auslösende Einheit hätte.
+Abschnitt 3 beschreibt den ursprünglich besprochenen Weg, nicht den gebauten.
