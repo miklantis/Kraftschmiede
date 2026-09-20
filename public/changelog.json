@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.56.1",
+      "date": "2026-09-20",
+      "changes": [
+        "Aufräumen im Hintergrund: In älteren Trainingseinheiten stand als Reservewert noch ein alter Übungsname (zum Beispiel „Deadlift“ statt „Romanian Deadlift (RDL)“), bei den ältesten gar keiner. Angezeigt wurde immer schon der aktuelle Name aus dem Übungskatalog – sichtbar ändert sich also nichts, aber die Einheiten tragen jetzt auch intern den richtigen Namen."
+      ]
+    },
+    {
       "version": "1.56.0",
       "date": "2026-09-18",
       "changes": [
