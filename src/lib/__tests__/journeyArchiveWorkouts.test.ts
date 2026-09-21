@@ -93,7 +93,11 @@ describe("buildArchiveWorkouts", () => {
     );
     // Zuletzt trainiert: Kniebeuge, Bankdruecken. Rudern wurde ausgetauscht und
     // steht hinten - es gehoerte zu dieser Journey.
-    expect(workouts[0].summary).toBe("Kniebeuge · Bankdrücken · Rudern");
+    expect(workouts[0].exercises).toEqual([
+      "Kniebeuge",
+      "Bankdrücken",
+      "Rudern",
+    ]);
   });
 
   it("nimmt bei Uebungen den Katalognamen, sonst den Namen der Einheit", () => {
@@ -102,7 +106,7 @@ describe("buildArchiveWorkouts", () => {
       [einheit({}, "kniebeuge:Alter Name", ":Handstand")],
       lk,
     );
-    expect(workouts[0].summary).toBe("Kniebeuge · Handstand");
+    expect(workouts[0].exercises).toEqual(["Kniebeuge", "Handstand"]);
   });
 
   it("zaehlt nur die eigene Journey, Yoga und Skill nur in der Summe", () => {

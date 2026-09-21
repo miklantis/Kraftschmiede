@@ -25,9 +25,10 @@ export interface ArchiveWorkoutRow {
   count: number;
   /** "12 Einheiten" – dieselbe Zahl in Worten, fuer den Erklaertext. */
   meta: string;
-  /** Enthaltene Uebungen in Kurzform ("Kniebeuge · Bankdrücken"), leer wenn
-   *  keine Uebung mit Namen aufloesbar ist. */
-  summary: string;
+  /** Enthaltene Uebungen, neueste Zusammenstellung zuerst. Als Liste statt als
+   *  fertiger Text: die Seite stellt sie untereinander, damit auch ein langes
+   *  Workout vollstaendig lesbar bleibt (#487). */
+  exercises: string[];
 }
 
 export interface JourneyArchiveWorkouts {
@@ -69,8 +70,8 @@ export function buildArchiveWorkouts(
   const mine = sessions.filter((s) => s && s.journeyId === journeyId);
 
   // Neueste zuerst: die zuletzt trainierte Zusammenstellung steht oben in der
-  // Kurzform, aeltere Uebungen (inzwischen ausgetauscht) haengen sich hinten
-  // an. So faellt nichts heraus, was in dieser Journey wirklich gelaufen ist.
+  // Uebungsliste, aeltere Uebungen (inzwischen ausgetauscht) haengen sich
+  // hinten an. So faellt nichts heraus, was in dieser Journey gelaufen ist.
   const neueste = mine
     .slice()
     .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
@@ -135,7 +136,7 @@ export function buildArchiveWorkouts(
     name: b.name,
     count: b.count,
     meta: unitsLabel(b.count),
-    summary: b.exercises.join(" · "),
+    exercises: b.exercises,
   }));
   if (ohneWorkout > 0) {
     workouts.push({
@@ -143,7 +144,7 @@ export function buildArchiveWorkouts(
       name: "Ohne Workout",
       count: ohneWorkout,
       meta: unitsLabel(ohneWorkout),
-      summary: "",
+      exercises: [],
     });
   }
 
