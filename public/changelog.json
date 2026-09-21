@@ -1,6 +1,16 @@
 {
   "versions": [
     {
+      "version": "1.57.0",
+      "date": "2026-09-21",
+      "changes": [
+        "Die Ansicht einer abgeschlossenen Journey sieht jetzt aus wie die laufende Journey-Seite: oben die Periodisierungskurve, darunter die Phasen mit ihrer Infobox, dann die Workouts und zum Schluss je Übung die Verlaufsgrafik mit bestem Satz, Veränderung über die Journey und Anzahl der Einheiten.",
+        "Im Abschnitt „Workouts in dieser Journey“ steht jetzt zu jedem Workout, welche Übungen damals dazugehörten – aus den tatsächlich absolvierten Einheiten, nicht aus dem heutigen Workout. Namen und Zusammenstellung bleiben damit so, wie sie zum Ende der Journey waren.",
+        "Statt der Coach-Vorgabe steht in der Übungskachel das Ergebnis des 1RM-Tests dieser Journey – ein Vorschlag für die nächste Einheit ergibt in einer beendeten Journey keinen Sinn mehr.",
+        "Die lange Liste der einzelnen Trainingseinheiten je Phase ist entfallen; der Verlauf je Übung sagt mehr über die Journey aus."
+      ]
+    },
+    {
       "version": "1.56.1",
       "date": "2026-09-20",
       "changes": [

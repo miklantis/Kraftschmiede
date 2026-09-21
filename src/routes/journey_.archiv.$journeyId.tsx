@@ -3,24 +3,33 @@ import { BackLink } from "@/components/ui/back-link";
 import { PageReveal } from "@/components/ui/page-reveal";
 import { Section } from "@/components/ui/section";
 import { JourneyHeadCard } from "@/components/journey/JourneyHeadCard";
+import { PeriodizationChart } from "@/components/journey/PeriodizationChart";
 import { PhaseList } from "@/components/journey/PhaseList";
-import { JourneyReviewWorkouts } from "@/components/journey/JourneyReviewWorkouts";
-import { JourneyReviewSessions } from "@/components/journey/JourneyReviewSessions";
+import { JourneyArchiveWorkouts } from "@/components/journey/JourneyArchiveWorkouts";
+import { JourneyExercisesSection } from "@/components/journey/JourneyExercisesSection";
 import { JourneyCoachExport } from "@/components/journey/JourneyCoachExport";
 import { useJourneyReview } from "@/hooks/useJourneyReview";
 
-// Rueckschau einer abgeschlossenen Journey: eigenstaendige Vollseite (entschachtelt
+// Archiv einer abgeschlossenen Journey: eigenstaendige Vollseite (entschachtelt
 // mit _), aufgerufen aus dem Archiv auf der Journey-Seite. Aufbau wie der
-// Vorlagen-Waehler: Zurueck-Link oben links, darunter der Inhalt. Bewusst
-// schlicht - Kopf, Phasen, die trainierten Workouts und die absolvierten
-// Einheiten je Phase: erst der Ueberblick, dann die Einzelheiten.
+// Vorlagen-Waehler: Zurueck-Link oben links, darunter der Inhalt.
+//
+// Die Abfolge ist dieselbe wie auf der laufenden Journey-Seite (Issue #485):
+// Kopf, Periodisierungskurve, Phasen, Workouts, Uebungen. Was die Journey
+// gebracht hat, steht damit an derselben Stelle wie waehrend sie lief.
+//
+// Drei Unterschiede, alle bewusst: die Kurve zeigt keine "jetzt"-Marke
+// (showNow={false}), die Workouts sind ein Schnappschuss aus den absolvierten
+// Einheiten statt einer Bedienliste, und die Uebungskacheln zeigen statt der
+// Coach-Vorgabe das Testergebnis dieser Journey - entschieden wird das nicht
+// hier, sondern am Kennzeichen der Journey (useJourneyExercises).
 export const Route = createFileRoute("/journey_/archiv/$journeyId")({
   component: JourneyArchiveDetailPage,
 });
 
 function JourneyArchiveDetailPage(): React.ReactElement {
   const { journeyId } = Route.useParams();
-  const { isLoading, isError, error, notFound, data } =
+  const { isLoading, isError, error, notFound, data, journey } =
     useJourneyReview(journeyId);
 
   const back = <BackLink to="/journey" label="Journey" />;
@@ -61,15 +70,22 @@ function JourneyArchiveDetailPage(): React.ReactElement {
     <div>
       {back}
       <PageReveal className="flex flex-col gap-7 min-[960px]:gap-8">
-        <JourneyHeadCard name={data.name} metaLine={data.metaLine} />
-        <JourneyCoachExport journeyId={journeyId} />
+        <Section eyebrow="Abgeschlossene Journey">
+          <JourneyHeadCard name={data.name} metaLine={data.metaLine} />
+        </Section>
+        {data.periodization.weeks.length > 0 && (
+          <Section eyebrow="Periodisierung">
+            <PeriodizationChart data={data.periodization} showNow={false} />
+          </Section>
+        )}
         {data.phases.length > 0 && (
           <Section eyebrow="Phasen · Ablauf">
             <PhaseList phases={data.phases} />
           </Section>
         )}
-        <JourneyReviewWorkouts workouts={data.review.workouts} />
-        <JourneyReviewSessions groups={data.review.groups} />
+        <JourneyCoachExport journeyId={journeyId} />
+        <JourneyArchiveWorkouts workouts={data.workouts} />
+        <JourneyExercisesSection journey={journey} />
       </PageReveal>
     </div>
   );

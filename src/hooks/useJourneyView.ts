@@ -11,7 +11,7 @@ import {
   type ArchivedJourneyView,
 } from "@/lib/journeyArchive";
 import { longDateYearDE, todayISO } from "@/lib/format";
-import { useActiveJourney } from "./useJourney";
+import { useActiveJourney, type ActiveJourney } from "./useJourney";
 import { useSessions } from "./useSessions";
 import { useSettings } from "./useSettings";
 import { useJourneyTemplates } from "./useJourneyTemplates";
@@ -37,6 +37,9 @@ export function useJourneyView(): {
   error: unknown;
   data: JourneyView | null;
   hasJourney: boolean;
+  /** Die aktive Journey samt Phasen, roh. Der Uebungs-Abschnitt bekommt sie
+   *  gereicht – derselbe Abschnitt traegt damit laufende Journey und Archiv. */
+  journey: ActiveJourney | null;
   /** Abgeschlossene Journeys – unabhaengig davon, ob gerade eine aktiv ist. */
   archive: ArchivedJourneyView[];
 } {
@@ -131,6 +134,7 @@ export function useJourneyView(): {
     error,
     data,
     hasJourney: !isLoading && !isError && journey !== null,
+    journey,
     archive,
   };
 }

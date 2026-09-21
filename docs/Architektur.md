@@ -651,6 +651,17 @@ Eindampfen, sonst wären die alten Felder schon weg.
   aus der Zuordnung `journey_workouts`; der Trainingsverlauf bleibt die lebende Sicht und
   löst weiter aktuell auf. Dieselbe Einheit darf deshalb in Verlauf und Rückschau
   unterschiedlich heißen.
+- **Das Archiv einer Journey zeigt dieselbe Seite wie die laufende Journey** (Issue #485):
+  Kopf, Periodisierungskurve, Phasen mit Infobox, Workouts, Übungen mit Verlaufsgraph –
+  dieselbe Abfolge, dieselben Bausteine. Den Unterschied macht die Journey selbst, nicht
+  ein Schalter der Seite: `useJourneyExercises` bekommt die Journey (statt nur ihrer Id)
+  und liest an `active`, ob sie abgeschlossen ist. Dann zeigt der Übungs-Abschnitt nur,
+  was wirklich trainiert wurde (keine Platzhalter, keine „nicht mehr im Workout"-Zeilen),
+  der Coach schweigt, und statt seiner Vorgabe steht das Testergebnis der Journey in der
+  Kachel. Die Workout-Liste des Archivs ist ein Schnappschuss aus den absolvierten
+  Einheiten (`lib/journeyArchiveWorkouts.ts`): eingebrannter Name, Zahl der Einheiten und
+  die damals trainierten Übungen – die heutige Zusammenstellung des Workouts ändert daran
+  nichts.
 
 ### 4.3 Datenzugriff und Schreibwege
 
