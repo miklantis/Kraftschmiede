@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ChevronDown, ChevronRight, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { PageReveal } from "@/components/ui/page-reveal";
 import { Section } from "@/components/ui/section";
@@ -11,28 +11,24 @@ import { SearchField } from "@/components/ui/search-field";
 import { WorkoutIcon } from "@/components/ui/training-icons";
 import { filterWorkoutRows, SUCHE_AB_WORKOUTS } from "@/lib/workouts";
 import { useWorkoutsView } from "@/hooks/useWorkoutsView";
-import { useTemplateActions } from "@/hooks/useTemplateActions";
 
-// Workouts – Bibliothek. Zeigt die aktiven Workouts als Liste (Name, Uebungen
-// in Kurzform, Hinweis "journey-faehig"); tippen fuehrt auf die lesende
-// Detailseite. Unter der Liste "Neues Workout" (Editor), darunter ein
-// ausklappbarer Archiv-Abschnitt mit Reaktivieren.
+// Workouts – Bibliothek. Zeigt die Workouts als Liste (Name, Uebungen in
+// Kurzform, Hinweis "journey-faehig"); tippen fuehrt auf die lesende
+// Detailseite. Unter der Liste "Neues Workout" (Editor). Geloescht wird im
+// Editor, nicht hier – den frueheren Archiv-Abschnitt gibt es nicht mehr
+// (Issue #491).
 //
-// Ab SUCHE_AB_WORKOUTS aktiven Workouts steht ganz oben ein Suchfeld (Schwelle
-// geteilt mit dem Auswahl-Popup der Journey-Seite). Gefiltert wird ueber den
-// Workout-Namen, aktive Liste und Archiv getrennt: die Zahl an "Archivierte"
-// zeigt beim Suchen die Treffer darin, aufklappen muss man weiterhin selbst.
-// Der Suchbegriff ist reiner Ansichtszustand – nicht in der URL, nicht
-// gespeichert; nach einem Seitenwechsel faengt man leer an.
+// Ab SUCHE_AB_WORKOUTS Workouts steht ganz oben ein Suchfeld (Schwelle geteilt
+// mit dem Auswahl-Popup der Journey-Seite). Gefiltert wird ueber den
+// Workout-Namen. Der Suchbegriff ist reiner Ansichtszustand – nicht in der URL,
+// nicht gespeichert; nach einem Seitenwechsel faengt man leer an.
 export const Route = createFileRoute("/workouts")({
   component: WorkoutsPage,
 });
 
 function WorkoutsPage(): React.ReactElement {
   const navigate = useNavigate();
-  const { isLoading, isError, error, workouts, archived } = useWorkoutsView();
-  const { reactivateWorkout, isSaving } = useTemplateActions();
-  const [showArchived, setShowArchived] = useState(false);
+  const { isLoading, isError, error, workouts } = useWorkoutsView();
   const [query, setQuery] = useState("");
 
   const zeigtSuche = workouts.length >= SUCHE_AB_WORKOUTS;
@@ -40,9 +36,6 @@ function WorkoutsPage(): React.ReactElement {
   const gezeigteWorkouts = sucht
     ? filterWorkoutRows(workouts, query)
     : workouts;
-  const gezeigteArchivierte = sucht
-    ? filterWorkoutRows(archived, query)
-    : archived;
 
   if (isLoading) {
     return (
@@ -83,7 +76,7 @@ function WorkoutsPage(): React.ReactElement {
             <p className="text-sm text-muted-foreground">
               {sucht
                 ? "Kein passendes Workout."
-                : "Noch keine aktiven Workouts. Lege unten ein neues an."}
+                : "Noch keine Workouts. Lege unten ein neues an."}
             </p>
           ) : (
             <List bordered>
@@ -118,48 +111,6 @@ function WorkoutsPage(): React.ReactElement {
             Neues Workout
           </Link>
         </Button>
-
-        {gezeigteArchivierte.length > 0 && (
-          <div className="mt-6">
-            <button
-              type="button"
-              onClick={() => setShowArchived((v) => !v)}
-              className="flex w-full items-center gap-1.5 text-[13px] font-semibold text-muted-foreground"
-            >
-              {showArchived ? (
-                <ChevronDown className="size-4" />
-              ) : (
-                <ChevronRight className="size-4" />
-              )}
-              Archivierte ({gezeigteArchivierte.length})
-            </button>
-
-            {showArchived && (
-              <div className="mt-3">
-                <List bordered>
-                  {gezeigteArchivierte.map((w) => (
-                    <ListRow
-                      key={w.id}
-                      title={w.name}
-                      subtitle={w.summary || "Keine Übungen"}
-                      leading={<WorkoutIcon />}
-                      trailing={
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={isSaving}
-                          onClick={() => void reactivateWorkout(w.id)}
-                        >
-                          Reaktivieren
-                        </Button>
-                      }
-                    />
-                  ))}
-                </List>
-              </div>
-            )}
-          </div>
-        )}
       </PageReveal>
     </div>
   );

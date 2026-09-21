@@ -25,8 +25,10 @@ export interface SaveWorkoutInput {
 
 export interface UseTemplateActions {
   saveWorkout: (input: SaveWorkoutInput) => Promise<void>;
-  archiveWorkout: (templateId: string) => Promise<void>;
-  reactivateWorkout: (templateId: string) => Promise<void>;
+  /** Workout endgueltig loeschen. `name` ist der zuletzt gespeicherte Name, der
+   *  vorher in die Einheiten ohne eigenen Namen eingebrannt wird – nicht der
+   *  Entwurf im Editor. */
+  deleteWorkout: (templateId: string, name: string) => Promise<void>;
   isSaving: boolean;
 }
 
@@ -57,22 +59,15 @@ export function useTemplateActions(): UseTemplateActions {
     [userId, mutation],
   );
 
-  const archiveWorkout = useCallback(
-    (templateId: string): Promise<void> =>
-      mutation.mutateAsync({ kind: "setActive", templateId, active: false }),
-    [mutation],
-  );
-
-  const reactivateWorkout = useCallback(
-    (templateId: string): Promise<void> =>
-      mutation.mutateAsync({ kind: "setActive", templateId, active: true }),
+  const deleteWorkout = useCallback(
+    (templateId: string, name: string): Promise<void> =>
+      mutation.mutateAsync({ kind: "delete", templateId, name }),
     [mutation],
   );
 
   return {
     saveWorkout,
-    archiveWorkout,
-    reactivateWorkout,
+    deleteWorkout,
     isSaving: mutation.isPending,
   };
 }

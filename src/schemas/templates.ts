@@ -3,23 +3,22 @@
 import { z } from "zod";
 import { uuid } from "./shared";
 
-// templates – benannte Trainings-Vorlage.
-// active: Soft-Archiv (false = archiviert). Default true in der DB, daher im
-// Insert vorbelegbar. Vom Nutzer angelegte Workouts haben key = null.
+// templates – benannte Trainings-Vorlage. Vom Nutzer angelegte Workouts haben
+// key = null. Das frueher gefuehrte Soft-Archiv (`active`) ist entfallen
+// (Migration 0063): ein Workout existiert oder es ist geloescht.
 export const templateRow = z.object({
   id: uuid,
   user_id: uuid,
   key: z.string().nullable(),
   name: z.string(),
   image: z.string().nullable(),
-  active: z.boolean(),
   position: z.number().int(),
 });
 export type TemplateRow = z.infer<typeof templateRow>;
 
 export const templateInsert = templateRow
   .omit({ id: true })
-  .partial({ key: true, image: true, active: true, position: true });
+  .partial({ key: true, image: true, position: true });
 export type TemplateInsert = z.infer<typeof templateInsert>;
 
 // template_exercises – Uebung in einer Vorlage mit Reihenfolge. Die frueher

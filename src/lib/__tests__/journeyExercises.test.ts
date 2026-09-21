@@ -54,15 +54,10 @@ function ex(id: string, overrides: Partial<ExerciseRow> = {}): ExerciseRow {
   };
 }
 
-function workout(
-  id: string,
-  exerciseIds: string[],
-  active = true,
-): WorkoutInput {
+function workout(id: string, exerciseIds: string[]): WorkoutInput {
   return {
     id,
     name: id,
-    active,
     exercises: exerciseIds.map((exerciseId, i) => ({
       exerciseId,
       position: i,
@@ -150,11 +145,12 @@ describe("journeyExerciseIds", () => {
     );
   });
 
-  it("laesst archivierte und nicht journey-faehige Workouts weg", () => {
-    const archiviert = workout("alt", ["rudern"], false);
+  it("laesst nicht journey-faehige Workouts weg", () => {
     const ohneKraft = workout("mobility", ["plank"]);
+    // "alt" ist zugewiesen, steht aber nicht mehr in der Liste (geloescht) -
+    // eine unbekannte Zuweisung bringt keine Uebung mit.
     const ids = journeyExerciseIds(
-      [archiviert, ohneKraft, push],
+      [ohneKraft, push],
       lookup,
       new Set(["alt", "mobility", "push"]),
     );

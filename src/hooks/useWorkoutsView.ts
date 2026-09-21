@@ -1,7 +1,6 @@
 import { useTemplates } from "./useTemplates";
 import { useExercises } from "./useExercises";
 import {
-  buildArchivedList,
   buildWorkoutList,
   type WorkoutExerciseInfo,
   type WorkoutInput,
@@ -13,14 +12,13 @@ export interface WorkoutsView {
   isError: boolean;
   error: unknown;
   workouts: WorkoutRowModel[];
-  archived: WorkoutRowModel[];
 }
 
-// Ansichtsmodell der Workouts-Bibliothek: aktive Workouts (useTemplates) mit
-// Kurzform ihrer Uebungen und abgeleiteter Journey-Faehigkeit, dazu die
-// archivierten fuer den ausklappbaren Archiv-Abschnitt. Die Uebungsnamen und
-// -profile kommen aus dem Katalog (useExercises). Reine Aufbereitung liegt in
-// lib/workouts.ts.
+// Ansichtsmodell der Workouts-Bibliothek: die Workouts (useTemplates) mit
+// Kurzform ihrer Uebungen und abgeleiteter Journey-Faehigkeit. Die Uebungsnamen
+// und -profile kommen aus dem Katalog (useExercises). Reine Aufbereitung liegt
+// in lib/workouts.ts. Ein Archiv gibt es nicht mehr (Issue #491) – eine Liste,
+// sonst nichts.
 export function useWorkoutsView(): WorkoutsView {
   const templatesQ = useTemplates();
   const exercisesQ = useExercises();
@@ -38,9 +36,6 @@ export function useWorkoutsView(): WorkoutsView {
   const workouts = ready
     ? buildWorkoutList(templatesQ.data as WorkoutInput[], lookup)
     : [];
-  const archived = ready
-    ? buildArchivedList(templatesQ.data as WorkoutInput[], lookup)
-    : [];
 
-  return { isLoading, isError, error, workouts, archived };
+  return { isLoading, isError, error, workouts };
 }

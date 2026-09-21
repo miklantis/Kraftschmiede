@@ -97,3 +97,28 @@ export function reorderExercise(
   next.splice(clampedTo, 0, moved);
   return { ...draft, exercises: next };
 }
+
+// Darf dieses Workout geloescht werden, und wenn nein: warum nicht? Der Text
+// steht im Editor unter dem gesperrten Knopf (Issue #491).
+//
+// Zwei Sperren, beide hart. Die laufende Einheit haengt zwar nicht mehr an der
+// Vorlage (ihre Uebungen und Saetze sind beim Start kopiert), aber ihr unter
+// den Haenden das Workout wegzunehmen ist nichts, was jemand absichtlich tut.
+// Die Zuweisung zur laufenden Journey waere eine stille Planaenderung mitten im
+// Lauf: der Coach baut den Plan bei jedem Oeffnen neu und haette das Workout
+// danach einfach nicht mehr.
+//
+// Beim Anlegen (isNew) gibt es nichts zu loeschen - dort zeigt der Editor den
+// Knopf gar nicht erst.
+export function deleteBlockedReason(input: {
+  laufendeEinheitNutztWorkout: boolean;
+  derLaufendenJourneyZugewiesen: boolean;
+}): string | null {
+  if (input.laufendeEinheitNutztWorkout) {
+    return "Nach diesem Workout läuft gerade eine Einheit. Beende sie zuerst.";
+  }
+  if (input.derLaufendenJourneyZugewiesen) {
+    return "Dieses Workout ist deiner laufenden Journey zugewiesen. Nimm es dort zuerst heraus.";
+  }
+  return null;
+}

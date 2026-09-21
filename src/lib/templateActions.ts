@@ -1,4 +1,4 @@
-// Workout-Aktionen (Speichern, Archivieren, Reaktivieren) als registrierter
+// Workout-Aktionen (Speichern, Loeschen) als registrierter
 // Mutations-Default – analog zu finishMutation.ts/editMutation.ts, damit eine
 // ohne Netz pausierte Aenderung den App-Neustart uebersteht und automatisch
 // nachgeschickt wird (resumePausedMutations in main.tsx). Kennung
@@ -9,7 +9,9 @@
 // Speichern schreibt Workout und Uebungsliste zusammen mit vorab vergebenen IDs:
 // bei bestehenden Workouts wird die Uebungsliste sauber ersetzt (die Vorlage ist
 // nur ein Rezept; der Verlauf kopiert Uebungen beim Start und haengt nicht an
-// template_exercises). Archivieren/Reaktivieren setzt nur templates.active.
+// template_exercises). Loeschen brennt zuerst den Workout-Namen in die
+// Einheiten ein, die noch keinen tragen, und entfernt dann die Zeile – den
+// Rest raeumt die Datenbank ueber ihre Fremdschluessel ab (Issue #491).
 //
 // Diese Datei traegt nur noch Kennung, Registrierung und Auffrischung. Die
 // Abfolge des Schreibens liegt in lib/journeyWrite.ts, die Datenbank-Handgriffe
@@ -42,14 +44,15 @@ export interface WorkoutSavePayload {
   exercises: WorkoutSaveExercise[];
 }
 
-// Archivieren/Reaktivieren: nur der active-Schalter.
-export interface WorkoutActivePayload {
-  kind: "setActive";
+// Loeschen: Workout-Id plus der zuletzt gespeicherte Name, der vorher in die
+// Einheiten eingebrannt wird.
+export interface WorkoutDeletePayload {
+  kind: "delete";
   templateId: string;
-  active: boolean;
+  name: string;
 }
 
-export type TemplateActionPayload = WorkoutSavePayload | WorkoutActivePayload;
+export type TemplateActionPayload = WorkoutSavePayload | WorkoutDeletePayload;
 
 // Das gespeicherte Paket (kind) auf die Absicht der Naht (type) bringen. Die
 // Feldnamen des Pakets bleiben Zeichen fuer Zeichen gleich: pausierte Mutationen
@@ -70,9 +73,9 @@ async function writeTemplateAction(p: TemplateActionPayload): Promise<void> {
           exercises: p.exercises,
         }
       : {
-          type: "setActive",
+          type: "delete",
           templateId: p.templateId,
-          aktiv: p.active,
+          name: p.name,
         },
   );
 }

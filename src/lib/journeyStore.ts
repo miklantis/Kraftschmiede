@@ -122,7 +122,17 @@ export interface JourneyStore {
   deleteZuordnung(journeyId: string, templateId: string): Promise<void>;
   insertVorlage(row: VorlageRow): Promise<void>;
   renameVorlage(id: string, name: string): Promise<void>;
-  setVorlageAktiv(id: string, aktiv: boolean): Promise<void>;
+  /** Den Workout-Namen in alle Einheiten dieses Workouts schreiben, die noch
+   *  keinen tragen – journeyuebergreifend, auch freies Training. Einheiten mit
+   *  bereits eingebranntem Namen bleiben unberuehrt: er ist das Protokoll
+   *  (ADR-0022) und darf sich nicht nachtraeglich aendern. Der eine Handgriff
+   *  vor dem Loeschen eines Workouts (Issue #491). */
+  brenneWorkoutNameEin(templateId: string, name: string): Promise<void>;
+  /** Ein Workout endgueltig loeschen. Uebungsliste und Journey-Zuordnungen
+   *  raeumt die Datenbank per Fremdschluessel mit ab (on delete cascade), die
+   *  Einheiten behalten ihren Namen und verlieren nur den Verweis
+   *  (on delete set null). */
+  deleteVorlage(id: string): Promise<void>;
   deleteVorlageUebungen(templateId: string): Promise<void>;
   insertVorlageUebungen(rows: VorlageUebungRow[]): Promise<void>;
 }
@@ -269,10 +279,17 @@ export const supabaseJourneyStore: JourneyStore = {
   async renameVorlage(id, name) {
     must(await supabase.from("templates").update({ name }).eq("id", id));
   },
-  async setVorlageAktiv(id, aktiv) {
+  async brenneWorkoutNameEin(templateId, name) {
     must(
-      await supabase.from("templates").update({ active: aktiv }).eq("id", id),
+      await supabase
+        .from("sessions")
+        .update({ template_name: name })
+        .eq("template_id", templateId)
+        .is("template_name", null),
     );
+  },
+  async deleteVorlage(id) {
+    must(await supabase.from("templates").delete().eq("id", id));
   },
   async deleteVorlageUebungen(templateId) {
     must(
@@ -309,7 +326,8 @@ export interface MemoryJourneyLog {
   zuordnungenDeleted: Array<{ journeyId: string; templateId: string }>;
   vorlagenInserted: VorlageRow[];
   vorlagenRenamed: Array<{ id: string; name: string }>;
-  vorlagenAktiv: Array<{ id: string; aktiv: boolean }>;
+  workoutNamenEingebrannt: Array<{ templateId: string; name: string }>;
+  vorlagenDeleted: string[];
   vorlagenUebungenDeleted: string[];
   vorlagenUebungenInserted: VorlageUebungRow[][];
   folge: string[];
@@ -352,7 +370,8 @@ export function createMemoryJourneyStore(seed: MemoryJourneySeed = {}): {
     zuordnungenDeleted: [],
     vorlagenInserted: [],
     vorlagenRenamed: [],
-    vorlagenAktiv: [],
+    workoutNamenEingebrannt: [],
+    vorlagenDeleted: [],
     vorlagenUebungenDeleted: [],
     vorlagenUebungenInserted: [],
     folge: [],
@@ -423,9 +442,13 @@ export function createMemoryJourneyStore(seed: MemoryJourneySeed = {}): {
       log.vorlagenRenamed.push({ id, name });
       log.folge.push("renameVorlage");
     },
-    async setVorlageAktiv(id, aktiv) {
-      log.vorlagenAktiv.push({ id, aktiv });
-      log.folge.push("setVorlageAktiv");
+    async brenneWorkoutNameEin(templateId, name) {
+      log.workoutNamenEingebrannt.push({ templateId, name });
+      log.folge.push("brenneWorkoutNameEin");
+    },
+    async deleteVorlage(id) {
+      log.vorlagenDeleted.push(id);
+      log.folge.push("deleteVorlage");
     },
     async deleteVorlageUebungen(templateId) {
       log.vorlagenUebungenDeleted.push(templateId);

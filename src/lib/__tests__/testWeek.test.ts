@@ -74,18 +74,17 @@ describe("fuehrtRekord", () => {
 
 describe("journeyTestScope", () => {
   const workouts: TestWeekWorkout[] = [
-    { id: "w1", active: true, exerciseIds: ["e1", "e2"] },
-    { id: "w2", active: true, exerciseIds: ["e2", "e3"] },
-    { id: "w3", active: false, exerciseIds: ["e4"] },
-    { id: "w4", active: true, exerciseIds: ["e5"] },
+    { id: "w1", exerciseIds: ["e1", "e2"] },
+    { id: "w2", exerciseIds: ["e2", "e3"] },
+    { id: "w4", exerciseIds: ["e5"] },
   ];
 
-  it("sammelt die Uebungen der zugewiesenen, aktiven Workouts", () => {
+  it("sammelt die Uebungen der zugewiesenen Workouts", () => {
     const scope = journeyTestScope(workouts, ["w1", "w2"]);
     expect([...scope].sort()).toEqual(["e1", "e2", "e3"]);
   });
 
-  it("laesst archivierte Workouts weg, auch wenn sie zugewiesen sind", () => {
+  it("laesst unbekannte Zuweisungen weg (geloeschtes Workout)", () => {
     const scope = journeyTestScope(workouts, ["w1", "w3"]);
     expect([...scope].sort()).toEqual(["e1", "e2"]);
   });

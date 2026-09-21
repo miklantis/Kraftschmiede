@@ -23,7 +23,7 @@ export function WorkoutEditor({
   const navigate = useNavigate();
   const ed = useWorkoutEditor(templateId);
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [confirmArchive, setConfirmArchive] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   if (ed.isLoading) {
     return (
@@ -60,8 +60,8 @@ export function WorkoutEditor({
     void navigate({ to: "/workouts" });
   };
 
-  const onArchive = async (): Promise<void> => {
-    await ed.archive();
+  const onDelete = async (): Promise<void> => {
+    await ed.deleteWorkout();
     void navigate({ to: "/workouts" });
   };
 
@@ -157,7 +157,10 @@ export function WorkoutEditor({
         </Section>
       )}
 
-      {/* Fuss: Speichern (+ Archivieren beim Bearbeiten) */}
+      {/* Fuss: Speichern (+ Loeschen beim Bearbeiten). Geloescht wird in zwei
+          Stufen - ruhiger Knopf, dann rote Rueckfrage (Issue #491). Gesperrt
+          ist der Knopf, solange eine Einheit nach diesem Workout laeuft oder
+          es der laufenden Journey zugewiesen ist; der Grund steht darunter. */}
       <div className="flex flex-col gap-2.5">
         <button
           type="button"
@@ -169,32 +172,40 @@ export function WorkoutEditor({
         </button>
 
         {!ed.isNew &&
-          (confirmArchive ? (
+          (confirmDelete ? (
             <div className="flex gap-2.5">
               <button
                 type="button"
-                onClick={() => setConfirmArchive(false)}
+                onClick={() => setConfirmDelete(false)}
                 className="flex-1 rounded-[13px] border border-border bg-card py-3 text-[15px] font-semibold text-foreground transition-[filter] hover:brightness-95"
               >
                 Abbrechen
               </button>
               <button
                 type="button"
-                onClick={() => void onArchive()}
+                onClick={() => void onDelete()}
                 disabled={ed.isSaving}
                 className="flex-1 rounded-[13px] border border-danger/40 bg-card py-3 text-[15px] font-semibold text-danger transition-colors hover:bg-danger/10 disabled:opacity-50"
               >
-                Wirklich archivieren
+                Wirklich löschen
               </button>
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={() => setConfirmArchive(true)}
-              className="w-full rounded-[13px] border border-danger/40 bg-card py-3 text-[15px] font-semibold text-danger transition-colors hover:bg-danger/10"
-            >
-              Archivieren
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                disabled={ed.deleteBlocked !== null}
+                className="w-full rounded-[13px] border border-danger/40 bg-card py-3 text-[15px] font-semibold text-danger transition-colors hover:bg-danger/10 disabled:opacity-50 disabled:hover:bg-card"
+              >
+                Löschen
+              </button>
+              {ed.deleteBlocked !== null && (
+                <p className="text-center text-[13px] text-muted-foreground">
+                  {ed.deleteBlocked}
+                </p>
+              )}
+            </>
           ))}
       </div>
 

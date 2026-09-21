@@ -489,7 +489,6 @@ describe("writeVorlageAction", () => {
         key: null,
         name: "Push",
         image: null,
-        active: true,
         position: 3,
       },
     ]);
@@ -554,15 +553,20 @@ describe("writeVorlageAction", () => {
     expect(log.vorlagenUebungenInserted).toHaveLength(0);
   });
 
-  it("setzt beim Archivieren nur den Schalter", async () => {
+  it("brennt beim Loeschen erst den Namen ein, dann loescht es", async () => {
+    // Reihenfolge wie beim Journey-Abschluss (ADR-0022): bricht es dazwischen
+    // ab, steht das Workout noch und der naechste Versuch holt alles nach.
     const { store, log } = createMemoryJourneyStore();
     await writeVorlageAction(store, {
-      type: "setActive",
+      type: "delete",
       templateId: "t1",
-      aktiv: false,
+      name: "Amboss",
     });
 
-    expect(log.vorlagenAktiv).toEqual([{ id: "t1", aktiv: false }]);
-    expect(log.folge).toEqual(["setVorlageAktiv"]);
+    expect(log.workoutNamenEingebrannt).toEqual([
+      { templateId: "t1", name: "Amboss" },
+    ]);
+    expect(log.vorlagenDeleted).toEqual(["t1"]);
+    expect(log.folge).toEqual(["brenneWorkoutNameEin", "deleteVorlage"]);
   });
 });

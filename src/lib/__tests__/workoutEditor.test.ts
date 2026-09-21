@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   addExercise,
   canSaveDraft,
+  deleteBlockedReason,
   draftJourneyCapable,
   nameStatus,
   reorderExercise,
@@ -112,5 +113,45 @@ describe("reorderExercise", () => {
   it("laesst den Entwurf bei ungueltiger Quelle unveraendert", () => {
     const start = draft(["a", "b"]);
     expect(reorderExercise(start, 5, 0).exercises).toEqual(start.exercises);
+  });
+});
+
+describe("deleteBlockedReason", () => {
+  it("gibt frei, wenn weder Einheit laeuft noch Journey zugewiesen", () => {
+    expect(
+      deleteBlockedReason({
+        laufendeEinheitNutztWorkout: false,
+        derLaufendenJourneyZugewiesen: false,
+      }),
+    ).toBeNull();
+  });
+
+  it("sperrt bei laufender Einheit", () => {
+    expect(
+      deleteBlockedReason({
+        laufendeEinheitNutztWorkout: true,
+        derLaufendenJourneyZugewiesen: false,
+      }),
+    ).toMatch(/läuft gerade eine Einheit/);
+  });
+
+  it("sperrt bei Zuweisung zur laufenden Journey", () => {
+    expect(
+      deleteBlockedReason({
+        laufendeEinheitNutztWorkout: false,
+        derLaufendenJourneyZugewiesen: true,
+      }),
+    ).toMatch(/laufenden Journey zugewiesen/);
+  });
+
+  it("nennt bei beidem zuerst die laufende Einheit", () => {
+    // Die naehere Huerde zuerst: die Einheit laeuft jetzt, die Zuweisung ist
+    // eine Aufraeumarbeit danach.
+    expect(
+      deleteBlockedReason({
+        laufendeEinheitNutztWorkout: true,
+        derLaufendenJourneyZugewiesen: true,
+      }),
+    ).toMatch(/läuft gerade eine Einheit/);
   });
 });

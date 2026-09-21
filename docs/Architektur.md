@@ -117,8 +117,14 @@ Zwei Arten von Erstbefüllung liegen dabei nebeneinander:
   rm/rm_as_of/rm_stale (zwischengespeichertes 1RM für den Coach), position
 - **exercise_muscles** – feine Regionen-Map: exercise_id (FK), region_id (Code-/SVG-Region),
   kategorie (primär/sekundär/stabilisierend)
-- **templates** – key, name, image, active (Soft-Archiv), position. Namen pro Nutzer
-  eindeutig über alle Workouts inkl. archivierter (`templates_unique_user_name`)
+- **templates** – key, name, image, position. Namen pro Nutzer eindeutig
+  (`templates_unique_user_name`); der Name eines gelöschten Workouts wird wieder frei.
+  Das Soft-Archiv (`active`) ist mit Migration 0063 entfallen – ein Workout existiert
+  oder es ist gelöscht (Issue #491). Gelöscht wird im Editor, in zwei Stufen, gesperrt
+  solange eine Einheit danach läuft oder es der laufenden Journey zugewiesen ist.
+  Vor dem Löschen brennt `writeVorlageAction` den Namen in alle Einheiten ein, die noch
+  keinen tragen; danach räumen die Fremdschlüssel auf (`template_exercises` und
+  `journey_workouts` per Cascade, `sessions.template_id` auf null)
 - **template_exercises** – template_id (FK), exercise_id (FK), position
 - **phase_types** – Bausteine einer Journey-Phase, ein Baustein je Zeile: key (identisch
   mit `phases.focus` – der Vertrag mit dem Code), name, summary, position, control
