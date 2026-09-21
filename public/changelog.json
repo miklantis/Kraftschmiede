@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.57.1",
+      "date": "2026-09-21",
+      "changes": [
+        "Im Archiv einer Journey stehen die Übungen eines Workouts jetzt untereinander als Aufzählung statt in einer Zeile nebeneinander. Bei längeren Workouts war die Zeile vorher abgeschnitten – jetzt ist vollständig zu sehen, woraus das Workout damals bestand."
+      ]
+    },
+    {
       "version": "1.57.0",
       "date": "2026-09-21",
       "changes": [
