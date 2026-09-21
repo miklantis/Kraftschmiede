@@ -131,6 +131,44 @@ describe("buildCoachExport - Zuordnung und Saetze", () => {
     ]);
   });
 
+  it("nimmt den gespeicherten Workout-Namen, wenn das Workout geloescht ist", () => {
+    const raw = emptyRaw();
+    raw.templates = [{ id: "t1", name: "Push A" }];
+    raw.sessions = [
+      // Workout lebt: der heutige Name gewinnt (ADR-0022).
+      {
+        id: "s1",
+        date: "2026-06-20",
+        type: "strength",
+        template_id: "t1",
+        template_name: "Push A (damals)",
+      } as RawSession,
+      // Geloescht: template_id ist null, uebrig bleibt der gespeicherte Name.
+      {
+        id: "s2",
+        date: "2026-06-21",
+        type: "strength",
+        template_id: null,
+        template_name: "Amboss",
+      } as RawSession,
+      // Weder noch: kein Workout-Name im Export.
+      {
+        id: "s3",
+        date: "2026-06-22",
+        type: "strength",
+        template_id: null,
+        template_name: null,
+      } as RawSession,
+    ];
+
+    const out = buildCoachExport(raw, { weeks: null, today: TODAY });
+    expect(out.sessions.map((s) => s.workout)).toEqual([
+      "Push A",
+      "Amboss",
+      undefined,
+    ]);
+  });
+
   it("nimmt Notizen je Uebung und je Einheit mit, leere bleiben weg", () => {
     const raw = emptyRaw();
     raw.exercises = [

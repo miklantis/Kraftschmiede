@@ -67,8 +67,10 @@ export interface HistorySessionInput {
   journeyWeek?: number | null;
   type: "strength" | "yoga" | "skill";
   templateId: string | null;
-  /** Beim Journey-Abschluss eingebrannter Workout-Name der Einheit (ADR-0022);
-   *  null = keiner, dann wird heute aufgeloest. Optional wie journeyId. */
+  /** Beim Journey-Abschluss eingebrannter Workout-Name der Einheit (ADR-0022).
+   *  Welcher Name gewinnt, entscheidet die Ansicht: die Journey-Rueckschau
+   *  nimmt diesen, der Verlauf nur dann, wenn sich ueber templateId nichts mehr
+   *  aufloesen laesst. Optional wie journeyId. */
   templateName?: string | null;
   skillId: string | null;
   skillPhase: number | null;
@@ -163,12 +165,28 @@ export function tagLabel(s: HistorySessionInput): string {
   return "Kraft";
 }
 
+// Workout-Name einer Einheit, oder undefined, wenn keiner zu finden ist.
+//
+// Solange es das Workout gibt, gilt der heutige Name: der Verlauf ist die
+// lebende Sicht, ein Umbenennen zieht bis in alte Einheiten mit (ADR-0022).
+// Ist das Workout geloescht, faellt sessions.template_id auf null und uebrig
+// bleibt allein der in der Einheit gespeicherte Name - beim Journey-Abschluss
+// eingebrannt oder beim Loeschen nachgetragen. Erfunden wird nichts: fehlt
+// beides, setzt der Aufrufer seinen Platzhalter.
+function workoutName(
+  s: HistorySessionInput,
+  lk: HistoryLookups,
+): string | undefined {
+  const heute = s.templateId ? lk.templateName(s.templateId) : undefined;
+  return heute || s.templateName || undefined;
+}
+
 // Kurzes Label fuer den Kalenderpunkt: Skill-/Workout-Name bzw. "Yoga".
 export function calLabel(s: HistorySessionInput, lk: HistoryLookups): string {
   if (s.type === "yoga") return "Yoga";
   if (s.type === "skill")
     return (s.skillId && lk.skillName(s.skillId)) || "Skill";
-  return (s.templateId && lk.templateName(s.templateId)) || "•";
+  return workoutName(s, lk) ?? "•";
 }
 
 export function sessionTitle(
@@ -178,8 +196,7 @@ export function sessionTitle(
   if (s.type === "yoga") return "Yoga / Mobility";
   if (s.type === "skill")
     return (s.skillId && lk.skillName(s.skillId)) || "Skill";
-  const name = s.templateId && lk.templateName(s.templateId);
-  return name || "Workout";
+  return workoutName(s, lk) ?? "Workout";
 }
 
 // --- Detail-Aufbereitung --------------------------------------------------

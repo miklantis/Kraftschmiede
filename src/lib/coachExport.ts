@@ -538,8 +538,14 @@ export function buildCoachExport(
         const res = str(s, "skill_result");
         if (res != null) out.result = RESULT_LABEL[res] ?? res;
       } else {
+        // Dieselbe Reihenfolge wie im Verlauf (lib/history.ts): der heutige
+        // Name, solange es das Workout gibt; ist es geloescht, der in der
+        // Einheit gespeicherte (ADR-0022).
         const tid = str(s, "template_id");
-        if (tid != null) out.workout = templateName.get(tid) ?? undefined;
+        out.workout =
+          (tid != null ? templateName.get(tid) : undefined) ??
+          str(s, "template_name") ??
+          undefined;
       }
 
       // Uebungen mit kompakten Arbeitssaetzen
