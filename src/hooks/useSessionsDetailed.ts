@@ -62,6 +62,7 @@ export function useSessionsDetailed() {
         journeyWeek: row.week,
         type: row.type,
         templateId: row.template_id,
+        templateName: row.template_name,
         skillId: row.skill_id,
         skillPhase: row.skill_phase,
         durationSec: row.duration_sec,

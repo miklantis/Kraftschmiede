@@ -20,7 +20,7 @@ export const Route = createFileRoute("/journey")({
 });
 
 function JourneyPage(): React.ReactElement {
-  const { isLoading, isError, error, data, hasJourney, archive } =
+  const { isLoading, isError, error, data, hasJourney, journey, archive } =
     useJourneyView();
 
   // Archiv haengt nicht an der aktiven Journey: es steht unter der aktiven Karte
@@ -92,7 +92,7 @@ function JourneyPage(): React.ReactElement {
           description="Kopiert die laufende Journey als schlankes JSON: Phasen, bisherige Einheiten mit Sätzen und Zuordnung sowie Körperwerte seit dem Start."
         />
         <JourneyWorkoutsSection />
-        <JourneyExercisesSection />
+        <JourneyExercisesSection journey={journey} />
         {archiveSection}
       </PageReveal>
     </div>

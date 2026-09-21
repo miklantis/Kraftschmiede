@@ -20,14 +20,17 @@ import {
   buildJourneyTestView,
   journeyTestPoints,
   type JourneyRmTestInput,
+  type JourneyTestView,
 } from "@/lib/journeyTest";
-import { derivePhaseContext } from "@/lib/phaseContext";
+import {
+  derivePhaseContext,
+  type PhaseContextJourney,
+} from "@/lib/phaseContext";
 import { fuehrtRekord } from "@/lib/testWeek";
 import { todayISO } from "@/lib/format";
 import type { WorkoutExerciseInfo, WorkoutInput } from "@/lib/workouts";
 import { useExercises } from "./useExercises";
 import { useTemplates } from "./useTemplates";
-import { useActiveJourney } from "./useJourney";
 import { useCoachStatuses } from "./useCoachStatuses";
 import { useJourneyWorkouts } from "./useJourneyWorkouts";
 import { useAllRmTests } from "./useRmTests";
@@ -46,16 +49,23 @@ export interface JourneyExercisesView {
   groups: JourneyExerciseGroup[];
   /** Gewichtseinheit fuer die Werte im Chart-Tooltip. */
   unit: string;
-  /** Laeuft gerade die reine Testwoche dieser Journey? Dann steht in den
-   *  Kacheln das Testergebnis statt der Coach-Vorgabe (#480). */
-  testWeek: boolean;
+  /** Steht in den Kacheln das Testergebnis statt der Coach-Vorgabe? Waehrend
+   *  der reinen Testwoche einer laufenden Journey (#480) – und dauerhaft im
+   *  Archiv, wo eine Vorgabe fuer die naechste Einheit falscher Rat waere. */
+  showTest: boolean;
 }
 
 // Ansichtsmodell des Abschnitts "Uebungen in dieser Journey": welche Uebungen
 // gehoeren zu dieser Journey, und wie oft ist jede darin gelaufen. Die Journey
-// kommt als Parameter herein (nicht "die aktive" fest verdrahtet), damit die
-// Rueckschau abgeschlossener Journeys spaeter denselben Hook nutzen kann; ohne
-// Journey bleibt alles leer.
+// kommt samt Phasen als Parameter herein (nicht "die aktive" fest verdrahtet) –
+// dieselbe Form liefern useActiveJourney und useArchivedJourney. Ohne Journey
+// bleibt alles leer.
+//
+// Ob die Journey laeuft oder abgeschlossen ist, sagt sie selbst (active). Im
+// Archiv aendert das drei Dinge: der Abschnitt zeigt nur, was wirklich
+// trainiert wurde (keine Platzhalter, keine "nicht mehr im Workout"-Zeilen),
+// der Coach schweigt (eine Vorgabe fuer die naechste Einheit waere falscher
+// Rat), und statt seiner steht das Testergebnis der Journey in der Kachel.
 //
 // Zwei Quellen: der heutige Plan (zugewiesene Workouts) und die Einheiten
 // dieser Journey. Die zweite haelt Uebungen im Abschnitt, die hier trainiert
@@ -68,12 +78,24 @@ export interface JourneyExercisesView {
 // den die Uebungsseite zeigt (buildExerciseHistory), nur auf die Einheiten
 // dieser Journey eingegrenzt – so kann die Zahl hier nicht von der Uebungsseite
 // abweichen.
+// Im Archiv nur ein Testergebnis durchlassen, das es wirklich gibt.
+function archiveTest(
+  view: JourneyTestView,
+  archived: boolean,
+): JourneyTestView | null {
+  if (!archived) return view;
+  return view.result === null ? null : view;
+}
+
 export function useJourneyExercises(
-  journeyId: string | null,
+  journey: PhaseContextJourney | null,
 ): JourneyExercisesView {
+  const journeyId = journey?.id ?? null;
+  // Abgeschlossen = nicht mehr die aktive Journey. Das Kennzeichen der Journey
+  // entscheidet, nicht ein Schalter von aussen.
+  const archived = journey !== null && !journey.active;
   const exercisesQ = useExercises();
   const templatesQ = useTemplates();
-  const journeyQ = useActiveJourney();
   const assignedQ = useJourneyWorkouts(journeyId);
   const sessionsQ = useSessionsDetailed();
   // Flache Einheitenliste – nur fuer den Standort in der Journey (Testwoche).
@@ -114,28 +136,25 @@ export function useJourneyExercises(
   const rmFormula = settingsQ.data?.rm_formula ?? "mean";
   const unit = settingsQ.data?.unit ?? "kg";
 
-  // Phasennamen fuer die Trennlinien im Chart. Sie kommen aus der Journey
-  // selbst; ist die gefragte Journey nicht die aktive (spaeter: Rueckschau),
-  // bleiben die Namen leer und der Chart zeichnet keine Grenzen, statt fremde
-  // Phasen anzuschreiben.
-  const journey = journeyQ.data ?? null;
+  // Phasennamen fuer die Trennlinien im Chart – aus der Journey selbst, egal ob
+  // sie laeuft oder abgeschlossen ist.
   const phaseNames = useMemo<Record<string, string>>(() => {
-    if (journey == null || journey.id !== journeyId) return {};
+    if (journey == null) return {};
     const out: Record<string, string> = {};
     for (const p of journey.phases) out[p.id] = p.name;
     return out;
-  }, [journey, journeyId]);
+  }, [journey]);
 
   // Zeitraum der Journey – die Zuordnung der Tests haengt daran (rm_tests
-  // traegt keinen Journey-Stempel). Wie bei den Phasennamen nur fuer die
-  // gefragte Journey; ist sie nicht die aktive, bleibt der Zeitraum leer und
-  // es werden keine Tests zugeordnet, statt fremde einzusammeln.
-  const testRange = useMemo<{ start: string | null; end: string | null }>(() => {
-    if (journey == null || journey.id !== journeyId) {
-      return { start: null, end: null };
-    }
-    return { start: journey.start_date, end: journey.end_date };
-  }, [journey, journeyId]);
+  // traegt keinen Journey-Stempel). Ohne Journey bleibt er leer, dann werden
+  // keine Tests zugeordnet, statt fremde einzusammeln.
+  const testRange = useMemo<{ start: string | null; end: string | null }>(
+    () =>
+      journey == null
+        ? { start: null, end: null }
+        : { start: journey.start_date, end: journey.end_date },
+    [journey],
+  );
 
   const rmTests = useMemo<JourneyRmTestInput[]>(
     () =>
@@ -166,18 +185,28 @@ export function useJourneyExercises(
       journeyId,
     );
 
-    const planIds = journeyExerciseIds(
-      (templatesQ.data ?? []) as WorkoutInput[],
-      lookup,
-      new Set(assigned),
-    );
+    // Im Archiv gibt es keinen heutigen Plan: was zaehlt, ist was trainiert
+    // wurde. Die Zuordnung koennte laengst anders aussehen als damals, und eine
+    // Platzhalter-Zeile "noch keine Einheit" waere in einer beendeten Journey
+    // eine Zusage, die nie mehr eingeloest wird.
+    const planIds = archived
+      ? journeyTrainedExerciseIds(journeySessions)
+      : journeyExerciseIds(
+          (templatesQ.data ?? []) as WorkoutInput[],
+          lookup,
+          new Set(assigned),
+        );
     const planSet = new Set(planIds);
-    // Zweite Quelle: in dieser Journey trainiert, heute nicht mehr im Plan
-    // (ausgetauschte Uebung, deaktiviertes oder abgezogenes Workout). Ohne sie
-    // faellt der bereits gelaufene Verlauf aus dem Abschnitt heraus.
-    const removedIds = journeyTrainedExerciseIds(journeySessions).filter(
-      (id) => !planSet.has(id),
-    );
+    // Zweite Quelle (nur in der laufenden Journey): hier trainiert, heute nicht
+    // mehr im Plan (ausgetauschte Uebung, deaktiviertes oder abgezogenes
+    // Workout). Ohne sie faellt der bereits gelaufene Verlauf aus dem Abschnitt
+    // heraus. Im Archiv sind beide Quellen dieselbe - dort gibt es nichts zu
+    // trennen.
+    const removedIds = archived
+      ? []
+      : journeyTrainedExerciseIds(journeySessions).filter(
+          (id) => !planSet.has(id),
+        );
     const ids = [...planIds, ...removedIds];
     if (ids.length === 0) return [];
 
@@ -203,15 +232,22 @@ export function useJourneyExercises(
         // Statistikzeile aus derselben journey-gefilterten Liste: bestes Set,
         // Veraenderung seit Journey-Start, Einheiten in dieser Journey.
         stats: buildJourneyStats(history),
-        coach: coachByExercise[id] ?? null,
+        // Im Archiv schweigt der Coach: sein Vorschlag gilt der naechsten
+        // Einheit, und die kommt in dieser Journey nicht mehr.
+        coach: archived ? null : (coachByExercise[id] ?? null),
         // Ergebnis des 1RM-Tests dieser Journey. Gerechnet wird es nur fuer
         // Uebungen, die ueberhaupt ein 1RM fuehren (dieselbe Regel wie die
         // Testliste auf dem Trainingsbildschirm): Core, Haltezeit und
         // Koerpergewicht werden nie getestet, dort waere ein "noch nicht
-        // getestet" eine falsche Offenheit. Gezeigt wird es nur in der
-        // Testwoche – dort steht es anstelle der Coach-Vorgabe (#480).
+        // getestet" eine falsche Offenheit. Gezeigt wird es in der Testwoche
+        // (#480) und im Archiv – beide Male anstelle der Coach-Vorgabe.
+        //
+        // Im Archiv zaehlt nur ein wirklich gemessener Test: der leere Block
+        // ("Noch nicht getestet", "in dieser Woche steht der Test an") spricht
+        // von einer Woche, die nie wiederkommt. Ohne Ergebnis bleibt es dort
+        // bei der blossen Statistikzeile.
         test: fuehrtRekord(exercise)
-          ? buildJourneyTestView(tests, history, unit)
+          ? archiveTest(buildJourneyTestView(tests, history, unit), archived)
           : null,
       };
     }
@@ -226,6 +262,7 @@ export function useJourneyExercises(
   }, [
     ready,
     journeyId,
+    archived,
     exercisesQ.data,
     templatesQ.data,
     assignedQ.data,
@@ -238,19 +275,21 @@ export function useJourneyExercises(
     unit,
   ]);
 
-  // Standort in der Journey kommt aus der einen Stelle (derivePhaseContext) –
-  // dieselbe Rechnung, die auch der Trainingsbildschirm fuer die Testwoche
-  // benutzt. Nur fuer die aktive Journey: eine abgeschlossene laeuft nicht mehr
-  // und hat keine laufende Testwoche.
-  const testWeek = useMemo<boolean>(() => {
-    if (journey == null || journey.id !== journeyId) return false;
+  // Steht rechts in der Kachel das Testergebnis statt der Coach-Vorgabe? Im
+  // Archiv immer (dort gibt der Coach nichts mehr vor), in der laufenden
+  // Journey nur in der reinen Testwoche. Der Standort kommt aus der einen
+  // Stelle (derivePhaseContext) – dieselbe Rechnung, die auch der
+  // Trainingsbildschirm benutzt.
+  const showTest = useMemo<boolean>(() => {
+    if (journey == null) return false;
+    if (archived) return true;
     return derivePhaseContext(
       journey,
       placementSessionsQ.data ?? [],
       settingsQ.data?.weekly_frequency_target || 3,
       todayISO(),
     ).testWeek;
-  }, [journey, journeyId, placementSessionsQ.data, settingsQ.data]);
+  }, [journey, archived, placementSessionsQ.data, settingsQ.data]);
 
   return {
     isLoading,
@@ -259,6 +298,6 @@ export function useJourneyExercises(
     ready,
     groups,
     unit,
-    testWeek,
+    showTest,
   };
 }

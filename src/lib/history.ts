@@ -67,6 +67,9 @@ export interface HistorySessionInput {
   journeyWeek?: number | null;
   type: "strength" | "yoga" | "skill";
   templateId: string | null;
+  /** Beim Journey-Abschluss eingebrannter Workout-Name der Einheit (ADR-0022);
+   *  null = keiner, dann wird heute aufgeloest. Optional wie journeyId. */
+  templateName?: string | null;
   skillId: string | null;
   skillPhase: number | null;
   durationSec: number | null;

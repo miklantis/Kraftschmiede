@@ -1,32 +1,39 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Section } from "@/components/ui/section";
-import { useActiveJourney } from "@/hooks/useJourney";
+import type { PhaseContextJourney } from "@/lib/phaseContext";
 import { useJourneyExercises } from "@/hooks/useJourneyExercises";
 import { useJourneySeries } from "@/hooks/useJourneySeries";
 import { JourneyExerciseTile } from "./JourneyExerciseTile";
 import { JourneySeriesToggles } from "./JourneySeriesToggles";
 
 // Abschnitt "Uebungen in dieser Journey": je Uebung dieser Journey eine Kachel
-// mit ihrem Verlauf darin. Nur mit aktiver Journey
-// sichtbar. Gruppiert wie die Uebungsseite (Hauptuebungen · Assistenz · Core ·
-// Koerpergewicht), Reihenfolge aus dem Katalog.
+// mit ihrem Verlauf darin. Die Journey kommt von aussen – dadurch traegt
+// derselbe Abschnitt die laufende Journey-Seite und das Archiv einer
+// abgeschlossenen Journey. Gruppiert wie die Uebungsseite (Hauptuebungen ·
+// Assistenz · Core · Koerpergewicht), Reihenfolge aus dem Katalog.
 //
-// Uebungen ohne Einheit in dieser Journey stehen als schmale Platzhalter-Zeile
+// Laufende Journey: Uebungen ohne Einheit stehen als schmale Platzhalter-Zeile
 // an ihrem Platz: direkt nach dem Journey-Start staende sonst eine Wand leerer
-// Kacheln. Mit der ersten Einheit wird daraus die volle Kachel.
+// Kacheln. Mit der ersten Einheit wird daraus die volle Kachel. Am Ende jeder
+// Gruppe stehen die Uebungen, die in dieser Journey trainiert wurden, aber
+// nicht mehr im Plan sind (ausgetauscht, Workout deaktiviert oder abgezogen) –
+// gedimmt und beschriftet, damit ihr Verlauf beim Wechsel nicht verschwindet
+// und neben der Uebung steht, die sie ersetzt hat.
 //
-// Am Ende jeder Gruppe stehen die Uebungen, die in dieser Journey trainiert
-// wurden, aber nicht mehr im Plan sind (ausgetauscht, Workout deaktiviert oder
-// abgezogen) – gedimmt und beschriftet, damit ihr Verlauf beim Wechsel nicht
-// verschwindet und neben der Uebung steht, die sie ersetzt hat.
-export function JourneyExercisesSection(): React.ReactElement | null {
+// Archiv: dort gibt es beides nicht. Gezeigt wird allein, was in der Journey
+// wirklich trainiert wurde (siehe useJourneyExercises) – ein Platzhalter waere
+// eine Zusage, die nie mehr eingeloest wird.
+export function JourneyExercisesSection({
+  journey,
+}: {
+  journey: PhaseContextJourney | null;
+}): React.ReactElement | null {
   const navigate = useNavigate();
-  const journeyQ = useActiveJourney();
-  const journeyId = journeyQ.data?.id ?? null;
-  const { ready, groups, unit, testWeek } = useJourneyExercises(journeyId);
+  const { ready, groups, unit, showTest } = useJourneyExercises(journey);
   const { active } = useJourneySeries();
 
-  if (journeyId === null) return null;
+  if (journey === null) return null;
+  const archived = !journey.active;
 
   const open = (exerciseId: string): void => {
     void navigate({ to: "/uebungen/$exerciseId", params: { exerciseId } });
@@ -39,8 +46,9 @@ export function JourneyExercisesSection(): React.ReactElement | null {
         <p className="text-[13px] text-muted-foreground">Wird geladen …</p>
       ) : groups.length === 0 ? (
         <p className="max-w-[680px] text-[13px] leading-[1.55] text-muted-foreground">
-          Dieser Journey ist noch kein Workout zugewiesen. Schalte oben ein
-          Workout ein, dann stehen hier seine Übungen.
+          {archived
+            ? "In dieser Journey wurde keine Übung trainiert."
+            : "Dieser Journey ist noch kein Workout zugewiesen. Schalte oben ein Workout ein, dann stehen hier seine Übungen."}
         </p>
       ) : (
         <>
@@ -65,7 +73,7 @@ export function JourneyExercisesSection(): React.ReactElement | null {
                         stats={it.stats}
                         coach={it.coach}
                         test={it.test}
-                        testWeek={testWeek}
+                        showTest={showTest}
                         activeKeys={active}
                         unit={unit}
                         removed={it.removed}

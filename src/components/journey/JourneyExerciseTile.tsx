@@ -26,12 +26,13 @@ import type { JourneySeriesKey } from "@/lib/journeyChart";
 // Statistikzeile rechnet auf die Journey (bestes Set in dieser Journey,
 // Veraenderung seit Journey-Start, Einheiten in dieser Journey).
 //
-// Waehrend der reinen Testwoche steht rechts nicht der Coach-Block, sondern
-// das Testergebnis (JourneyTestBlock, #480): dort gibt der Coach nichts vor,
+// Steht showTest, so steht rechts nicht der Coach-Block, sondern das
+// Testergebnis (JourneyTestBlock, #480): waehrend der reinen Testwoche und im
+// Archiv einer abgeschlossenen Journey. Beide Male gibt der Coach nichts vor,
 // eine Vorgabe fuer die naechste Einheit waere falscher Rat. Das gilt nur fuer
 // Uebungen, die ueberhaupt ein 1RM fuehren (test != null) – Core, Haltezeit und
-// Koerpergewicht werden nie getestet und behalten ihren Coach-Block. Ausserhalb
-// der Testwoche bleibt alles wie gehabt.
+// Koerpergewicht werden nie getestet; sie fallen auf den Coach-Block zurueck,
+// im Archiv also auf seine blosse Statistikzeile (coach ist dort null).
 //
 // removed = in dieser Journey trainiert, heute nicht mehr im Workout. Die
 // Kachel sieht dann gleich aus, tritt aber zurueck: gedimmt, mit dem Zusatz
@@ -45,7 +46,7 @@ export function JourneyExerciseTile({
   stats,
   coach,
   test,
-  testWeek,
+  showTest,
   activeKeys,
   unit,
   removed = false,
@@ -55,13 +56,13 @@ export function JourneyExerciseTile({
   chart: JourneyChartData;
   stats: readonly JourneyStat[];
   coach: CoachView | null;
-  /** Testergebnis dieser Uebung in dieser Journey – gezeigt wird es nur in der
-   *  Testwoche. null = diese Uebung fuehrt kein 1RM (Core, Haltezeit,
-   *  Koerpergewicht); dann bleibt es auch dort beim Coach-Block. */
+  /** Testergebnis dieser Uebung in dieser Journey. null = diese Uebung fuehrt
+   *  kein 1RM (Core, Haltezeit, Koerpergewicht); dann bleibt es beim
+   *  Coach-Block. */
   test: JourneyTestView | null;
-  /** Laeuft gerade die reine Testwoche? Dann steht rechts das Testergebnis
-   *  statt der Coach-Vorgabe. */
-  testWeek: boolean;
+  /** Rechts das Testergebnis statt der Coach-Vorgabe zeigen (reine Testwoche
+   *  bzw. abgeschlossene Journey). */
+  showTest: boolean;
   /** Eingeschaltete Serien (Schalterreihe im Abschnittskopf). */
   activeKeys: readonly JourneySeriesKey[];
   unit: string;
@@ -108,7 +109,7 @@ export function JourneyExerciseTile({
             unit={unit}
           />
         </div>
-        {testWeek && test !== null ? (
+        {showTest && test !== null ? (
           <JourneyTestBlock
             test={test}
             stats={stats}
