@@ -75,6 +75,25 @@ describe("Titel und Kalender-Label", () => {
     expect(calLabel(s, lk)).toBe("Pull-up");
   });
 
+  it("gespeicherter Name greift erst, wenn das Workout fehlt", () => {
+    // Solange es das Workout gibt, bleibt der Verlauf die lebende Sicht
+    // (ADR-0022): der heutige Name gewinnt gegen den gespeicherten.
+    const lebt = strength({ templateName: "Ganzkörper A (damals)" });
+    expect(sessionTitle(lebt, lk)).toBe("Ganzkörper A");
+    expect(calLabel(lebt, lk)).toBe("Ganzkörper A");
+
+    // Nach dem Loeschen faellt template_id auf null - dann der gespeicherte.
+    const geloescht = strength({ templateId: null, templateName: "Amboss" });
+    expect(sessionTitle(geloescht, lk)).toBe("Amboss");
+    expect(calLabel(geloescht, lk)).toBe("Amboss");
+  });
+
+  it("ohne beides bleibt der Platzhalter", () => {
+    const s = strength({ templateId: null, templateName: null });
+    expect(sessionTitle(s, lk)).toBe("Workout");
+    expect(calLabel(s, lk)).toBe("\u2022");
+  });
+
   it("Yoga-Titel fest, Label 'Yoga'", () => {
     const s = strength({ type: "yoga", templateId: null });
     expect(sessionTitle(s, lk)).toBe("Yoga / Mobility");

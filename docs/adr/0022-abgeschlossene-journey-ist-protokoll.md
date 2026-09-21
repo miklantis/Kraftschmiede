@@ -48,8 +48,15 @@ Journey ohne Namen zurück, und niemand käme mehr vorbei, um sie nachzutragen.
   mit diesem Workout", die Rückschau „was habe ich damals gemacht".
 - **Ohne eingebrannten Namen wird wie bisher aufgelöst.** Die laufende Journey trägt noch
   keinen, ihre Einheiten heißen deshalb überall gleich.
-- **Eine gelöschte Vorlage hinterlässt einen leeren Namen.** Einen Namen zu erfinden wäre
-  schlimmer als keiner; die Rückschau zeigt solche Einheiten unter „Ohne Workout".
+- **Eine gelöschte Vorlage fällt auf den eingebrannten Namen zurück** (nachgezogen mit
+  Issue #490, vorher: „hinterlässt einen leeren Namen"). `sessions.template_id` fällt beim
+  Löschen auf `null`; übrig bleibt der eingebrannte Name, und den nehmen Verlauf, Kalender,
+  Journey-Rückschau und Coach-Export seither. Die Rückschau **gruppiert** dafür über den
+  Namen, sobald die Id fehlt – sonst fielen die Einheiten mehrerer gelöschter Workouts in
+  einen Topf, mit zusammengezählten Einheiten und vermischten Übungslisten. Am Vorrang
+  ändert das nichts: solange das Workout existiert, gilt im Verlauf weiter der heutige Name.
+  Erfunden wird nach wie vor nichts – fehlt auch der eingebrannte Name (Workout gelöscht,
+  bevor die Journey endete), zeigt die Rückschau solche Einheiten unter „Ohne Workout".
 - **Der Bestand wurde einmalig mit dem heutigen Namen gefüllt** (Migration 0053) – der Stand
   von heute, nicht der von damals. Bewusst in Kauf genommen, damit es keinen dauerhaften
   Sonderfall „alt ohne Namen" gibt.

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.57.2",
+      "date": "2026-09-21",
+      "changes": [
+        "Einheiten behalten den Namen ihres Workouts jetzt auch dann, wenn es das Workout selbst nicht mehr gibt. Sichtbar ändert sich damit nichts – die Vorarbeit sorgt dafür, dass Trainingsverlauf, Kalender und Coach-Export beim späteren Löschen eines Workouts nichts verlieren."
+      ]
+    },
+    {
       "version": "1.57.1",
       "date": "2026-09-21",
       "changes": [

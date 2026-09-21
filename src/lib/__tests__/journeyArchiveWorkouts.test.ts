@@ -153,6 +153,30 @@ describe("buildArchiveWorkouts", () => {
     expect(workouts.map((w) => w.name)).toEqual(["Druck", "Zug"]);
   });
 
+  it("haelt zwei geloeschte Workouts ueber ihre Namen auseinander", () => {
+    // Nach dem Loeschen steht in der Einheit keine Workout-Id mehr (on delete
+    // set null), nur noch der eingebrannte Name. Wuerde ueber die fehlende Id
+    // gruppiert, fielen beide in einen Topf.
+    const { workouts } = buildArchiveWorkouts(
+      "j1",
+      [
+        einheit({ templateId: null, templateName: "Amboss" }, "kniebeuge"),
+        einheit({ templateId: null, templateName: "Amboss" }, "kniebeuge"),
+        einheit({ templateId: null, templateName: "Esse" }, "rudern"),
+      ],
+      lk,
+    );
+
+    expect(workouts.map((w) => [w.name, w.count])).toEqual([
+      ["Amboss", 2],
+      ["Esse", 1],
+    ]);
+    expect(workouts[0].exercises).toEqual(["Kniebeuge"]);
+    expect(workouts[1].exercises).toEqual(["Rudern"]);
+    // Der Zeilen-Schluessel bleibt je Workout eigen (React-Key).
+    expect(new Set(workouts.map((w) => w.id)).size).toBe(2);
+  });
+
   it("bleibt ohne Einheiten leer", () => {
     const res = buildArchiveWorkouts("j1", [], lk);
     expect(res.workouts).toEqual([]);

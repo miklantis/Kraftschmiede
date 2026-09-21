@@ -18,7 +18,9 @@ import type { HistorySessionInput } from "./history";
 
 /** Eine Workout-Zeile im Archiv einer Journey. */
 export interface ArchiveWorkoutRow {
-  /** Workout-Id, oder "" fuer die Zeile ohne Workout. */
+  /** Stabiler Schluessel der Zeile: die Workout-Id, bei geloeschtem Workout
+   *  "name:" plus eingebrannter Name, "" fuer die Zeile ohne Workout.
+   *  Verwendet die Seite nur als React-Key - ein Klickziel gibt es nicht. */
   id: string;
   name: string;
   /** Absolvierte Einheiten dieses Workouts in dieser Journey. */
@@ -79,7 +81,17 @@ export function buildArchiveWorkouts(
   const buckets = new Map<string, Bucket>();
   for (const s of neueste) {
     if (s.type !== "strength") continue;
-    const key = s.templateId ?? "";
+    // Schluessel der Gruppe: die Workout-Id, solange es das Workout gibt.
+    // Nach dem Loeschen faellt sessions.template_id auf null, und uebrig bleibt
+    // allein der eingebrannte Name - dann gruppiert der Name. Ohne ihn zu
+    // nehmen, fielen die Einheiten aller geloeschten Workouts in denselben
+    // Topf: zusammengezaehlt, mit vermischten Uebungslisten. Ohne beides
+    // bleibt "", die stille Zeile "Ohne Workout".
+    const key =
+      s.templateId ??
+      (s.templateName != null && s.templateName !== ""
+        ? "name:" + s.templateName
+        : "");
     let b = buckets.get(key);
     if (!b) {
       b = { id: key, burned: null, count: 0, exercises: [], seen: new Set() };
@@ -102,11 +114,13 @@ export function buildArchiveWorkouts(
     }
   }
 
-  // Namen aufloesen: der eingebrannte, sonst der heutige. Laesst sich auch der
-  // nicht finden (Workout geloescht, bevor die Journey endete), zaehlt die
-  // Einheit in die stille Zeile "Ohne Workout" – einen Namen zu erfinden waere
-  // schlimmer als keiner. Mehrere namenlose Workouts fallen dort zusammen: ohne
-  // Namen sind sie nicht unterscheidbar.
+  // Namen aufloesen: der eingebrannte, sonst der heutige. Ein ueber den Namen
+  // gruppierter Topf traegt ihn dabei per Definition schon – der heutige wird
+  // nur fuer einen Topf mit echter Workout-Id gesucht. Laesst sich auch der
+  // nicht finden (Workout geloescht, bevor die Journey endete, also ohne
+  // eingebrannten Namen), zaehlt die Einheit in die stille Zeile "Ohne Workout"
+  // – einen Namen zu erfinden waere schlimmer als keiner. Mehrere namenlose
+  // Workouts fallen dort zusammen: ohne Namen sind sie nicht unterscheidbar.
   const benannt: Array<{
     id: string;
     name: string;
