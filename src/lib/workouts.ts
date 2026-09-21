@@ -28,7 +28,6 @@ export interface WorkoutExerciseEntry {
 export interface WorkoutInput {
   id: string;
   name: string;
-  active: boolean;
   exercises: WorkoutExerciseEntry[];
 }
 
@@ -74,20 +73,14 @@ function toRowModel(w: WorkoutInput, lookup: Lookup): WorkoutRowModel {
   };
 }
 
-// Liste der aktiven Workouts als Zeilenmodelle, Reihenfolge unveraendert.
+// Liste der Workouts als Zeilenmodelle, Reihenfolge unveraendert. Seit Issue
+// #491 gibt es nur noch diese eine Liste: ein Workout existiert oder es ist
+// geloescht, ein Archiv dazwischen gibt es nicht mehr.
 export function buildWorkoutList(
   workouts: WorkoutInput[],
   lookup: Lookup,
 ): WorkoutRowModel[] {
-  return workouts.filter((w) => w.active).map((w) => toRowModel(w, lookup));
-}
-
-// Liste der archivierten Workouts (fuer den ausklappbaren Archiv-Abschnitt).
-export function buildArchivedList(
-  workouts: WorkoutInput[],
-  lookup: Lookup,
-): WorkoutRowModel[] {
-  return workouts.filter((w) => !w.active).map((w) => toRowModel(w, lookup));
+  return workouts.map((w) => toRowModel(w, lookup));
 }
 
 // Treffer der Suche auf der Workouts-Seite: filtert Zeilen der Bibliothek ueber
@@ -96,9 +89,7 @@ export function buildArchivedList(
 // leerer Begriff laesst die Liste unveraendert.
 //
 // Gesucht wird bewusst nur im Namen, nicht in der Uebungs-Kurzform – gleiche
-// Regel wie im Auswahl-Popup, damit das Ergebnis vorhersehbar bleibt. Aktive und
-// archivierte Liste werden getrennt durchgereicht, so bleibt die Trennung der
-// beiden Abschnitte der Seite erhalten.
+// Regel wie im Auswahl-Popup, damit das Ergebnis vorhersehbar bleibt.
 export function filterWorkoutRows(
   rows: readonly WorkoutRowModel[],
   query: string,
@@ -147,12 +138,12 @@ export function countJourneyWorkoutSessions(
   return counts;
 }
 
-// Liste der zuweisbaren Workouts fuer die aktive Journey: nur aktive und
-// journey-faehige (mind. eine strength-Uebung), Reihenfolge unveraendert (kommt
-// bereits nach templates.position). assigned kennzeichnet die aktuell
-// zugewiesenen. Archivierte oder nicht journey-faehige Workouts erscheinen hier
-// bewusst nicht (Konzept 5.3); eine bestehende Zuordnung eines spaeter nicht
-// mehr journey-faehigen Workouts bleibt in der DB und wird beim Lesen gefiltert.
+// Liste der zuweisbaren Workouts fuer die aktive Journey: nur journey-faehige
+// (mind. eine strength-Uebung), Reihenfolge unveraendert (kommt bereits nach
+// templates.position). assigned kennzeichnet die aktuell zugewiesenen. Nicht
+// journey-faehige Workouts erscheinen hier bewusst nicht (Konzept 5.3); eine
+// bestehende Zuordnung eines spaeter nicht mehr journey-faehigen Workouts
+// bleibt in der DB und wird beim Lesen gefiltert.
 // doneCounts (aus countJourneyWorkoutSessions) liefert die Einheiten je Workout
 // in dieser Journey; fehlt ein Workout darin, ist seine Zahl 0.
 export function buildJourneyAssignment(
@@ -162,7 +153,7 @@ export function buildJourneyAssignment(
   doneCounts: Readonly<Record<string, number>>,
 ): JourneyAssignmentRow[] {
   return workouts
-    .filter((w) => w.active && isJourneyCapable(w, lookup))
+    .filter((w) => isJourneyCapable(w, lookup))
     .map((w) => ({
       id: w.id,
       name: w.name,
@@ -186,35 +177,28 @@ export function filterJourneyAssignment(
 }
 
 // Beim Journey-Wechsel uebernehmbare Zuweisungen: aus den zuvor zugewiesenen
-// Workout-Ids bleiben nur die, die weiterhin zuweisbar sind (aktiv UND
-// journey-faehig). Reihenfolge nach der uebergebenen Workout-Liste (Position).
-// Unbekannte oder inzwischen archivierte/nicht mehr journey-faehige Zuweisungen
-// fallen weg.
+// Workout-Ids bleiben nur die, die weiterhin journey-faehig sind. Reihenfolge
+// nach der uebergebenen Workout-Liste (Position). Unbekannte (etwa inzwischen
+// geloeschte) oder nicht mehr journey-faehige Zuweisungen fallen weg.
 export function filterCopyableAssignments(
   workouts: WorkoutInput[],
   lookup: Lookup,
   previousAssignedIds: ReadonlySet<string>,
 ): string[] {
   return workouts
-    .filter(
-      (w) =>
-        w.active &&
-        isJourneyCapable(w, lookup) &&
-        previousAssignedIds.has(w.id),
-    )
+    .filter((w) => isJourneyCapable(w, lookup) && previousAssignedIds.has(w.id))
     .map((w) => w.id);
 }
 
 // Auswahl der Workouts, die der Coach fuer die Empfehlung bewerten soll
 // (Konzept 5.4). Der Rechenkern bleibt unangetastet – hier faellt nur die
 // Entscheidung, WELCHE Menge er sieht:
-//  - keine aktive Journey  -> ganze Bibliothek (nur aktive Workouts), kein Hinweis
-//  - aktive Journey mit nutzbarer Zuweisung -> nur diese Teilmenge (aktiv +
-//    journey-faehig + zugewiesen); kein Rueckfall, selbst wenn heute alle
+//  - keine aktive Journey  -> ganze Bibliothek, kein Hinweis
+//  - aktive Journey mit nutzbarer Zuweisung -> nur diese Teilmenge
+//    (journey-faehig + zugewiesen); kein Rueckfall, selbst wenn heute alle
 //    ausgeschlossen sind
 //  - aktive Journey ohne nutzbare Zuweisung -> Rueckfall auf die ganze
 //    Bibliothek, mit dezentem Hinweis (libraryFallback = true)
-// Archivierte Workouts zaehlen nie zur "ganzen Bibliothek".
 export interface RecommendationSelection {
   /** Ids der zu bewertenden Workouts. */
   ids: string[];
@@ -229,15 +213,14 @@ export function selectRecommendationTemplates(
   hasActiveJourney: boolean,
   assignedIds: ReadonlySet<string>,
 ): RecommendationSelection {
-  const active = workouts.filter((w) => w.active);
   if (!hasActiveJourney) {
-    return { ids: active.map((w) => w.id), libraryFallback: false };
+    return { ids: workouts.map((w) => w.id), libraryFallback: false };
   }
-  const assignedAssignable = active.filter(
+  const assignedAssignable = workouts.filter(
     (w) => isJourneyCapable(w, lookup) && assignedIds.has(w.id),
   );
   if (assignedAssignable.length === 0) {
-    return { ids: active.map((w) => w.id), libraryFallback: true };
+    return { ids: workouts.map((w) => w.id), libraryFallback: true };
   }
   return { ids: assignedAssignable.map((w) => w.id), libraryFallback: false };
 }

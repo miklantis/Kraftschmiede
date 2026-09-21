@@ -220,7 +220,6 @@ export function useTrainingOverview(): {
           journeyTestScope(
             templates.map((t) => ({
               id: t.id,
-              active: t.active,
               exerciseIds: t.exerciseIds,
             })),
             assignedIds,
@@ -279,7 +278,6 @@ export function useTrainingOverview(): {
       templates.map((t) => ({
         id: t.id,
         name: t.name,
-        active: t.active,
         exercises: t.exercises,
       })),
       profileLookup,
@@ -289,22 +287,16 @@ export function useTrainingOverview(): {
     const selectedIds = new Set(selection.ids);
 
     // Menge der Workouts, die der aktiven Journey zugewiesen und dort nutzbar
-    // sind (aktiv + journey-faehig). Nur diese bekommen in „Weitere Workouts“
-    // den Journey-Chip und ihren Score; ohne aktive Journey ist die Menge leer.
+    // sind (journey-faehig). Nur diese bekommen in „Weitere Workouts“ den
+    // Journey-Chip und ihren Score; ohne aktive Journey ist die Menge leer.
     const assignedSet = new Set(assignedIds);
     const assignedUsableIds = new Set(
       templates
         .filter(
           (t) =>
-            t.active &&
             assignedSet.has(t.id) &&
             isJourneyCapable(
-              {
-                id: t.id,
-                name: t.name,
-                active: t.active,
-                exercises: t.exercises,
-              },
+              { id: t.id, name: t.name, exercises: t.exercises },
               profileLookup,
             ),
         )
@@ -327,14 +319,12 @@ export function useTrainingOverview(): {
     });
 
     // Coach-Ranking ALLER aktiven Workouts nach Eignung. Der Hero kommt aus der
-    // Journey-Auswahl (selectedIds; Konzept 5.4); die uebrigen aktiven Workouts
+    // Journey-Auswahl (selectedIds; Konzept 5.4); die uebrigen Workouts
     // erscheinen als „Weitere“ – unabhaengig von der Zuordnung, damit jedes
     // Workout direkt startbar bleibt. Ausschluss (Kater=3) dimmt und sperrt den
     // Start bei allen gleichermassen.
     const ranked = rankWorkouts(
-      templates
-        .filter((t) => t.active)
-        .map((t) => ({ id: t.id, exerciseIds: t.exerciseIds })),
+      templates.map((t) => ({ id: t.id, exerciseIds: t.exerciseIds })),
       ctx,
       exMap,
     );

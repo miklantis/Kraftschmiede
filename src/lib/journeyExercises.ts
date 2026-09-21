@@ -94,8 +94,8 @@ type Lookup = Record<string, WorkoutExerciseInfo | undefined>;
 // darin in Uebungsreihenfolge. Massgeblich ist allein die Zuweisung
 // (journey_workouts): ohne Zuweisung bleibt die Liste leer, es gibt keinen
 // Rueckfall auf die Bibliothek – dieser Abschnitt spricht ueber die Journey,
-// nicht ueber den Katalog. Gefiltert wird wie beim Zuweisungs-Schalter (aktiv +
-// journey-faehig), damit hier keine Uebung aus einem Workout auftaucht, das
+// nicht ueber den Katalog. Gefiltert wird wie beim Zuweisungs-Schalter
+// (journey-faehig), damit hier keine Uebung aus einem Workout auftaucht, das
 // oben gar nicht mehr angeboten wird.
 export function journeyExerciseIds(
   workouts: readonly WorkoutInput[],
@@ -105,9 +105,7 @@ export function journeyExerciseIds(
   const seen = new Set<string>();
   const out: string[] = [];
   for (const w of workouts) {
-    if (!w.active || !assignedIds.has(w.id) || !isJourneyCapable(w, lookup)) {
-      continue;
-    }
+    if (!assignedIds.has(w.id) || !isJourneyCapable(w, lookup)) continue;
     for (const e of w.exercises.slice().sort((a, b) => a.position - b.position)) {
       if (seen.has(e.exerciseId)) continue;
       seen.add(e.exerciseId);

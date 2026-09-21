@@ -24,7 +24,6 @@ function wk(partial: Partial<WorkoutInput>): WorkoutInput {
   return {
     id: "w1",
     name: "Test",
-    active: true,
     exercises: [],
     ...partial,
   };
@@ -66,32 +65,29 @@ describe("workoutSummary", () => {
 });
 
 describe("buildWorkoutList", () => {
-  it("nimmt nur aktive Workouts auf", () => {
+  it("nimmt jedes Workout auf, Reihenfolge unveraendert", () => {
+    // Seit Issue #491 gibt es kein Archiv mehr, das hier herausgefiltert
+    // wuerde: was in der Liste steht, existiert.
     const list = buildWorkoutList(
-      [
-        wk({ id: "a", name: "Aktiv", active: true }),
-        wk({ id: "b", name: "Archiv", active: false }),
-      ],
+      [wk({ id: "b", name: "Zweites" }), wk({ id: "a", name: "Erstes" })],
       lookup,
     );
-    expect(list.map((r) => r.id)).toEqual(["a"]);
+    expect(list.map((r) => r.id)).toEqual(["b", "a"]);
   });
 });
 
 describe("buildJourneyAssignment", () => {
-  const strengthWk = (id: string, name: string, active = true): WorkoutInput =>
+  const strengthWk = (id: string, name: string): WorkoutInput =>
     wk({
       id,
       name,
-      active,
       exercises: [{ exerciseId: "squat", position: 0 }],
     });
 
-  it("nimmt nur aktive und journey-faehige Workouts auf", () => {
+  it("nimmt nur journey-faehige Workouts auf", () => {
     const rows = buildJourneyAssignment(
       [
-        strengthWk("a", "Kraft aktiv"),
-        strengthWk("b", "Kraft archiv", false),
+        strengthWk("a", "Kraft"),
         wk({
           id: "c",
           name: "Nur Core",
@@ -267,24 +263,24 @@ describe("filterWorkoutRows", () => {
 });
 
 describe("filterCopyableAssignments", () => {
-  const strengthWk = (id: string, active = true): WorkoutInput =>
+  const strengthWk = (id: string): WorkoutInput =>
     wk({
       id,
       name: id,
-      active,
       exercises: [{ exerciseId: "squat", position: 0 }],
     });
 
-  it("uebernimmt nur weiterhin zuweisbare (aktiv + journey-faehig) Zuweisungen", () => {
+  it("uebernimmt nur weiterhin journey-faehige Zuweisungen", () => {
     const workouts = [
       strengthWk("a"),
-      strengthWk("b", false), // inzwischen archiviert
       wk({
         id: "c",
         name: "c",
         exercises: [{ exerciseId: "plank", position: 0 }],
       }), // nicht mehr journey-faehig
     ];
+    // "b" ist zwar zugewiesen, steht aber gar nicht mehr in der Liste
+    // (geloescht) - unbekannte Zuweisungen fallen weg.
     const copyable = filterCopyableAssignments(
       workouts,
       lookup,
@@ -304,25 +300,25 @@ describe("filterCopyableAssignments", () => {
 });
 
 describe("selectRecommendationTemplates", () => {
-  const strengthWk = (id: string, active = true): WorkoutInput =>
+  const strengthWk = (id: string): WorkoutInput =>
     wk({
       id,
       name: id,
-      active,
       exercises: [{ exerciseId: "squat", position: 0 }],
     });
   // reines Koerpergewicht/Core -> nicht journey-faehig
-  const coreWk = (id: string, active = true): WorkoutInput =>
+  const coreWk = (id: string): WorkoutInput =>
     wk({
       id,
       name: id,
-      active,
       exercises: [{ exerciseId: "plank", position: 0 }],
     });
 
-  it("ohne aktive Journey: ganze Bibliothek, nur aktive, kein Hinweis", () => {
+  it("ohne aktive Journey: ganze Bibliothek, kein Hinweis", () => {
+    // Auch das nicht journey-faehige "b" ist dabei: ohne Journey darf jedes
+    // Workout empfohlen werden.
     const sel = selectRecommendationTemplates(
-      [strengthWk("a"), coreWk("b"), strengthWk("c", false)],
+      [strengthWk("a"), coreWk("b")],
       lookup,
       false,
       new Set(),
@@ -365,9 +361,11 @@ describe("selectRecommendationTemplates", () => {
     expect(sel.libraryFallback).toBe(true);
   });
 
-  it("aktive Journey, zugewiesenes Workout archiviert: Rueckfall", () => {
+  it("aktive Journey, zugewiesenes Workout geloescht: Rueckfall", () => {
+    // "a" ist noch zugewiesen, steht aber nicht mehr in der Liste. Damit
+    // bleibt keine nutzbare Zuweisung uebrig -> ganze Bibliothek mit Hinweis.
     const sel = selectRecommendationTemplates(
-      [strengthWk("a", false), strengthWk("b")],
+      [strengthWk("b")],
       lookup,
       true,
       new Set(["a"]),

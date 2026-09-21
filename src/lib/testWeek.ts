@@ -27,11 +27,9 @@ export interface TestWeekTest {
   date: string;
 }
 
-// Workout, soweit der Journey-Bezug es braucht: ob es noch aktiv ist und welche
-// Uebungen darin stehen.
+// Workout, soweit der Journey-Bezug es braucht: welche Uebungen darin stehen.
 export interface TestWeekWorkout {
   id: string;
-  active: boolean;
   exerciseIds: ReadonlyArray<string>;
 }
 
@@ -77,7 +75,7 @@ export function journeyTestScope(
   const zugewiesen = new Set(assignedIds);
   const ids = new Set<string>();
   for (const w of workouts) {
-    if (!w.active || !zugewiesen.has(w.id)) continue;
+    if (!zugewiesen.has(w.id)) continue;
     for (const id of w.exerciseIds) ids.add(id);
   }
   return ids;

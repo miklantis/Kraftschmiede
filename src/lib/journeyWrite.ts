@@ -83,7 +83,10 @@ export interface VorlageUebung {
 }
 
 /** Was der Nutzer mit einer Workout-Vorlage will. `save` traegt Kopf und
- *  vollstaendige Uebungsliste, `setActive` nur den Archiv-Schalter. */
+ *  vollstaendige Uebungsliste, `delete` loescht das Workout endgueltig. `name`
+ *  am Loeschen ist der zuletzt gespeicherte Name – nicht der Entwurf im
+ *  Editor: eingebrannt wird, wie das Workout hiess, als danach trainiert
+ *  wurde. */
 export type VorlageAction =
   | {
       type: "save";
@@ -94,7 +97,7 @@ export type VorlageAction =
       position: number;
       exercises: VorlageUebung[];
     }
-  | { type: "setActive"; templateId: string; aktiv: boolean };
+  | { type: "delete"; templateId: string; name: string };
 
 /**
  * Wochenliste, Lastliste und Bauart-Vermerk einer entstehenden Phase: Alles
@@ -368,8 +371,14 @@ export async function writeVorlageAction(
   store: JourneyStore,
   action: VorlageAction,
 ): Promise<void> {
-  if (action.type === "setActive") {
-    await store.setVorlageAktiv(action.templateId, action.aktiv);
+  if (action.type === "delete") {
+    // Erst einbrennen, dann loeschen – dieselbe Reihenfolge wie beim
+    // Journey-Abschluss (ADR-0022). Bricht es dazwischen ab, steht das Workout
+    // noch und der naechste Versuch holt alles nach. Andersherum blieben
+    // namenlose Einheiten zurueck, und niemand kaeme mehr vorbei, um den Namen
+    // nachzutragen.
+    await store.brenneWorkoutNameEin(action.templateId, action.name);
+    await store.deleteVorlage(action.templateId);
     return;
   }
 
@@ -380,7 +389,6 @@ export async function writeVorlageAction(
       key: null,
       name: action.name,
       image: null,
-      active: true,
       position: action.position,
     });
   } else {
