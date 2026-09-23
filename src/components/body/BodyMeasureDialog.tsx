@@ -4,16 +4,22 @@ import { DeleteConfirmButton } from "@/components/ui/delete-confirm-button";
 import { FieldLabel } from "@/components/ui/field-label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { useCompositionActions } from "@/hooks/useCompositionActions";
 import type { CompositionFelder } from "@/hooks/useCompositionActions";
 import { todayISO } from "@/lib/format";
-import type { CompositionRow } from "@/schemas";
+import type { CompositionRow, MeasurementDeviceRow } from "@/schemas";
 
 // Popup zum Anlegen und Bearbeiten einer Koerpermessung. Ohne `row` legt es neu
 // an (alle Felder leer, Datum = heute), mit `row` bearbeitet es diesen Eintrag
 // (Felder mit den Ist-Werten vorbefuellt). Nur das Datum ist Pflicht; alle
 // Werte sind optional und duerfen leer bleiben – ein leer geraeumtes Feld
 // entfernt den Wert beim Speichern bewusst.
+//
+// Unter dem Datum steht die Auswahl des Messgeraets (optional, erste Option
+// „Kein Gerät“). Beim Anlegen ist das Geraet der letzten Messung vorbelegt
+// (`vorauswahlGeraet`), beim Bearbeiten das Geraet des Eintrags. Gibt es noch
+// kein Geraet, steht dort nur ein kurzer Hinweis auf die Einstellungen.
 //
 // Es gilt ein Eintrag pro Tag (unique user_id,date). Beim Anlegen mit einem
 // bereits belegten Datum weist der Dialog freundlich darauf hin, statt den
@@ -26,7 +32,7 @@ import type { CompositionRow } from "@/schemas";
 // Wertfelder der Messung mit Label und Einheit, in Eingabe-Reihenfolge. Deckt
 // die composition-Spalten ab (inkl. der Wasserwerte ECW/ICW).
 const WERT_FELDER: ReadonlyArray<{
-  key: keyof Omit<CompositionFelder, "date">;
+  key: keyof Omit<CompositionFelder, "date" | "device_id">;
   label: string;
   suffix: string;
 }> = [
@@ -75,27 +81,37 @@ function zahlVon(text: string): number | null {
   return Number.isNaN(n) ? null : n;
 }
 
+// Wert der Auswahl fuer „Kein Gerät“ (native Auswahl kennt kein null).
+const KEIN_GERAET = "";
+
 export function BodyMeasureDialog({
   open,
   row,
   belegteDaten,
+  geraete,
+  vorauswahlGeraet,
   onClose,
 }: {
   open: boolean;
   row: CompositionRow | null;
   belegteDaten: string[];
+  geraete: MeasurementDeviceRow[];
+  vorauswahlGeraet: string | null;
   onClose: () => void;
 }): React.ReactElement {
   const { add, update, remove, isPending } = useCompositionActions();
   const [date, setDate] = useState(todayISO());
   const [werte, setWerte] = useState<WerteEntwurf>(LEER_ENTWURF);
+  const [geraetId, setGeraetId] = useState<string>(KEIN_GERAET);
 
   // Beim Oeffnen den Entwurf setzen: aus dem Eintrag (Bearbeiten) oder frisch
-  // (Anlegen, Datum = heute).
+  // (Anlegen, Datum = heute, Geraet der letzten Messung). Die Vorauswahl wird
+  // bewusst nur beim Oeffnen gelesen, nicht bei jeder Aenderung nachgezogen.
   useEffect(() => {
     if (!open) return;
     if (row) {
       setDate(row.date);
+      setGeraetId(row.device_id ?? KEIN_GERAET);
       setWerte({
         weight: textVon(row.weight),
         body_fat_kg: textVon(row.body_fat_kg),
@@ -112,7 +128,9 @@ export function BodyMeasureDialog({
     } else {
       setDate(todayISO());
       setWerte(LEER_ENTWURF);
+      setGeraetId(vorauswahlGeraet ?? KEIN_GERAET);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- nur beim Oeffnen
   }, [open, row]);
 
   // Ein anderer Eintrag belegt dieses Datum schon (eigenes Datum ausgenommen).
@@ -145,6 +163,7 @@ export function BodyMeasureDialog({
       phase_angle: zahlVon(werte.phase_angle),
       visceral_fat: zahlVon(werte.visceral_fat),
       bmr_kcal: zahlVon(werte.bmr_kcal),
+      device_id: geraetId === KEIN_GERAET ? null : geraetId,
     };
     if (row) await update(row.id, felder);
     else await add(felder);
@@ -178,6 +197,27 @@ export function BodyMeasureDialog({
               Für diesen Tag gibt es bereits eine Messung. Bearbeite den
               vorhandenen Eintrag oder wähle ein anderes Datum.
             </span>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <FieldLabel>Messgerät</FieldLabel>
+          {geraete.length === 0 ? (
+            <span className="text-[13px] leading-[1.5] text-muted-foreground">
+              Noch kein Messgerät eingetragen. Geräte legst du unter
+              Einstellungen an.
+            </span>
+          ) : (
+            <Select
+              ariaLabel="Messgerät"
+              value={geraetId}
+              onChange={setGeraetId}
+              options={[
+                { value: KEIN_GERAET, label: "Kein Gerät" },
+                ...geraete.map((g) => ({ value: g.id, label: g.name })),
+              ]}
+              className="w-full"
+            />
           )}
         </div>
 

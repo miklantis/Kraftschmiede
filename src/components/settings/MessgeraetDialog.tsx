@@ -13,6 +13,10 @@ import type { MeasurementDeviceRow } from "@/schemas";
 // Bearbeiten-Modus zusaetzlich Loeschen mit Rueckfrage im selben Dialog.
 // Fussleiste wie bei den Meilenstein-Dialogen (DialogFooter).
 //
+// Haengen Messungen am Geraet (`anzahlMessungen` > 0), ist Loeschen gesperrt:
+// statt des Knopfs steht eine ruhige Zeile mit dem Grund, Umbenennen bleibt
+// moeglich. Die Datenbank sperrt das Loeschen zusaetzlich (Migration 0065).
+//
 // Ein Name darf nur einmal vorkommen (ohne Gross-/Kleinschreibung), damit die
 // Auswahl an der Messung eindeutig bleibt; die Pruefung liegt in
 // lib/messgeraete.ts, die Datenbank sichert zusaetzlich ab.
@@ -20,11 +24,13 @@ export function MessgeraetDialog({
   open,
   geraet,
   geraete,
+  anzahlMessungen,
   onClose,
 }: {
   open: boolean;
   geraet: MeasurementDeviceRow | null;
   geraete: readonly MeasurementDeviceRow[];
+  anzahlMessungen: number;
   onClose: () => void;
 }): React.ReactElement {
   const { add, update, remove, isPending } = useMessgeraetActions();
@@ -108,7 +114,7 @@ export function MessgeraetDialog({
         onClose={onClose}
         disabled={!canSave || isPending}
       >
-        {isEdit && (
+        {isEdit && anzahlMessungen === 0 && (
           <DeleteConfirmButton
             label="Messgerät löschen"
             onDelete={() => void doDelete()}
@@ -116,6 +122,16 @@ export function MessgeraetDialog({
             disabled={isPending}
             className="mt-3"
           />
+        )}
+        {isEdit && anzahlMessungen > 0 && (
+          <p className="mx-0.5 mt-3 text-center text-[12px] leading-[1.5] text-muted-foreground">
+            Löschen ist gesperrt, weil{" "}
+            {anzahlMessungen === 1
+              ? "eine Messung"
+              : `${anzahlMessungen} Messungen`}{" "}
+            an diesem Gerät {anzahlMessungen === 1 ? "hängt" : "hängen"}.
+            Umbenennen geht jederzeit.
+          </p>
         )}
       </DialogFooter>
     </Overlay>

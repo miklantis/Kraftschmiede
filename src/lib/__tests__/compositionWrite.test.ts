@@ -26,6 +26,7 @@ function felder(over: Partial<CompositionFelder> = {}): CompositionFelder {
     phase_angle: 6.4,
     visceral_fat: 5,
     bmr_kcal: 1830,
+    device_id: "d1",
     ...over,
   };
 }
@@ -49,6 +50,7 @@ describe("writeCompositionAction", () => {
         phase_angle: 6.4,
         visceral_fat: 5,
         bmr_kcal: 1830,
+        device_id: "d1",
       },
     ]);
     expect(log.messungPatches).toHaveLength(0);
@@ -73,6 +75,7 @@ describe("writeCompositionAction", () => {
         phase_angle: null,
         visceral_fat: null,
         bmr_kcal: null,
+        device_id: null,
       },
     });
     expect(log.messungInserted[0]).toMatchObject({
@@ -81,6 +84,7 @@ describe("writeCompositionAction", () => {
       weight: 81,
       body_fat_kg: null,
       bmr_kcal: null,
+      device_id: null,
     });
   });
 
@@ -113,6 +117,24 @@ describe("writeCompositionAction", () => {
       phase_angle: null,
       weight: 82.4,
     });
+  });
+
+  it("schreibt das Messgeraet mit und entfernt es bei „Kein Geraet“", async () => {
+    const { store, log } = createMemoryCompositionStore();
+    await writeCompositionAction(store, "u1", {
+      type: "update",
+      id: "m1",
+      felder: felder({ device_id: "d2" }),
+    });
+    await writeCompositionAction(store, "u1", {
+      type: "update",
+      id: "m1",
+      felder: felder({ device_id: null }),
+    });
+    expect(log.messungPatches.map((p) => p.patch.device_id)).toEqual([
+      "d2",
+      null,
+    ]);
   });
 
   it("loescht eine Messung", async () => {

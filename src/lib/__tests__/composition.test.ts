@@ -18,6 +18,7 @@ function row(p: Partial<CompositionRow>): CompositionRow {
     ecw_kg: null,
     icw_kg: null,
     bmr_kcal: null,
+    device_id: null,
     ...p,
   };
 }

@@ -7,10 +7,12 @@ import { LoadMore } from "@/components/ui/load-more";
 import { useMehrLaden } from "@/hooks/useMehrLaden";
 import { compChips } from "@/lib/composition";
 import { longDateYearDE } from "@/lib/format";
-import type { CompositionRow } from "@/schemas";
+import { messgeraetNamen, vorauswahlMessgeraet } from "@/lib/messgeraete";
+import type { CompositionRow, MeasurementDeviceRow } from "@/schemas";
 
-// Abschnitt "Messungen": je Messung Datum + Chips der vorhandenen Werte,
-// neueste zuerst. Die Zeilen sitzen in einer Karte mit Trennlinien
+// Abschnitt "Messungen": je Messung Datum (daneben klein das Messgeraet, falls
+// eines gewaehlt ist) + Chips der vorhandenen Werte, neueste zuerst. Die
+// Zeilen sitzen in einer Karte mit Trennlinien
 // (gemeinsamer List-Baustein) und tragen keine Aktions-Buttons: die ganze
 // Zeile ist tippbar und oeffnet das Mess-Popup, Bearbeiten und Loeschen
 // passieren dort. Der Knopf zum Hinzufuegen sitzt ganz unten unter der Liste
@@ -18,14 +20,17 @@ import type { CompositionRow } from "@/schemas";
 // Ohne Messung nur der Hinzufuegen-Knopf plus ein kurzer Hinweis.
 export function BodyMeasureList({
   rows,
+  geraete,
 }: {
   rows: CompositionRow[];
+  geraete: MeasurementDeviceRow[];
 }): React.ReactElement {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editRow, setEditRow] = useState<CompositionRow | null>(null);
   const { sichtbar, hatMehr, mehrLaden } = useMehrLaden(rows);
 
   const belegteDaten = rows.map((r) => r.date);
+  const geraetName = messgeraetNamen(geraete);
 
   const oeffnenNeu = (): void => {
     setEditRow(null);
@@ -55,8 +60,15 @@ export function BodyMeasureList({
                 className="flex w-full cursor-pointer items-center gap-3 border-t border-muted p-[14px_16px] text-left transition-colors first:border-t-0 hover:bg-primary/5 min-[960px]:p-[14px_18px]"
               >
                 <div className="min-w-0 flex-1">
-                  <div className="mb-2 text-[14px] font-semibold text-foreground">
-                    {longDateYearDE(e.date)}
+                  <div className="mb-2 flex min-w-0 items-baseline gap-2">
+                    <span className="flex-none text-[14px] font-semibold text-foreground">
+                      {longDateYearDE(e.date)}
+                    </span>
+                    {e.device_id != null && geraetName.has(e.device_id) && (
+                      <span className="min-w-0 truncate text-[12px] text-muted-foreground">
+                        {geraetName.get(e.device_id)}
+                      </span>
+                    )}
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {compChips(e).map((c, i) => (
@@ -91,6 +103,8 @@ export function BodyMeasureList({
         open={dialogOpen}
         row={editRow}
         belegteDaten={belegteDaten}
+        geraete={geraete}
+        vorauswahlGeraet={vorauswahlMessgeraet(rows, geraete)}
         onClose={() => setDialogOpen(false)}
       />
     </Section>

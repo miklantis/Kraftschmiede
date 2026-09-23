@@ -90,7 +90,7 @@ export const BESTANDSREGISTER = [
   { tabelle: "skill_progress", key: "skillProgress", tiefe: 1, ablage: "liste", einzelzeile: false, schema: "skillProgressRow" },
   { tabelle: "body_log", key: "bodyLog", tiefe: 0, ablage: "liste", einzelzeile: false, schema: "bodyLogRow" },
   { tabelle: "measurement_devices", key: "measurementDevices", tiefe: 0, ablage: "liste", einzelzeile: false, schema: "measurementDeviceRow" },
-  { tabelle: "composition", key: "composition", tiefe: 0, ablage: "liste", einzelzeile: false, schema: "compositionRow" },
+  { tabelle: "composition", key: "composition", tiefe: 1, ablage: "liste", einzelzeile: false, schema: "compositionRow" },
   { tabelle: "exercise_milestones", key: "milestones", tiefe: 2, ablage: "liste", einzelzeile: false, schema: "exerciseMilestoneRow" },
   { tabelle: "composition_milestones", key: "compositionMilestones", tiefe: 0, ablage: "liste", einzelzeile: false, schema: "compositionMilestoneRow" },
   { tabelle: "rm_tests", key: "rmTests", tiefe: 2, ablage: "liste", einzelzeile: false, schema: "rmTestRow" },

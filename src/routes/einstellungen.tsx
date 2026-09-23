@@ -29,6 +29,7 @@ import {
   useEquipment,
 } from "@/hooks/useInventory";
 import { useMessgeraete } from "@/hooks/useMessgeraete";
+import { useComposition } from "@/hooks/useComposition";
 
 export const Route = createFileRoute("/einstellungen")({
   component: EinstellungenPage,
@@ -54,6 +55,7 @@ function EinstellungenPage(): React.ReactElement {
   const dumbbells = useDumbbells().data ?? [];
   const equipment = useEquipment().data ?? [];
   const messgeraete = useMessgeraete().data ?? [];
+  const messungen = useComposition().data ?? [];
 
   const placeholder = (
     <p className="text-sm text-muted-foreground">
@@ -105,7 +107,7 @@ function EinstellungenPage(): React.ReactElement {
           )}
 
           <Section eyebrow="Messgeräte · Körpermessung">
-            <Messgeraete geraete={messgeraete} />
+            <Messgeraete geraete={messgeraete} messungen={messungen} />
           </Section>
 
           <Section eyebrow="Score ↔ RIR ↔ RPE">

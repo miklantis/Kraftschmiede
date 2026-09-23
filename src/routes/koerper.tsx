@@ -10,6 +10,7 @@ import { BodyMeasurePanel } from "@/components/body/BodyMeasurePanel";
 import { BodyMeasureList } from "@/components/body/BodyMeasureList";
 import { useBodyView } from "@/hooks/useBodyView";
 import { useComposition } from "@/hooks/useComposition";
+import { useMessgeraete } from "@/hooks/useMessgeraete";
 
 // Koerper-Seite. Zwei Haelften: links das taegliche Befinden (Empfehlungs-
 // Banner volle Breite oben, dann Muskelkater-Figur, Eingabe, Verlauf), rechts
@@ -23,6 +24,7 @@ function KoerperPage(): React.ReactElement {
   const view = useBodyView();
   const compQuery = useComposition();
   const comp = compQuery.data ?? [];
+  const geraete = useMessgeraete().data ?? [];
 
   if (view.isLoading) {
     return (
@@ -70,7 +72,7 @@ function KoerperPage(): React.ReactElement {
           {/* Messung */}
           <div data-reveal-group className="flex min-w-0 flex-col gap-4">
             <BodyMeasurePanel rows={comp} />
-            <BodyMeasureList rows={comp} />
+            <BodyMeasureList rows={comp} geraete={geraete} />
           </div>
         </div>
       </PageReveal>
