@@ -3,6 +3,7 @@ import { createMemoryCompositionStore } from "../compositionStore";
 import {
   writeCompositionAction,
   writeCompositionMilestoneAction,
+  writeMessgeraetAction,
 } from "../compositionWrite";
 import type { CompositionFelder } from "../compositionWrite";
 
@@ -177,6 +178,56 @@ describe("writeCompositionMilestoneAction", () => {
         name: "80 kg",
         target: 80,
       }),
+    ).rejects.toThrow("Nicht angemeldet.");
+    expect(log.folge).toHaveLength(0);
+  });
+});
+
+describe("writeMessgeraetAction", () => {
+  it("legt ein Messgeraet mit getrimmtem Namen an", async () => {
+    const { store, log } = createMemoryCompositionStore();
+    await writeMessgeraetAction(store, "u1", {
+      type: "add",
+      name: "  InBody 570 – Studio Mitte ",
+    });
+    expect(log.messgeraetInserted).toEqual([
+      { user_id: "u1", name: "InBody 570 – Studio Mitte" },
+    ]);
+    expect(log.folge).toEqual(["insertMessgeraet"]);
+  });
+
+  it("benennt ein Messgeraet um, ohne die Nutzer-Kennung mitzuschicken", async () => {
+    const { store, log } = createMemoryCompositionStore();
+    await writeMessgeraetAction(store, "u1", {
+      type: "update",
+      id: "d1",
+      name: "Tanita ",
+    });
+    expect(log.messgeraetPatches).toEqual([
+      { id: "d1", patch: { name: "Tanita" } },
+    ]);
+    expect(log.folge).toEqual(["updateMessgeraet"]);
+  });
+
+  it("loescht ein Messgeraet", async () => {
+    const { store, log } = createMemoryCompositionStore();
+    await writeMessgeraetAction(store, "u1", { type: "delete", id: "d2" });
+    expect(log.messgeraetDeleted).toEqual(["d2"]);
+    expect(log.folge).toEqual(["deleteMessgeraet"]);
+  });
+
+  it("weist einen leeren Namen ab", async () => {
+    const { store, log } = createMemoryCompositionStore();
+    await expect(
+      writeMessgeraetAction(store, "u1", { type: "add", name: "   " }),
+    ).rejects.toThrow("Name fehlt.");
+    expect(log.folge).toHaveLength(0);
+  });
+
+  it("schreibt ohne angemeldeten Nutzer nichts", async () => {
+    const { store, log } = createMemoryCompositionStore();
+    await expect(
+      writeMessgeraetAction(store, null, { type: "add", name: "InBody" }),
     ).rejects.toThrow("Nicht angemeldet.");
     expect(log.folge).toHaveLength(0);
   });

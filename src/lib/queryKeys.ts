@@ -52,6 +52,7 @@ export const QUERY_ROOTS = {
   zeitraeume: "zeitraeume",
   composition: "composition",
   compMilestones: "compMilestones",
+  messgeraete: "messgeraete",
   latestBody: "latestBody",
   bodyLog: "body-log",
   equipment: "equipment",
@@ -123,6 +124,8 @@ export const queryKeys = {
   /** Meilensteine der Koerperzusammensetzung. */
   compMilestones: (userId: UserId) =>
     [QUERY_ROOTS.compMilestones, userId] as const,
+  /** Messgeraete der Koerpermessungen. */
+  messgeraete: (userId: UserId) => [QUERY_ROOTS.messgeraete, userId] as const,
   /** Juengste Tagesform. */
   latestBody: (userId: UserId) => [QUERY_ROOTS.latestBody, userId] as const,
   /** Verlauf der Tagesform. */
@@ -213,6 +216,8 @@ export const INVALIDATE = {
   composition: [QUERY_ROOTS.composition],
   /** Meilenstein der Koerperzusammensetzung geaendert. */
   compMilestones: [QUERY_ROOTS.compMilestones],
+  /** Messgeraet angelegt, umbenannt oder geloescht. */
+  messgeraete: [QUERY_ROOTS.messgeraete],
   /** Workout-Vorlage angelegt, geaendert oder geloescht. */
   templates: [QUERY_ROOTS.templates],
   /** Scheiben im Inventar geaendert. */

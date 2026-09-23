@@ -15,6 +15,7 @@ import {
   InventoryDumbbells,
 } from "@/components/settings/InventoryWeights";
 import { InventoryEquipment } from "@/components/settings/InventoryEquipment";
+import { Messgeraete } from "@/components/settings/Messgeraete";
 import { DataExport } from "@/components/settings/DataExport";
 import { DataRestore } from "@/components/settings/DataRestore";
 import { AppReset } from "@/components/settings/AppReset";
@@ -27,6 +28,7 @@ import {
   useDumbbells,
   useEquipment,
 } from "@/hooks/useInventory";
+import { useMessgeraete } from "@/hooks/useMessgeraete";
 
 export const Route = createFileRoute("/einstellungen")({
   component: EinstellungenPage,
@@ -36,7 +38,7 @@ export const Route = createFileRoute("/einstellungen")({
 // Steuerelement rechts. Oben das Konto-/Verbindungs-Panel, darunter auf dem
 // Desktop ein durchgaengig zweispaltiges Raster aller Bereiche (mobil ein
 // Stapel): Engine, Timer, Inventar (Stangen/Scheiben/Kettlebells/Geraete),
-// Score, "Daten: Sicherung", "Daten: Coaching" und der App-Version-Block.
+// Messgeraete der Koerpermessungen, Score, "Daten: Sicherung", "Daten: Coaching" und der App-Version-Block.
 // Kein Block nimmt am Desktop die volle Breite ein - alle liegen halbbreit
 // im selben Raster.
 // Plate-Loader bekommt keine eigene UI - das Inventar fuettert den schon
@@ -51,6 +53,7 @@ function EinstellungenPage(): React.ReactElement {
   const kettlebells = useKettlebells().data ?? [];
   const dumbbells = useDumbbells().data ?? [];
   const equipment = useEquipment().data ?? [];
+  const messgeraete = useMessgeraete().data ?? [];
 
   const placeholder = (
     <p className="text-sm text-muted-foreground">
@@ -100,6 +103,10 @@ function EinstellungenPage(): React.ReactElement {
               <InventoryEquipment equipment={equipment} />
             </Section>
           )}
+
+          <Section eyebrow="Messgeräte · Körpermessung">
+            <Messgeraete geraete={messgeraete} />
+          </Section>
 
           <Section eyebrow="Score ↔ RIR ↔ RPE">
             <ScoreReference />

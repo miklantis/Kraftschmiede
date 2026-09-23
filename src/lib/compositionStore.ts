@@ -1,8 +1,10 @@
 // Naht zum Messungs-Speicher: die schmale Schnittstelle, ueber die die
-// Schreiber der Koerpermessungen (composition) und der Mess-Meilensteine
-// (composition_milestones) ihre Datenbank-Handgriffe abspielen. Beide Bereiche
-// teilen sich eine Naht, weil sie fachlich zusammengehoeren (Koerperwerte samt
-// ihrer Richtwerte) und in derselben Ansicht gepflegt werden.
+// Schreiber der Koerpermessungen (composition), der Mess-Meilensteine
+// (composition_milestones) und der Messgeraete (measurement_devices) ihre
+// Datenbank-Handgriffe abspielen. Die Bereiche teilen sich eine Naht, weil sie
+// fachlich zusammengehoeren (Koerperwerte samt ihrer Richtwerte und dem Geraet,
+// auf dem sie entstanden). Die Geraete werden zwar in den Einstellungen
+// gepflegt, gehoeren fachlich aber zu den Messungen.
 //
 // Zwei Gesichter dieser Naht: der echte Supabase-Speicher im Betrieb und ein
 // Speicher im Arbeitsspeicher fuer Tests – damit ist der Schreibpfad automatisch
@@ -13,7 +15,11 @@
 // die Schema-Typen, niemals die Mutationen oder Hooks darueber.
 
 import { supabase } from "@/lib/supabase";
-import type { CompositionInsert, CompositionMilestoneInsert } from "@/schemas";
+import type {
+  CompositionInsert,
+  CompositionMilestoneInsert,
+  MeasurementDeviceInsert,
+} from "@/schemas";
 
 /** Zeile beim Anlegen einer Messung: Datum, Werte und Nutzer-Kennung. */
 export type MessungRowIns = CompositionInsert;
@@ -31,8 +37,16 @@ export interface MeilensteinPatch {
   target: number;
 }
 
-/** Schmale Schnittstelle fuer alle Schreibvorgaenge rund um Messungen und ihre
- *  Meilensteine. Jede Methode kapselt genau einen Datenbank-Handgriff und wirft
+/** Zeile beim Anlegen eines Messgeraets: Name und Nutzer-Kennung. */
+export type MessgeraetRowIns = MeasurementDeviceInsert;
+
+/** Aenderbare Felder eines Messgeraets – nur der Name. */
+export interface MessgeraetPatch {
+  name: string;
+}
+
+/** Schmale Schnittstelle fuer alle Schreibvorgaenge rund um Messungen, ihre
+ *  Meilensteine und die Messgeraete. Jede Methode kapselt genau einen Datenbank-Handgriff und wirft
  *  bei Fehler – Fehlerbehandlung an einem Ort. Welche Aktion welche Handgriffe
  *  ausloest, liegt beim Aufrufer (compositionWrite), nicht hier. */
 export interface CompositionStore {
@@ -42,6 +56,9 @@ export interface CompositionStore {
   insertMeilenstein(row: MeilensteinRowIns): Promise<void>;
   updateMeilenstein(id: string, patch: MeilensteinPatch): Promise<void>;
   deleteMeilenstein(id: string): Promise<void>;
+  insertMessgeraet(row: MessgeraetRowIns): Promise<void>;
+  updateMessgeraet(id: string, patch: MessgeraetPatch): Promise<void>;
+  deleteMessgeraet(id: string): Promise<void>;
 }
 
 // --- Echter Speicher (Betrieb): Supabase ---
@@ -73,6 +90,17 @@ export const supabaseCompositionStore: CompositionStore = {
   async deleteMeilenstein(id) {
     must(await supabase.from("composition_milestones").delete().eq("id", id));
   },
+  async insertMessgeraet(row) {
+    must(await supabase.from("measurement_devices").insert(row));
+  },
+  async updateMessgeraet(id, patch) {
+    must(
+      await supabase.from("measurement_devices").update(patch).eq("id", id),
+    );
+  },
+  async deleteMessgeraet(id) {
+    must(await supabase.from("measurement_devices").delete().eq("id", id));
+  },
 };
 
 // --- Speicher im Arbeitsspeicher (nur Tests) ---
@@ -87,6 +115,9 @@ export interface MemoryCompositionLog {
   meilensteinInserted: MeilensteinRowIns[];
   meilensteinPatches: Array<{ id: string; patch: MeilensteinPatch }>;
   meilensteinDeleted: string[];
+  messgeraetInserted: MessgeraetRowIns[];
+  messgeraetPatches: Array<{ id: string; patch: MessgeraetPatch }>;
+  messgeraetDeleted: string[];
   folge: string[];
 }
 
@@ -103,6 +134,9 @@ export function createMemoryCompositionStore(): {
     meilensteinInserted: [],
     meilensteinPatches: [],
     meilensteinDeleted: [],
+    messgeraetInserted: [],
+    messgeraetPatches: [],
+    messgeraetDeleted: [],
     folge: [],
   };
   const store: CompositionStore = {
@@ -129,6 +163,18 @@ export function createMemoryCompositionStore(): {
     async deleteMeilenstein(id) {
       log.meilensteinDeleted.push(id);
       log.folge.push("deleteMeilenstein");
+    },
+    async insertMessgeraet(row) {
+      log.messgeraetInserted.push(row);
+      log.folge.push("insertMessgeraet");
+    },
+    async updateMessgeraet(id, patch) {
+      log.messgeraetPatches.push({ id, patch });
+      log.folge.push("updateMessgeraet");
+    },
+    async deleteMessgeraet(id) {
+      log.messgeraetDeleted.push(id);
+      log.folge.push("deleteMessgeraet");
     },
   };
   return { store, log };

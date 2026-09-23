@@ -1,7 +1,8 @@
-// Abschnitt 8 (Teil) – Koerperdaten. Spiegelt body_log und composition.
+// Abschnitt 8 (Teil) – Koerperdaten. Spiegelt body_log, composition und
+// measurement_devices.
 
 import { z } from "zod";
-import { isoDate, uuid } from "./shared";
+import { isoDate, isoTimestamp, uuid } from "./shared";
 
 // body_log – Tages-Befinden / Erholungs-Check (Muskelkater, Bereitschaft, Schmerz).
 export const bodyLogRow = z.object({
@@ -66,3 +67,19 @@ export const compositionInsert = compositionRow
     bmr_kcal: true,
   });
 export type CompositionInsert = z.infer<typeof compositionInsert>;
+
+// measurement_devices – Koerpermessgeraete, die der Nutzer selbst eintraegt
+// (Migration 0064). Je Geraet nur ein Name, je Nutzer eindeutig.
+export const measurementDeviceRow = z.object({
+  id: uuid,
+  user_id: uuid,
+  name: z.string(),
+  created_at: isoTimestamp,
+});
+export type MeasurementDeviceRow = z.infer<typeof measurementDeviceRow>;
+
+export const measurementDeviceInsert = measurementDeviceRow.omit({
+  id: true,
+  created_at: true,
+});
+export type MeasurementDeviceInsert = z.infer<typeof measurementDeviceInsert>;
