@@ -1,6 +1,6 @@
-// Schreib-Baustein der Koerpermessungen und ihrer Meilensteine: die Aktionen
-// beider Bereiche (jeweils anlegen, aendern, loeschen) als duenne Folgen ueber
-// der Naht CompositionStore. Hier liegen die Absicht-zu-Handgriff-Zuordnung, die
+// Schreib-Baustein der Koerpermessungen, ihrer Meilensteine und der
+// Messgeraete: die Aktionen der drei Bereiche (jeweils anlegen, aendern,
+// loeschen) als duenne Folgen ueber der Naht CompositionStore. Hier liegen die Absicht-zu-Handgriff-Zuordnung, die
 // Trennung von Datum und Werten und die Anmeldepruefung – an einem Ort. Das
 // eigentliche Schreiben und Fehlerwerfen macht der uebergebene Speicher.
 //
@@ -16,6 +16,7 @@ import type {
   MessungPatch,
   MessungRowIns,
   MeilensteinRowIns,
+  MessgeraetRowIns,
 } from "./compositionStore";
 
 /** Die Felder einer Messung, wie sie das Formular fuehrt: Datum plus die
@@ -46,6 +47,12 @@ export type CompositionAction =
 export type CompositionMilestoneAction =
   | { type: "add"; metric: string; name: string; target: number }
   | { type: "update"; id: string; name: string; target: number }
+  | { type: "delete"; id: string };
+
+/** Was der Nutzer mit einem Messgeraet will. Einzige Angabe ist der Name. */
+export type MessgeraetAction =
+  | { type: "add"; name: string }
+  | { type: "update"; id: string; name: string }
   | { type: "delete"; id: string };
 
 /** Formularfelder auf die Datenbank-Spalten abbilden. Eine Stelle fuer Anlegen
@@ -122,4 +129,31 @@ export async function writeCompositionMilestoneAction(
   }
 
   await store.deleteMeilenstein(action.id);
+}
+
+/** Eine Messgeraet-Aktion abspielen. Der Name wird vor dem Schreiben getrimmt;
+ *  ein leerer Name wird abgewiesen, statt in die Datenbank zu laufen (die
+ *  Oberflaeche sperrt das Speichern vorab). */
+export async function writeMessgeraetAction(
+  store: CompositionStore,
+  userId: string | null,
+  action: MessgeraetAction,
+): Promise<void> {
+  if (userId === null) throw new Error("Nicht angemeldet.");
+
+  if (action.type === "delete") {
+    await store.deleteMessgeraet(action.id);
+    return;
+  }
+
+  const name = action.name.trim();
+  if (name === "") throw new Error("Name fehlt.");
+
+  if (action.type === "add") {
+    const row: MessgeraetRowIns = { user_id: userId, name };
+    await store.insertMessgeraet(row);
+    return;
+  }
+
+  await store.updateMessgeraet(action.id, { name });
 }

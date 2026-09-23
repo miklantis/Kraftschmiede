@@ -213,6 +213,9 @@ Begründung in ADR-0003.
   skeletal_muscle_kg, muscle_mass_kg, tbw_kg, phase_angle, visceral_fat, ecw_kg, icw_kg,
   bmr_kcal, `unique(user_id, date)` (ecw_kg/icw_kg = extra-/intrazellulaeres Wasser,
   muscle_mass_kg = Muskelmasse inkl. glatter Muskulatur, alles Rohwerte)
+- **measurement_devices** – Körpermessgeräte, vom Nutzer in den Einstellungen gepflegt:
+  name (nicht leer), created_at, `unique(user_id, name)` (Migration 0064). Kein Seed,
+  die Liste startet leer
 - **exercise_milestones** – Ziele je Übung: exercise_id (FK), name, basis
   (fix/koerpergewicht/ffm), target_rm (nur bei `fix`, sonst null), faktor (nur
   bei den dynamischen Basen), achieved_at (Erreichen-Datum, nullable),
@@ -688,8 +691,10 @@ Eindampfen, sonst wären die alten Felder schon weg.
   einen App-Neustart weiterhin überleben (ADR-0009). Umgestellt sind:
   - **Verlauf** (`historyStore`/`historyWrite`) – der geführte Schreibpfad einer Einheit
   - **Zeiträume** (`zeitraumStore`/`zeitraumWrite`)
-  - **Messungen** samt Mess-Meilensteinen (`compositionStore`/`compositionWrite`), ein
-    Store für beide Tabellen, weil fachlich derselbe Bereich
+  - **Messungen** samt Mess-Meilensteinen und Messgeräten
+    (`compositionStore`/`compositionWrite`), ein Store für alle drei Tabellen, weil
+    fachlich derselbe Bereich (die Geräte werden in den Einstellungen gepflegt,
+    gehören aber zu den Messungen)
   - **Übungskatalog** samt Übungs-Meilensteinen und 1RM-Tests
     (`exerciseStore`/`exerciseWrite`): `exercises`, `exercise_milestones`, `rm_tests`
   - **Journey** samt Phasen, Workout-Zuordnung und Workout-Vorlagen

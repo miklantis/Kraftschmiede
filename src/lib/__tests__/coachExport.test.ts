@@ -32,6 +32,7 @@ function emptyRaw(): RawExportData {
     sets: [],
     skillProgress: [],
     bodyLog: [],
+    measurementDevices: [],
     composition: [],
     milestones: [],
     compositionMilestones: [],
