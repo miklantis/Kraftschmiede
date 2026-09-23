@@ -48,6 +48,9 @@ export const compositionRow = z.object({
   ecw_kg: z.number().nullable(),
   icw_kg: z.number().nullable(),
   bmr_kcal: z.number().nullable(),
+  // Messgeraet der Messung (measurement_devices, Migration 0065); null = kein
+  // Geraet angegeben.
+  device_id: uuid.nullable(),
 });
 export type CompositionRow = z.infer<typeof compositionRow>;
 
@@ -65,6 +68,7 @@ export const compositionInsert = compositionRow
     ecw_kg: true,
     icw_kg: true,
     bmr_kcal: true,
+    device_id: true,
   });
 export type CompositionInsert = z.infer<typeof compositionInsert>;
 

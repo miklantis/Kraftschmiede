@@ -19,8 +19,8 @@ import type {
   MessgeraetRowIns,
 } from "./compositionStore";
 
-/** Die Felder einer Messung, wie sie das Formular fuehrt: Datum plus die
- *  Werte-Spalten, alle einzeln leerbar. */
+/** Die Felder einer Messung, wie sie das Formular fuehrt: Datum, die
+ *  Werte-Spalten und das Messgeraet, alle ausser dem Datum einzeln leerbar. */
 export interface CompositionFelder {
   date: string;
   weight: number | null;
@@ -34,6 +34,8 @@ export interface CompositionFelder {
   phase_angle: number | null;
   visceral_fat: number | null;
   bmr_kcal: number | null;
+  /** Messgeraet der Messung; null = kein Geraet angegeben. */
+  device_id: string | null;
 }
 
 /** Was der Nutzer mit einer Messung will. */
@@ -71,6 +73,7 @@ function felderToPatch(felder: CompositionFelder): MessungPatch {
     phase_angle: felder.phase_angle,
     visceral_fat: felder.visceral_fat,
     bmr_kcal: felder.bmr_kcal,
+    device_id: felder.device_id,
   };
 }
 

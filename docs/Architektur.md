@@ -211,11 +211,13 @@ Begründung in ADR-0003.
   readiness, pain_flag, pain_note, notes, `unique(user_id, date)`
 - **composition** – InBody-/BIA-Messung: date, weight, body_fat_kg, body_fat_pct,
   skeletal_muscle_kg, muscle_mass_kg, tbw_kg, phase_angle, visceral_fat, ecw_kg, icw_kg,
-  bmr_kcal, `unique(user_id, date)` (ecw_kg/icw_kg = extra-/intrazellulaeres Wasser,
-  muscle_mass_kg = Muskelmasse inkl. glatter Muskulatur, alles Rohwerte)
+  bmr_kcal, device_id (FK auf `measurement_devices`, nullable = kein Gerät angegeben,
+  Migration 0065), `unique(user_id, date)` (ecw_kg/icw_kg = extra-/intrazellulaeres
+  Wasser, muscle_mass_kg = Muskelmasse inkl. glatter Muskulatur, alles Rohwerte)
 - **measurement_devices** – Körpermessgeräte, vom Nutzer in den Einstellungen gepflegt:
   name (nicht leer), created_at, `unique(user_id, name)` (Migration 0064). Kein Seed,
-  die Liste startet leer
+  die Liste startet leer. Ein Gerät, an dem Messungen hängen, lässt sich nicht löschen
+  (`on delete restrict`, die Oberfläche sperrt es vorab); Umbenennen geht immer
 - **exercise_milestones** – Ziele je Übung: exercise_id (FK), name, basis
   (fix/koerpergewicht/ffm), target_rm (nur bei `fix`, sonst null), faktor (nur
   bei den dynamischen Basen), achieved_at (Erreichen-Datum, nullable),
