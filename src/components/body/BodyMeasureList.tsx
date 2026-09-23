@@ -10,8 +10,9 @@ import { longDateYearDE } from "@/lib/format";
 import { messgeraetNamen, vorauswahlMessgeraet } from "@/lib/messgeraete";
 import type { CompositionRow, MeasurementDeviceRow } from "@/schemas";
 
-// Abschnitt "Messungen": je Messung Datum (daneben klein das Messgeraet, falls
-// eines gewaehlt ist) + Chips der vorhandenen Werte, neueste zuerst. Die
+// Abschnitt "Messungen": je Messung eine Kopfzeile aus Datum (fett) und
+// darunter klein das Messgeraet, falls eines gewaehlt ist, dann mit deutlichem
+// Abstand die Chips der vorhandenen Werte; neueste zuerst. Die
 // Zeilen sitzen in einer Karte mit Trennlinien
 // (gemeinsamer List-Baustein) und tragen keine Aktions-Buttons: die ganze
 // Zeile ist tippbar und oeffnet das Mess-Popup, Bearbeiten und Loeschen
@@ -60,12 +61,12 @@ export function BodyMeasureList({
                 className="flex w-full cursor-pointer items-center gap-3 border-t border-muted p-[14px_16px] text-left transition-colors first:border-t-0 hover:bg-primary/5 min-[960px]:p-[14px_18px]"
               >
                 <div className="min-w-0 flex-1">
-                  <div className="mb-2 flex min-w-0 items-baseline gap-2">
-                    <span className="flex-none text-[14px] font-semibold text-foreground">
+                  <div className="mb-3 flex min-w-0 flex-col gap-0.5">
+                    <span className="text-[14px] font-semibold text-foreground">
                       {longDateYearDE(e.date)}
                     </span>
                     {e.device_id != null && geraetName.has(e.device_id) && (
-                      <span className="min-w-0 truncate text-[12px] text-muted-foreground">
+                      <span className="truncate text-[12px] text-muted-foreground">
                         {geraetName.get(e.device_id)}
                       </span>
                     )}
