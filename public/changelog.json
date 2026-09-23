@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.59.3",
+      "date": "2026-09-23",
+      "changes": [
+        "Die Liste der Messungen zeigt jetzt zunächst nur deine letzten drei Messungen. Über den Pfeil darunter kommen jeweils drei weitere dazu."
+      ]
+    },
+    {
       "version": "1.59.2",
       "date": "2026-09-23",
       "changes": [
