@@ -19,6 +19,11 @@ import type { CompositionRow, MeasurementDeviceRow } from "@/schemas";
 // passieren dort. Der Knopf zum Hinzufuegen sitzt ganz unten unter der Liste
 // und ist optisch an den "Meilenstein hinzufuegen"-Knopf angeglichen.
 // Ohne Messung nur der Hinzufuegen-Knopf plus ein kurzer Hinweis.
+//
+// Zunaechst stehen nur die letzten drei Messungen da (statt der ueblichen fuenf
+// Eintraege), der Nachlade-Pfeil gibt jeweils drei weitere frei.
+const MESSUNGEN_SEITE = 3;
+
 export function BodyMeasureList({
   rows,
   geraete,
@@ -28,7 +33,7 @@ export function BodyMeasureList({
 }): React.ReactElement {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editRow, setEditRow] = useState<CompositionRow | null>(null);
-  const { sichtbar, hatMehr, mehrLaden } = useMehrLaden(rows);
+  const { sichtbar, hatMehr, mehrLaden } = useMehrLaden(rows, MESSUNGEN_SEITE);
 
   const belegteDaten = rows.map((r) => r.date);
   const geraetName = messgeraetNamen(geraete);
