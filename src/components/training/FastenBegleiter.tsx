@@ -8,13 +8,15 @@ import type { FastenbegleiterView } from "@/hooks/useFastenbegleiter";
 // Tages aus der Datenbank in drei Teilen, unten der feste Fuss mit dem
 // persoenlichen Buchinger-Rahmen und den Warnzeichen - an jedem Tag gleich.
 //
-// Der Kasten hat die Optik des Testwochen-Hinweises, aber im Ton des
-// Heilfasten-Bands aus dem Kalender, damit Kalender und Box zusammengehoeren.
-// Er zeigt nur an: keine Eingaben, keine Haekchen.
+// Die Karte steht gleichrangig an der Stelle der Workout-Empfehlung und hat
+// darum deren Optik (#505): weisse Karte mit weicher Elevation, der Tagestitel
+// so gross wie der Workout-Name, kein eigener Farbton. Sie zeigt nur an: keine
+// Eingaben, keine Haekchen.
 
 const TEIL_LABEL =
-  "text-[12px] font-semibold tracking-[0.3px] text-tone-green-foreground";
-const TEIL_TEXT = "mt-1 text-[13.5px] leading-relaxed text-foreground";
+  "text-[13px] font-semibold tracking-[0.3px] text-muted-foreground";
+const TEIL_TEXT =
+  "mt-1 text-[15px] leading-[1.5] text-foreground min-[960px]:text-base";
 
 function Teil({
   label,
@@ -24,7 +26,7 @@ function Teil({
   children: React.ReactNode;
 }): React.ReactElement {
   return (
-    <div className="mt-3.5">
+    <div className="mt-4">
       <div className={TEIL_LABEL}>{label}</div>
       {children}
     </div>
@@ -41,13 +43,13 @@ export function FastenBegleiter({
 
   return (
     <Section eyebrow="Fastenbegleiter">
-      <div className="rounded-[14px] border border-tone-green/30 bg-tone-green/10 px-4 py-3.5">
+      <div className="rounded-[22px] bg-card p-5 shadow-hi min-[960px]:px-7 min-[960px]:py-[26px]">
         <div className="flex items-baseline justify-between gap-3">
-          <span className="text-[14px] font-semibold leading-snug text-foreground">
+          <span className="text-[13px] font-semibold tracking-[0.3px] text-muted-foreground">
             {stand}
           </span>
           {bisLabel !== null && (
-            <span className="text-[12.5px] text-muted-foreground">
+            <span className="text-[13px] text-muted-foreground">
               bis {bisLabel}
             </span>
           )}
@@ -56,7 +58,6 @@ export function FastenBegleiter({
           <PhaseBar
             index={tag - 1}
             count={von}
-            tone="green"
             ariaLabel={stand}
             className="mt-2.5"
           />
@@ -64,7 +65,7 @@ export function FastenBegleiter({
 
         {text ? (
           <>
-            <h3 className="mt-4 text-[17px] font-semibold leading-snug text-foreground">
+            <h3 className="mt-3.5 text-[22px] font-bold leading-snug text-foreground min-[960px]:text-[30px] min-[960px]:tracking-[-0.4px]">
               {text.titel}
             </h3>
             <Teil label="Im Körper">
@@ -84,12 +85,12 @@ export function FastenBegleiter({
             )}
           </>
         ) : (
-          <p className="mt-3 text-[13px] text-muted-foreground">
+          <p className="mt-3.5 text-[15px] text-muted-foreground">
             Der Text für heute wird geladen …
           </p>
         )}
 
-        <div className="mt-4 space-y-1.5 border-t border-tone-green/25 pt-3 text-[12.5px] leading-snug text-muted-foreground">
+        <div className="mt-5 space-y-1.5 border-t border-border pt-3.5 text-[13px] leading-snug text-muted-foreground">
           <p>
             <span className="font-semibold text-foreground">Dein Rahmen:</span>{" "}
             Tee und Wasser über den Tag, eine Gemüsebrühe, bei Schwäche ½ TL

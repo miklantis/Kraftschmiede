@@ -7,21 +7,12 @@ import { cn } from "@/lib/utils";
 // ProgressDots, die in der Journey fuer Wocheneinheiten stehen.
 //
 // Zweiter Einsatz: der Tagesbalken des Fastenbegleiters (ein Segment je
-// Fastentag). Dafuer traegt der Balken den Ton des Heilfasten-Bands aus dem
-// Kalender (`tone="green"`) und eine eigene Beschriftung (`ariaLabel`).
-
-// Vollstaendige Klassenliterale je Ton (kein Laufzeit-Zusammenbau, sonst
-// greift der Tailwind-Compiler sie nicht): erledigt, aktuell.
-const TONE = {
-  skill: { done: "bg-skill/45", current: "bg-skill" },
-  green: { done: "bg-tone-green/45", current: "bg-tone-green" },
-} as const;
+// Fastentag), dort mit eigener Beschriftung (`ariaLabel`).
 
 export function PhaseBar({
   index,
   count,
   mastered = false,
-  tone = "skill",
   ariaLabel,
   className,
 }: {
@@ -30,8 +21,6 @@ export function PhaseBar({
   /** Anzahl der Phasen insgesamt. */
   count: number;
   mastered?: boolean;
-  /** Farbton der Segmente. Standard: Skill-Farbe. */
-  tone?: keyof typeof TONE;
   /** Eigene Beschriftung fuer Screenreader statt „Phase X von Y“. */
   ariaLabel?: string;
   className?: string;
@@ -60,9 +49,9 @@ export function PhaseBar({
             className={cn(
               "h-[5px] min-w-[6px] flex-1 rounded-pill",
               done
-                ? TONE[tone].done
+                ? "bg-skill/45"
                 : isCurrent
-                  ? TONE[tone].current
+                  ? "bg-skill"
                   : "bg-border",
             )}
           />
