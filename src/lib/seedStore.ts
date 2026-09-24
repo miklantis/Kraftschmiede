@@ -1,7 +1,8 @@
 // Naht zum Erstbefuellungs-Speicher: die schmale Schnittstelle, ueber die die
 // Erstbefuellung eines neuen Kontos ihre Datenbank-Handgriffe abspielt. Ein
 // Store fuer alle beteiligten Tabellen (Bausteine, Inventar, Uebungskatalog
-// samt Muskel-Zuordnung, Journey-Vorlagen, Skills, Ausstattung), weil sie in
+// samt Muskel-Zuordnung, Journey-Vorlagen, Skills, Ausstattung, Fastentage),
+// weil sie in
 // genau einem Zug geschrieben werden und ihre Reihenfolge voneinander abhaengt
 // (ADR-0019: die Linie verlaeuft am Schreibvorgang, nicht an der Tabelle).
 //
@@ -15,7 +16,7 @@
 //
 // Die Pruefung "lief der Schritt durch?" sitzt hier an genau einer Stelle
 // (`must`/`mustZeilen`). Anders als in den uebrigen Stores bekommt sie den
-// Schritt als Text mit: der Seed schreibt in dreizehn Tabellen hintereinander,
+// Schritt als Text mit: der Seed schreibt in vierzehn Tabellen hintereinander,
 // und die Meldung im Fehlerfall soll wie bisher sagen, an welcher davon es
 // haengt.
 
@@ -23,6 +24,7 @@ import { supabase } from "@/lib/supabase";
 import type {
   ExerciseInsert,
   ExerciseMuscleInsert,
+  FastenTagInsert,
   InventoryBarInsert,
   InventoryEquipmentInsert,
   InventoryKettlebellInsert,
@@ -70,6 +72,8 @@ export interface SeedStore {
   /** Katalog-Uebungen mit Kennung: einmal fuer "was fehlt noch?" und einmal,
    *  um die Skill-Phasen-Uebungen daran zu haengen. */
   listUebungen(): Promise<SchluesselZeile[]>;
+  /** Vorhandene Fastentage (Tagesnummern) - der Seed zieht nur fehlende nach. */
+  listFastenTage(): Promise<number[]>;
 
   // --- Schreiben ---
 
@@ -96,6 +100,7 @@ export interface SeedStore {
   insertSkillUebungen(rows: SkillPhaseExerciseInsert[]): Promise<void>;
   insertSkillEquipment(rows: SkillPhaseEquipmentInsert[]): Promise<void>;
   insertEquipment(rows: InventoryEquipmentInsert[]): Promise<void>;
+  insertFastenTage(rows: FastenTagInsert[]): Promise<void>;
 }
 
 // --- Echter Speicher (Betrieb): Supabase ---
@@ -289,6 +294,22 @@ export const supabaseSeedStore: SeedStore = {
       "Equipment anlegen",
     );
   },
+  async listFastenTage() {
+    const zeilen = mustListe(
+      await supabase
+        .from("fasten_tage")
+        .select("tag")
+        .returns<Array<{ tag: number }>>(),
+      "Fastentage pruefen",
+    );
+    return zeilen.map((z) => z.tag);
+  },
+  async insertFastenTage(rows) {
+    must(
+      await supabase.from("fasten_tage").insert(rows),
+      "Fastentage anlegen",
+    );
+  },
 };
 
 // --- Speicher im Arbeitsspeicher (nur Tests) ---
@@ -317,6 +338,7 @@ export interface MemorySeedLog {
   skillUebungen: SkillPhaseExerciseInsert[];
   skillEquipment: SkillPhaseEquipmentInsert[];
   equipment: InventoryEquipmentInsert[];
+  fastenTage: FastenTagInsert[];
 }
 
 /** Haengt Zeilen an eine Liste und vergibt dabei fortlaufende Kennungen.
@@ -359,6 +381,7 @@ export function createMemorySeedStore(): {
     skillUebungen: [],
     skillEquipment: [],
     equipment: [],
+    fastenTage: [],
   };
 
   function merken(handgriff: string): void {
@@ -393,6 +416,10 @@ export function createMemorySeedStore(): {
     async listUebungen() {
       merken("listUebungen");
       return log.uebungen.map((e) => ({ id: e.id, key: e.key ?? null }));
+    },
+    async listFastenTage() {
+      merken("listFastenTage");
+      return log.fastenTage.map((t) => t.tag);
     },
 
     async insertBausteine(rows) {
@@ -462,6 +489,10 @@ export function createMemorySeedStore(): {
     async insertEquipment(rows) {
       merken("insertEquipment");
       log.equipment.push(...rows);
+    },
+    async insertFastenTage(rows) {
+      merken("insertFastenTage");
+      log.fastenTage.push(...rows);
     },
   };
 

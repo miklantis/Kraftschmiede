@@ -47,7 +47,7 @@ Datenbank (ADR-0002), Skill-Definitionen (ADR-0003).
 ## 3. Datenbank-Schema (umgesetzt)
 
 Angelegt als `supabase/migrations/0001_initial_schema.sql` mit 23 Tabellen; durch spätere
-Migrationen sind es inzwischen 30 (die vollständige Liste führt das Bestandsregister,
+Migrationen sind es inzwischen 31 (die vollständige Liste führt das Bestandsregister,
 siehe 3.4). Jede Tabelle mit `user_id` und Row Level Security (vier Policies select/insert/update/delete
 strikt auf `auth.uid() = user_id`), Zugriff für Rolle `authenticated` freigegeben.
 Definitionen werden beim ersten Start pro Nutzer aus einem Seed befüllt. Tabellen mit
@@ -77,7 +77,7 @@ Recovery-Fenster, Timer).
 Der Seed läuft beim App-Start über `SeedBootstrap` und legt in dieser Reihenfolge an –
 die Reihenfolge ist nicht frei, jeder Schritt braucht den vorigen: Bausteine → Inventar
 (Stangen, Scheiben, Kettlebells) → Übungskatalog samt Muskel-Zuordnung →
-Journey-Vorlagen → Skills → Ausstattung. Übungen zeigen per `bar_id` auf eine Stange,
+Journey-Vorlagen → Skills → Ausstattung → Fastentage. Übungen zeigen per `bar_id` auf eine Stange,
 Skill-Phasen-Übungen per `exercise_id` auf eine Katalog-Übung; beide Verknüpfungen
 entstehen über den `key` und gehen still verloren, wenn das Ziel noch fehlt (Issue #393).
 
@@ -92,8 +92,8 @@ Zwei Arten von Erstbefüllung liegen dabei nebeneinander:
 - **einmalig** – Journey-Vorlagen und Skills entstehen nur, solange der Nutzer noch gar
   keine Skills hat. Sie sind später bearbeitbar; ein zweiter Lauf dürfte Gelöschtes nicht
   wieder hinstellen.
-- **nachziehend** – Bausteine, Übungskatalog und Ausstattung ergänzen je Lauf nur die
-  fehlenden `key`s und lassen vorhandene Zeilen unangetastet. So bekommen auch früher
+- **nachziehend** – Bausteine, Übungskatalog, Ausstattung und Fastentage ergänzen je
+  Lauf nur die fehlenden `key`s (bei den Fastentagen: die fehlenden Tagesnummern) und lassen vorhandene Zeilen unangetastet. So bekommen auch früher
   angelegte Konten, was später dazugekommen ist.
 - **nur im leeren Fall** – Stangen, Scheiben und Kettlebells. Sie sind persönlicher
   Bestand und in den Einstellungen löschbar (Scheiben/Kettlebells haben nicht einmal
@@ -167,6 +167,13 @@ Zwei Arten von Erstbefüllung liegen dabei nebeneinander:
 - **skill_phase_exercises** – skill_phase_id (FK), name, metric (reps/duration), sets,
   target, tempo, exercise_id (FK, optional zur Katalog-Übung), position
 - **skill_phase_equipment** – skill_phase_id (FK), equipment_key (Voraussetzung)
+
+- **fasten_tage** – Tagestexte des Fastenbegleiters (Buchinger): tag (1-basiert, stabiler
+  Seed-Identifikator, `unique(user_id, tag)`), titel, koerper (was im Körper passiert),
+  gefuehl (wie man sich fühlen kann), wichtig (text[], Stichpunkte „Heute wichtig").
+  21 Tage je Nutzer (Migration 0066, Seed `src/seed/fastenTage.ts`, Gleichlauf per Test).
+  Gelesen von der Trainingsseite, sobald heute in einem Zeitraum vom Typ `heilfasten`
+  liegt; länger als 21 Tage bleibt Tag 21 stehen (`lib/fasten.ts`, ADR-0024)
 
 Skill-Definitionen liegen als Seed in DB-Tabellen (einheitlicher Zugriff über
 Query-Hooks, später editierbar); der Fortschritt steht separat in `skill_progress`.

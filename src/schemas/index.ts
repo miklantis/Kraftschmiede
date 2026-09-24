@@ -11,6 +11,7 @@ export * from "./exercises";
 export * from "./milestones";
 export * from "./rmTests";
 export * from "./zeitraeume";
+export * from "./fastenTage";
 export * from "./templates";
 export * from "./journeyWorkouts";
 export * from "./journeyTemplates";

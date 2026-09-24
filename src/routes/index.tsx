@@ -16,8 +16,10 @@ import { UpdateBanner } from "@/components/training/UpdateBanner";
 import { RecommendedWorkout } from "@/components/training/RecommendedWorkout";
 import { TestWeekPanel } from "@/components/training/TestWeekPanel";
 import { YogaEntryModal } from "@/components/training/YogaEntryModal";
+import { FastenBegleiter } from "@/components/training/FastenBegleiter";
 import { HistorySection } from "@/components/history/HistorySection";
 import { useTrainingOverview } from "@/hooks/useTrainingOverview";
+import { useFastenbegleiter } from "@/hooks/useFastenbegleiter";
 import { useLiveSession } from "@/hooks/useLiveSession";
 import { useLiveBuilder } from "@/hooks/useLiveBuilder";
 import { useSkillLiveBuilder } from "@/hooks/useSkillLiveBuilder";
@@ -26,6 +28,11 @@ import { useStartRmTest } from "@/hooks/useStartRmTest";
 // Startroute = Training (wie V1). Reine Uebersichts-/Empfehlungsseite: zeigt an
 // und fuehrt hin. Workout- und Skill-Start oeffnen das Live-Start-Popup; die
 // gefuehrte Durchfuehrung selbst liegt im global gemounteten Live-Panel.
+//
+// An Heilfasten-Tagen (heute liegt in einem Zeitraum vom Typ „heilfasten“,
+// #503) wird daraus die Fastenseite: Journey, Testwoche, Empfehlung, weitere
+// Workouts und Skills fallen weg - damit gibt es hier keinen Start. Stattdessen
+// steht oben der Fastenbegleiter; Yoga und der Verlauf bleiben.
 export const Route = createFileRoute("/")({
   component: TrainingPage,
 });
@@ -33,6 +40,7 @@ export const Route = createFileRoute("/")({
 function TrainingPage(): React.ReactElement {
   const navigate = useNavigate();
   const { isLoading, isError, error, data } = useTrainingOverview();
+  const fasten = useFastenbegleiter();
   const { openStartWorkout, openStartSkill } = useLiveSession();
   const builder = useLiveBuilder();
   const skillBuilder = useSkillLiveBuilder();
@@ -40,7 +48,10 @@ function TrainingPage(): React.ReactElement {
   const [note, setNote] = useState<string | null>(null);
   const [yogaOpen, setYogaOpen] = useState(false);
 
-  if (isLoading) {
+  // Auch auf die Zeitraeume warten: erst dann steht fest, ob die Seite normal
+  // oder als Fastenseite erscheint - sonst blitzte die Empfehlung samt Start
+  // kurz auf.
+  if (isLoading || fasten.isLoading) {
     return (
       <div>
         <PageHeader title="Training" />
@@ -97,6 +108,27 @@ function TrainingPage(): React.ReactElement {
       generalWarmup: built.generalWarmup,
     });
   };
+
+  const yogaSection = (
+    <Section eyebrow="Yoga">
+      <List>
+        <ListRow
+          title="Yoga-Einheit eintragen"
+          subtitle={data.yogaSubtitle}
+          leading={<YogaIcon />}
+          chevron
+          onClick={() => setYogaOpen(true)}
+        />
+      </List>
+    </Section>
+  );
+
+  const fastenColumn = fasten.view && (
+    <>
+      <FastenBegleiter view={fasten.view} />
+      {yogaSection}
+    </>
+  );
 
   const trainingColumn = (
     <>
@@ -199,17 +231,7 @@ function TrainingPage(): React.ReactElement {
         </List>
       </Section>
 
-      <Section eyebrow="Yoga">
-        <List>
-          <ListRow
-            title="Yoga-Einheit eintragen"
-            subtitle={data.yogaSubtitle}
-            leading={<YogaIcon />}
-            chevron
-            onClick={() => setYogaOpen(true)}
-          />
-        </List>
-      </Section>
+      {yogaSection}
     </>
   );
 
@@ -218,16 +240,23 @@ function TrainingPage(): React.ReactElement {
       <PageHeader title="Training" />
       <PageReveal className="flex flex-col gap-[18px] min-[960px]:gap-[26px]">
         <UpdateBanner />
-        <Section eyebrow="Aktive Journey">
-          <JourneyStrip
-            title={data.journey.title}
-            subtitle={data.journey.subtitle}
-            filled={data.journey.filled}
-            total={data.journey.total}
-            showDots={data.journey.showDots}
-          />
-        </Section>
-        <TwoColumn main={trainingColumn} side={<HistorySection />} />
+        {/* An Fastentagen ohne Journey: sie laeuft im Hintergrund weiter,
+            spielt waehrend des Fastens aber keine Rolle. */}
+        {!fasten.view && (
+          <Section eyebrow="Aktive Journey">
+            <JourneyStrip
+              title={data.journey.title}
+              subtitle={data.journey.subtitle}
+              filled={data.journey.filled}
+              total={data.journey.total}
+              showDots={data.journey.showDots}
+            />
+          </Section>
+        )}
+        <TwoColumn
+          main={fastenColumn ?? trainingColumn}
+          side={<HistorySection />}
+        />
       </PageReveal>
       <YogaEntryModal open={yogaOpen} onClose={() => setYogaOpen(false)} />
     </div>

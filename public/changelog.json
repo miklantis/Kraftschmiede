@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "1.60.0",
+      "date": "2026-09-24",
+      "changes": [
+        "Neu: der Fastenbegleiter. Liegt heute ein Heilfasten-Zeitraum im Kalender, zeigt die Trainingsseite statt Empfehlung, Workouts und Skills eine Begleitbox: welcher Fastentag gerade ist, was im Körper passiert, wie du dich fühlen kannst und worauf du heute achten solltest – nach der Buchinger-Methode, für bis zu 21 Tage.",
+        "Während des Fastens lassen sich auf der Trainingsseite keine Workouts und Skills starten. Yoga kannst du weiter eintragen, Kalender und Verlauf bleiben wie gewohnt."
+      ]
+    },
+    {
       "version": "1.59.3",
       "date": "2026-09-23",
       "changes": [
