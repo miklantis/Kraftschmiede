@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.60.1",
+      "date": "2026-09-24",
+      "changes": [
+        "Der Fastenbegleiter sieht jetzt aus wie die übrigen Karten: weiß statt grün, mit großem Tagestitel – gleichrangig mit der Workout-Empfehlung."
+      ]
+    },
+    {
       "version": "1.60.0",
       "date": "2026-09-24",
       "changes": [
