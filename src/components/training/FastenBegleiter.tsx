@@ -3,10 +3,13 @@ import { PhaseBar } from "@/components/ui/phase-bar";
 import type { FastenbegleiterView } from "@/hooks/useFastenbegleiter";
 
 // Der Fastenbegleiter auf der Trainingsseite (Vorhaben #503): steht an
-// Heilfasten-Tagen an der Stelle von Empfehlung, Workouts und Skills. Oben der
-// Stand („Fastentag 4 von 14“) mit einem Segment je Tag, darunter der Text des
-// Tages aus der Datenbank in drei Teilen, unten der feste Fuss mit dem
-// persoenlichen Buchinger-Rahmen und den Warnzeichen - an jedem Tag gleich.
+// Heilfasten-Tagen an der Stelle von Empfehlung, Workouts und Skills. Der Kopf
+// ist gebaut wie der der Workout-Empfehlung (#507): gross „Heilfasten“ an der
+// Stelle des Workout-Namens, rechts gross der Tag an der Stelle des Scores -
+// damit auf einen Blick klar ist, dass gerade gefastet wird. Darunter Dauer
+// und Ende, der Tagesbalken (ein Segment je Tag), der Text des Tages aus der
+// Datenbank in drei Teilen und der feste Fuss mit dem persoenlichen
+// Buchinger-Rahmen und den Warnzeichen - an jedem Tag gleich.
 //
 // Die Karte steht gleichrangig an der Stelle der Workout-Empfehlung und hat
 // darum deren Optik (#505): weisse Karte mit weicher Elevation, der Tagestitel
@@ -40,32 +43,42 @@ export function FastenBegleiter({
 }): React.ReactElement {
   const { tag, von, bisLabel, text } = view;
   const stand = von === null ? "Fastentag " + tag : "Fastentag " + tag + " von " + von;
+  const unterzeile =
+    von === null ? "Ohne festes Ende" : von + " Tage · bis " + bisLabel;
 
   return (
     <Section eyebrow="Fastenbegleiter">
       <div className="rounded-[22px] bg-card p-5 shadow-hi min-[960px]:px-7 min-[960px]:py-[26px]">
-        <div className="flex items-baseline justify-between gap-3">
-          <span className="text-[13px] font-semibold tracking-[0.3px] text-muted-foreground">
-            {stand}
-          </span>
-          {bisLabel !== null && (
-            <span className="text-[13px] text-muted-foreground">
-              bis {bisLabel}
-            </span>
-          )}
+        <div className="flex items-start justify-between gap-[14px]">
+          <div className="min-w-0">
+            <div className="text-[22px] font-bold text-foreground min-[960px]:text-[30px] min-[960px]:tracking-[-0.4px]">
+              Heilfasten
+            </div>
+            <div className="mt-0.5 text-[15px] leading-[1.5] text-foreground-secondary min-[960px]:text-base">
+              {unterzeile}
+            </div>
+          </div>
+          <div className="flex-none text-right" aria-label={stand}>
+            <div className="text-[13px] font-medium text-muted-foreground">
+              Tag
+            </div>
+            <div className="font-mono text-[22px] leading-none font-bold text-primary tabular-nums min-[960px]:text-[30px] min-[960px]:leading-[1.05]">
+              {tag}
+            </div>
+          </div>
         </div>
         {von !== null && (
           <PhaseBar
             index={tag - 1}
             count={von}
             ariaLabel={stand}
-            className="mt-2.5"
+            className="mt-3.5"
           />
         )}
 
         {text ? (
           <>
-            <h3 className="mt-3.5 text-[22px] font-bold leading-snug text-foreground min-[960px]:text-[30px] min-[960px]:tracking-[-0.4px]">
+            <h3 className="mt-5 text-[17px] font-semibold leading-snug text-foreground min-[960px]:text-[19px]">
               {text.titel}
             </h3>
             <Teil label="Im Körper">

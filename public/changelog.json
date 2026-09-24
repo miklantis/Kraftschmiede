@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.60.2",
+      "date": "2026-09-24",
+      "changes": [
+        "Auf der Trainingsseite steht jetzt groß „Heilfasten“ und daneben der Fastentag – so siehst du sofort, dass gerade gefastet wird."
+      ]
+    },
+    {
       "version": "1.60.1",
       "date": "2026-09-24",
       "changes": [

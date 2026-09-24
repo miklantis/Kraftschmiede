@@ -255,7 +255,7 @@ oben auf:
 
 - `auth` – Anmelde-/Einladungs-Screens; `AuthCard` ist der gemeinsame Karten-Rahmen (Lockup + weiße Karte), den Login- und Einladungs-Screen teilen
 - `shell` – Rahmen der App (Navigation, Sidebar, Seitengerüst)
-- `training` – Trainingsübersicht und Empfehlung; darunter `TestWeekPanel` (Hinweis auf die laufende Testwoche samt Frist und Liste der Hauptübungen mit direktem 1RM-Test-Start); `FastenBegleiter` (an Heilfasten-Tagen statt Empfehlung, Workouts und Skills: Stand „Fastentag X von Y“ mit Tagesbalken, Text des Tages in drei Teilen, fester Fuß mit Buchinger-Rahmen und Warnzeichen – reine Anzeige; gleichrangig zur Workout-Empfehlung und darum in deren weißer Karten-Optik, ohne eigenen Farbton)
+- `training` – Trainingsübersicht und Empfehlung; darunter `TestWeekPanel` (Hinweis auf die laufende Testwoche samt Frist und Liste der Hauptübungen mit direktem 1RM-Test-Start); `FastenBegleiter` (an Heilfasten-Tagen statt Empfehlung, Workouts und Skills: Kopf wie die Empfehlung – groß „Heilfasten“, rechts groß der Tag, darunter Dauer und Ende –, Tagesbalken, Text des Tages in drei Teilen, fester Fuß mit Buchinger-Rahmen und Warnzeichen – reine Anzeige; gleichrangig zur Workout-Empfehlung und darum in deren weißer Karten-Optik, ohne eigenen Farbton)
 - `live` – Live-Session (Kraft und Skill) während des Trainings
 - `journey` – Journey / Periodisierung
 - `skills` – Skill-Fortschritt
