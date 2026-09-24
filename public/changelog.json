@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "1.60.3",
+      "date": "2026-09-24",
+      "changes": [
+        "Der Text im Fastenbegleiter ist am Desktop jetzt einen Tick kleiner und liest sich ruhiger."
+      ]
+    },
+    {
       "version": "1.60.2",
       "date": "2026-09-24",
       "changes": [

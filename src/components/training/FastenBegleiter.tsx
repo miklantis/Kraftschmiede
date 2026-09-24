@@ -19,7 +19,7 @@ import type { FastenbegleiterView } from "@/hooks/useFastenbegleiter";
 const TEIL_LABEL =
   "text-[13px] font-semibold tracking-[0.3px] text-muted-foreground";
 const TEIL_TEXT =
-  "mt-1 text-[15px] leading-[1.5] text-foreground min-[960px]:text-base";
+  "mt-1 text-[15px] leading-[1.5] text-foreground";
 
 function Teil({
   label,
