@@ -16,8 +16,10 @@ export const zeitraumTypEnum = z.enum([
 export type ZeitraumTyp = z.infer<typeof zeitraumTypEnum>;
 
 // zeitraeume – je Zeile ein Timeline-Marker: Typ, Startdatum, optionales
-// Enddatum (null = laeuft noch), kurzem Namen und Notiz. Reiner Rueckschau-Kontext,
-// haengt bewusst nicht an sessions, Messungen oder Coach.
+// Enddatum (null = laeuft noch), kurzem Namen und Notiz. Rueckschau-Kontext,
+// haengt bewusst nicht an sessions, Messungen oder Coach. Einzige Ausnahme: ein
+// laufender Zeitraum vom Typ „heilfasten“ schaltet die Trainingsseite auf den
+// Fastenbegleiter um (ADR-0024, lib/fasten.ts).
 export const zeitraumRow = z.object({
   id: uuid,
   user_id: uuid,

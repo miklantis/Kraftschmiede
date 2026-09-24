@@ -50,6 +50,7 @@ export const QUERY_ROOTS = {
   milestones: "milestones",
   rmTests: "rmTests",
   zeitraeume: "zeitraeume",
+  fastenTage: "fastenTage",
   composition: "composition",
   compMilestones: "compMilestones",
   messgeraete: "messgeraete",
@@ -119,6 +120,8 @@ export const queryKeys = {
     [QUERY_ROOTS.rmTests, userId, "alle"] as const,
   /** Zeitraeume (Urlaub, Krankheit, Pause). */
   zeitraeume: (userId: UserId) => [QUERY_ROOTS.zeitraeume, userId] as const,
+  /** Tagestexte des Fastenbegleiters (Fastentag 1..21). */
+  fastenTage: (userId: UserId) => [QUERY_ROOTS.fastenTage, userId] as const,
   /** Koerperzusammensetzung (Messungen). */
   composition: (userId: UserId) => [QUERY_ROOTS.composition, userId] as const,
   /** Meilensteine der Koerperzusammensetzung. */

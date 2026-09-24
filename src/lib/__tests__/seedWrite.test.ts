@@ -43,6 +43,7 @@ describe("writeSeed – Reihenfolge", () => {
       "insertSkillUebungen",
       "insertSkillEquipment",
       "insertEquipment",
+      "insertFastenTage",
     ]);
   });
 
@@ -121,6 +122,7 @@ describe("writeSeed – Umfang eines neuen Kontos", () => {
       skillUebungen: log.skillUebungen.length,
       skillEquipment: log.skillEquipment.length,
       equipment: log.equipment.length,
+      fastenTage: log.fastenTage.length,
     }).toEqual({
       bausteine: 8,
       stangen: 3,
@@ -135,6 +137,7 @@ describe("writeSeed – Umfang eines neuen Kontos", () => {
       skillUebungen: 22,
       skillEquipment: 13,
       equipment: 6,
+      fastenTage: 21,
     });
   });
 
@@ -156,6 +159,7 @@ describe("writeSeed – Umfang eines neuen Kontos", () => {
       ...log.skillUebungen,
       ...log.skillEquipment,
       ...log.equipment,
+      ...log.fastenTage,
     ].filter((row) => row.user_id !== "u1");
     expect(fremde).toHaveLength(0);
   });
@@ -241,6 +245,7 @@ describe("writeSeed – zweiter Lauf", () => {
       skillUebungen: log.skillUebungen,
       skillEquipment: log.skillEquipment,
       equipment: log.equipment,
+      fastenTage: log.fastenTage,
     });
 
     const ergebnis = await writeSeed(store, "u1");
@@ -262,6 +267,7 @@ describe("writeSeed – zweiter Lauf", () => {
         skillUebungen: log.skillUebungen,
         skillEquipment: log.skillEquipment,
         equipment: log.equipment,
+        fastenTage: log.fastenTage,
       }),
     ).toBe(bestand);
   });
@@ -304,6 +310,7 @@ describe("writeSeed – zweiter Lauf", () => {
       "insertUebungen",
       "insertUebungsMuskeln",
       "insertEquipment",
+      "insertFastenTage",
     ]);
     expect(log.skills).toHaveLength(1);
     expect(log.vorlagen).toHaveLength(0);
@@ -345,5 +352,26 @@ describe("writeSeed – Bestandskonto mit eigenem Inventar", () => {
     expect(log.kettlebells).toHaveLength(1);
     expect(schreibschritte(log.handgriffe)).not.toContain("insertScheiben");
     expect(schreibschritte(log.handgriffe)).not.toContain("insertKettlebells");
+  });
+});
+
+describe("writeSeed – Fastentage", () => {
+  it("zieht fehlende Fastentage nach und laesst geaenderte Texte stehen", async () => {
+    const { store, log } = createMemorySeedStore();
+    await writeSeed(store, "u1");
+    // Bestandskonto: ein Tag fehlt, ein anderer traegt einen eigenen Text.
+    const [entfernt] = log.fastenTage.splice(4, 1);
+    log.fastenTage[0] = { ...log.fastenTage[0], titel: "Eigener Titel" };
+    const nachErstemLauf = log.handgriffe.length;
+
+    const ergebnis = await writeSeed(store, "u1");
+
+    expect(ergebnis.seeded).toBe(true);
+    expect(schreibschritte(log.handgriffe.slice(nachErstemLauf))).toEqual([
+      "insertFastenTage",
+    ]);
+    expect(log.fastenTage).toHaveLength(21);
+    expect(log.fastenTage.at(-1)?.tag).toBe(entfernt.tag);
+    expect(log.fastenTage[0].titel).toBe("Eigener Titel");
   });
 });

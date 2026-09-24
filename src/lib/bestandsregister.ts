@@ -96,6 +96,9 @@ export const BESTANDSREGISTER = [
   { tabelle: "rm_tests", key: "rmTests", tiefe: 2, ablage: "liste", einzelzeile: false, schema: "rmTestRow" },
   { tabelle: "zeitraeume", key: "zeitraeume", tiefe: 0, ablage: "liste", einzelzeile: false, schema: "zeitraumRow" },
 
+  // --- Fastenbegleiter (Tagestexte je Fastentag) ---
+  { tabelle: "fasten_tage", key: "fastenTage", tiefe: 0, ablage: "liste", einzelzeile: false, schema: "fastenTagRow" },
+
   // --- Einstellungen (eine Zeile pro Nutzer) ---
   { tabelle: "settings", key: "settings", tiefe: 0, ablage: "liste", einzelzeile: true, schema: "settingsRow" },
 ] as const satisfies readonly RegisterEintrag[];

@@ -46,6 +46,7 @@ Jedes ADR folgt demselben Aufbau:
 - [ADR-0020 – Der Live-Store bleibt ein Modul](./0020-live-store-bleibt-ein-modul.md)
 - [ADR-0021 – Der Phasentyp hängt per Fremdschlüssel an den Bausteinen](./0021-phasentyp-fremdschluessel.md)
 - [ADR-0022 – Eine abgeschlossene Journey ist ein Protokoll, kein Plan](./0022-abgeschlossene-journey-ist-protokoll.md)
+- [ADR-0024 – Der Heilfasten-Zeitraum schaltet die Trainingsseite um](./0024-heilfasten-zeitraum-schaltet-trainingsseite.md)
 
 ## Vergebene und gesperrte Nummern
 
@@ -72,3 +73,5 @@ zweideutig.
   (#387).
 - **0023 – vergeben** an „Dynamische Meilensteine rechnen gegen Körpergewicht und
   fettfreie Masse" (#420).
+- **0024 – vergeben** an „Der Heilfasten-Zeitraum schaltet die Trainingsseite um"
+  (#503).

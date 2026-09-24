@@ -14,8 +14,9 @@
 //   - einmalig: Journey-Vorlagen und Skills entstehen nur, solange der Nutzer
 //     noch gar keine Skills hat. Sie sind spaeter bearbeitbar; ein zweiter Lauf
 //     duerfte geloeschte oder umbenannte Zeilen nicht wieder herstellen.
-//   - nachziehend: Bausteine, Inventar, Uebungskatalog und Ausstattung
-//     ergaenzen jeweils nur die fehlenden Schluessel und lassen vorhandene
+//   - nachziehend: Bausteine, Inventar, Uebungskatalog, Ausstattung und die
+//     Tagestexte des Fastenbegleiters ergaenzen jeweils nur die fehlenden
+//     Schluessel und lassen vorhandene
 //     Zeilen unangetastet. So bekommen auch frueher angelegte Konten, was
 //     spaeter dazugekommen ist, ohne dass ein zweiter Lauf etwas veraendert.
 
@@ -30,10 +31,12 @@ import {
   skillSeeds,
   equipmentSeeds,
 } from "@/seed/definitions";
+import { fastenTagSeeds } from "@/seed/fastenTage";
 import type { SeedStore } from "./seedStore";
 import type {
   ExerciseInsert,
   ExerciseMuscleInsert,
+  FastenTagInsert,
   Focus,
   JourneyTemplateInsert,
   JourneyTemplatePhaseInsert,
@@ -94,10 +97,15 @@ export async function writeSeed(
   // bekommen auch frueher angelegte Nutzer das Skill-Tor-Inventar.
   const equipmentAdded = await ensureEquipment(store, userId);
 
+  // Tagestexte des Fastenbegleiters: unabhaengig von allem anderen, nachziehend
+  // je Tag. Ein geaenderter Text bleibt stehen, nur fehlende Tage kommen dazu.
+  const fastenTageAdded = await ensureFastenTage(store, userId);
+
   return {
     seeded:
       definitionsSeeded ||
       equipmentAdded > 0 ||
+      fastenTageAdded > 0 ||
       phaseTypesAdded > 0 ||
       exercisesAdded > 0 ||
       platesAdded > 0 ||
@@ -171,6 +179,31 @@ async function ensureEquipment(
   if (fehlende.length === 0) return 0;
 
   await store.insertEquipment(fehlende);
+  return fehlende.length;
+}
+
+// Fuegt fehlende Fastentage hinzu, ohne vorhandene zu ueberschreiben. Gibt die
+// Zahl neu angelegter Tage zurueck.
+async function ensureFastenTage(
+  store: SeedStore,
+  userId: string,
+): Promise<number> {
+  const vorhanden = new Set(await store.listFastenTage());
+
+  const fehlende: FastenTagInsert[] = fastenTagSeeds
+    .filter((t) => !vorhanden.has(t.tag))
+    .map((t) => ({
+      user_id: userId,
+      tag: t.tag,
+      titel: t.titel,
+      koerper: t.koerper,
+      gefuehl: t.gefuehl,
+      wichtig: [...t.wichtig],
+    }));
+
+  if (fehlende.length === 0) return 0;
+
+  await store.insertFastenTage(fehlende);
   return fehlende.length;
 }
 
